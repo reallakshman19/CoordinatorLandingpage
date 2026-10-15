@@ -29,10 +29,10 @@
       "builder fixes checker within approved lane; tester independently rechecks"
     ],
     "current": {
-      "step": "CANDIDATE_FROZEN; independent review NOT_SENT transport pending",
+      "step": "TESTER_REVIEW_DRAFT_READY_NOT_SENT; manual Send needed due probe unavailable",
       "material_release": false,
-      "next_actor": "Codex resolve old pending under actual Owner direction then guarded tester delivery",
-      "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6196489190"
+      "next_actor": "Owner one Send, then Codex reconcile and monitor GitHub review",
+      "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6196599930"
     },
     "parked": [
       "source HTML repairs",
@@ -125,7 +125,7 @@
       "started": "2026-10-15T15:12:25+04:00",
       "mode": "regular ChatGPT High3of3 observed",
       "adoption": "ALIGNED",
-      "delivery": "STRICT_VERIFY_PENDING; report confirms task completed",
+      "delivery": "OLD_PENDING_ABANDONED_OWNER; NEVER_RESEND; STRICT_NOT_RUN",
       "capture": "2026-10-15T14:47:20.583Z",
       "state_at_capture": "IDLE observed, message-ID extraction unavailable",
       "adoption_evidence": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/23#issuecomment-6190742517",
@@ -149,8 +149,8 @@
       "adoption": "ALIGNED",
       "state_at_capture": "GENERATING",
       "capture": "2026-10-15T14:30:52.563Z",
-      "current_task": "Exact candidate review queued NOT_SENT",
-      "delivery": "NOT_SENT",
+      "current_task": "Await one manual Send of exact approved review",
+      "delivery": "NOT_SENT_DRAFT_READY",
       "delivery_receipt": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6194582216",
       "head": "8efa1b3135368d064ff70cc3dc5cc214654a4581",
       "source_head": "6ad5c73cfee80b75efffd219eb1b14886ca18c10",
@@ -372,11 +372,11 @@
     }
   ],
   "attention": {
+    "id": "QRT-TESTER-MANUAL-SEND",
     "state": "NOTIFIED",
     "acknowledged": false,
-    "id": "QRT-OLD-BUILDER-RECORD",
-    "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6196489190",
-    "owner_action": "Clear only old builder pending record; never resend; allow prepared independent review"
+    "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6196599930",
+    "owner_action": "Press Send once in existing tester; report sent"
   },
-  "coordinator_last_completed_cycle": "2026-10-15T20:02:36+04:00"
+  "coordinator_last_completed_cycle": "2026-10-15T20:07:56+04:00"
 }
