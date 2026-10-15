@@ -801,6 +801,93 @@ def owner_issue_is_labelled(issue):
 _ISSUE_ASSOCIATIONS = frozenset(('OWNER', 'MEMBER', 'COLLABORATOR'))
 
 
+# WP6: trace facts must be recorded links, not guessed status transitions.
+_TRACE_LINK = re.compile(
+    r'https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/'
+    r'(?:issues|pull)/\d+(?:#issuecomment-\d+)?'
+)
+_TRACE_HEADINGS = (
+    ('sent', re.compile(r'^(?:Sent to agent|FTC(?: relay)?):', re.I)),
+    ('evidence', re.compile(r'^(?:Agent evidence|TASK EVIDENCE(?: v\d+)?):', re.I)),
+    ('check', re.compile(r'^(?:Check|C1(?: verdict)?|B verdict):', re.I)),
+)
+
+
+def _owner_trace(issue, comments, number, repo, boundary, status, reason,
+                 title_project, body_project, association):
+    """Report only links inside this issue's recorded, timestamped comments.
+
+    Handoff/evidence/check links require explicit headings AND a real GitHub
+    URL in an associated comment. Never infer them from a HANDLED claim.
+    """
+    issue_url = f'https://github.com/{repo}/issues/{number}'
+    steps = {'posted': {'url': issue_url, 'at': issue.get('created_at')},
+             'ack': None, 'sent': None, 'evidence': None, 'check': None,
+             'result': None}
+    for c in comments:
+        stamp = _owner_time(c.get('created_at'))
+        cid = c.get('id')
+        if stamp is None or not isinstance(cid, int):
+            continue
+        if boundary and stamp <= boundary:
+            continue
+        if c.get('author_association') not in _ISSUE_ASSOCIATIONS:
+            continue
+        comment_url = issue_url + f'#issuecomment-{cid}'
+        body = c.get('body') or ''
+        ack = _OWNER_ACK.search(body)
+        if ack and int(ack.group(1)) == number:
+            steps['ack'] = {'url': comment_url, 'at': c['created_at']}
+        handled = _OWNER_RECEIPT.search(body)
+        if (handled and int(handled.group('n')) == number
+                and handled.group('url').lower() == comment_url.lower()):
+            steps['result'] = {
+                'url': comment_url, 'at': c['created_at'],
+                'accepted': status == 'HANDLED',
+            }
+        for line in body.splitlines():
+            for key, pattern in _TRACE_HEADINGS:
+                if not pattern.search(line):
+                    continue
+                link = _TRACE_LINK.search(line)
+                if link:
+                    steps[key] = {
+                        'url': link.group(0), 'at': c['created_at'],
+                        'source_url': comment_url,
+                    }
+    if reason == 'project_mismatch':
+        why = (f'Form says {body_project or "not given"}, '
+               f'title says {title_project or "not given"}. '
+               'Waiting for Owner to clarify the project.')
+        waiting = 'Owner'
+    elif association not in _ISSUE_ASSOCIATIONS:
+        why = ('The post has not been confirmed as coming from a '
+               'repository-associated person; it is not an Owner instruction.')
+        waiting = 'TeamCoordinator'
+    elif reason == 'label_missing':
+        why = ('This request is missing the owner-input label. '
+               'Waiting for TeamCoordinator to check the label.')
+        waiting = 'TeamCoordinator'
+    elif status == 'HANDLED':
+        why = ('A linked handler note is recorded. This is not '
+               'proof of an agent review or Owner approval.')
+        waiting = None
+    elif status == 'ACKNOWLEDGED':
+        why = ('The team acknowledged this request, but a confirmed '
+               'result has not been recorded.')
+        waiting = 'TeamCoordinator'
+    elif status == 'NEEDS_CLARIFICATION':
+        why = 'The team needs more information before this can be marked handled.'
+        waiting = 'Owner'
+    elif status == 'SUPERSEDED':
+        why = 'A newer linked request replaces this one.'
+        waiting = None
+    else:
+        why = 'No linked team acknowledgment or result has been recorded yet.'
+        waiting = 'TeamCoordinator'
+    return {'steps': steps, 'why': why, 'waiting_for': waiting}
+
+
 def build_owner_inputs(issues, capture, repo='reallakshman19/CoordinatorLandingpage'):
     """Immutable, strictly linked versioned issue receipts; fail closed."""
     source_ok = (isinstance(capture, dict) and capture.get('status') == 'ok'
@@ -908,6 +995,8 @@ def build_owner_inputs(issues, capture, repo='reallakshman19/CoordinatorLandingp
             # as Owner instructions or allow claims in their bodies to act.
             review = {'state': 'UNVERIFIED', 'reason': 'outsider_author',
                       'frozen_sha': frozen_sha, 'comment_id': None}
+        trace = _owner_trace(issue, comments, number, repo, boundary, state,
+                             reason, title_project, body_project, association)
         sup = _OWNER_SUPERSEDES.search(body)
         result.append({
             'schema_version': 'wp1b.1', 'number': number,
@@ -921,6 +1010,7 @@ def build_owner_inputs(issues, capture, repo='reallakshman19/CoordinatorLandingp
                      (['label_missing'] if missing_label else []),
             'label_missing': missing_label,
             'project_claims': {'title': title_project, 'form': body_project},
+            'trace': trace,
             'author_association': association,
             'is_outsider': outsider,
             'author_classification': 'OUTSIDER' if outsider else 'ASSOCIATED_NOT_OWNER_PROOF',
@@ -948,6 +1038,8 @@ def build_owner_inputs(issues, capture, repo='reallakshman19/CoordinatorLandingp
             old.update(state='superseded', status='SUPERSEDED',
                        needs_you=False, superseded_by=row['number'],
                        effective=False, receipt=None)
+            old['trace']['why'] = 'A newer linked request replaces this one.'
+            old['trace']['waiting_for'] = None
     return result
 
 

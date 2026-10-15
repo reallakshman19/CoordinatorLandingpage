@@ -45,11 +45,7 @@
 
   <!-- Liveness strip -->
   <div id="liveness-strip" role="complementary" aria-label="System liveness">
-    <div class="live-item">
-      <span class="dot" id="live-tc"></span>
-      <span>TeamCoordinator</span>
-      <span id="live-tc-time" style="color:var(--text-3)"></span>
-    </div>
+    <div id="live-coordinators" class="live-project-list" aria-label="Coordinator status by project"></div>
     <div class="live-item">
       <span class="dot" id="live-otm"></span>
       <span>OwnerTeammember</span>
@@ -294,6 +290,25 @@
         <span id="oi-outsider-count" class="badge badge-grey"></span>
       </div>
       <div id="oi-outsider-list"></div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-trace">
+  <div id="view-trace">
+    <div class="trace-top">
+      <a id="trace-back" class="btn btn-small" href="#owner-inputs">← Owner inputs</a>
+      <h1 id="trace-title">Follow this request</h1>
+      <span id="trace-status"></span>
+    </div>
+    <p id="trace-subtitle" class="trace-subtitle"></p>
+    <div class="card trace-card">
+      <div class="card-header">
+        <span class="card-title">What happened to this request?</span>
+      </div>
+      <ol id="trace-steps" class="trace-steps"></ol>
+      <p id="trace-explanation" class="trace-explanation">Why this status: no records loaded.</p>
+      <p id="trace-disclaimer" class="note"></p>
     </div>
   </div>
 </template>

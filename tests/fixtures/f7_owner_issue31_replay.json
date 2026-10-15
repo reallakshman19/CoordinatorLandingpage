@@ -29,12 +29,14 @@
         {
           "id": 31001,
           "created_at": "2026-10-15T15:04:00Z",
-          "body": "ACK: owner-input #31"
+          "body": "ACK: owner-input #31",
+          "author_association": "MEMBER"
         },
         {
           "id": 31002,
           "created_at": "2026-10-15T15:07:00Z",
-          "body": "HANDLED: owner-input #31 receipt: https://github.com/reallakshman19/CoordinatorLandingpage/issues/31#issuecomment-31002"
+          "body": "HANDLED: owner-input #31 receipt: https://github.com/reallakshman19/CoordinatorLandingpage/issues/31#issuecomment-31002",
+          "author_association": "MEMBER"
         }
       ],
       "author_association": "MEMBER"
