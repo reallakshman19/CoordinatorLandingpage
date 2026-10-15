@@ -2,13 +2,13 @@
   "project": "imo-ab-test",
   "protocol": "Team protocol v2.0 PROTOTYPE (protocol/TEAM_PROTOCOL.md)",
   "repository": "reallakshman19/Grade9v3.5",
-  "updated": "2026-10-15T08:45+04:00",
+  "updated": "2026-10-15T09:1x+04:00",
   "updated_by": "TeamCoordinator (Claude, candidate)",
   "control": {
     "epoch": 1,
     "coordinator": "TeamCoordinator: Claude (Owner, 15 Oct: \"you will be teamcoordinator, ownermember another agent\")",
     "since": "2026-10-15T08:45+04:00",
-    "owner_teammember": "another agent (to be named by the Owner)",
+    "owner_teammember": "the Owner (Owner, 15 Oct: \"OwnerTeammember: me\")",
     "hold": null
   },
   "workflow": {
@@ -19,22 +19,43 @@
     }
   },
   "agents": [
-    {"role": "implementer (R13 native repair)", "alias": "Agent A", "generation": 1, "chat_id8": "6ad0449d", "status": "active",
-     "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/13",
-     "work": "Grade9v3.5 #182 (parent #137), PR #268 @9d225535 (agent claim)"},
-    {"role": "analyst (Q003 plan R3)", "alias": "Agent B", "generation": 1, "chat_id8": "6ad04451", "status": "active",
-     "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/14",
-     "work": "Grade9v3.5 #183, plan R3 (agent claim)"}
+    {
+      "role": "implementer (R13 native repair)",
+      "alias": "Agent A",
+      "generation": 1,
+      "chat_id8": "6ad0449d",
+      "status": "active",
+      "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/13",
+      "work": "Grade9v3.5 #182 (parent #137), PR #268 @9d225535 (agent claim)",
+      "onboarded": "2026-10-15T09:1x+04:00 DELIVERED"
+    },
+    {
+      "role": "analyst (Q003 plan R3)",
+      "alias": "Agent B",
+      "generation": 1,
+      "chat_id8": "6ad04451",
+      "status": "active",
+      "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/14",
+      "work": "Grade9v3.5 #183, plan R3 (agent claim)",
+      "onboarded": "pending (agent working on the Owner-provided file)"
+    }
   ],
   "standing_owner_decisions": [
     "coordinator cadence 10 min (Owner, 15 Oct)",
     "academic and Owner QRT acceptance deferred to the final phase (Owner, to the predecessor of A)",
-    "BuddyRunner v1.7 for new handovers"
+    "BuddyRunner v1.7 for new handovers",
+    "Q003 academic/QRT acceptance waits for the final phase; Agent B does not hold other work for it (Owner, 15 Oct)",
+    "agents onboarded with the \u00a710 message; until a decision comes, an agent works in its own lane or reports it waits on the Owner (Owner, 15 Oct)"
   ],
   "open_owner_decisions": [
-    {"id": "AB-LEASE", "ask": "grant Agent A the exclusive render_core.py writer lease for native repair (0/21)?"},
-    {"id": "AB-SOURCE", "ask": "how does Agent B get the private source input; defer the Q003 academic decision to the final phase?"},
-    {"id": "AB-WORKFLOW", "ask": "the workflow card (Owner's words) for this project"}
+    {
+      "id": "AB-LEASE",
+      "ask": "grant Agent A the exclusive render_core.py writer lease for native repair (0/21)?"
+    },
+    {
+      "id": "AB-WORKFLOW",
+      "ask": "the workflow card (Owner's words) for this project"
+    }
   ],
   "status_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/12",
   "log_folder": "logs/imo-ab-test/2026-10-15_epoch1/"
