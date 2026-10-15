@@ -1,14 +1,9 @@
 name: Deploy to GitHub Pages
 
 on:
-  # Manually trigger from any branch via the Actions tab
-  workflow_dispatch:
-
-  # Also fires on every push to feat/landing-page (during review)
-  # and to main (after merge)
+  # Triggers on push to main (site or script updates)
   push:
     branches:
-      - feat/landing-page
       - main
     paths:
       - 'site/**'
@@ -17,8 +12,21 @@ on:
       - 'benchmarks/**'
       - '.github/workflows/deploy.yml'
 
+  # Live issue/comment activity triggers (updates live dashboard)
+  issues:
+    types: [opened, edited, closed, reopened, labeled, unlabeled]
+  issue_comment:
+    types: [created, edited, deleted]
+
+  # Periodic refresh every 10 minutes
+  schedule:
+    - cron: '*/10 * * * *'
+
+  # Manual trigger from Actions tab
+  workflow_dispatch:
+
 concurrency:
-  group: pages-deploy
+  group: pages
   cancel-in-progress: true
 
 permissions:
@@ -51,7 +59,7 @@ jobs:
             --root . \
             --repo ${{ github.repository }} \
             --cache-dir _live_cache
-        continue-on-error: true   # no logs/ dir on feat/landing-page yet is fine
+        continue-on-error: true
 
       # ── Build data ────────────────────────────────────────────────────────
       - name: Build live site data
