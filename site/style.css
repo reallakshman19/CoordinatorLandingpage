@@ -649,3 +649,15 @@ tr:hover td { background: var(--bg-2); }
 }
 #site-update-banner[hidden] { display: none; }
 #site-update-reload { background: var(--bg); color: var(--accent); }
+
+
+/* WP8b: sourced activity clocks and the prominent Owner input route. */
+.home-header { display:flex; align-items:center; justify-content:space-between;
+  gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+.home-header h1 { font-size:1.2rem; }
+#home-new-input[hidden] { display:none; }
+.owner-clock, .decision-asked { display:block; font-size:0.8rem;
+  color:var(--text-3); line-height:1.5; overflow-wrap:anywhere; }
+.oi-ts.owner-clock { min-width:170px; white-space:normal; }
+.decision-card-header .decision-asked { width:100%; flex-basis:100%; }
+#needs-you .owner-clock { margin:3px 0 5px; }

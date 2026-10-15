@@ -149,8 +149,10 @@ def read_committed_inputs(root,repo=REPO,resolver=None):
             status="NEEDS_CLARIFICATION" if errors or not trusted else "OPEN"
             receipt=None
             chosen=receipts.get(name)
+            last_update=created
             if chosen and trusted and not errors:
                 row,lineno=chosen
+                last_update=row["at"]
                 status="ACKNOWLEDGED" if row["state"]=="ACK" else row["state"]
                 url=(f"https://github.com/{repo}/blob/{receipt_meta['sha']}/"
                      f"logs/{project}/receipts.jsonl#L{lineno}")
@@ -173,7 +175,8 @@ def read_committed_inputs(root,repo=REPO,resolver=None):
                 "target":obj.get("target") if isinstance(obj.get("target"),str) else "",
                 "type":obj.get("type") if isinstance(obj.get("type"),str) else "OWNER_INPUT",
                 "text":obj.get("text","")[:300] if isinstance(obj.get("text"),str) else "",
-                "ts":created,"status":status,"state":status.lower(),
+                "ts":created,"updated_at":last_update,
+                "status":status,"state":status.lower(),
                 "needs_you":trusted and status not in ("HANDLED","SUPERSEDED"),
                 "receipt":receipt,"replaces":obj.get("replaces"),
                 "reason":reason,"flags":errors+(["unverified_commit_author"] if not trusted else []),
@@ -188,5 +191,6 @@ def read_committed_inputs(root,repo=REPO,resolver=None):
         if (old and old is not row and row["project"]==old["project"]
                 and not row["is_outsider"] and not old["is_outsider"] and not row["flags"]):
             old.update(status="SUPERSEDED",state="superseded",
-                       needs_you=False,superseded_by=row["id"],receipt=None)
+                       needs_you=False,superseded_by=row["id"],receipt=None,
+                       updated_at=row["ts"])
     return records
