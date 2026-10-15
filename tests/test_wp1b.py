@@ -133,7 +133,7 @@ class DetailedF5(unittest.TestCase):
         issue = copy.deepcopy(next(i for i in F5["issues"] if i["number"] == 206))
         issue["comments"].append({
             "id": 20603, "created_at": "2026-10-15T10:12:00Z",
-            "body": "ACK: owner-input #206",
+            "body": "ACK: owner-input #206", "author_association": "MEMBER",
         })
         result = build_data.build_owner_inputs([issue], F5["capture"])
         self.assertEqual(result[0]["status"], "NEEDS_CLARIFICATION")

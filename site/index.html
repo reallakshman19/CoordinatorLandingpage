@@ -274,8 +274,28 @@
     <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap;justify-content:space-between">
       <h1 style="font-size:1.1rem">Owner inputs</h1>
       <a id="new-input-btn" class="btn btn-primary btn-small" target="_blank" rel="noopener">
-        📮 New input
+        GitHub issue (backup)
       </a>
+    </div>
+    <div class="card owner-json-card">
+      <div class="card-header"><span class="card-title">Send a request (no issue needed)</span></div>
+      <form id="oi-json-form" class="owner-json-form">
+        <label>Project <select id="oi-json-project" required></select></label>
+        <label>For whom? <input id="oi-json-target" type="text" maxlength="160" required placeholder="TeamCoordinator" /></label>
+        <label>Kind of request
+          <select id="oi-json-type" required>
+            <option value="INFO">Information</option>
+            <option value="QUESTION">Question</option>
+            <option value="DECISION">Decision</option>
+            <option value="FEEDBACK">Feedback</option>
+          </select>
+        </label>
+        <label>Your message <textarea id="oi-json-text" maxlength="1500" rows="4" required></textarea></label>
+        <label>Replaces a previous request? (optional) <input id="oi-json-replaces" type="text" placeholder="OI-YYYYMMDD-HHMMSS-abcd" /></label>
+        <button id="oi-json-post" class="btn btn-primary" type="submit">Post → Review on GitHub</button>
+        <p id="oi-json-result" role="status" aria-live="polite"></p>
+      </form>
+      <p class="note">This only opens a prefilled JSON file on GitHub. Sign in and click Commit changes to send it. No token, no automatic posting, and no issue is created. The GitHub issue button is a backup.</p>
     </div>
     <div class="card">
       <div class="card-header">

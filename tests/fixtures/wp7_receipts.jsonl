@@ -1,0 +1,2 @@
+{"input":"OI-20261015-163000-abcd","state":"ACK","at":"2026-10-15T16:31:00Z","by":"TeamCoordinator","note":"Synthetic acknowledgement (not an approval)","links":[]}
+{"input":"OI-20261015-163000-abcd","state":"HANDLED","at":"2026-10-15T16:32:00Z","by":"TeamCoordinator","note":"Synthetic replay for tests only; not an Owner approval","links":["https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6196743440"]}

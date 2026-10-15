@@ -21,6 +21,7 @@ import json
 import os
 import re
 import sys
+import owner_json
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -814,7 +815,7 @@ _TRACE_HEADINGS = (
 
 
 def _owner_trace(issue, comments, number, repo, boundary, status, reason,
-                 title_project, body_project, association):
+                 title_project, body_project, association, allowed_repos):
     """Report only links inside this issue's recorded, timestamped comments.
 
     Handoff/evidence/check links require explicit headings AND a real GitHub
@@ -850,7 +851,7 @@ def _owner_trace(issue, comments, number, repo, boundary, status, reason,
                 if not pattern.search(line):
                     continue
                 link = _TRACE_LINK.search(line)
-                if link:
+                if link and owner_json.linked_repo(link.group(0), allowed_repos):
                     steps[key] = {
                         'url': link.group(0), 'at': c['created_at'],
                         'source_url': comment_url,
@@ -888,8 +889,10 @@ def _owner_trace(issue, comments, number, repo, boundary, status, reason,
     return {'steps': steps, 'why': why, 'waiting_for': waiting}
 
 
-def build_owner_inputs(issues, capture, repo='reallakshman19/CoordinatorLandingpage'):
+def build_owner_inputs(issues, capture, repo='reallakshman19/CoordinatorLandingpage',
+                       registered_repos=None):
     """Immutable, strictly linked versioned issue receipts; fail closed."""
+    allowed_repos = {repo} | set(registered_repos or [])
     source_ok = (isinstance(capture, dict) and capture.get('status') == 'ok'
                  and 1 in capture.get('issues_fetched', [])
                  and capture.get('owner_inputs_complete') is True)
@@ -926,13 +929,13 @@ def build_owner_inputs(issues, capture, repo='reallakshman19/CoordinatorLandingp
             is_receipt = bool(m and int(m.group('n')) == number and
                               m.group('url').lower() == expected_url.lower())
             if stamp is None or (boundary and stamp <= boundary):
-                previous_handled |= is_receipt
+                previous_handled |= is_receipt and comment.get('author_association') in _ISSUE_ASSOCIATIONS
                 continue
-            if is_receipt:
+            if is_receipt and comment.get('author_association') in _ISSUE_ASSOCIATIONS:
                 state, receipt = 'HANDLED', expected_url
-            elif (m := _OWNER_CLARIFY.search(text)) and int(m.group(1)) == number:
+            elif (m := _OWNER_CLARIFY.search(text)) and int(m.group(1)) == number and comment.get('author_association') in _ISSUE_ASSOCIATIONS:
                 state, receipt = 'NEEDS_CLARIFICATION', None
-            elif (m := _OWNER_ACK.search(text)) and int(m.group(1)) == number:
+            elif (m := _OWNER_ACK.search(text)) and int(m.group(1)) == number and comment.get('author_association') in _ISSUE_ASSOCIATIONS:
                 if state != 'HANDLED':
                     state, receipt = 'ACKNOWLEDGED', None
         if previous_handled and revisions and state != 'HANDLED':
@@ -996,7 +999,8 @@ def build_owner_inputs(issues, capture, repo='reallakshman19/CoordinatorLandingp
             review = {'state': 'UNVERIFIED', 'reason': 'outsider_author',
                       'frozen_sha': frozen_sha, 'comment_id': None}
         trace = _owner_trace(issue, comments, number, repo, boundary, state,
-                             reason, title_project, body_project, association)
+                             reason, title_project, body_project, association,
+                             allowed_repos)
         sup = _OWNER_SUPERSEDES.search(body)
         result.append({
             'schema_version': 'wp1b.1', 'number': number,
@@ -1236,8 +1240,12 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
 
     save_json(out_dir / 'projects.json', summary)
     if not benchmark_dirs:
-        save_json(out_dir / 'owner-inputs.json', build_owner_inputs(
-            owner_source, owner_capture))
+        registered = {pd['registry'].get('repository') for pd in all_projects
+                      if isinstance(pd['registry'].get('repository'), str)}
+        issue_rows = build_owner_inputs(owner_source, owner_capture,
+                                        registered_repos=registered)
+        json_rows = owner_json.read_committed_inputs(root)
+        save_json(out_dir / 'owner-inputs.json', issue_rows + json_rows)
 
     # Save full project detail files
     for pd in all_projects:

@@ -113,6 +113,7 @@ class DetailedF7(unittest.TestCase):
         issue=copy.deepcopy(F7["issues"][1])
         issue["comments"]=[{
             "id":32001,"created_at":"2026-10-15T15:12:00Z",
+            "author_association":"MEMBER",
             "body":"HANDLED: owner-input #32 receipt: "
                    "https://github.com/"+REPO+"/issues/32#issuecomment-32001"
         }]

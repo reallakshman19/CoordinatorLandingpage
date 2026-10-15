@@ -42,7 +42,8 @@
         {
           "id": 20201,
           "created_at": "2026-10-15T10:03:00Z",
-          "body": "ACKNOWLEDGED: owner-input #202"
+          "body": "ACKNOWLEDGED: owner-input #202",
+          "author_association": "MEMBER"
         }
       ],
       "events": [],
@@ -62,7 +63,8 @@
         {
           "id": 20301,
           "created_at": "2026-10-15T10:04:00Z",
-          "body": "NEEDS CLARIFICATION: owner-input #203 — question needs detail"
+          "body": "NEEDS CLARIFICATION: owner-input #203 — question needs detail",
+          "author_association": "MEMBER"
         }
       ],
       "events": [],
@@ -82,7 +84,8 @@
         {
           "id": 20401,
           "created_at": "2026-10-15T10:05:00Z",
-          "body": "HANDLED: owner-input #204 receipt: https://github.com/reallakshman19/CoordinatorLandingpage/issues/204#issuecomment-20401"
+          "body": "HANDLED: owner-input #204 receipt: https://github.com/reallakshman19/CoordinatorLandingpage/issues/204#issuecomment-20401",
+          "author_association": "MEMBER"
         }
       ],
       "events": [],
@@ -116,12 +119,14 @@
         {
           "id": 20601,
           "created_at": "2026-10-15T10:03:00Z",
-          "body": "ACK: owner-input #206"
+          "body": "ACK: owner-input #206",
+          "author_association": "MEMBER"
         },
         {
           "id": 20602,
           "created_at": "2026-10-15T10:05:00Z",
-          "body": "HANDLED: owner-input #206 receipt: https://github.com/reallakshman19/CoordinatorLandingpage/issues/206#issuecomment-20602"
+          "body": "HANDLED: owner-input #206 receipt: https://github.com/reallakshman19/CoordinatorLandingpage/issues/206#issuecomment-20602",
+          "author_association": "MEMBER"
         }
       ],
       "events": [
@@ -152,17 +157,20 @@
         {
           "id": 20702,
           "created_at": "2026-10-15T10:07:00Z",
-          "body": "HANDLED: owner-input #207 receipt: https://github.com/reallakshman19/CoordinatorLandingpage/issues/207#issuecomment-20702"
+          "body": "HANDLED: owner-input #207 receipt: https://github.com/reallakshman19/CoordinatorLandingpage/issues/207#issuecomment-20702",
+          "author_association": "MEMBER"
         },
         {
           "id": 20701,
           "created_at": "2026-10-15T10:03:00Z",
-          "body": "ACK: owner-input #207"
+          "body": "ACK: owner-input #207",
+          "author_association": "MEMBER"
         },
         {
           "id": 20702,
           "created_at": "2026-10-15T10:07:00Z",
-          "body": "HANDLED: owner-input #207 receipt: https://github.com/reallakshman19/CoordinatorLandingpage/issues/207#issuecomment-20702"
+          "body": "HANDLED: owner-input #207 receipt: https://github.com/reallakshman19/CoordinatorLandingpage/issues/207#issuecomment-20702",
+          "author_association": "MEMBER"
         }
       ],
       "events": [],
@@ -196,7 +204,8 @@
         {
           "id": 20901,
           "created_at": "2026-10-15T10:04:00Z",
-          "body": "HANDLED: owner-input #209 receipt: https://github.com/reallakshman19/CoordinatorLandingpage/issues/209#issuecomment-20901"
+          "body": "HANDLED: owner-input #209 receipt: https://github.com/reallakshman19/CoordinatorLandingpage/issues/209#issuecomment-20901",
+          "author_association": "MEMBER"
         }
       ],
       "events": [],
@@ -216,12 +225,14 @@
         {
           "id": 21001,
           "created_at": "2026-10-15T10:06:00Z",
-          "body": "ACK: owner-input #210"
+          "body": "ACK: owner-input #210",
+          "author_association": "MEMBER"
         },
         {
           "id": 21002,
           "created_at": "2026-10-15T10:09:00Z",
-          "body": "Review-Target: #210\nReview-SHA: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\nReview-Role: OwnerTeammember\nReview-Result: PASS"
+          "body": "Review-Target: #210\nReview-SHA: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\nReview-Role: OwnerTeammember\nReview-Result: PASS",
+          "author_association": "MEMBER"
         }
       ],
       "events": [],
@@ -241,7 +252,8 @@
         {
           "id": 21101,
           "created_at": "2026-10-15T10:07:00Z",
-          "body": "Review-Target: #211\nReview-SHA: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nReview-Role: Agent\nReview-Result: PASS"
+          "body": "Review-Target: #211\nReview-SHA: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nReview-Role: Agent\nReview-Result: PASS",
+          "author_association": "MEMBER"
         }
       ],
       "events": [],
@@ -261,7 +273,8 @@
         {
           "id": 21201,
           "created_at": "2026-10-15T10:08:00Z",
-          "body": "Review-Target: #212\nReview-SHA: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nReview-Role: OwnerTeammember\nReview-Result: PASS"
+          "body": "Review-Target: #212\nReview-SHA: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nReview-Role: OwnerTeammember\nReview-Result: PASS",
+          "author_association": "MEMBER"
         }
       ],
       "events": [],
@@ -281,7 +294,8 @@
         {
           "id": 21301,
           "created_at": "2026-10-15T10:08:00Z",
-          "body": "HANDLED: owner-input #204 receipt: https://github.com/reallakshman19/CoordinatorLandingpage/issues/204#issuecomment-20401"
+          "body": "HANDLED: owner-input #204 receipt: https://github.com/reallakshman19/CoordinatorLandingpage/issues/204#issuecomment-20401",
+          "author_association": "MEMBER"
         }
       ],
       "events": [],
@@ -301,7 +315,8 @@
         {
           "id": 21401,
           "created_at": "2026-10-15T10:07:00Z",
-          "body": "ACK: owner-input #214"
+          "body": "ACK: owner-input #214",
+          "author_association": "MEMBER"
         }
       ],
       "events": [],
@@ -321,7 +336,8 @@
         {
           "id": 21501,
           "created_at": "2026-10-15T10:05:00Z",
-          "body": "ACK: owner-input #215"
+          "body": "ACK: owner-input #215",
+          "author_association": "MEMBER"
         }
       ],
       "events": [],

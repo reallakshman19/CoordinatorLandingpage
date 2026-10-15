@@ -1,4 +1,4 @@
-name: landing-live WP1a + WP1b + WP2 + WP4 + WP3 + WP5a + WP5b + WP6 qualification
+name: landing-live WP1a + WP1b + WP2 + WP4 + WP3 + WP5a + WP5b + WP6 + WP7 qualification
 
 on:
   pull_request:
@@ -89,6 +89,14 @@ jobs:
           set -o pipefail
           python -m unittest tests.test_wp6 -v 2>&1 | tee wp6-unit-head.log
 
+      - name: Run WP7 JSON readback, receipts, link-fence and author tests
+        id: wp7_unit
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m unittest tests.test_wp7 -v 2>&1 | tee wp7-unit-head.log
+
       - name: Assemble benchmark-backed browser artifact (no live API)
         id: artifact
         continue-on-error: true
@@ -159,6 +167,15 @@ jobs:
           set -o pipefail
           python tests/wp6_browser_test.py _artifact 2>&1 | tee wp6-browser-head.log
 
+      - name: Run WP7 GitHub new-file form and trace browser checks
+        id: wp7_browser
+        if: steps.artifact.outcome == 'success' && steps.chromium.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python tests/wp7_browser_test.py _artifact 2>&1 | tee wp7-browser-head.log
+
       - name: Upload qualification output
         if: always()
         uses: actions/upload-artifact@v4
@@ -178,6 +195,8 @@ jobs:
             wp5b-browser-head.log
             wp6-unit-head.log
             wp6-browser-head.log
+            wp7-unit-head.log
+            wp7-browser-head.log
           if-no-files-found: ignore
 
       - name: Prove injected failure rejected and enforce all HEAD gates
@@ -219,7 +238,9 @@ jobs:
           require_success "WP5b-outsider-badge-and-needsyou-browser" "${{ steps.wp5b_browser.outcome }}"
           require_success "WP6-trace-source-links-and-why" "${{ steps.wp6_unit.outcome }}"
           require_success "WP6-trace-browser-and-per-project-coordinator" "${{ steps.wp6_browser.outcome }}"
-          echo "FINAL GATE: 15/15 actual head outcomes success"
+          require_success "WP7-json-schema-receipts-and-author" "${{ steps.wp7_unit.outcome }}"
+          require_success "WP7-new-file-page-and-trace" "${{ steps.wp7_browser.outcome }}"
+          echo "FINAL GATE: 17/17 actual head outcomes success"
 
   red-control:
     name: red-control · require seven behavioural FAIL and zero ERROR
@@ -1015,4 +1036,72 @@ jobs:
         with:
           name: wp6-main-browser-red
           path: wp6-browser-red.log
+          if-no-files-found: error
+
+  wp7-red-control:
+    name: WP7 merged WP6 BASE JSON and C1 behavioural red · seven FAIL zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout HEAD WP7 tests and fixture unchanged
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only old WP6 builder; keep WP7 tests/module unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=4f5abb0863ac7b7a78214f8b5ef19c2d35cc9df3
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+          echo "WP7 RED pinned previous main=${BASE}"
+      - name: Require seven wrong behaviours as assertion FAIL, zero errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp7.BaseCompatibleWP7 -v > wp7-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp7-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          out=Path("wp7-red.log").read_text()
+          results=re.findall(r'^(test_wp7_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',
+                             out,re.M)
+          fail={name for name,status in results if status=='FAIL'}
+          error={name for name,status in results if status=='ERROR'}
+          expected={
+              'test_wp7_committed_json_appears_in_built_owner_inputs',
+              'test_wp7_json_authority_remains_unverified',
+              'test_wp7_bad_json_schema_fails_to_clarification',
+              'test_wp7_json_replacement_marks_previous_superseded',
+              'test_wp7_untrusted_committer_does_not_enter_needs_you',
+              'test_wp7_issue_foreign_author_ack_does_not_change_state',
+              'test_wp7_issue_foreign_repo_trace_link_is_not_evidence',
+          }
+          ok=(int(os.environ["RC"])!=0 and fail==expected and not error
+              and re.search(r'^Ran 7 tests in ',out,re.M)
+              and re.search(r'^FAILED \(failures=7\)$',out,re.M)
+              and not any(e in out for e in
+                 ("TypeError:","AttributeError:","ImportError:",
+                  "ModuleNotFoundError:","SyntaxError:")))
+          print("WP7 RED: behavioural FAIL count",len(fail))
+          print("WP7 RED: runner ERROR count",len(error))
+          print("WP7 RED VERDICT","EXPECTED BEHAVIOURAL RED" if ok else "INVALID RED")
+          if not ok:sys.exit(1)
+          PY
+      - name: Upload WP7 base red log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp7-wp6-base-red
+          path: wp7-red.log
           if-no-files-found: error
