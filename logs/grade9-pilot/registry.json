@@ -29,9 +29,11 @@
       "builder fixes checker within approved lane; tester independently rechecks"
     ],
     "current": {
-      "step": "Independent bounded lexical review completed; Owner stage/scope decision pending; semantic hold retained",
+      "step": "RUNNING: builder semantic-review design and independent tester challenge matrix",
       "material_release": false,
-      "next_actor": "Owner"
+      "next_actor": "builder6ad0b471 + tester6ad0508a",
+      "owner_scope": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6192143363",
+      "transport_gap": "tester actual receipt observed; native UNCERTAIN, no resend/further sends until resolved"
     },
     "parked": [
       "source HTML repairs",
@@ -76,13 +78,13 @@
       "started": "2026-10-15T08:04+04:00",
       "head": "6ad5c73cfee80b75efffd219eb1b14886ca18c10",
       "adoption": "ALIGNED",
-      "delivery": "DELIVERED",
+      "delivery": "UNCERTAIN",
       "adoption_evidence": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/11#issuecomment-6189818287",
-      "last_sent_body_sha256": "b64d3d719bdbc212c29a4e8016459df416111c1d61602a7369cd70f74c8f4ebe",
-      "current_task": "QRT-B3-INDEPENDENT-1 DONE; STOP",
-      "state_at_capture": "IDLE",
-      "capture": "2026-10-15T12:09:47.181Z",
-      "delivery_receipt": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6191424629",
+      "last_sent_body_sha256": "fd81160d0e42a6bfd033b0783a943a4ee4db5662064475dc11fbbc87ae15276b",
+      "current_task": "QRT-T2-SEMANTIC-ORACLES-1",
+      "state_at_capture": "GENERATING",
+      "capture": "2026-10-15T12:38:18.819Z",
+      "delivery_receipt": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6192267571",
       "completed_evidence": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/11#issuecomment-6191529377"
     },
     {
@@ -116,14 +118,14 @@
       "mode": "regular ChatGPT High3of3 observed",
       "adoption": "ALIGNED",
       "delivery": "DELIVERED",
-      "capture": "2026-10-15T12:09:44.572Z",
-      "state_at_capture": "IDLE",
+      "capture": "2026-10-15T12:35:37.060Z",
+      "state_at_capture": "GENERATING",
       "adoption_evidence": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/23#issuecomment-6190742517",
       "branch_base": "90adfd690bfb439ff4131eb9a04ee5de524cb1ed",
-      "current_task": "QRT-B3-REGRESSION-1 DONE; WRITER_STOP",
+      "current_task": "QRT-B3-SEMANTIC-DESIGN-1",
       "lease": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/23#issuecomment-6190920489",
-      "delivery_receipt": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6190997532",
-      "last_sent_body_sha256": "cdbe28c7103427c646ed2be446075aad94203a12a98c90ad0b6788f90af4c287",
+      "delivery_receipt": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6192267571",
+      "last_sent_body_sha256": "fa80031067ebf7dca613d68b2f424f49c219bade152068382e78aaa18d5260d9",
       "head": "8efa1b3135368d064ff70cc3dc5cc214654a4581",
       "completed_evidence": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/23#issuecomment-6191138546"
     }
@@ -328,9 +330,18 @@
     {
       "id": "QRT-G3-LEXICAL-1",
       "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6191722755",
-      "status": "OPEN",
+      "status": "RESOLVED_FOR_DESIGN_ONLY",
       "actor": "Owner",
-      "scope": "next stage; no merge/release"
+      "scope": "next stage; no merge/release",
+      "resolution": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6192143363"
     }
-  ]
+  ],
+  "attention": {
+    "state": "RESOLVED_FOR_WORK_RESUMPTION",
+    "id": "QRT-G3-LEXICAL-1",
+    "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6192267571",
+    "at": "2026-10-15T16:40:15+04:00",
+    "remaining_transport_gap": "native tester receipt uncertain; retain exact observed body/no resend"
+  },
+  "coordinator_last_completed_cycle": "2026-10-15T16:40:15+04:00"
 }
