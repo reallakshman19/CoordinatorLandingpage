@@ -1,0 +1,119 @@
+name: Deploy to GitHub Pages
+
+on:
+  # Manually trigger from any branch via the Actions tab
+  workflow_dispatch:
+
+  # Also fires on every push to feat/landing-page (during review)
+  # and to main (after merge)
+  push:
+    branches:
+      - feat/landing-page
+      - main
+    paths:
+      - 'site/**'
+      - 'scripts/**'
+      - 'protocol/**'
+      - 'benchmarks/**'
+      - '.github/workflows/deploy.yml'
+
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  issues: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # ── Fetch live issue threads (read-only GITHUB_TOKEN) ─────────────────
+      - name: Fetch live issue threads
+        run: |
+          python scripts/fetch_live_data.py \
+            --root . \
+            --repo ${{ github.repository }} \
+            --cache-dir _live_cache
+        continue-on-error: true   # no logs/ dir on feat/landing-page yet is fine
+
+      # ── Build data ────────────────────────────────────────────────────────
+      - name: Build live site data
+        run: |
+          python scripts/build_data.py \
+            --root . \
+            --out _artifact/data \
+            --cache-dir _live_cache
+
+      - name: Build benchmark data
+        run: |
+          python scripts/build_data.py \
+            --root . \
+            --out _artifact/data/benchmarks \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+
+      # ── Run test suites ───────────────────────────────────────────────────
+      - name: Python hard-case tests
+        run: python tests/build_test.py
+
+      - name: Install Playwright for browser smoke test
+        run: |
+          pip install playwright
+          playwright install --with-deps chromium
+
+      # ── Assemble Pages artifact ───────────────────────────────────────────
+      - name: Copy site files into artifact
+        run: cp -r site/. _artifact/
+
+      - name: Copy protocol into artifact
+        run: cp -r protocol/ _artifact/protocol/
+
+      # ── Browser smoke test against the artifact ───────────────────────────
+      - name: Browser smoke test (19 hard-case checks)
+        run: python tests/browser_smoke_test.py _artifact
+
+      # ── Stamp build info ─────────────────────────────────────────────────
+      - name: Write build-info.json
+        run: |
+          echo '{
+            "built_at": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",
+            "ref": "${{ github.ref_name }}",
+            "sha": "${{ github.sha }}",
+            "run_id": "${{ github.run_id }}"
+          }' > _artifact/build-info.json
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _artifact/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
