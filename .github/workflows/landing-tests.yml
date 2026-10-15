@@ -1,4 +1,4 @@
-name: landing-live WP1a + WP1b + WP2 + WP4 + WP3 + WP5a + WP5b + WP6 + WP7 qualification
+name: landing-live WP1a + WP1b + WP2 + WP4 + WP3 + WP5a + WP5b + WP6 + WP7 + WP8a qualification
 
 on:
   pull_request:
@@ -97,6 +97,14 @@ jobs:
           set -o pipefail
           python -m unittest tests.test_wp7 -v 2>&1 | tee wp7-unit-head.log
 
+      - name: Run WP8a published asset stamp/source-version unit tests
+        id: wp8a_unit
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m unittest tests.test_wp8a -v 2>&1 | tee wp8a-unit-head.log
+
       - name: Assemble benchmark-backed browser artifact (no live API)
         id: artifact
         continue-on-error: true
@@ -176,6 +184,15 @@ jobs:
           set -o pipefail
           python tests/wp7_browser_test.py _artifact 2>&1 | tee wp7-browser-head.log
 
+      - name: Run WP8a version banner and draft-preservation browser test
+        id: wp8a_browser
+        if: steps.artifact.outcome == 'success' && steps.chromium.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python tests/wp8a_browser_test.py _artifact 2>&1 | tee wp8a-browser-head.log
+
       - name: Upload qualification output
         if: always()
         uses: actions/upload-artifact@v4
@@ -197,6 +214,8 @@ jobs:
             wp6-browser-head.log
             wp7-unit-head.log
             wp7-browser-head.log
+            wp8a-unit-head.log
+            wp8a-browser-head.log
           if-no-files-found: ignore
 
       - name: Prove injected failure rejected and enforce all HEAD gates
@@ -240,7 +259,9 @@ jobs:
           require_success "WP6-trace-browser-and-per-project-coordinator" "${{ steps.wp6_browser.outcome }}"
           require_success "WP7-json-schema-receipts-and-author" "${{ steps.wp7_unit.outcome }}"
           require_success "WP7-new-file-page-and-trace" "${{ steps.wp7_browser.outcome }}"
-          echo "FINAL GATE: 17/17 actual head outcomes success"
+          require_success "WP8a-stamped-index-and-build-info" "${{ steps.wp8a_unit.outcome }}"
+          require_success "WP8a-version-banner-browser" "${{ steps.wp8a_browser.outcome }}"
+          echo "FINAL GATE: 19/19 actual head outcomes success"
 
   red-control:
     name: red-control · require seven behavioural FAIL and zero ERROR
@@ -1104,4 +1125,140 @@ jobs:
         with:
           name: wp7-wp6-base-red
           path: wp7-red.log
+          if-no-files-found: error
+
+  wp8a-unit-red-control:
+    name: WP8a BASE publisher behavioural red · four FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout HEAD tests, keep changed WP4 fixture
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only old unversioned publisher from merged WP7 main
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=15caea96faa6c7138d624bb4eebac9ddb489ecf2
+          git show "${BASE}:scripts/publish_site.py" > scripts/publish_site.py
+      - name: Demand four wrong BASE asset/version observations and zero errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp8a.BaseCompatibleWP8a -v > wp8a-unit-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp8a-unit-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          s=Path('wp8a-unit-red.log').read_text()
+          rows=re.findall(r'^(test_wp8a_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',s,re.M)
+          fails={a for a,b in rows if b=='FAIL'}
+          errors={a for a,b in rows if b=='ERROR'}
+          expected={
+            'test_wp8a_stamped_javascript_and_stylesheet_urls',
+            'test_wp8a_build_info_has_matching_site_version',
+            'test_wp8a_html_exposes_loaded_version_to_running_page',
+            'test_wp8a_readback_rejects_invalid_version',
+          }
+          good=int(os.environ['RC'])!=0 and fails==expected and not errors and \
+            re.search(r'^Ran 4 tests in ',s,re.M) and \
+            re.search(r'^FAILED \(failures=4\)$',s,re.M) and \
+            not any(x in s for x in ('TypeError:','AttributeError:','ImportError:',
+                                     'ModuleNotFoundError:','SyntaxError:'))
+          print('WP8A UNIT RED: behavioural FAIL count',len(fails))
+          print('WP8A UNIT RED: runner ERROR count',len(errors))
+          print('WP8A UNIT RED VERDICT', 'EXPECTED BEHAVIOURAL RED' if good else 'INVALID RED')
+          if not good:sys.exit(1)
+          PY
+      - name: Upload WP8a base publisher red proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp8a-base-unit-red
+          path: wp8a-unit-red.log
+          if-no-files-found: error
+
+  wp8a-browser-red-control:
+    name: WP8a BASE cached-app browser red · four FAIL zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout HEAD UI test and stamped publisher
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only previous main app and index; retain HEAD test
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=15caea96faa6c7138d624bb4eebac9ddb489ecf2
+          for path in site/app.js site/index.html; do
+            git show "${BASE}:$path" > "$path"
+          done
+      - name: Build isolated existing browser artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          python scripts/build_data.py --root . --out _artifact/data/benchmarks \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/ _artifact/protocol/
+      - name: Install Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Demand four wrong old-page behaviours, zero runner errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp8a_browser_test.py _artifact > wp8a-browser-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp8a-browser-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          s=Path('wp8a-browser-red.log').read_text()
+          names=set(re.findall(r'^FAIL (WP8A_UI_0[1-4]_\w+)$',s,re.M))
+          counts=re.search(r'^WP8A_BROWSER_COUNTS pass=(\d+) fail=(\d+) error=(\d+)$',s,re.M)
+          good=int(os.environ['RC'])!=0 and len(names)==4 and counts and \
+            counts.groups()==('0','4','0') and \
+            'Traceback (most recent call last)' not in s
+          print('WP8A BROWSER RED: behavioural FAIL count',len(names))
+          print('WP8A BROWSER RED: runner ERROR count', counts.group(3) if counts else 'MISSING')
+          print('WP8A BROWSER RED VERDICT', 'EXPECTED BEHAVIOURAL RED' if good else 'INVALID RED')
+          if not good:sys.exit(1)
+          PY
+      - name: Upload WP8a old-app red proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp8a-base-browser-red
+          path: wp8a-browser-red.log
           if-no-files-found: error

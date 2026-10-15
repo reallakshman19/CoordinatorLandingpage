@@ -630,3 +630,22 @@ tr:hover td { background: var(--bg-2); }
 .owner-json-form textarea { resize: vertical; }
 .owner-json-card > p.note { padding: 0 16px 15px; line-height: 1.5; }
 #oi-json-result { overflow-wrap: anywhere; font-size: 0.85rem; }
+
+
+/* Version notification: visible even with the existing sticky navigation. */
+#site-update-banner {
+  position: sticky;
+  top: 0;
+  z-index: 120;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--warn);
+  background: var(--warn-bg);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-weight: 600;
+}
+#site-update-banner[hidden] { display: none; }
+#site-update-reload { background: var(--bg); color: var(--accent); }

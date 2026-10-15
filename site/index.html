@@ -8,6 +8,12 @@
 </head>
 <body>
 
+<!-- A new release never reloads a draft message without the Owner's click. -->
+<div id="site-update-banner" role="status" aria-live="polite" hidden>
+  New version available — reload
+  <a id="site-update-reload" class="btn btn-small" href="">Reload now</a>
+</div>
+
 <!-- ── Benchmark mode banner ──────────────────────────── -->
 <div id="benchmark-banner">
   📦 Benchmark mode — frozen snapshot, read-only. Posting disabled.
