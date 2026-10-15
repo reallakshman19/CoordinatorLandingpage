@@ -1,6 +1,6 @@
-# Team protocol v2.0 (prototype) — CoordinatorLandingpage
+# Team protocol v2.1 (final candidate) — CoordinatorLandingpage
 
-Status: **v2.0 PROTOTYPE** (15 Oct 2026, Owner: "prototype v2.0, i want another agent to use this"). Adds the project registry, workflow card, changeover procedure, ambiguity and drift rules to v1.1. Becomes **FROZEN** only on the Owner's word; after that, changes need the Owner's words, a change note and a version bump. Written by OwnerTeammember. Dubai time (+04:00) everywhere.
+Status: **v2.1 FINAL CANDIDATE** (15 Oct 2026, Owner: "can we finalise the protocol now"). v2.0 plus §19, the rules proven necessary by the imo-ab-test stress test (two agents, a separate Claude coordinator, OwnerTeammember). Becomes **FROZEN** on the Owner's word "freeze"; after that, changes need the Owner's words, a change note and a version bump. Dubai time (+04:00) everywhere.
 
 **Machine copy:** `protocol/TEAM_PROTOCOL.md` in this repository (read the raw file). **Start here as a new agent:** §2 places → your project's `registry.json` → your role's rows in §1 → §3 or §4 → §13–§17.
 
@@ -172,7 +172,22 @@ An Owner instruction that would trigger a protected action (new chat, merge, rel
 
 A new TeamCoordinator (any capable agent with GitHub comment access and control of the agent chats) starts **observe-only**: it reads this protocol and the registry, answers in its own words (roles, its 3-step cycle, what it must never do, what it would do in its first cycle), and posts one COORDINATOR EVIDENCE block with **no sends**. OwnerTeammember checks the answers and the block against the registry and the chats. Control passes only on the Owner's word: `CONTROL epoch N+1: <who>` in #1, registry updated, the previous coordinator stops sending.
 
+## 19. Rules added from the stress test (v2.1)
+
+1. **Delegation is per project and explicit.** A project's registry names its OwnerTeammember (`control.owner_teammember`) from the Owner's own words, before any relay counts. Until then the coordinator correctly ignores relays (observed: relays were refused while the Owner had told the coordinator "OwnerTeammember = Owner").
+2. **One Owner word, one record.** Whoever receives an Owner instruction (coordinator or OwnerTeammember) posts it in #1 with the quote and time in the same cycle. The **latest** Owner word wins; a later relay names the record it supersedes (observed: "need to work with this" at 08:58, then a PDF supplied at 09:05).
+3. **Writer leases live in the registry.** Every exclusive path grant (`leases`: agent, paths, branch, granted by and when) is listed. A commit to a project branch from anyone not holding the lease, including the Owner's local agents, is an **outside write**: the coordinator records it, it is not built on, and the checker reviews it before it counts (observed: commit 5a117f69 pushed onto PR #240 from outside, carrying a leased file).
+4. **A checker change never certifies itself.** A change to a validator, audit or test harness counts only after a different agent has checked that exact commit, never in the same commit as the result it produces (observed: the QRT audit edited in the same commit that claimed "100% across 260"; AB-HARNESS required Agent B's check first).
+5. **Proving baseline-red.** A failing check is baseline-red only with a link to the same check failing on the base commit before the agent's change. Otherwise it is the agent's regression and its own next task (observed: Core1B and learner-platform were proven caused by the renderer change, then fixed).
+6. **Narrow scope grants.** Fixing outside the allowlist needs an Owner grant naming exact paths, generator output only (no hand edits), one frozen commit, and the checker's PASS on it (observed twice: three TEST hub pages, then their docs mirror).
+7. **Manual or gated runs are started by someone other than the graded agent** (OwnerTeammember, on the Owner's word), once, on the commit the checker passed, with the run link posted in #1.
+8. **Private inputs.** Never in the public repository. Agent sandboxes lose files between turns and cannot clone the repository: use private inputs in the same turn and report hashes only. A full native run happens on the Owner's computer (files downloaded by the Owner, hashes checked, commands shown to the Owner before running) or is parked until the final phase.
+9. **An agent waiting on another agent but holding its own non-blocked Next is nudged**, not left idle (observed: corrected by FOR TeamCoordinator FTC-003).
+10. **Times come from the clock**, never estimates; a wrong time is corrected by a receipt that names the record it replaces.
+11. **Milestone gate.** A claim such as 21/21 or "plan done" → GATE instruction: freeze the commits, OwnerTeammember verifies the counts on GitHub, then ONE acceptance card to the Owner (what was shown, what is open, what is asked). Nothing is accepted from an agent's or a coordinator's word.
+12. **Liveness mechanics.** One-shot timers are unreliable; the waiter (wake on change or on silence) plus a recurring check are the guards. A participant stepping back posts it in #1 and the registry (`paused since`).
+
 ## 18. Open Owner decisions
 
 Decided 15 Oct ~07:25: no standing approval for agent replacement (Owner decides each case); timeouts approved; stand-in during an outage approved.
-Open: **freeze v2.0** (after the prototype run). **Watchdog workflow** (§1): a scheduled GitHub Actions job, every 15 min, reads the status comment's "Cycle completed" time and, if older than 45 min, opens/updates an alert issue mentioning the Owner. It runs on GitHub, not on the home computer, so it still alerts when the computer or both sessions are down. Free on a public repository, no AI; blind during a GitHub outage.
+Open: **freeze v2.1** (one word: "freeze"). **Watchdog workflow** (§1): a scheduled GitHub Actions job, every 15 min, reads the status comment's "Cycle completed" time and, if older than 45 min, opens/updates an alert issue mentioning the Owner. It runs on GitHub, not on the home computer, so it still alerts when the computer or both sessions are down. Free on a public repository, no AI; blind during a GitHub outage.
