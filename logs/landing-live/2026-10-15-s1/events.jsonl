@@ -5,3 +5,4 @@
 {"t":"2026-10-15T14:44+04:00","actor":"TeamCoordinator","type":"SEND","to":"Agent L1 6ad0adca","what":"start prompt (WP0 only), new chat in pane tab-1","result":"DELIVERED, generating"}
 {"t":"2026-10-15T15:22:02+04:00","actor":"Checker C1 (sonnet)","type":"CHECK","what":"PR24 e689ec0b HOLD","tokens":75431}
 {"t":"2026-10-15T15:34:10+04:00","actor":"Checker C1 (sonnet)","type":"CHECK","what":"PR24 24f06dd7 PASS (resume)","tokens":82406}
+{"t":"2026-10-15T16:14:50+04:00","actor":"Checker C1 (sonnet)","type":"CHECK","what":"PR25 88a7ae52 PASS caveat","tokens":91723}
