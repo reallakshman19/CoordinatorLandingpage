@@ -2,8 +2,8 @@
     "project":  "imo-ab-test",
     "protocol":  "Team protocol v2.0 PROTOTYPE (protocol/TEAM_PROTOCOL.md)",
     "repository":  "reallakshman19/Grade9v3.5",
-    "updated":  "2026-10-15T16:25:00+04:00",
-    "updated_by":  "TeamCoordinator (FTC-018)",
+    "updated":  "2026-10-15T16:55:00+04:00",
+    "updated_by":  "TeamCoordinator (FTC-020)",
     "control":  {
                     "epoch":  1,
                     "coordinator":  "TeamCoordinator: Claude (Owner, 15 Oct: \"you will be teamcoordinator, ownermember another agent\")",
@@ -94,6 +94,11 @@
                                          "source":  "Owner to OwnerTeammember 15 Oct 16:16 \"agree with your choices\" (FTC-018)",
                                          "id":  "AB-R14-SRCPIN",
                                          "decision":  "Option A: keep QRT-RETRIEVE-D2 witness pin eb3cf066, add R14-only checkout of eb3cf066, R8 checkout 5b382356 unchanged; new branch, one frozen commit, draft PR; no witness/golden/renderer edit; B checks; new run needs new Owner word"
+                                     },
+                                     {
+                                         "source":  "Owner to OwnerTeammember 15 Oct 16:52 \"agreed\" (FTC-020)",
+                                         "id":  "AB-R14-RUN3",
+                                         "decision":  "ONE R14 run at 0ba72fca after B setup PASS; started by OwnerTeammember 16:52:29 as run 38737979785; no further run"
                                      }
                                  ],
     "open_owner_decisions":  [
