@@ -2,7 +2,7 @@
   "project": "imo-ab-test",
   "protocol": "Team protocol v2.0 PROTOTYPE (protocol/TEAM_PROTOCOL.md)",
   "repository": "reallakshman19/Grade9v3.5",
-  "updated": "2026-10-15T09:15+04:00",
+  "updated": "2026-10-15T09:35+04:00",
   "updated_by": "TeamCoordinator (Claude, candidate)",
   "control": {
     "epoch": 1,
@@ -56,7 +56,8 @@
     "AB-LEASE granted: Agent A 6ad0449d exclusive render_core.py writer lease, native-repair scope only, own branch/PR #268, no merge to main, no release; Agent B does not write render_core.py (relay 6184438655)",
     "AB-SOURCE: Owner supplies the private source input to Agent B directly, never via the public repo (Owner: \"File given to agent B\")",
     "AB-HARNESS (Owner 09:08): Agent A may modify only the R8 TEST qualification workflow/runner paths for the 21-cell check; Agent B must check that change on the exact commit before any result counts",
-    "AB-SOURCE update (Owner 09:05 \"done\", relay 1#6184864349, supersedes 08:58): original SOF IMO 2023-24 Class IX PDF attached in Agent B chat; B extracts Q003 and confirms custody hashes (source_item 31ce6243\u2026, private_input b263644c\u2026); original stays out of git/public repo; DEVELOPMENT_ONLY_NO_PUBLISHER_LICENSE"
+    "AB-SOURCE update (Owner 09:05 \"done\", relay 1#6184864349, supersedes 08:58): original SOF IMO 2023-24 Class IX PDF attached in Agent B chat; B extracts Q003 and confirms custody hashes (source_item 31ce6243\u2026, private_input b263644c\u2026); original stays out of git/public repo; DEVELOPMENT_ONLY_NO_PUBLISHER_LICENSE",
+    "AB-HUBPAGES granted (Owner 09:29 \"ok\", FTC-002): Agent A regenerates exactly public/test/index.html, public/test/rungs/index.html, public/test/deployments/index.html with the repo generator, PR #268 branch, one frozen commit; Agent B checks it; no release"
   ],
   "open_owner_decisions": [],
   "status_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/12",
