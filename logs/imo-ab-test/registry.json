@@ -2,8 +2,8 @@
     "project":  "imo-ab-test",
     "protocol":  "Team protocol v2.0 PROTOTYPE (protocol/TEAM_PROTOCOL.md)",
     "repository":  "reallakshman19/Grade9v3.5",
-    "updated":  "2026-10-15T12:08:00+04:00",
-    "updated_by":  "TeamCoordinator (AB-A-NEWCHAT)",
+    "updated":  "2026-10-15T12:15:00+04:00",
+    "updated_by":  "TeamCoordinator (FTC-011/012)",
     "control":  {
                     "epoch":  1,
                     "coordinator":  "TeamCoordinator: Claude (Owner, 15 Oct: \"you will be teamcoordinator, ownermember another agent\")",
@@ -29,12 +29,12 @@
                    {
                        "role":  "implementer (R13 native repair)",
                        "alias":  "Agent A",
-                       "generation":  1,
-                       "chat_id8":  "6ad0449d",
-                       "status":  "active, chat FULL since ~11:33 (no relay possible)",
+                       "generation":  2,
+                       "chat_id8":  "6ad08966",
+                       "status":  "active (pane seed), branch per §14.6",
                        "evidence_thread":  "https://github.com/reallakshman19/CoordinatorLandingpage/issues/13",
                        "work":  "Grade9v3.5 #182 (parent #137), PR #268 @9d225535 (agent claim)",
-                       "onboarded":  "2026-10-15T08:4x+04:00 DELIVERED; lease relay 08:5x DELIVERED"
+                       "onboarded":  "2026-10-15T12:05+04:00 DELIVERED"
                    },
                    {
                        "role":  "analyst (Q003 plan R3)",
@@ -45,6 +45,16 @@
                        "evidence_thread":  "https://github.com/reallakshman19/CoordinatorLandingpage/issues/14",
                        "work":  "Grade9v3.5 #183, plan R3 (agent claim)",
                        "onboarded":  "2026-10-15T08:5x+04:00 DELIVERED (with workflow card and decisions)"
+                   },
+                   {
+                       "role":  "implementer (R13 native repair)",
+                       "alias":  "Agent A",
+                       "generation":  1,
+                       "chat_id8":  "6ad0449d",
+                       "status":  "retired 12:05 (chat full)",
+                       "evidence_thread":  "https://github.com/reallakshman19/CoordinatorLandingpage/issues/13",
+                       "work":  "Grade9v3.5 #182 (parent #137), PR #268 @9d225535 (agent claim)",
+                       "onboarded":  "2026-10-15T08:4x+04:00 DELIVERED; lease relay 08:5x DELIVERED"
                    }
                ],
     "standing_owner_decisions":  [
@@ -64,13 +74,15 @@
                                      "AB-Q003-RUN parked (Owner 10:55 \"nothing more, need to proceed with whatever we have!\"): original-source Q003 native render is a final-phase gap; B finishes the rest of plan R3",
                                      "AB-5A117F69-OWNER (Owner 11:07 \"ok proceed\", on TeamCoordinator recommendation): Agent A fixes the 5a117f69 findings narrowly, one frozen commit each with an exact file list, Agent B checks each; order after A R14 result: (1) regenerate tools/data.js + public/core-learning/data.js via generator, (2) core1b commitment gate, (3) audit fail-closed + no CDN fallback; no other pushes to the PR #240 branch outside this project until the 5a117f69 author is known; QRT/academic acceptance stays final-phase",
                                      "AB-R14-REDISPATCH (Owner 11:37 \"go ahead as per your recomendation\"): Agent A may dispatch the manual R14 workflow on PR #268 once Agent B passes 1b232a61; B checks the result",
-                                     "AB-DOCS-DATAJS (Owner 11:37 same words): Agent A regenerates docs/core-learning/data.js and docs/tools/data.js on PR #240 with the generator, one frozen commit, B checks"
+                                     "AB-DOCS-DATAJS (Owner 11:37 same words): Agent A regenerates docs/core-learning/data.js and docs/tools/data.js on PR #240 with the generator, one frozen commit, B checks",
+                                     {
+                                         "source":  "Owner to TeamCoordinator 15 Oct 12:04 \"can you start a new agent A?\", 12:05 \"opened blank tab for agent A\"; Owner to OwnerTeammember 12:07 \"already agent A is on board\" (FTC-012)",
+                                         "id":  "AB-A-NEWCHAT",
+                                         "decision":  "New chat 6ad08966 for Agent A, gen 2; 6ad0449d retired"
+                                     }
                                  ],
     "open_owner_decisions":  [
-                                 {
-                                     "id":  "AB-A-NEWCHAT",
-                                     "ask":  "Agent A chat 6ad0449d is FULL (max length, ~11:33). New chat for Agent A (same role, lease, branch), handover from #13?"
-                                 }
+
                              ],
     "status_issue":  "https://github.com/reallakshman19/CoordinatorLandingpage/issues/12",
     "log_folder":  "logs/imo-ab-test/2026-10-15_epoch1/",
