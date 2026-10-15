@@ -1,0 +1,137 @@
+{
+  "schema_version": "F4.1",
+  "control_repository": "reallakshman19/CoordinatorLandingpage",
+  "now": "2026-10-15T16:00:00+00:00",
+  "alpha": {
+    "registry": {
+      "project": "alpha",
+      "protocol": "v2.3",
+      "repository": "example/product-alpha",
+      "updated": "2026-10-15T15:00:00Z",
+      "control": {
+        "epoch": 4,
+        "coordinator": "synthetic coordinator alpha",
+        "since": "2026-10-15T15:00:00Z",
+        "hold": null
+      },
+      "workflow": {
+        "loop": [],
+        "current": {}
+      },
+      "agents": [
+        {
+          "role": "implementer",
+          "generation": 1,
+          "chat_id8": "aabbccdd",
+          "status": "active",
+          "evidence_thread": "https://github.com/example/product-alpha/issues/13"
+        }
+      ],
+      "standing_owner_decisions": [],
+      "open_owner_decisions": [],
+      "facts": [],
+      "status_comment": "https://github.com/example/product-alpha/issues/12#issuecomment-1201"
+    },
+    "status": {
+      "number": 12,
+      "repository": "example/product-alpha",
+      "comments": [
+        {
+          "id": 1201,
+          "body": "COORDINATOR RECEIPT · alpha · epoch4 · 2026-10-15T15:50:00Z\nSynthetic coordinator cycle ended; no Owner acceptance.",
+          "created_at": "2026-10-15T15:52:00Z",
+          "updated_at": "2026-10-15T15:52:00Z",
+          "author_association": "MEMBER"
+        }
+      ]
+    },
+    "evidence": {
+      "number": 13,
+      "repository": "example/product-alpha",
+      "comments": [
+        {
+          "id": 1301,
+          "body": "TASK EVIDENCE v2 · alpha · implementer · chat aabbccdd · #1 · 15 Oct 15:52 +04:00\nTask: alpha-ONLY\nStatus: DONE\nAim: synthetic proof\nProof:\n  - [LOCAL] fixture only",
+          "created_at": "2026-10-15T15:52:00Z",
+          "updated_at": "2026-10-15T15:52:00Z",
+          "author_association": "MEMBER"
+        }
+      ]
+    }
+  },
+  "beta": {
+    "registry": {
+      "project": "beta",
+      "protocol": "v2.3",
+      "repository": "example/product-beta",
+      "updated": "2026-10-15T15:00:00Z",
+      "control": {
+        "epoch": 2,
+        "coordinator": "synthetic coordinator beta",
+        "since": "2026-10-15T15:00:00Z",
+        "hold": null
+      },
+      "workflow": {
+        "loop": [],
+        "current": {}
+      },
+      "agents": [
+        {
+          "role": "implementer",
+          "generation": 1,
+          "chat_id8": "aabbccdd",
+          "status": "active",
+          "evidence_thread": "https://github.com/example/product-beta/issues/13"
+        }
+      ],
+      "standing_owner_decisions": [],
+      "open_owner_decisions": [],
+      "facts": [],
+      "status_comment": "https://github.com/example/product-beta/issues/12#issuecomment-2201"
+    },
+    "status": {
+      "number": 12,
+      "repository": "example/product-beta",
+      "comments": [
+        {
+          "id": 2201,
+          "body": "COORDINATOR RECEIPT · beta · epoch2 · 2026-10-15T15:20:00Z\nSynthetic coordinator cycle ended; no Owner acceptance.",
+          "created_at": "2026-10-15T15:52:00Z",
+          "updated_at": "2026-10-15T15:52:00Z",
+          "author_association": "MEMBER"
+        }
+      ]
+    },
+    "evidence": {
+      "number": 13,
+      "repository": "example/product-beta",
+      "comments": [
+        {
+          "id": 2301,
+          "body": "TASK EVIDENCE v2 · beta · implementer · chat aabbccdd · #1 · 15 Oct 15:52 +04:00\nTask: beta-ONLY\nStatus: DONE\nAim: synthetic proof\nProof:\n  - [LOCAL] fixture only",
+          "created_at": "2026-10-15T15:52:00Z",
+          "updated_at": "2026-10-15T15:52:00Z",
+          "author_association": "MEMBER"
+        }
+      ]
+    }
+  },
+  "inbox": {
+    "number": 1,
+    "repository": "reallakshman19/CoordinatorLandingpage",
+    "comments": [
+      {
+        "id": 101,
+        "body": "Owner input #1; never product status",
+        "created_at": "2026-10-15T15:52:00Z",
+        "updated_at": "2026-10-15T15:52:00Z",
+        "author_association": "MEMBER"
+      }
+    ]
+  },
+  "colliding_issue_numbers": [
+    12,
+    13
+  ],
+  "colliding_id8": "aabbccdd"
+}

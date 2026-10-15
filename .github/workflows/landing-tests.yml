@@ -1,4 +1,4 @@
-name: landing-live WP1a + WP1b + WP2 + WP4 qualification
+name: landing-live WP1a + WP1b + WP2 + WP4 + WP3 qualification
 
 on:
   pull_request:
@@ -49,6 +49,14 @@ jobs:
           set -o pipefail
           python -m unittest tests.test_wp4 -v 2>&1 | tee wp4-head.log
 
+      - name: Run WP3 F4 liveness/repository isolation tests
+        id: wp3_unit
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m unittest tests.test_wp3 -v 2>&1 | tee wp3-unit-head.log
+
       - name: Assemble benchmark-backed browser artifact (no live API)
         id: artifact
         continue-on-error: true
@@ -92,6 +100,15 @@ jobs:
           set -o pipefail
           python tests/wp2_browser_test.py _artifact 2>&1 | tee wp2-head.log
 
+      - name: Run WP3 build-info polling and unchanged/changed browser checks
+        id: wp3_browser
+        if: steps.artifact.outcome == 'success' && steps.chromium.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python tests/wp3_browser_test.py _artifact 2>&1 | tee wp3-browser-head.log
+
       - name: Upload qualification output
         if: always()
         uses: actions/upload-artifact@v4
@@ -103,6 +120,8 @@ jobs:
             wp1a-browser.log
             wp2-head.log
             wp4-head.log
+            wp3-unit-head.log
+            wp3-browser-head.log
           if-no-files-found: ignore
 
       - name: Prove injected failure rejected and enforce all HEAD gates
@@ -136,7 +155,9 @@ jobs:
           require_success "original-browser-19" "${{ steps.browser.outcome }}"
           require_success "WP2-visible-browser" "${{ steps.wp2_browser.outcome }}"
           require_success "WP4-single-publisher-and-provenance" "${{ steps.wp4.outcome }}"
-          echo "FINAL GATE: 7/7 actual head outcomes success"
+          require_success "WP3-liveness-repository-F4" "${{ steps.wp3_unit.outcome }}"
+          require_success "WP3-browser-60s-polling" "${{ steps.wp3_browser.outcome }}"
+          echo "FINAL GATE: 9/9 actual head outcomes success"
 
   red-control:
     name: red-control · require seven behavioural FAIL and zero ERROR
@@ -463,4 +484,190 @@ jobs:
         with:
           name: wp4-publisher-base-red
           path: wp4-red.log
+          if-no-files-found: error
+
+  wp3-red-control:
+    name: WP3 base behavioural Python red · 4 FAIL and 0 ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact PR head (keep F4 and tests unchanged)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore BASE liveness/repository scripts and publisher
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=5a9d0442b4e5c41300987e03d140e8405d1bfa77
+          git cat-file -e "${BASE}^{commit}"
+          for path in scripts/build_data.py scripts/fetch_live_data.py .github/workflows/deploy.yml; do
+            git show "${BASE}:$path" > "$path"
+          done
+      - name: Require actual wrong behaviour on BASE with zero API errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp3.BaseCompatibleWP3 -v > wp3-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp3-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          lines=Path("wp3-red.log").read_text()
+          tests=re.findall(r'^(test_wp3_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',lines,re.M)
+          fail={name for name,kind in tests if kind=="FAIL"}
+          expected={
+             "test_wp3_real_coordinator_receipt_is_observed",
+             "test_wp3_current_epoch_evidence_header_only",
+             "test_wp3_two_repositories_same_number_separate_evidence",
+             "test_wp3_running_deploys_do_not_share_legacy_pages_group",
+          }
+          errors=sum(kind=="ERROR" for _,kind in tests)
+          good=(int(os.environ["RC"])!=0 and fail==expected and errors==0
+                and re.search(r'^Ran 4 tests in ',lines,re.M)
+                and re.search(r'^FAILED \(failures=4\)$',lines,re.M)
+                and not any(x in lines for x in ("TypeError:", "AttributeError:",
+                                                 "ImportError:", "SyntaxError:",
+                                                 "ModuleNotFoundError:")))
+          print("WP3 RED Python FAIL count",len(fail))
+          print("WP3 RED Python ERROR count",errors)
+          print("WP3 RED Python VERDICT","EXPECTED BEHAVIOURAL RED" if good else "INVALID RED")
+          if not good:sys.exit(1)
+          PY
+      - name: Upload WP3 base Python red
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp3-base-python-red
+          path: wp3-red.log
+          if-no-files-found: error
+
+
+      - name: Restore PRE-FIX WP3 liveness parser (HEAD test unchanged)
+        shell: bash
+        run: |
+          set -euo pipefail
+          OLD_HEAD=f601d7181a633755fd7e12ea976e2d48ca118282
+          git cat-file -e "${OLD_HEAD}^{commit}"
+          git show "${OLD_HEAD}:scripts/build_data.py" > scripts/build_data.py
+          echo "FOREIGN_AUTHOR_NEGATIVE_BASE=${OLD_HEAD}"
+
+      - name: Foreign-author spoof must fail as one assertion, zero errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp3.WP3Additional.test_wp3_foreign_author_receipt_cannot_spoof_observed -v > wp3-author-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp3-author-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          out=Path('wp3-author-red.log').read_text()
+          names=re.findall(r'^(test_wp3_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',out,re.M)
+          fails=[name for name,kind in names if kind=='FAIL']
+          errors=[name for name,kind in names if kind=='ERROR']
+          expected='test_wp3_foreign_author_receipt_cannot_spoof_observed'
+          good=(int(os.environ['RC']) != 0 and fails == [expected] and not errors
+                and re.search(r'^Ran 1 test in ',out,re.M)
+                and re.search(r'^FAILED \(failures=1\)$',out,re.M)
+                and 'AssertionError:' in out
+                and not any(x in out for x in (
+                    'TypeError:','AttributeError:','ImportError:',
+                    'ModuleNotFoundError:','SyntaxError:')))
+          print('WP3 AUTHOR RED: behavioural FAIL count',len(fails))
+          print('WP3 AUTHOR RED: runner ERROR count',len(errors))
+          print('WP3 AUTHOR RED VERDICT',
+                'EXPECTED BEHAVIOURAL RED' if good else 'INVALID RED')
+          if not good:sys.exit(1)
+          PY
+
+      - name: Upload WP3 author spoof red proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp3-author-spoof-old-head-red
+          path: wp3-author-red.log
+          if-no-files-found: error
+
+  wp3-browser-red-control:
+    name: WP3 browser polling behavioural red · 4 FAIL and 0 ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact head tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only BASE app.js, retain HEAD browser tests
+        run: |
+          set -euo pipefail
+          BASE=5a9d0442b4e5c41300987e03d140e8405d1bfa77
+          git show "${BASE}:site/app.js" > site/app.js
+      - name: Build synthetic benchmark browser artifact
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          rm -rf _artifact/data
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          python scripts/build_data.py --root . --out _artifact/data/benchmarks \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install Chromium
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Require polling assertions fail on BASE, no runner errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp3_browser_test.py _artifact > wp3-browser-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp3-browser-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          lines=Path("wp3-browser-red.log").read_text()
+          failed=set(re.findall(r'^FAIL (WP3_UI_0[1-4]_\w+)$',lines,re.M))
+          error=re.search(r'^WP3_BROWSER_COUNTS pass=(\d+) fail=(\d+) error=(\d+)$',lines,re.M)
+          good=(int(os.environ["RC"])!=0 and len(failed)==4 and error
+                and error.group(2)=="4" and error.group(3)=="0"
+                and "Traceback (most recent call last)" not in lines)
+          print("WP3 RED browser behavioural FAIL count",len(failed))
+          print("WP3 RED browser ERROR count",error.group(3) if error else "MISSING")
+          print("WP3 RED browser VERDICT","EXPECTED BEHAVIOURAL RED" if good else "INVALID RED")
+          if not good:sys.exit(1)
+          PY
+      - name: Upload WP3 browser base red
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp3-base-browser-red
+          path: wp3-browser-red.log
           if-no-files-found: error

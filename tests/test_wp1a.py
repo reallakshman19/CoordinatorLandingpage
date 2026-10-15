@@ -113,7 +113,7 @@ class WP1aNegativeControls(unittest.TestCase):
         self.assertEqual(project["last_cycle_at"], "2026-10-15T10:45:00+00:00")
         self.assertIsNone(project["published_at"])
         def status(cycle, epoch=1):
-            return {"comments": [{"body": (
+            return {"comments": [{"author_association": "MEMBER", "body": (
                 f"COORDINATOR EVIDENCE v1 · imo-ab-test · cycle 2 · epoch {epoch} · test\n"
                 f"Coordinator last completed cycle: {cycle}"
             )}]}
@@ -133,7 +133,7 @@ class WP1aNegativeControls(unittest.TestCase):
     def test_f6_exact_30_minute_boundary(self):
         # Exactly 30:00 is current; one second later it is stale.
         def status(observed):
-            return {"comments": [{"body": (
+            return {"comments": [{"author_association": "MEMBER", "body": (
                 "COORDINATOR EVIDENCE v1 · imo-ab-test · cycle 2 · epoch 1 · synthetic\n"
                 "Coordinator last completed cycle: " + observed.isoformat()
             )}]}

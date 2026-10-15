@@ -17,8 +17,11 @@ on:
   workflow_dispatch:
 
 # Exactly ONE enabled Pages writer. All triggers share this serial gate.
+# A running deploy is never cancelled by issue/comment bursts. GitHub
+# coalesces newer pending runs to one while the active publisher finishes.
+# Scope the group to this publisher, not legacy workflows using "pages".
 concurrency:
-  group: pages
+  group: landing-live-single-publisher-${{ github.repository }}-main
   cancel-in-progress: false
 
 permissions:
@@ -121,7 +124,7 @@ jobs:
         run: python tests/build_test.py
 
       - name: Run unchanged WP1a+WP1b unit checks and WP4 publisher checks
-        run: python -m unittest tests/test_wp1a.py tests/test_wp1a_behavioural.py tests/test_wp1b.py tests/test_wp4.py -v
+        run: python -m unittest tests/test_wp1a.py tests/test_wp1a_behavioural.py tests/test_wp1b.py tests/test_wp4.py tests/test_wp3.py -v
 
       - name: Build isolated historical browser fixture (not published)
         shell: bash
@@ -150,6 +153,9 @@ jobs:
 
       - name: WP2 27 browser/route/theme checks
         run: python tests/wp2_browser_test.py _test_artifact
+
+      - name: WP3 F4 and build-info browser polling checks
+        run: python tests/wp3_browser_test.py _test_artifact
 
       - name: Upload exact build-info readback proof for deploy job
         uses: actions/upload-artifact@v4
