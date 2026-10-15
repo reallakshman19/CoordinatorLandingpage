@@ -1,0 +1,123 @@
+{
+  "fixture": "F3 generated synthetic; public-safe placeholders only; NO native agent events",
+  "registry": {
+    "project": "imo-ab-test",
+    "repository": "example/fixture-product",
+    "protocol": "v2.3",
+    "control": {
+      "epoch": 1,
+      "coordinator": "fixture coordinator",
+      "hold": null
+    },
+    "open_owner_decisions": [],
+    "status_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/12",
+    "agents": [
+      {
+        "role": "implementer",
+        "alias": "Agent A",
+        "generation": 2,
+        "chat_id8": "b2222222",
+        "status": "active (pane seed)",
+        "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/13"
+      },
+      {
+        "role": "implementer",
+        "alias": "Agent A",
+        "generation": 1,
+        "chat_id8": "a1111111",
+        "status": "retired 13:45 (chat full)",
+        "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/13"
+      }
+    ],
+    "leases": [
+      {
+        "paths": "synthetic/path-1",
+        "holder": "A a1111111",
+        "grant": "synthetic-1",
+        "pr": "#268"
+      },
+      {
+        "paths": "synthetic/path-2",
+        "holder": "A a1111111",
+        "grant": "synthetic-2",
+        "pr": "#268"
+      },
+      {
+        "paths": "synthetic/path-3",
+        "holder": "A a1111111",
+        "grant": "synthetic-3",
+        "pr": "#268"
+      },
+      {
+        "paths": "synthetic/path-4",
+        "holder": "A a1111111",
+        "grant": "synthetic-4",
+        "pr": "#268"
+      },
+      {
+        "paths": "synthetic/path-5",
+        "holder": "A a1111111",
+        "grant": "synthetic-5",
+        "pr": "#268"
+      }
+    ]
+  },
+  "threads": {
+    "12": {
+      "number": 12,
+      "repository": "reallakshman19/CoordinatorLandingpage",
+      "comments": [
+        {
+          "id": 120001,
+          "created_at": "2026-10-15T10:45:00Z",
+          "body": "COORDINATOR EVIDENCE v1 · imo-ab-test · cycle 2 · epoch 1 · 15 Oct 14:45 +04:00\nCoordinator last completed cycle: 2026-10-15T14:45:00+04:00"
+        }
+      ]
+    },
+    "13": {
+      "number": 13,
+      "repository": "reallakshman19/CoordinatorLandingpage",
+      "comments": [
+        {
+          "id": 130001,
+          "created_at": "2026-10-15T09:30:00Z",
+          "body": "TASK EVIDENCE v2 · imo-ab-test · implementer · chat a1111111 · #1 · 15 Oct 13:30 +04:00\nTask: SYNTH-OLD historical report\nStatus: DONE\nProof:\n  - historical record only [CLAIM-ONLY]\nNext: none"
+        },
+        {
+          "id": 130002,
+          "created_at": "2026-10-15T09:31:00Z",
+          "body": "OwnerTeammember grounding verdict ✅ ALIGNED for historical block"
+        },
+        {
+          "id": 130003,
+          "created_at": "2026-10-15T10:40:00Z",
+          "body": "TASK EVIDENCE v2 · imo-ab-test · implementer · chat b2222222 · #1 · 15 Oct 14:40 +04:00\nTask: SYNTH-NEW successor report\nStatus: PARTIAL\nProof:\n  - current-generation record only [CLAIM-ONLY]\nNext: checker"
+        }
+      ]
+    },
+    "99": {
+      "number": 99,
+      "comments": [
+        {
+          "id": 990001,
+          "created_at": "2026-10-15T10:41:00Z",
+          "body": "TASK EVIDENCE v2 · other-project · implementer · chat b2222222 · #1 · 15 Oct 14:41 +04:00\nTask: CROSS-PROJECT\nStatus: DONE"
+        }
+      ]
+    }
+  },
+  "inbox": [
+    {
+      "id": 10001,
+      "created_at": "2026-10-15T10:43:00Z",
+      "body": "FOR TeamCoordinator · synthetic-other · ROUTE · TEST-1\nDo: no dispatch"
+    }
+  ],
+  "capture": {
+    "status": "ok",
+    "repository": "reallakshman19/CoordinatorLandingpage",
+    "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "source_capture_at": "2026-10-15T10:50:00+00:00",
+    "errors": []
+  }
+}
