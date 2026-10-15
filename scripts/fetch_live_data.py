@@ -162,7 +162,8 @@ def main():
     for path in threads_dir.glob("issue-*.json"):
         path.unlink()
     for path in list(cache.glob("status-*.json")) + [
-        cache / "inbox-1.json", cache / "capture-info.json"
+        cache / "inbox-1.json", cache / "capture-info.json",
+        cache / "owner-inputs-source.json"
     ]:
         if path.exists():
             path.unlink()
@@ -185,6 +186,49 @@ def main():
         if number in fetched:
             save_json(cache / f"status-{project}.json", fetched[number])
 
+
+    # G02/G05: read all issue states via GitHub, not a pseudo-Owner form claim.
+    # Fetch failures are explicit degraded capture, never empty successful data.
+    owner_index = gh_api(
+        f"/repos/{args.repo}/issues?state=all&labels=owner-input&per_page=100"
+    )
+    owner_complete = isinstance(owner_index, list)
+    owner_issues = []
+    if not owner_complete:
+        errors.append("owner_input_index_failed")
+    else:
+        for candidate in owner_index:
+            if not isinstance(candidate, dict) or candidate.get("pull_request"):
+                continue
+            num = candidate.get("number")
+            if not isinstance(num, int):
+                errors.append("owner_input_number_invalid")
+                continue
+            detail = fetch_issue(args.repo, num)
+            events = gh_api(f"/repos/{args.repo}/issues/{num}/events?per_page=100")
+            if not isinstance(detail, dict) or not isinstance(events, list):
+                errors.append(f"owner_input_fetch_failed:{num}")
+                owner_complete = False
+                continue
+            owner_issues.append({
+                "number": num, "title": candidate.get("title", ""),
+                "body": detail.get("body", ""),
+                "type": "OWNER_INPUT", "project": "",
+                "state": candidate.get("state"),
+                "created_at": candidate.get("created_at"),
+                "updated_at": candidate.get("updated_at"),
+                "closed_at": candidate.get("closed_at"),
+                "comments": detail.get("comments", []),
+                "events": [
+                    {"id": e.get("id"), "event": e.get("event"),
+                     "created_at": e.get("created_at")}
+                    for e in events if isinstance(e, dict)
+                ],
+                "events_complete": True,
+            })
+    if owner_complete:
+        save_json(cache / "owner-inputs-source.json", owner_issues)
+
     sha = os.environ.get("GITHUB_SHA", "")
     manifest = {
         "schema_version": "wp1a.1",
@@ -193,6 +237,7 @@ def main():
         "source_capture_at": captured_at,
         "status": "ok" if not errors else "degraded",
         "issues_fetched": sorted(fetched),
+        "owner_inputs_complete": owner_complete,
         "statuses": statuses,
         "errors": errors,
     }
