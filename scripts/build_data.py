@@ -452,25 +452,86 @@ def _utc_time(value):
     return None
 
 
-def last_completed_cycle(status_thread: dict, project: str, now: datetime,
-                         epoch: int | None = None):
-    times = []
-    for comment in (status_thread or {}).get('comments', []):
-        body = comment.get('body') or ''
-        cm = COORD_EVIDENCE_RE.search(body)
-        if cm is None:
-            # An unscoped historic status cannot establish a current epoch.
-            continue
-        if cm.group('project').strip() != project:
-            continue
-        if epoch is not None and str(cm.group('epoch') or '') != str(epoch):
-            continue
-        for m in _CYCLE_LINE.finditer(body):
-            ts = _utc_time(m.group(1))
-            if ts and ts <= now:
-                times.append(ts)
-    return max(times).isoformat() if times else None
+_COORD_RECEIPT_HEADER = re.compile(
+    r"^COORDINATOR RECEIPT\s*·\s*(?P<project>[^·\n]+?)\s*·\s*"
+    r"(?:(?:epoch\s*(?P<epoch>\d+)\s*·\s*))?"
+    r"(?P<when>[^\n]+)$", re.MULTILINE | re.IGNORECASE,
+)
+_COORD_EVIDENCE_HEADER = re.compile(
+    r"^COORDINATOR EVIDENCE v1\s*·\s*(?P<project>[^·\n]+?)\s*·\s*"
+    r"(?P<rest>[^\n]+)$", re.MULTILINE | re.IGNORECASE,
+)
+_EPOCH_FIELD = re.compile(r"(?:^|·)\s*epoch\s*(\d+)\s*(?:·|$)", re.IGNORECASE)
+_ISO_HEADER_TIME = re.compile(r"20\d{2}-\d{2}-\d{2}T[0-9:.]+(?:Z|[+-]\d{2}:\d{2})")
 
+
+def last_completed_cycle(status_thread: dict, project: str, now: datetime,
+                         epoch: int | None = None, inbox=None,
+                         pinned_comment_id=None, epoch_since=None):
+    """Observed coordinator activity from scoped status and hub receipts.
+
+    A header must match project and current epoch (if present); receipts
+    without an epoch must be newer than the registry's current-epoch start.
+    A status-comment update is evidence only when pinned and parseable; a
+    raw GitHub updated_at or foreign/malformed post is NOT a coordinator cycle.
+    """
+    times = []
+    since = _utc_time(epoch_since)
+    def accept(ts, explicit_epoch):
+        if not ts or ts > now:
+            return
+        if epoch is not None and explicit_epoch is not None and str(explicit_epoch) != str(epoch):
+            return
+        if epoch is not None and explicit_epoch is None and (not since or ts < since):
+            return
+        if since and ts < since:
+            return
+        times.append(ts)
+
+    def examine(comment, is_status=False):
+        body = comment.get("body") or ""
+        headers = list(_COORD_EVIDENCE_HEADER.finditer(body))
+        receipts = list(_COORD_RECEIPT_HEADER.finditer(body))
+        valid_header = False
+        for m in headers:
+            if m.group("project").strip() != project:
+                continue
+            e = _EPOCH_FIELD.search("· " + m.group("rest"))
+            e = e.group(1) if e else None
+            if epoch is not None and e is not None and str(e) != str(epoch):
+                continue
+            valid_header = True
+            # Explicit completion line is authoritative over a header time.
+            found_line = False
+            for line in _CYCLE_LINE.finditer(body):
+                stamp = _utc_time(line.group(1))
+                if stamp:
+                    accept(stamp, e)
+                    found_line = True
+            if not found_line:
+                iso = _ISO_HEADER_TIME.search(m.group("rest"))
+                if iso:
+                    accept(_utc_time(iso.group(0)), e)
+        for m in receipts:
+            if m.group("project").strip() != project:
+                continue
+            valid_header = True
+            accept(_utc_time(m.group("when")), m.group("epoch"))
+
+        # Only the exact registry-linked coordinator status comment can
+        # contribute its edit time. The comment still needs a scoped marker.
+        if (is_status and pinned_comment_id is not None
+                and str(comment.get("id")) == str(pinned_comment_id)
+                and valid_header):
+            accept(_utc_time(comment.get("updated_at")), None)
+
+    for comment in (status_thread or {}).get("comments", []):
+        if isinstance(comment, dict):
+            examine(comment, is_status=True)
+    for comment in inbox or []:
+        if isinstance(comment, dict):
+            examine(comment, is_status=False)
+    return max(times).isoformat() if times else None
 
 def derive_freshness(last_cycle, capture, hold, now):
     if hold:
@@ -602,9 +663,13 @@ def build_project_data(root: Path, project_name: str, registry: dict,
         timeline_source = 'reconstructed'
 
     capture = source_meta if isinstance(source_meta, dict) else None
+    status_pointer = registry.get('status_comment') or registry.get('status_issue') or ''
+    pinned = re.search(r'#issuecomment-(\d+)', status_pointer)
     last_cycle = last_completed_cycle(
         status_thread or {}, project_name, now,
-        registry.get('control', {}).get('epoch')
+        registry.get('control', {}).get('epoch'), inbox=inbox,
+        pinned_comment_id=(pinned.group(1) if pinned else None),
+        epoch_since=registry.get('control', {}).get('since'),
     )
     freshness = ('BENCHMARK' if capture and capture.get('status') == 'benchmark'
                  else derive_freshness(last_cycle, capture,
@@ -882,7 +947,18 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             registry = load_json(registry_path) or {}
             registry_sha = git_blob_sha(registry_path)
             _cache = cache_dir if cache_dir else root / '_live_cache'
-            threads, inbox = load_live_threads(_cache)
+            scoped = _cache / 'project-threads' / project_name
+            if scoped.is_dir():
+                threads, inbox = load_live_threads(_cache)
+                # The sole source of this project's evidence/status is its
+                # registry-keyed scope, not the global issue-number map.
+                threads = {}
+                for tf in scoped.glob('issue-*.json'):
+                    item = load_json(tf)
+                    if isinstance(item, dict) and isinstance(item.get('number'), int):
+                        threads[item['number']] = item
+            else:
+                threads, inbox = load_live_threads(_cache)
             source_meta = load_json(_cache / 'capture-info.json')
             events_path = sorted(source_path.rglob('events.jsonl'))
             is_benchmark = False

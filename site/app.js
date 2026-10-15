@@ -32,6 +32,9 @@ const state = {
   protocolMd: null,
   ownerInputs: null,
   ownerInputsLoaded: false,
+  buildInfo: null,
+  buildSignature: null,
+  pollInFlight: false,
 };
 
 // ── DOM helpers ────────────────────────────────────────────
@@ -51,9 +54,9 @@ const html = (tag, cls, h) => {
 const cloneTemplate = id => document.getElementById(id).content.cloneNode(true);
 
 // ── Data loading ───────────────────────────────────────────
-async function fetchJSON(url) {
+async function fetchJSON(url, options = {}) {
   try {
-    const r = await fetch(url);
+    const r = await fetch(url, options);
     if (!r.ok) return null;
     return await r.json();
   } catch { return null; }
@@ -61,10 +64,10 @@ async function fetchJSON(url) {
 
 async function loadProjects() {
   const base = state.benchmarkMode ? BM_DATA_BASE : DATA_BASE;
-  const data = await fetchJSON(base + 'projects.json');
+  const data = await fetchJSON(base + 'projects.json', { cache: 'no-store' });
   if (!data) return;
   state.projects = data;
-  state.dataBuiltAt = data[0]?.built_at ?? null;
+  state.dataBuiltAt = (!state.benchmarkMode && state.buildInfo?.built_at) || data[0]?.built_at || null;
 }
 
 async function loadTimeline(projectName) {
@@ -97,6 +100,43 @@ async function loadOwnerInputs() {
   state.ownerInputs = Array.isArray(data) ? data : null;
   state.ownerInputsLoaded = true;
   return state.ownerInputs;
+}
+
+// Read deployed build-info, not source repository commit timestamps.
+// Poll every 60s, but fetch heavy JSON ONLY on a changed build signature.
+// The page never sets published_at or asserts a deployment finished itself.
+async function pollBuildInfo(initial = false) {
+  if (state.pollInFlight) return false;
+  state.pollInFlight = true;
+  try {
+    const info = await fetchJSON('build-info.json?read=' + Date.now(),
+                                 { cache: 'no-store' });
+    if (!info || typeof info !== 'object' ||
+        typeof info.built_at !== 'string' ||
+        typeof info.source_commit !== 'string' ||
+        typeof info.run_id === 'undefined') return false;
+    const signature = JSON.stringify([
+      info.source_commit, info.source_capture_at, info.built_at,
+      info.run_id, info.live_file_sha256,
+    ]);
+    if (state.buildSignature === signature) return false;
+    const hadBuild = state.buildSignature !== null;
+    state.buildInfo = info;
+    state.buildSignature = signature;
+    if (state.benchmarkMode) return false; // frozen snapshot stays frozen
+    state.dataBuiltAt = info.built_at;
+    if (hadBuild && !initial) {
+      state.projects = [];
+      state.timelines = {};
+      state.evidenceCache = {};
+      state.ownerInputs = null;
+      state.ownerInputsLoaded = false;
+      await render(); // keep the current route, only refresh changed version
+    }
+    return hadBuild;
+  } finally {
+    state.pollInFlight = false;
+  }
 }
 
 // ── URL helpers ────────────────────────────────────────────
@@ -379,7 +419,7 @@ async function renderHome(app) {
   $('live-gh').className = 'dot dot-grey';
   if (state.dataBuiltAt) {
     $('data-built-at').textContent =
-      'Data built: ' + fmtDateTime(state.dataBuiltAt) + ' · not a publish readback';
+      'data built ' + fmtTime(state.dataBuiltAt) + ' · from build-info, not live uptime';
   }
 
   // Projects table
@@ -1138,9 +1178,10 @@ function init() {
   // Hash change → re-render
   window.addEventListener('hashchange', render);
 
-  // Initial render
+  // Initial build-info readback then static route rendering.
   if (!window.location.hash) window.location.hash = '#home';
-  render();
+  pollBuildInfo(true).catch(() => false).finally(() => render());
+  window.setInterval(() => { pollBuildInfo().catch(() => false); }, 60000);
 }
 
 document.addEventListener('DOMContentLoaded', init);
