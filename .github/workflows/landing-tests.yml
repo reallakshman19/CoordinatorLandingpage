@@ -536,7 +536,9 @@ jobs:
           good=(int(os.environ["RC"])!=0 and fail==expected and errors==0
                 and re.search(r'^Ran 4 tests in ',lines,re.M)
                 and re.search(r'^FAILED \(failures=4\)$',lines,re.M)
-                and "Traceback (most recent call last)" not in lines)
+                and not any(x in lines for x in ("TypeError:", "AttributeError:",
+                                                 "ImportError:", "SyntaxError:",
+                                                 "ModuleNotFoundError:")))
           print("WP3 RED Python FAIL count",len(fail))
           print("WP3 RED Python ERROR count",errors)
           print("WP3 RED Python VERDICT","EXPECTED BEHAVIOURAL RED" if good else "INVALID RED")
