@@ -798,6 +798,9 @@ def owner_issue_is_labelled(issue):
                for x in labels)
 
 
+_ISSUE_ASSOCIATIONS = frozenset(('OWNER', 'MEMBER', 'COLLABORATOR'))
+
+
 def build_owner_inputs(issues, capture, repo='reallakshman19/CoordinatorLandingpage'):
     """Immutable, strictly linked versioned issue receipts; fail closed."""
     source_ok = (isinstance(capture, dict) and capture.get('status') == 'ok'
@@ -898,6 +901,13 @@ def build_owner_inputs(issues, capture, repo='reallakshman19/CoordinatorLandingp
             else:
                 review.update(state='MATCHED',
                               reason='sha_and_role_claim_match_not_owner_approval')
+        association = issue.get('author_association') or ''
+        outsider = association not in _ISSUE_ASSOCIATIONS
+        if outsider:
+            # Retain untrusted submissions for audit but never present them
+            # as Owner instructions or allow claims in their bodies to act.
+            review = {'state': 'UNVERIFIED', 'reason': 'outsider_author',
+                      'frozen_sha': frozen_sha, 'comment_id': None}
         sup = _OWNER_SUPERSEDES.search(body)
         result.append({
             'schema_version': 'wp1b.1', 'number': number,
@@ -911,9 +921,12 @@ def build_owner_inputs(issues, capture, repo='reallakshman19/CoordinatorLandingp
                      (['label_missing'] if missing_label else []),
             'label_missing': missing_label,
             'project_claims': {'title': title_project, 'form': body_project},
+            'author_association': association,
+            'is_outsider': outsider,
+            'author_classification': 'OUTSIDER' if outsider else 'ASSOCIATED_NOT_OWNER_PROOF',
 
             'issue_state': issue.get('state'), 'status': state,
-            'state': state.lower(), 'needs_you': state != 'HANDLED',
+            'state': state.lower(), 'needs_you': state != 'HANDLED' and not outsider,
             'receipt': receipt,
             'revision_time': boundary.isoformat() if boundary else None,
             'fresh_receipt_required': bool(previous_handled and revisions and
@@ -930,7 +943,8 @@ def build_owner_inputs(issues, capture, repo='reallakshman19/CoordinatorLandingp
     index = {item['number']: item for item in result}
     for row in result:
         old = index.get(row['supersedes'])
-        if old and old is not row and old['project'] == row['project']:
+        if (old and old is not row and old['project'] == row['project']
+                and not row.get('is_outsider') and not old.get('is_outsider')):
             old.update(state='superseded', status='SUPERSEDED',
                        needs_you=False, superseded_by=row['number'],
                        effective=False, receipt=None)

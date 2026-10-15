@@ -26,7 +26,8 @@
       "closed_at": null,
       "comments": [],
       "events": [],
-      "events_complete": true
+      "events_complete": true,
+      "author_association": "MEMBER"
     },
     {
       "number": 202,
@@ -45,7 +46,8 @@
         }
       ],
       "events": [],
-      "events_complete": true
+      "events_complete": true,
+      "author_association": "MEMBER"
     },
     {
       "number": 203,
@@ -64,7 +66,8 @@
         }
       ],
       "events": [],
-      "events_complete": true
+      "events_complete": true,
+      "author_association": "MEMBER"
     },
     {
       "number": 204,
@@ -83,7 +86,8 @@
         }
       ],
       "events": [],
-      "events_complete": true
+      "events_complete": true,
+      "author_association": "MEMBER"
     },
     {
       "number": 205,
@@ -96,7 +100,8 @@
       "closed_at": "2026-10-15T10:25:00Z",
       "comments": [],
       "events": [],
-      "events_complete": true
+      "events_complete": true,
+      "author_association": "MEMBER"
     },
     {
       "number": 206,
@@ -131,7 +136,8 @@
           "created_at": "2026-10-15T10:11:00Z"
         }
       ],
-      "events_complete": true
+      "events_complete": true,
+      "author_association": "MEMBER"
     },
     {
       "number": 207,
@@ -160,7 +166,8 @@
         }
       ],
       "events": [],
-      "events_complete": true
+      "events_complete": true,
+      "author_association": "MEMBER"
     },
     {
       "number": 208,
@@ -173,7 +180,8 @@
       "closed_at": null,
       "comments": [],
       "events": [],
-      "events_complete": true
+      "events_complete": true,
+      "author_association": "MEMBER"
     },
     {
       "number": 209,
@@ -192,7 +200,8 @@
         }
       ],
       "events": [],
-      "events_complete": true
+      "events_complete": true,
+      "author_association": "MEMBER"
     },
     {
       "number": 210,
@@ -216,7 +225,8 @@
         }
       ],
       "events": [],
-      "events_complete": true
+      "events_complete": true,
+      "author_association": "MEMBER"
     },
     {
       "number": 211,
@@ -235,7 +245,8 @@
         }
       ],
       "events": [],
-      "events_complete": true
+      "events_complete": true,
+      "author_association": "MEMBER"
     },
     {
       "number": 212,
@@ -254,7 +265,8 @@
         }
       ],
       "events": [],
-      "events_complete": true
+      "events_complete": true,
+      "author_association": "MEMBER"
     },
     {
       "number": 213,
@@ -273,7 +285,8 @@
         }
       ],
       "events": [],
-      "events_complete": true
+      "events_complete": true,
+      "author_association": "MEMBER"
     },
     {
       "number": 214,
@@ -292,7 +305,8 @@
         }
       ],
       "events": [],
-      "events_complete": true
+      "events_complete": true,
+      "author_association": "MEMBER"
     },
     {
       "number": 215,
@@ -311,7 +325,8 @@
         }
       ],
       "events": [],
-      "events_complete": true
+      "events_complete": true,
+      "author_association": "MEMBER"
     }
   ],
   "expected": {

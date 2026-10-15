@@ -1,4 +1,4 @@
-name: landing-live WP1a + WP1b + WP2 + WP4 + WP3 + WP5a qualification
+name: landing-live WP1a + WP1b + WP2 + WP4 + WP3 + WP5a + WP5b qualification
 
 on:
   pull_request:
@@ -73,6 +73,14 @@ jobs:
           set -o pipefail
           python -m unittest tests.test_wp5a -v 2>&1 | tee wp5a-head.log
 
+      - name: Run WP5b outsider and five-page bounded index controls
+        id: wp5b_unit
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m unittest tests.test_wp5b -v 2>&1 | tee wp5b-head.log
+
       - name: Assemble benchmark-backed browser artifact (no live API)
         id: artifact
         continue-on-error: true
@@ -125,6 +133,15 @@ jobs:
           set -o pipefail
           python tests/wp3_browser_test.py _artifact 2>&1 | tee wp3-browser-head.log
 
+      - name: Run WP5b outsider vs Owner actual browser isolation
+        id: wp5b_browser
+        if: steps.artifact.outcome == 'success' && steps.chromium.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python tests/wp5b_browser_test.py _artifact 2>&1 | tee wp5b-browser-head.log
+
       - name: Upload qualification output
         if: always()
         uses: actions/upload-artifact@v4
@@ -140,6 +157,8 @@ jobs:
             wp3-browser-head.log
             wp5a-form-head.log
             wp5a-head.log
+            wp5b-head.log
+            wp5b-browser-head.log
           if-no-files-found: ignore
 
       - name: Prove injected failure rejected and enforce all HEAD gates
@@ -177,7 +196,9 @@ jobs:
           require_success "WP3-browser-60s-polling" "${{ steps.wp3_browser.outcome }}"
           require_success "WP5a-form-registry-options" "${{ steps.wp5a_form.outcome }}"
           require_success "WP5a-F7-labels-and-parsing" "${{ steps.wp5a.outcome }}"
-          echo "FINAL GATE: 11/11 actual head outcomes success"
+          require_success "WP5b-outside-source-and-page-limit" "${{ steps.wp5b_unit.outcome }}"
+          require_success "WP5b-outsider-badge-and-needsyou-browser" "${{ steps.wp5b_browser.outcome }}"
+          echo "FINAL GATE: 13/13 actual head outcomes success"
 
   red-control:
     name: red-control · require seven behavioural FAIL and zero ERROR
@@ -761,4 +782,77 @@ jobs:
         with:
           name: wp5a-f7-base-red
           path: wp5a-f7-red.log
+          if-no-files-found: error
+
+  wp5b-red-control:
+    name: WP5b merged WP5a BASE behavioural red · six FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact PR HEAD WP5b tests/fixtures unchanged
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only OWNER issue fetcher and projection from merged WP5a BASE
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=30496eb1a734048aa4028af77f79a3272f5b0ed9
+          git cat-file -e "${BASE}^{commit}"
+          for path in scripts/build_data.py scripts/fetch_live_data.py; do
+            git show "${BASE}:$path" > "$path"
+          done
+          echo "WP5B_BASE=${BASE} HEAD tests unchanged"
+      - name: Demand six incorrect BASE observations (assertions, not API errors)
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp5b.BaseCompatibleWP5b -v > wp5b-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp5b-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path('wp5b-red.log').read_text()
+          results=re.findall(
+              r'^(test_wp5b_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',
+              log,re.MULTILINE)
+          failures={name for name,result in results if result=='FAIL'}
+          errors={name for name,result in results if result=='ERROR'}
+          expected={
+             'test_wp5b_foreign_author_cannot_enter_owner_needs_you',
+             'test_wp5b_missing_author_association_fail_closed',
+             'test_wp5b_outsider_cannot_supersede_trusted_owner_input',
+             'test_wp5b_fetch_issue_keeps_actual_github_author_association',
+             'test_wp5b_owner_index_finds_unlabelled_page_two',
+             'test_wp5b_more_than_five_full_pages_degrades_instead_of_truncating',
+          }
+          good=(int(os.environ['RC'])!=0 and failures==expected
+                and not errors and
+                re.search(r'^Ran 6 tests in ',log,re.MULTILINE)
+                and re.search(r'^FAILED \(failures=6\)$',log,re.MULTILINE)
+                and not any(e in log for e in (
+                    'TypeError:','AttributeError:','ImportError:',
+                    'ModuleNotFoundError:','SyntaxError:')))
+          print('WP5B RED: behavioural FAIL count',len(failures))
+          print('WP5B RED: API/runner ERROR count',len(errors))
+          print('WP5B RED VERDICT',
+                'EXPECTED BEHAVIOURAL RED' if good else 'INVALID RED')
+          if not good:sys.exit(1)
+          PY
+      - name: Upload WP5b BASE red proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp5b-base-red
+          path: wp5b-red.log
           if-no-files-found: error

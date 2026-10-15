@@ -21,8 +21,13 @@ from urllib.parse import urlparse
 def gh_api(path: str):
     """Return a decoded GitHub API resource, or None on transport/JSON failure."""
     try:
+        # Owner indexes are fetched with explicit page numbers, max five.
+        # Never let gh --paginate silently ignore that strict upper bound.
+        bounded = bool(re.search(
+            r"/issues\?state=all&.*per_page=100&page=[1-5]$", path))
+        command = ["gh", "api"] + ([] if bounded else ["--paginate"]) + [path]
         proc = subprocess.run(
-            ["gh", "api", "--paginate", path],
+            command,
             capture_output=True, text=True, check=True
         )
         raw = proc.stdout.strip()
@@ -73,6 +78,7 @@ def fetch_issue(repo: str, number: int):
         "created_at": issue.get("created_at", ""),
         "updated_at": issue.get("updated_at", ""),
         "html_url": issue.get("html_url", ""),
+        "author_association": issue.get("author_association", ""),
         "comments": [
             {"id": c.get("id"), "created_at": c.get("created_at", ""),
              "updated_at": c.get("updated_at", ""),
@@ -204,6 +210,33 @@ def discover_project_refs(root: Path, control_repo: str):
     return projects, refs, errors
 
 
+
+OWNER_INDEX_PAGE_LIMIT = 5
+
+
+def fetch_bounded_owner_index(repo, labelled, max_pages=OWNER_INDEX_PAGE_LIMIT):
+    """Read up to 5 explicit pages without gh auto-pagination.
+
+    Page five containing 100 items is ambiguous (page six could exist):
+    return None and refuse green publication rather than truncate silently.
+    """
+    if max_pages != OWNER_INDEX_PAGE_LIMIT:
+        raise ValueError("Owner issue page bound cannot be changed")
+    prefix = f"/repos/{repo}/issues?state=all&"
+    if labelled:
+        prefix += "labels=owner-input&"
+    rows = []
+    for page in range(1, max_pages + 1):
+        chunk = gh_api(prefix + f"per_page=100&page={page}")
+        if not isinstance(chunk, list) or len(chunk) > 100:
+            return None
+        rows.extend(chunk)
+        if len(chunk) < 100:
+            return rows
+    # Even if there were exactly 500, we cannot prove no sixth page.
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser(description="Fetch read-only issue projections")
     parser.add_argument("--root", default=".")
@@ -287,10 +320,8 @@ def main():
 
     # G02/G05: read all issue states via GitHub, not a pseudo-Owner form claim.
     # Fetch failures are explicit degraded capture, never empty successful data.
-    owner_index = gh_api(
-        f"/repos/{args.repo}/issues?state=all&labels=owner-input&per_page=100"
-    )
-    all_issues = gh_api(f"/repos/{args.repo}/issues?state=all&per_page=100")
+    owner_index = fetch_bounded_owner_index(args.repo, labelled=True)
+    all_issues = fetch_bounded_owner_index(args.repo, labelled=False)
     # This is a build-time guard, not a mutating label creation.
     # The existing publisher refuses a degraded capture BEFORE Pages upload.
     label_check = gh_api(f"/repos/{args.repo}/labels/owner-input")
@@ -335,6 +366,9 @@ def main():
                 "body": detail.get("body", ""),
                 "type": "OWNER_INPUT", "project": "",
                 "labels": detail.get("labels", candidate.get("labels", [])),
+                # Trust only GitHub's source association, never body text.
+                "author_association": detail.get("author_association",
+                                                  candidate.get("author_association", "")),
                 "state": candidate.get("state"),
                 "created_at": candidate.get("created_at"),
                 "updated_at": candidate.get("updated_at"),
