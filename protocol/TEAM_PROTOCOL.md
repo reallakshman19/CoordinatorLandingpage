@@ -1,6 +1,6 @@
-# Team protocol v2.1 (final candidate) — CoordinatorLandingpage
+# Team protocol v2.2 (final candidate) — CoordinatorLandingpage
 
-Status: **v2.1 FINAL CANDIDATE** (15 Oct 2026, Owner: "can we finalise the protocol now"). v2.0 plus §19, the rules proven necessary by the imo-ab-test stress test (two agents, a separate Claude coordinator, OwnerTeammember). Becomes **FROZEN** on the Owner's word "freeze"; after that, changes need the Owner's words, a change note and a version bump. Dubai time (+04:00) everywhere.
+Status: **v2.2 FINAL CANDIDATE** (15 Oct 2026; v2.1 + §19.13–19.19 and the Owner-input channel, from the afternoon run of imo-ab-test, the landing-page build and Codex onboarding). v2.0 plus §19, the rules proven necessary by the imo-ab-test stress test (two agents, a separate Claude coordinator, OwnerTeammember). Becomes **FROZEN** on the Owner's word "freeze"; after that, changes need the Owner's words, a change note and a version bump. Dubai time (+04:00) everywhere.
 
 **Machine copy:** `protocol/TEAM_PROTOCOL.md` in this repository (read the raw file). **Start here as a new agent:** §2 places → your project's `registry.json` → your role's rows in §1 → §3 or §4 → §13–§17.
 
@@ -23,6 +23,8 @@ Status: **v2.1 FINAL CANDIDATE** (15 Oct 2026, Owner: "can we finalise the proto
 ## 2. Places
 
 - **Project registry** `logs/<project>/registry.json` — the single source of truth: control epoch and coordinator, the workflow card, active and retired agents (role, generation, chat id8, evidence thread, branch), standing Owner decisions, open Owner decisions, log folder. Every coordinator reads it first and updates it on every change; prompts never carry state that belongs here.
+- **Owner inputs** — an open issue labelled `owner-input` (Issue Form `owner-input.yml`, posted by the Owner) is an Owner instruction, quoted and time-stamped by GitHub. The coordinator handles it next cycle (protected items via OwnerTeammember first), answers on the issue `HANDLED: …` or `NEEDS CLARIFICATION: …`, and closes it when handled.
+- **OwnerTeammember ↔ TeamCoordinator** talk only through `FOR TeamCoordinator` posts in #1 and the coordinator's receipts (Owner, 15 Oct: "further you deal via post"); the Owner is not asked to paste between them.
 - **Inbox #1** — instructions, Owner decisions (relayed), control/epoch notices, alerts.
 - **Project status issue** (Grade 9: #6) — ONE status comment, edited in place (COORDINATOR EVIDENCE, §4).
 - **Evidence thread per agent** — one issue per agent chat, `[Evidence] <project> · <role> · <chat id8>`. Agents append TASK EVIDENCE v2 blocks; OwnerTeammember replies there with the grounding verdict.
@@ -186,6 +188,14 @@ A new TeamCoordinator (any capable agent with GitHub comment access and control 
 10. **Times come from the clock**, never estimates; a wrong time is corrected by a receipt that names the record it replaces.
 11. **Milestone gate.** A claim such as 21/21 or "plan done" → GATE instruction: freeze the commits, OwnerTeammember verifies the counts on GitHub, then ONE acceptance card to the Owner (what was shown, what is open, what is asked). Nothing is accepted from an agent's or a coordinator's word.
 12. **Liveness mechanics.** One-shot timers are unreliable; the waiter (wake on change or on silence) plus a recurring check are the guards. A participant stepping back posts it in #1 and the registry (`paused since`).
+
+13. **Every frozen commit is on a draft PR.** A new or successor branch gets its draft PR when its first commit is frozen, so CI runs on the exact SHA and the checker can cite a run (observed: successor branch with no PR, tests NOT_RUN).
+14. **Fix at the source, regenerate the copy.** A generated file or mirror is never hand-edited to pass a check; the fix goes into the source or generator and the copy is regenerated (observed: 01f29334 gated only the docs copy while the public source still revealed the proof).
+15. **Harnesses fail closed with the real error.** A wrapper must not swallow a child failure; it stops the run and reports the real assertion (sanitized), and its own failure path has a test (observed: the R14 wrapper hid the subprocess assertion; fixed in 8192d28d).
+16. **No borrowed approvals.** An agent never states that another role reviewed, approved or confirmed something (in a block, a commit message or a PR) without a link to that role's own post. An unsupported claim is corrected in the thread (observed: a commit message said OwnerTeammember had confirmed a test change it had not).
+17. **A loosened check is a weakened check.** A test changed so that it passes (for example by matching a substring such as "FAIL" that also appears in "FAIL 0") counts only after the checker reviews it and a negative control proves it can still fail.
+18. **A full chat is a changeover.** When an agent's chat hits its length limit: Owner's word → new chat → §14 (successor branch, v1.7 first reply, OwnerTeammember grounding check before edits). The coordinator records the Owner's words in #1 before or with the start message.
+19. **The coordinator must be able to reach every active chat.** A chat tab that is closed or unreachable is a liveness item for the Owner (one line), never a silent skip.
 
 ## 18. Open Owner decisions
 
