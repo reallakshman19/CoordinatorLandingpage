@@ -33,13 +33,13 @@ jobs:
           set -o pipefail
           python tests/build_test.py 2>&1 | tee wp1a-original.log
 
-      - name: Run nine new F3/F6 controls at HEAD
+      - name: Run 11 F3/F6 and 7 base-compatible behavioural controls at HEAD
         id: wp1a
         continue-on-error: true
         shell: bash
         run: |
           set -o pipefail
-          python -m unittest tests/test_wp1a.py -v 2>&1 | tee wp1a-head.log
+          python -m unittest tests/test_wp1a.py tests/test_wp1a_behavioural.py -v 2>&1 | tee wp1a-head.log
 
       - name: Assemble benchmark-backed browser artifact (no live API)
         id: artifact
@@ -86,23 +86,39 @@ jobs:
             wp1a-browser.log
           if-no-files-found: ignore
 
-      - name: Require all HEAD qualification gates
+      - name: Prove injected failure rejected and enforce all HEAD gates
         if: always()
         shell: bash
         run: |
-          echo "original-31=${{ steps.original.outcome }}"
-          echo "new-F3-F6=${{ steps.wp1a.outcome }}"
-          echo "benchmark-artifact=${{ steps.artifact.outcome }}"
-          echo "chromium=${{ steps.chromium.outcome }}"
-          echo "original-browser-19=${{ steps.browser.outcome }}"
-          test "${{ steps.original.outcome }}" = success
-          test "${{ steps.wp1a.outcome }}" = success
-          test "${{ steps.artifact.outcome }}" = success
-          test "${{ steps.chromium.outcome }}" = success
-          test "${{ steps.browser.outcome }}" = success
+          set -euo pipefail
+          # This exact function guards both the injected failure and the
+          # actual continue-on-error outcomes (not masked conclusions).
+          require_success() {
+            local gate="$1"
+            local outcome="$2"
+            echo "gate $gate=$outcome"
+            if [[ "$outcome" != "success" ]]; then
+              echo "::error::Required gate $gate outcome=$outcome" >&2
+              return 1
+            fi
+          }
+          # Prove fail-closed logic, do not merely assert its source exists.
+          if (require_success "injected-continue-on-error-failure" "failure" > gate-negative.log 2>&1); then
+            cat gate-negative.log
+            echo "::error::FINAL GATE unexpectedly accepted injected failure"
+            exit 1
+          fi
+          cat gate-negative.log
+          echo "FINAL GATE SELF-TEST: injected failure -> exit 1 (REJECTED)"
+          require_success "original-31" "${{ steps.original.outcome }}"
+          require_success "new-F3-F6-18" "${{ steps.wp1a.outcome }}"
+          require_success "benchmark-artifact" "${{ steps.artifact.outcome }}"
+          require_success "chromium" "${{ steps.chromium.outcome }}"
+          require_success "original-browser-19" "${{ steps.browser.outcome }}"
+          echo "FINAL GATE: 5/5 actual head outcomes success"
 
   red-control:
-    name: red-control · restore pinned base scripts; require F3 and F6 fail
+    name: red-control · require seven behavioural FAIL and zero ERROR
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -129,13 +145,13 @@ jobs:
           echo "BASE=${BASE}"
           echo "New HEAD F3/F6 tests retained; only the two permitted scripts restored."
 
-      - name: Execute new tests and assert meaningful expected RED
+      - name: Execute base-compatible tests and require assertion-only RED
         id: red
         shell: bash
         run: |
           set -uo pipefail
           set +e
-          python -m unittest tests/test_wp1a.py -v > wp1a-red.log 2>&1
+          python -m unittest tests/test_wp1a_behavioural.py -v > wp1a-red.log 2>&1
           rc=$?
           set -e
           cat wp1a-red.log
@@ -147,26 +163,33 @@ jobs:
           import sys
 
           output = Path('wp1a-red.log').read_text(encoding='utf-8')
-          failed = re.findall(
+          cases = re.findall(
               r'^(test_(f[36])_[A-Za-z0-9_]+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',
               output, re.MULTILINE,
           )
+          failures = [(name, family) for name, family, status in cases
+                      if status == 'FAIL']
           print('RED CONTROL: unittest exit =', os.environ['RED_EXIT'])
-          print('RED CONTROL: failing assertions or expected missing API:')
-          for test, family, status in failed:
-              print(f'  {family.upper()} {test}: {status}')
-          observed = {family for _, family, _ in failed}
-          required = {'f3', 'f6'}
-          ok = (
+          print('RED CONTROL: BASE BEHAVIOURAL ASSERTION FAILURES:')
+          for name, family in failures:
+              print(f'  {family.upper()} {name}: FAIL (behaviour)')
+          print('RED CONTROL: failed assertions =', len(failures))
+          print('RED CONTROL: API/runner errors =', len(cases) - len(failures))
+          valid = (
               int(os.environ['RED_EXIT']) != 0
-              and re.search(r'^Ran 9 tests in ', output, re.MULTILINE) is not None
-              and 'FAILED (' in output
-              and required.issubset(observed)
-              and not any(err in output for err in
-                          ('ModuleNotFoundError', 'SyntaxError', 'ImportError'))
+              and re.search(r'^Ran 7 tests in ', output, re.MULTILINE) is not None
+              and re.search(r'^FAILED \(failures=7\)$', output, re.MULTILINE) is not None
+              and len(failures) == 7
+              and {family for _, family in failures} == {'f3', 'f6'}
+              and not re.search(r'^ERROR:', output, re.MULTILINE)
+              and not any(error in output for error in (
+                  'TypeError:', 'AttributeError:', 'ImportError:',
+                  'SyntaxError:', 'ModuleNotFoundError:'
+              ))
           )
-          print('RED CONTROL VERDICT:', 'EXPECTED RED' if ok else 'INVALID RED')
-          if not ok:
+          print('RED CONTROL VERDICT:',
+                'EXPECTED BEHAVIOURAL RED' if valid else 'INVALID RED')
+          if not valid:
               sys.exit(1)
           PY
 

@@ -129,6 +129,27 @@ class WP1aNegativeControls(unittest.TestCase):
             status=status(self.f6["fresh_cycle_at"], self.f6["wrong_epoch"]))
         self.assertEqual(wrong["freshness_status"], self.f6["expected"]["wrong_epoch"])
 
+    def test_f6_exact_30_minute_boundary(self):
+        # Exactly 30:00 is current; one second later it is stale.
+        def status(observed):
+            return {"comments": [{"body": (
+                "COORDINATOR EVIDENCE v1 · imo-ab-test · cycle 2 · epoch 1 · synthetic\n"
+                "Coordinator last completed cycle: " + observed.isoformat()
+            )}]}
+        for age_seconds, expected in (
+            (1799, "RUNNING-observed"),
+            (1800, "RUNNING-observed"),
+            (1801, "STALE"),
+        ):
+            observed = self.now - timedelta(seconds=age_seconds)
+            with self.subTest(age_seconds=age_seconds):
+                project, _ = self.fixture_project(status=status(observed))
+                self.assertEqual(project["freshness_status"], expected)
+                self.assertEqual(
+                    datetime.fromisoformat(project["last_cycle_at"]),
+                    observed.astimezone(timezone.utc),
+                )
+
     def test_f6_failed_source_and_hold_are_not_green(self):
         degraded = {**self.f3["capture"], "status": "degraded",
                     "errors": ["issue_fetch_failed:1"]}
@@ -198,6 +219,44 @@ class WP1aNegativeControls(unittest.TestCase):
             self.assertEqual([e["id"] for e in events], ["e1", "e2"])
             self.assertEqual([e["project"] for e in events], ["imo-ab-test"] * 2)
             self.assertEqual([e["_source"] for e in events], ["events_jsonl"] * 2)
+
+    def test_f3_registry_bytes_unchanged_by_full_live_build(self):
+        # G04: projections must not rewrite the source registry, even indirectly.
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            registry = root / "logs" / "imo-ab-test" / "registry.json"
+            registry.parent.mkdir(parents=True)
+            original = json.dumps(self.f3["registry"], indent=2).encode("utf-8")
+            registry.write_bytes(original)
+            before_digest = hashlib.sha256(registry.read_bytes()).hexdigest()
+            cache = root / "cache"
+            threads = cache / "threads"
+            threads.mkdir(parents=True)
+            for number, payload in self.f3["threads"].items():
+                (threads / f"issue-{number}.json").write_text(
+                    json.dumps(payload), encoding="utf-8"
+                )
+            (cache / "inbox-1.json").write_text(
+                json.dumps(self.f3["inbox"]), encoding="utf-8"
+            )
+            (cache / "capture-info.json").write_text(
+                json.dumps(self.f3["capture"]), encoding="utf-8"
+            )
+            projects, _ = build_data.build_all(root, root / "generated", cache_dir=cache)
+            after = registry.read_bytes()
+            self.assertEqual(after, original, "builder must not rewrite registry bytes")
+            self.assertEqual(hashlib.sha256(after).hexdigest(), before_digest)
+            self.assertEqual(len(projects), 1)
+            projected = projects[0]
+            self.assertEqual(projected["stale_lease_count"], 5)
+            self.assertEqual([l.get("warning") for l in projected["leases"]],
+                             ["RETIRED_HOLDER"] * 5)
+            self.assertEqual(projected["registry_blob_sha"], build_data.git_blob_sha(registry))
+            self.assertEqual(
+                json.loads((root / "generated" / "projects.json").read_text())[0][
+                    "registry_blob_sha"
+                ], build_data.git_blob_sha(registry),
+            )
 
 
 if __name__ == "__main__":
