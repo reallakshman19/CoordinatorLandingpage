@@ -2,7 +2,7 @@
   "project": "imo-ab-test",
   "protocol": "Team protocol v2.0 PROTOTYPE (protocol/TEAM_PROTOCOL.md)",
   "repository": "reallakshman19/Grade9v3.5",
-  "updated": "2026-10-15T09:35+04:00",
+  "updated": "2026-10-15T09:55+04:00",
   "updated_by": "TeamCoordinator (Claude, candidate)",
   "control": {
     "epoch": 1,
@@ -57,9 +57,19 @@
     "AB-SOURCE: Owner supplies the private source input to Agent B directly, never via the public repo (Owner: \"File given to agent B\")",
     "AB-HARNESS (Owner 09:08): Agent A may modify only the R8 TEST qualification workflow/runner paths for the 21-cell check; Agent B must check that change on the exact commit before any result counts",
     "AB-SOURCE update (Owner 09:05 \"done\", relay 1#6184864349, supersedes 08:58): original SOF IMO 2023-24 Class IX PDF attached in Agent B chat; B extracts Q003 and confirms custody hashes (source_item 31ce6243\u2026, private_input b263644c\u2026); original stays out of git/public repo; DEVELOPMENT_ONLY_NO_PUBLISHER_LICENSE",
-    "AB-HUBPAGES granted (Owner 09:29 \"ok\", FTC-002): Agent A regenerates exactly public/test/index.html, public/test/rungs/index.html, public/test/deployments/index.html with the repo generator, PR #268 branch, one frozen commit; Agent B checks it; no release"
+    "AB-HUBPAGES granted (Owner 09:29 \"ok\", FTC-002): Agent A regenerates exactly public/test/index.html, public/test/rungs/index.html, public/test/deployments/index.html with the repo generator, PR #268 branch, one frozen commit; Agent B checks it; no release",
+    "AB-DOCSMIRROR granted (Owner 09:46 \"yes narrowly\", FTC-004): Agent A regenerates only the docs/test mirror copies of the three TEST hub pages, generator only, one frozen commit on PR #268; Agent B checks it; no release"
   ],
-  "open_owner_decisions": [],
+  "open_owner_decisions": [
+    {
+      "id": "AB-DISPATCH",
+      "ask": "who dispatches the manual R14 workflow imo182-r8-qrt-intent-contract.yml on agent/182-r13-native-repair-matrix-20261015: the Owner, or authorize Agent A?"
+    },
+    {
+      "id": "AB-Q003-RUN",
+      "ask": "where Agent B's Q003 native build runs (its sandbox has no checkout and no network): GitHub Actions secret, Owner's local checkout, or park until the final phase?"
+    }
+  ],
   "status_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/12",
   "log_folder": "logs/imo-ab-test/2026-10-15_epoch1/"
 }
