@@ -465,6 +465,15 @@ _EPOCH_FIELD = re.compile(r"(?:^|·)\s*epoch\s*(\d+)\s*(?:·|$)", re.IGNORECASE)
 _ISO_HEADER_TIME = re.compile(r"20\d{2}-\d{2}-\d{2}T[0-9:.]+(?:Z|[+-]\d{2}:\d{2})")
 
 
+# GitHub's issue author association fences public outsiders, but cannot prove
+# which TEAM role posted: TeamCoordinator and OwnerTeammember share an account.
+LIVENESS_OBSERVATION_LIMIT = (
+    "GitHub OWNER/MEMBER/COLLABORATOR association excludes outsiders; "
+    "team roles share one GitHub account, so the posting role cannot be "
+    "distinguished. RUNNING-observed is scoped activity, not identity proof."
+)
+
+
 def last_completed_cycle(status_thread: dict, project: str, now: datetime,
                          epoch: int | None = None, inbox=None,
                          pinned_comment_id=None, epoch_since=None):
@@ -489,6 +498,12 @@ def last_completed_cycle(status_thread: dict, project: str, now: datetime,
         times.append(ts)
 
     def examine(comment, is_status=False):
+        # Strictly require GitHub's source-provided author association. A
+        # public issue comment from an outsider, or an absent association,
+        # can NEVER promote observed liveness (including pinned edit-time).
+        if comment.get("author_association") not in (
+                "OWNER", "MEMBER", "COLLABORATOR"):
+            return
         body = comment.get("body") or ""
         headers = list(_COORD_EVIDENCE_HEADER.finditer(body))
         receipts = list(_COORD_RECEIPT_HEADER.finditer(body))
@@ -694,6 +709,7 @@ def build_project_data(root: Path, project_name: str, registry: dict,
         },
         'last_cycle_at': last_cycle,
         'freshness_status': freshness,
+        'liveness_observation_limit': LIVENESS_OBSERVATION_LIMIT,
         'published_at': None,
         'stale_lease_count': sum(l.get('warning') == 'RETIRED_HOLDER' for l in leases),
         'registry': {
@@ -1028,6 +1044,7 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             'source_refs': pd['source_refs'],
             'last_cycle_at': pd['last_cycle_at'],
             'freshness_status': pd['freshness_status'],
+            'liveness_observation_limit': pd['liveness_observation_limit'],
             'published_at': pd['published_at'],
             'stale_lease_count': pd['stale_lease_count'],
             'control': pd['registry']['control'],

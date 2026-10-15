@@ -552,6 +552,56 @@ jobs:
           path: wp3-red.log
           if-no-files-found: error
 
+
+      - name: Restore PRE-FIX WP3 liveness parser (HEAD test unchanged)
+        shell: bash
+        run: |
+          set -euo pipefail
+          OLD_HEAD=f601d7181a633755fd7e12ea976e2d48ca118282
+          git cat-file -e "${OLD_HEAD}^{commit}"
+          git show "${OLD_HEAD}:scripts/build_data.py" > scripts/build_data.py
+          echo "FOREIGN_AUTHOR_NEGATIVE_BASE=${OLD_HEAD}"
+
+      - name: Foreign-author spoof must fail as one assertion, zero errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp3.WP3Additional.test_wp3_foreign_author_receipt_cannot_spoof_observed -v > wp3-author-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp3-author-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          out=Path('wp3-author-red.log').read_text()
+          names=re.findall(r'^(test_wp3_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',out,re.M)
+          fails=[name for name,kind in names if kind=='FAIL']
+          errors=[name for name,kind in names if kind=='ERROR']
+          expected='test_wp3_foreign_author_receipt_cannot_spoof_observed'
+          good=(int(os.environ['RC']) != 0 and fails == [expected] and not errors
+                and re.search(r'^Ran 1 test in ',out,re.M)
+                and re.search(r'^FAILED \(failures=1\)$',out,re.M)
+                and 'AssertionError:' in out
+                and not any(x in out for x in (
+                    'TypeError:','AttributeError:','ImportError:',
+                    'ModuleNotFoundError:','SyntaxError:')))
+          print('WP3 AUTHOR RED: behavioural FAIL count',len(fails))
+          print('WP3 AUTHOR RED: runner ERROR count',len(errors))
+          print('WP3 AUTHOR RED VERDICT',
+                'EXPECTED BEHAVIOURAL RED' if good else 'INVALID RED')
+          if not good:sys.exit(1)
+          PY
+
+      - name: Upload WP3 author spoof red proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp3-author-spoof-old-head-red
+          path: wp3-author-red.log
+          if-no-files-found: error
+
   wp3-browser-red-control:
     name: WP3 browser polling behavioural red · 4 FAIL and 0 ERROR
     runs-on: ubuntu-latest

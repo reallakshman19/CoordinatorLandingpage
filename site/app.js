@@ -414,6 +414,12 @@ async function renderHome(app) {
     UNKNOWN: 'dot-grey', HOLD: 'dot-purple'
   }[observed] || 'dot-grey');
   $('live-tc-time').textContent = observed;
+  // Even accepted GitHub contributors share one account across team roles.
+  // This is evidence of a scoped post, not proof of coordinator identity.
+  const limit = el('span', 'liveness-limit',
+    'Observed GitHub post only: outsider comments are excluded by OWNER/MEMBER/COLLABORATOR author association. Team roles share one GitHub account, so the actual role cannot be distinguished.');
+  limit.style.cssText = 'display:block;flex-basis:100%;width:100%;font-size:0.72rem;color:var(--text-3);overflow-wrap:anywhere';
+  $('liveness-strip').appendChild(limit);
   $('live-otm').className = 'dot dot-grey';
   $('live-otm-time').textContent = 'UNKNOWN (no independent observation)';
   $('live-gh').className = 'dot dot-grey';

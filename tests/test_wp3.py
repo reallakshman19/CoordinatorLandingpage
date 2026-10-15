@@ -78,7 +78,7 @@ class BaseCompatibleWP3(unittest.TestCase):
         self.assertEqual(project["last_cycle_at"],"2026-10-15T15:50:00+00:00")
 
     def test_wp3_current_epoch_evidence_header_only(self):
-        item={"comments":[{"id":1201,
+        item={"comments":[{"id":1201,"author_association":"MEMBER",
             "body":"COORDINATOR EVIDENCE v1 · alpha · epoch 4 · 2026-10-15T15:50:00Z",
             "created_at":"2026-10-15T15:50:00Z",
             "updated_at":"2026-10-15T15:52:00Z"}]}
@@ -111,9 +111,9 @@ class BaseCompatibleWP3(unittest.TestCase):
 class WP3Additional(unittest.TestCase):
     def test_wp3_wrong_project_epoch_and_unparseable_unknown(self):
         status={"comments":[
-            {"id":1201,"body":"COORDINATOR RECEIPT · beta · epoch4 · 2026-10-15T15:55:00Z"},
-            {"id":1202,"body":"COORDINATOR RECEIPT · alpha · epoch3 · 2026-10-15T15:55:00Z"},
-            {"id":1203,"body":"COORDINATOR RECEIPT · alpha · epoch4 · NOT-A-TIMESTAMP"},
+            {"id":1201,"author_association":"MEMBER","body":"COORDINATOR RECEIPT · beta · epoch4 · 2026-10-15T15:55:00Z"},
+            {"id":1202,"author_association":"MEMBER","body":"COORDINATOR RECEIPT · alpha · epoch3 · 2026-10-15T15:55:00Z"},
+            {"id":1203,"author_association":"MEMBER","body":"COORDINATOR RECEIPT · alpha · epoch4 · NOT-A-TIMESTAMP"},
         ]}
         p=synthetic_project("alpha",status=status,inbox=[])
         self.assertEqual(p["freshness_status"],"UNKNOWN")
@@ -122,13 +122,13 @@ class WP3Additional(unittest.TestCase):
         for age,expected in [(1800,"RUNNING-observed"),(1801,"STALE")]:
             with self.subTest(age_seconds=age):
                 when=(NOW-timedelta(seconds=age)).isoformat()
-                comment={"body":f"COORDINATOR RECEIPT · alpha · epoch4 · {when}"}
+                comment={"author_association":"MEMBER","body":f"COORDINATOR RECEIPT · alpha · epoch4 · {when}"}
                 p=synthetic_project("alpha",inbox=[comment])
                 self.assertEqual(p["freshness_status"],expected)
 
     def test_wp3_status_edit_time_must_be_pinned_and_parseable(self):
         original=F4["alpha"]["status"]["comments"][0]
-        comment={"id":1201,"body":"COORDINATOR EVIDENCE v1 · alpha · epoch 4 · no clock",
+        comment={"id":1201,"author_association":"MEMBER","body":"COORDINATOR EVIDENCE v1 · alpha · epoch 4 · no clock",
                  "updated_at":"2026-10-15T15:52:00Z"}
         good=build_data.last_completed_cycle(
             {"comments":[comment]},"alpha",NOW,4,inbox=[],
@@ -139,10 +139,69 @@ class WP3Additional(unittest.TestCase):
         self.assertEqual(good,"2026-10-15T15:52:00+00:00")
         self.assertIsNone(bad)
         self.assertIsNone(build_data.last_completed_cycle(
-            {"comments":[{"id":1201,"body":"random changed status",
+            {"comments":[{"id":1201,"author_association":"MEMBER","body":"random changed status",
                           "updated_at":"2026-10-15T15:52:00Z"}]},
             "alpha",NOW,4,inbox=[],pinned_comment_id=1201,
             epoch_since="2026-10-15T15:00:00Z"))
+
+
+    def test_wp3_foreign_author_receipt_cannot_spoof_observed(self):
+        # Negative control: the earlier WP3 implementation accepted ANY
+        # public commenter whose body imitated a coordinator receipt.
+        receipt=F4["alpha"]["status"]["comments"][0]
+        self.assertEqual(receipt["author_association"],"MEMBER")
+        foreign=dict(receipt,author_association="CONTRIBUTOR")
+        injected=synthetic_project("alpha",inbox=[foreign])
+        self.assertEqual(injected["freshness_status"],"UNKNOWN")
+        self.assertIsNone(injected["last_cycle_at"])
+        verified=synthetic_project("alpha",inbox=[receipt])
+        self.assertEqual(verified["freshness_status"],"RUNNING-observed")
+        self.assertEqual(verified["last_cycle_at"],"2026-10-15T15:50:00+00:00")
+        # Even the exact registry-pinned status comment's edit clock
+        # cannot turn a foreign-author post green.
+        pinned=dict(foreign,id=1201,updated_at="2026-10-15T15:52:00Z")
+        self.assertIsNone(build_data.last_completed_cycle(
+            {"comments":[pinned]},"alpha",NOW,4,inbox=[],
+            pinned_comment_id=1201,epoch_since="2026-10-15T15:00:00Z"))
+
+    def test_wp3_exact_author_association_allowlist(self):
+        receipt=F4["alpha"]["status"]["comments"][0]
+        for association in ("OWNER","MEMBER","COLLABORATOR"):
+            with self.subTest(association=association):
+                row=synthetic_project(
+                    "alpha",inbox=[dict(receipt,author_association=association)])
+                self.assertEqual(row["freshness_status"],"RUNNING-observed")
+        for association in ("CONTRIBUTOR","FIRST_TIME_CONTRIBUTOR",
+                            "FIRST_TIMER","NONE",None,"member"):
+            with self.subTest(association=association):
+                row=synthetic_project(
+                    "alpha",inbox=[dict(receipt,author_association=association)])
+                self.assertEqual(row["freshness_status"],"UNKNOWN")
+
+    def test_wp3_liveness_limit_declared_in_project_data_and_visible_page(self):
+        row=synthetic_project("alpha")
+        note=row["liveness_observation_limit"]
+        self.assertIn("team roles share one GitHub account",note)
+        self.assertIn("not identity proof",note)
+        page=(ROOT/"site/app.js").read_text()
+        self.assertIn("Team roles share one GitHub account",page)
+        self.assertIn("actual role cannot be distinguished",page)
+
+    def test_wp3_no_other_workflow_uses_legacy_pages_group_or_deploys(self):
+        import re
+        workflows=sorted((ROOT/".github/workflows").glob("*.yml"))
+        self.assertEqual({p.name for p in workflows},
+                         {"blank.yml","deploy.yml","landing-tests.yml"})
+        for path in workflows:
+            content=path.read_text()
+            self.assertIsNone(
+                re.search(r'^\s*group:\s*["\x27]?pages["\x27]?\s*$',
+                          content,re.MULTILINE),path.name)
+            if path.name!="deploy.yml":
+                self.assertNotIn("uses: actions/deploy-pages@",content)
+                self.assertNotIn("uses: actions/upload-pages-artifact@",content)
+        self.assertIn("group: landing-live-single-publisher-",
+                      (ROOT/".github/workflows/deploy.yml").read_text())
 
 
 if __name__=="__main__":
