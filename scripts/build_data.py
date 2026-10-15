@@ -16,6 +16,7 @@ Chat IDs appear only as 8-character id8s (already stored that way in the data).
 """
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -181,7 +182,8 @@ def parse_verdict(comment_body: str, comment_id: int, comment_ts: str) -> dict |
     }
 
 
-def build_agent_evidence(thread: dict) -> list:
+def build_agent_evidence(thread: dict, project: str | None = None,
+                         chat_id8: str | None = None, shared: bool = False) -> list:
     """Build a list of evidence blocks (with interleaved verdicts) from a thread."""
     items = []
     for c in thread.get('comments', []):
@@ -191,6 +193,10 @@ def build_agent_evidence(thread: dict) -> list:
 
         ev = parse_task_evidence(body, cid, ts)
         if ev:
+            if chat_id8 and ev['chat_id8'] != chat_id8:
+                continue
+            if project and ev['project'] != project:
+                continue
             # Check for replaces marker
             rep = re.search(r'replaces #(\d+)', body, re.IGNORECASE)
             if rep:
@@ -200,12 +206,17 @@ def build_agent_evidence(thread: dict) -> list:
 
         verd = parse_verdict(body, cid, ts)
         if verd:
+            # Shared thread verdicts are unbound unless they name this chat.
+            if shared and (not chat_id8 or chat_id8 not in body):
+                continue
             items.append({'type': 'verdict', **verd})
             continue
 
         # STATUS v2 line
         sm = STATUS_RE.search(body)
         if sm:
+            if chat_id8 and sm.group('chat') != chat_id8:
+                continue
             items.append({
                 'type': 'status',
                 'comment_id': cid,
@@ -220,7 +231,8 @@ def build_agent_evidence(thread: dict) -> list:
             continue
 
         # Retirement notice
-        if 'RETIRED' in body and 'OwnerTeammember' in body:
+        if 'RETIRED' in body and 'OwnerTeammember' in body and (
+                not shared or (chat_id8 and chat_id8 in body)):
             items.append({
                 'type': 'retired',
                 'comment_id': cid,
@@ -231,31 +243,45 @@ def build_agent_evidence(thread: dict) -> list:
     return items
 
 
-def build_timeline_from_events(events_path: Path, project: str) -> list:
+def build_timeline_from_events(events_path: Path | list[Path], project: str) -> list:
     """Build timeline from events.jsonl (grade9-pilot)."""
     events = []
-    if not events_path.exists():
-        return events
-    with open(events_path, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                ev = json.loads(line)
+    paths = events_path if isinstance(events_path, list) else [events_path]
+    seen = set()
+    for path in sorted(paths, key=str):
+        if not path.exists():
+            continue
+        with open(path, encoding="utf-8") as f:
+            for line_number, line in enumerate(f, 1):
+                if not line.strip():
+                    continue
+                try:
+                    ev = json.loads(line)
+                except (ValueError, TypeError):
+                    continue
+                if not isinstance(ev, dict):
+                    continue
+                key = (ev.get('id') or ev.get('event_id') or
+                       json.dumps(ev, sort_keys=True, ensure_ascii=False))
+                if key in seen:
+                    continue
+                seen.add(key)
                 ev['_source'] = 'events_jsonl'
+                ev['_source_path'] = path.name
+                ev['_source_line'] = line_number
                 ev['project'] = project
-                # Scrub any chat URLs
-                for k, v in ev.items():
+                for k, v in list(ev.items()):
                     if isinstance(v, str):
                         ev[k] = scrub_chat_url(v)
                 events.append(ev)
-            except json.JSONDecodeError:
-                pass
+    events.sort(key=lambda e: (e.get('ts') or e.get('t') or '',
+                                e.get('_source_path', ''), e.get('_source_line', 0)))
     return events
 
 
-def build_timeline_from_threads(threads: list, inbox: list, project: str) -> list:
+def build_timeline_from_threads(threads: list, inbox: list, project: str,
+                                allowed_chats: set[str] | None = None,
+                                shared_threads: set[int] | None = None) -> list:
     """
     Reconstruct a timeline from thread comments + inbox (imo-ab-test has no events.jsonl).
     Marks the result as reconstructed=True.
@@ -321,7 +347,7 @@ def build_timeline_from_threads(threads: list, inbox: list, project: str) -> lis
 
             # COORDINATOR EVIDENCE
             cm = COORD_EVIDENCE_RE.search(body)
-            if cm:
+            if cm and cm.group('project').strip() == project:
                 ny = NEEDS_YOU_RE.search(body)
                 is_time_corrected = bool(TIME_CORRECTED_RE.search(body))
                 events.append({
@@ -344,7 +370,8 @@ def build_timeline_from_threads(threads: list, inbox: list, project: str) -> lis
 
             # TASK EVIDENCE
             ev = parse_task_evidence(body, cid, ts)
-            if ev:
+            if ev and ev['project'] == project and (
+                    allowed_chats is None or ev['chat_id8'] in allowed_chats):
                 events.append({
                     'type': 'TASK_EVIDENCE',
                     'ts': ts,
@@ -363,6 +390,11 @@ def build_timeline_from_threads(threads: list, inbox: list, project: str) -> lis
             # Verdict
             verd = parse_verdict(body, cid, ts)
             if verd:
+                # A shared issue's unbound verdict is not proof of either
+                # chat generation. Keep single-agent frozen benchmark oracles.
+                if (shared_threads and issue_num in shared_threads and
+                        not any(chat in body for chat in (allowed_chats or set()))):
+                    continue
                 events.append({
                     'type': 'VERDICT',
                     'ts': ts,
@@ -393,9 +425,96 @@ def build_timeline_from_threads(threads: list, inbox: list, project: str) -> lis
     return events
 
 
+
+# Derived read-only cycle observation and capture provenance.
+_CYCLE_LINE = re.compile(
+    r'^(?:Coordinator last completed cycle|Cycle completed):[ \t]*(.+)$',
+    re.MULTILINE | re.IGNORECASE,
+)
+
+
+def _utc_time(value):
+    if not isinstance(value, str):
+        return None
+    value = value.strip().strip('*')
+    try:
+        dt = datetime.fromisoformat(value.replace('Z', '+00:00'))
+        if dt.tzinfo:
+            return dt.astimezone(timezone.utc)
+    except ValueError:
+        pass
+    for fmt in ('%d %b %Y %H:%M:%S %z', '%d%b%Y %H:%M:%S %z',
+                '%d %B %Y %H:%M:%S %z', '%d %b %Y %H:%M %z'):
+        try:
+            return datetime.strptime(value, fmt).astimezone(timezone.utc)
+        except ValueError:
+            pass
+    return None
+
+
+def last_completed_cycle(status_thread: dict, project: str, now: datetime,
+                         epoch: int | None = None):
+    times = []
+    for comment in (status_thread or {}).get('comments', []):
+        body = comment.get('body') or ''
+        cm = COORD_EVIDENCE_RE.search(body)
+        if cm is None:
+            # An unscoped historic status cannot establish a current epoch.
+            continue
+        if cm.group('project').strip() != project:
+            continue
+        if epoch is not None and str(cm.group('epoch') or '') != str(epoch):
+            continue
+        for m in _CYCLE_LINE.finditer(body):
+            ts = _utc_time(m.group(1))
+            if ts and ts <= now:
+                times.append(ts)
+    return max(times).isoformat() if times else None
+
+
+def derive_freshness(last_cycle, capture, hold, now):
+    if hold:
+        return 'HOLD'
+    if not isinstance(capture, dict) or capture.get('status') != 'ok':
+        return 'STALE' if last_cycle else 'UNKNOWN'
+    cycle = _utc_time(last_cycle)
+    if not cycle:
+        return 'UNKNOWN'
+    elapsed = (now - cycle).total_seconds()
+    if elapsed < 0:
+        return 'UNKNOWN'
+    return 'STALE' if elapsed > 30 * 60 else 'RUNNING-observed'
+
+
+def git_blob_sha(path: Path):
+    if not path.exists():
+        return None
+    data = path.read_bytes()
+    return hashlib.sha1(f'blob {len(data)}\0'.encode('ascii') + data).hexdigest()
+
+
+def _issue_number(url):
+    match = re.search(r'/issues/(\d+)', url or '')
+    return int(match.group(1)) if match else None
+
+
 def build_project_data(root: Path, project_name: str, registry: dict,
-                        threads: dict, inbox: list, events_path: Path | None) -> dict:
+                        threads: dict, inbox: list, events_path: Path | list[Path] | None,
+                        source_meta: dict | None = None,
+                        status_thread: dict | None = None,
+                        now: datetime | None = None,
+                        registry_blob_sha: str | None = None) -> dict:
     """Assemble the project data payload."""
+
+    now = now or datetime.now(timezone.utc)
+    if now.tzinfo is None:
+        raise ValueError('now must be timezone-aware')
+    now = now.astimezone(timezone.utc)
+    thread_owners = {}
+    for item in registry.get('agents', []):
+        number = _issue_number(item.get('evidence_thread', ''))
+        if number:
+            thread_owners[number] = thread_owners.get(number, 0) + 1
 
     # Agents
     agents = []
@@ -409,14 +528,20 @@ def build_project_data(root: Path, project_name: str, registry: dict,
             thread_num = int(m.group(1))
 
         thread_data = threads.get(thread_num, {}) if thread_num else {}
-        evidence = build_agent_evidence(thread_data)
+        evidence = build_agent_evidence(
+            thread_data, project_name, chat,
+            shared=thread_owners.get(thread_num, 0) > 1
+        )
 
         agents.append({
             'role': a.get('role', ''),
             'alias': a.get('alias', ''),
             'generation': a.get('generation', 1),
             'chat_id8': chat,
-            'status': a.get('status', ''),
+            'status': ('retired' if str(a.get('status', '')).lower().startswith('retired')
+                       else 'active' if str(a.get('status', '')).lower().startswith('active')
+                       else a.get('status', '')),
+            'status_raw': a.get('status', ''),
             'retired': a.get('retired'),
             'evidence_thread_num': thread_num,
             'branch': a.get('branch', ''),
@@ -425,7 +550,22 @@ def build_project_data(root: Path, project_name: str, registry: dict,
         })
 
     # Leases
-    leases = registry.get('leases', [])
+    leases = [dict(item) for item in registry.get('leases', [])
+              if isinstance(item, dict)]
+    retired_chats = {a['chat_id8'] for a in agents if a['status'] == 'retired'}
+    for lease in leases:
+        holder = str(lease.get('holder') or lease.get('actor') or '')
+        match = re.search(r'(?<![0-9a-f])[0-9a-f]{8}(?![0-9a-f])',
+                          holder, re.IGNORECASE)
+        holder_id8 = match.group(0) if match else None
+        lease['holder_chat_id8'] = holder_id8
+        lease['valid_for_active_agent'] = (
+            None if holder_id8 is None else holder_id8 not in retired_chats
+        )
+        if holder_id8 in retired_chats:
+            lease['warning'] = 'RETIRED_HOLDER'
+        elif not holder_id8:
+            lease['warning'] = 'UNVERIFIED_HOLDER'
     # Also parse leases from standing_owner_decisions
     sod = registry.get('standing_owner_decisions', [])
     lease_pattern = re.compile(r'AB-LEASE granted.*?(?:Agent\s+\w+\s+[0-9a-f]{8})', re.IGNORECASE | re.DOTALL)
@@ -442,17 +582,55 @@ def build_project_data(root: Path, project_name: str, registry: dict,
     status_issue_url = registry.get('status_comment') or registry.get('status_issue', '')
 
     # Timeline
-    if events_path and events_path.exists():
+    has_events = (any(p.exists() for p in events_path)
+                  if isinstance(events_path, list) else
+                  bool(events_path and events_path.exists()))
+    if has_events:
         timeline = build_timeline_from_events(events_path, project_name)
         timeline_source = 'events_jsonl'
     else:
         # Reconstruct from threads + inbox
-        thread_list = list(threads.values())
-        timeline = build_timeline_from_threads(thread_list, inbox, project_name)
+        allowed = {_issue_number(registry.get('status_comment') or
+                                 registry.get('status_issue') or '')}
+        allowed.update(_issue_number(a.get('evidence_thread'))
+                       for a in registry.get('agents', []))
+        thread_list = [t for n, t in threads.items() if n in allowed]
+        timeline = build_timeline_from_threads(
+            thread_list, inbox, project_name, {a['chat_id8'] for a in agents},
+            {n for n, count in thread_owners.items() if count > 1}
+        )
         timeline_source = 'reconstructed'
+
+    capture = source_meta if isinstance(source_meta, dict) else None
+    last_cycle = last_completed_cycle(
+        status_thread or {}, project_name, now,
+        registry.get('control', {}).get('epoch')
+    )
+    freshness = ('BENCHMARK' if capture and capture.get('status') == 'benchmark'
+                 else derive_freshness(last_cycle, capture,
+                                       registry.get('control', {}).get('hold'), now))
+    health = {'status': capture.get('status', 'unknown') if capture else 'unknown',
+              'errors': capture.get('errors', []) if capture else ['capture_manifest_missing']}
+    source_commit = capture.get('source_commit') if capture else None
+    source_capture_at = capture.get('source_capture_at') if capture else None
 
     return {
         'project': project_name,
+        'schema_version': 'wp1a.1',
+        'source_commit': source_commit,
+        'registry_blob_sha': registry_blob_sha,
+        'source_capture_at': source_capture_at,
+        'source_health': health,
+        'source_refs': {
+            'inbox': 'https://github.com/reallakshman19/CoordinatorLandingpage/issues/1',
+            'status_issue': registry.get('status_comment') or registry.get('status_issue'),
+            'registry_blob_sha': registry_blob_sha,
+            'source_commit': source_commit,
+        },
+        'last_cycle_at': last_cycle,
+        'freshness_status': freshness,
+        'published_at': None,
+        'stale_lease_count': sum(l.get('warning') == 'RETIRED_HOLDER' for l in leases),
         'registry': {
             'protocol': registry.get('protocol', ''),
             'repository': registry.get('repository', ''),
@@ -471,7 +649,7 @@ def build_project_data(root: Path, project_name: str, registry: dict,
         'outside_writes': outside_writes,
         'timeline_source': timeline_source,
         'timeline_event_count': len(timeline),
-        'built_at': datetime.now(timezone.utc).isoformat(),
+        'built_at': now.isoformat(),
     }, timeline
 
 
@@ -542,28 +720,39 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
 
     all_projects = []
     all_timelines = {}
+    evidence_names = {}
 
     for source_type, source_path in sources:
         if source_type == 'benchmark':
             project_name, registry, threads, inbox, events_path = load_benchmark(source_path)
             is_benchmark = True
+            source_meta = {'status': 'benchmark', 'errors': []}
+            registry_sha = git_blob_sha(source_path / 'logs' / 'registry.json')
         else:
             project_name = source_path.name
-            registry = load_json(source_path / 'registry.json') or {}
-            # Load threads + inbox from _live_cache/ (populated by fetch_live_data.py)
+            registry_path = source_path / 'registry.json'
+            registry = load_json(registry_path) or {}
+            registry_sha = git_blob_sha(registry_path)
             _cache = cache_dir if cache_dir else root / '_live_cache'
             threads, inbox = load_live_threads(_cache)
-            events_path = None
-            for session_dir in source_path.iterdir():
-                if session_dir.is_dir():
-                    ep = session_dir / 'events.jsonl'
-                    if ep.exists():
-                        events_path = ep
-                        break
+            source_meta = load_json(_cache / 'capture-info.json')
+            events_path = sorted(source_path.rglob('events.jsonl'))
             is_benchmark = False
 
+        status_num = _issue_number(
+            registry.get('status_comment') or registry.get('status_issue') or ''
+        )
+        status_thread = threads.get(status_num, {}) if status_num else {}
+        current_meta = dict(source_meta) if isinstance(source_meta, dict) else None
+        if not is_benchmark and current_meta and status_num and status_num not in threads:
+            current_meta['status'] = 'degraded'
+            current_meta['errors'] = list(current_meta.get('errors', [])) + [
+                f'status_missing:{project_name}'
+            ]
         project_data, timeline = build_project_data(
-            root, project_name, registry, threads, inbox, events_path
+            root, project_name, registry, threads, inbox, events_path,
+            source_meta=current_meta, status_thread=status_thread,
+            registry_blob_sha=registry_sha
         )
         project_data['is_benchmark'] = is_benchmark
         project_data['benchmark_snapshot'] = (
@@ -577,14 +766,18 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
         for agent in project_data['agents']:
             aid = agent['chat_id8']
             if aid:
-                save_json(
-                    out_dir / f'evidence-{aid}.json',
-                    {
-                        'project': project_name,
-                        'agent': agent,
-                        'built_at': project_data['built_at'],
-                    }
-                )
+                payload = {'project': project_name, 'agent': agent,
+                           'built_at': project_data['built_at']}
+                save_json(out_dir / f'evidence-{project_name}-{aid}.json', payload)
+                if aid not in evidence_names:
+                    evidence_names[aid] = project_name
+                    save_json(out_dir / f'evidence-{aid}.json', payload)
+                elif evidence_names[aid] != project_name:
+                    save_json(out_dir / f'evidence-{aid}.json', {
+                        'collision': True, 'agent': None,
+                        'source_health': {'status': 'ambiguous_agent_id8'},
+                        'projects': [evidence_names[aid], project_name],
+                    })
 
         # Save timeline
         save_json(
@@ -603,6 +796,16 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
         summary.append({
             'project': pd['project'],
             'repository': pd['registry']['repository'],
+            'schema_version': pd['schema_version'],
+            'source_commit': pd['source_commit'],
+            'registry_blob_sha': pd['registry_blob_sha'],
+            'source_capture_at': pd['source_capture_at'],
+            'source_health': pd['source_health'],
+            'source_refs': pd['source_refs'],
+            'last_cycle_at': pd['last_cycle_at'],
+            'freshness_status': pd['freshness_status'],
+            'published_at': pd['published_at'],
+            'stale_lease_count': pd['stale_lease_count'],
             'control': pd['registry']['control'],
             'workflow': pd['registry']['workflow'],
             'agents': [

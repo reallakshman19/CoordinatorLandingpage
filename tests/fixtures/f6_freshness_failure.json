@@ -1,0 +1,20 @@
+{
+  "fixture": "F6 generated sanitized freshness/partial-capture negative controls; no secret values",
+  "now": "2026-10-15T14:50:00+04:00",
+  "fresh_cycle_at": "2026-10-15T14:45:00+04:00",
+  "stale_cycle_at": "2026-10-15T14:19:00+04:00",
+  "wrong_epoch": 2,
+  "expected": {
+    "missing_cycle": "UNKNOWN",
+    "wrong_epoch": "UNKNOWN",
+    "stale_31_min": "STALE",
+    "fresh_observed": "RUNNING-observed",
+    "capture_failed": "STALE",
+    "hold": "HOLD"
+  },
+  "statuses": {
+    "ok": "ok",
+    "failed": "degraded"
+  },
+  "failed_issue": 1
+}
