@@ -1,0 +1,85 @@
+name: Owner Input
+description: Post an instruction, question, or decision to the team. The coordinator handles it in its next cycle.
+title: "[Owner input] "
+labels: ["owner-input"]
+body:
+  - type: dropdown
+    id: project
+    attributes:
+      label: Project
+      description: Which project does this input apply to?
+      options:
+        - grade9-pilot
+        - imo-ab-test
+        - all projects
+    validations:
+      required: true
+
+  - type: dropdown
+    id: target
+    attributes:
+      label: Target
+      description: Who should receive this?
+      options:
+        - whole team
+        - TeamCoordinator
+        - OwnerTeammember
+        - "agent: 6ad0449d"
+        - "agent: 6ad04451"
+        - "agent: 6ad0506c"
+        - "agent: 6ad0508a"
+        - "agent: 6ad02128"
+        - "agent: 6ad02130"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Input type
+      description: |
+        GROUND — stop and ground an agent
+        SUGGEST — suggest an action for an agent
+        INFO — share information
+        DECISION — provide a decision (protected actions need your explicit words)
+        HOLD — pause the project or an agent
+        RESUME — resume from a HOLD
+        QUESTION — ask the team a question
+      options:
+        - GROUND
+        - SUGGEST
+        - INFO
+        - DECISION
+        - HOLD
+        - RESUME
+        - QUESTION
+    validations:
+      required: true
+
+  - type: textarea
+    id: text
+    attributes:
+      label: Your instruction or message
+      description: |
+        Write exactly what you want relayed to the team.
+        For DECISION on protected actions (merge, release, new chat, upload, writer/role change, acceptance):
+        include your exact words — the coordinator quotes them verbatim.
+      placeholder: |
+        Example: "Approve the 13 difficulty corrections confirmed by both agents (G9-DIFF-13). Option A."
+    validations:
+      required: true
+
+  - type: input
+    id: evidence_link
+    attributes:
+      label: Evidence link (optional)
+      description: Link to the decision card, evidence comment, or issue that this input responds to.
+      placeholder: "https://github.com/reallakshman19/CoordinatorLandingpage/issues/..."
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirmation
+      options:
+        - label: I am the Owner. This input is mine and is time-stamped by GitHub.
+          required: true

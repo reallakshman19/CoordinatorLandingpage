@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team Protocol — Owner Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ── Benchmark mode banner ──────────────────────────── -->
+<div id="benchmark-banner">
+  📦 Benchmark mode — frozen snapshot, read-only. Posting disabled.
+  <button id="exit-benchmark" style="margin-left:10px;padding:2px 8px;font-size:0.78rem;border-radius:4px;border:1px solid currentColor;background:transparent;cursor:pointer;">
+    Exit benchmark
+  </button>
+</div>
+
+<!-- ── Top navigation ──────────────────────────────────── -->
+<nav id="nav" role="navigation" aria-label="Main navigation">
+  <span class="brand">🔮 Team Protocol</span>
+  <div id="nav-tabs" role="tablist">
+    <button class="nav-tab active" data-view="home" role="tab">Home</button>
+    <button class="nav-tab" data-view="timeline" role="tab">Timeline</button>
+    <button class="nav-tab" data-view="owner-inputs" role="tab">Owner inputs</button>
+    <button class="nav-tab" data-view="protocol" role="tab">Protocol</button>
+    <button class="nav-tab" data-view="benchmarks" role="tab">Benchmarks</button>
+  </div>
+</nav>
+
+<!-- ── Main content area ──────────────────────────────── -->
+<main id="app" role="main">
+  <div class="loading">
+    <span class="spinner"></span> Loading data…
+  </div>
+</main>
+
+<!-- ── View templates (hidden, cloned by JS) ──────────── -->
+<template id="tpl-home">
+  <!-- Needs-you list -->
+  <div id="needs-you" role="region" aria-label="Needs your attention">
+    <h2>⚠ Needs you</h2>
+    <ol id="needs-you-list"></ol>
+  </div>
+
+  <!-- Liveness strip -->
+  <div id="liveness-strip" role="complementary" aria-label="System liveness">
+    <div class="live-item">
+      <span class="dot" id="live-tc"></span>
+      <span>TeamCoordinator</span>
+      <span id="live-tc-time" style="color:var(--text-3)"></span>
+    </div>
+    <div class="live-item">
+      <span class="dot" id="live-otm"></span>
+      <span>OwnerTeammember</span>
+      <span id="live-otm-time" style="color:var(--text-3)"></span>
+    </div>
+    <div class="live-item">
+      <span class="dot dot-grey"></span>
+      <span>Watchdog</span>
+      <span class="badge badge-grey" style="font-size:0.72rem">planned</span>
+    </div>
+    <div class="live-item">
+      <span class="dot dot-green" id="live-gh"></span>
+      <span>GitHub</span>
+    </div>
+    <div style="margin-left:auto;font-size:0.75rem;color:var(--text-3)" id="data-built-at"></div>
+  </div>
+
+  <!-- Projects table -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Projects</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Project</th>
+            <th>Coordinator · Epoch</th>
+            <th>Agents</th>
+            <th>Health</th>
+            <th>Last cycle</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="projects-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-project">
+  <div id="view-project">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn btn-small" id="back-to-home">← Home</button>
+      <h1 id="project-title" style="font-size:1.2rem"></h1>
+      <div id="project-hold-badge"></div>
+    </div>
+
+    <!-- Workflow card -->
+    <div class="workflow-card" id="workflow-card">
+      <div class="workflow-owner-words" id="workflow-words"></div>
+      <div class="workflow-steps" id="workflow-steps"></div>
+      <div class="note" id="workflow-current"></div>
+    </div>
+
+    <!-- Agents table -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Agents</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Role · id8</th>
+              <th>Gen</th>
+              <th>State</th>
+              <th>Evidence</th>
+              <th>Branch</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="agents-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Writer leases -->
+    <div class="card" id="leases-card">
+      <div class="card-header">
+        <span class="card-title">Writer leases</span>
+      </div>
+      <div id="leases-body"></div>
+    </div>
+
+    <!-- Outside writes -->
+    <div id="outside-writes-section"></div>
+
+    <!-- Open decisions -->
+    <div id="open-decisions-section">
+      <h2 style="font-size:1rem;margin-bottom:10px">Open Owner decisions</h2>
+      <div id="open-decisions-list"></div>
+    </div>
+
+    <!-- Post to team -->
+    <div style="margin-top:20px">
+      <a id="post-btn" class="btn btn-primary" target="_blank" rel="noopener">
+        📮 Post to team
+      </a>
+      <span class="note" style="margin-left:10px">Opens GitHub's new-issue page (requires sign-in)</span>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-agent">
+  <div id="view-agent">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn btn-small" id="back-to-project">← Project</button>
+      <h1 id="agent-title" style="font-size:1.1rem"></h1>
+      <div id="agent-badges"></div>
+    </div>
+
+    <!-- Grounding / agent action buttons -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap" id="agent-action-buttons">
+      <a id="btn-ground" class="btn btn-danger btn-small" target="_blank" rel="noopener">
+        ⚡ Ground this agent
+      </a>
+      <a id="btn-suggest" class="btn btn-small" target="_blank" rel="noopener">
+        💡 Suggest action
+      </a>
+    </div>
+
+    <!-- Evidence chain -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Evidence chain</span>
+        <span id="evidence-count" class="badge badge-blue"></span>
+      </div>
+      <div class="card-body">
+        <p class="note" style="margin-bottom:10px">
+          Each row is one TASK EVIDENCE v2 block.
+          Labels (CI · READBACK · LOCAL · CLAIM-ONLY) are the agent's own proof grades.
+          OwnerTeammember verdicts are shown below each block.
+          <strong>This page shows agent claims and verdicts — not acceptance.</strong>
+        </p>
+        <div id="evidence-chain" class="evidence-chain"></div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-timeline">
+  <div id="view-timeline">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <h1 style="font-size:1.1rem">Timeline</h1>
+      <span id="tl-reconstructed-note" class="reconstructed-label" style="display:none">
+        reconstructed from threads + inbox
+      </span>
+    </div>
+
+    <!-- Flow strip -->
+    <div class="flow-strip" id="flow-strip">
+      <span class="flow-actor">Owner</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-actor">OwnerTeammember</span>
+      <span class="flow-arrow">→ FOR TC →</span>
+      <span class="flow-actor">TeamCoordinator</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-actor">agent</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-actor">evidence thread</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-actor">verdict</span>
+    </div>
+
+    <!-- Filters -->
+    <div class="tl-filters">
+      <select id="tl-project-filter">
+        <option value="">All projects</option>
+      </select>
+      <select id="tl-actor-filter">
+        <option value="">All actors</option>
+      </select>
+      <select id="tl-type-filter">
+        <option value="">All event types</option>
+        <option value="TASK_EVIDENCE">TASK EVIDENCE</option>
+        <option value="VERDICT">Verdict</option>
+        <option value="COORDINATOR_EVIDENCE">Coordinator Evidence</option>
+        <option value="FOR_TC">FOR TeamCoordinator</option>
+        <option value="CONTROL_EPOCH">Control epoch</option>
+        <option value="OWNER_DECISION">Owner decision</option>
+        <option value="OUTSIDE_WRITE">Outside write</option>
+      </select>
+      <input type="text" id="tl-text-filter" placeholder="Filter text…" style="flex:1;min-width:120px">
+    </div>
+
+    <div class="timeline" id="timeline-events"></div>
+    <div id="tl-raw-panel" style="margin-top:12px;display:none">
+      <div class="raw-panel" id="tl-raw-text"></div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-decision-card">
+  <div id="view-decision">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn btn-small" id="back-from-decision">← Project</button>
+      <h1 style="font-size:1.1rem">Decision card</h1>
+    </div>
+    <div class="decision-card" id="decision-card-main">
+      <div class="decision-card-header">
+        <span class="decision-card-id" id="dc-id"></span>
+        <span class="decision-card-ask" id="dc-ask"></span>
+      </div>
+      <div class="decision-card-body">
+        <div id="dc-links" style="margin-bottom:12px"></div>
+        <div id="dc-open-items" style="margin-bottom:12px"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a id="dc-answer-btn" class="btn btn-primary" target="_blank" rel="noopener">
+            ✍️ Answer this decision
+          </a>
+        </div>
+        <p class="note" style="margin-top:8px">
+          Opens GitHub's new-issue page prefilled with type DECISION.
+        </p>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-owner-inputs">
+  <div id="view-owner-inputs">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap;justify-content:space-between">
+      <h1 style="font-size:1.1rem">Owner inputs</h1>
+      <a id="new-input-btn" class="btn btn-primary btn-small" target="_blank" rel="noopener">
+        📮 New input
+      </a>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">All Owner inputs</span>
+        <span id="oi-count" class="badge badge-blue"></span>
+      </div>
+      <div id="oi-list"></div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-protocol">
+  <div id="view-protocol">
+    <h1 style="font-size:1.2rem;margin-bottom:12px">Protocol v2.1</h1>
+    <div class="protocol-toc" id="protocol-toc">
+      <h3>Table of contents</h3>
+      <ul id="toc-list"></ul>
+    </div>
+    <div class="md-content" id="protocol-md"></div>
+  </div>
+</template>
+
+<template id="tpl-benchmarks">
+  <div id="view-benchmarks">
+    <h1 style="font-size:1.2rem;margin-bottom:8px">Benchmarks</h1>
+    <p style="font-size:0.875rem;color:var(--text-2);margin-bottom:16px">
+      Frozen snapshots from 15 Oct 2026. Posting is disabled in benchmark mode.
+      Switch a benchmark to see all views populated from that snapshot.
+    </p>
+    <div class="card" id="benchmarks-list-card">
+      <div class="card-header"><span class="card-title">Available snapshots</span></div>
+      <div id="benchmarks-list"></div>
+    </div>
+  </div>
+</template>
+
+<!-- ── JavaScript app ──────────────────────────────────── -->
+<script src="app.js"></script>
+</body>
+</html>

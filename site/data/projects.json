@@ -1,0 +1,147 @@
+[
+  {
+    "project": "grade9-pilot",
+    "repository": "reallakshman19/Grade9v3.5",
+    "control": {
+      "epoch": 2,
+      "coordinator": "OwnerTeammember (stand-in TeamCoordinator)",
+      "since": "2026-10-15T07:12:23+04:00",
+      "notice": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6183540238",
+      "paused": [
+        {
+          "who": "Codex (TeamCoordinator, epoch 1)",
+          "state": "Owner HOLD since 2026-10-15T06:54+04:00; must not send to these chats until a CONTROL epoch notice names it"
+        }
+      ],
+      "hold": {
+        "since": "2026-10-15T08:10:21+04:00",
+        "owner_words": "HOLD further task on tabs",
+        "effect": "no coordinator sends to any agent chat until the Owner resumes"
+      }
+    },
+    "workflow": {
+      "owner_words": "QRT tile by tile: idea is to design a validator (by one agent), fix existing standalone html based on validator outcome (another agent), check and fix the validator if required",
+      "given": "2026-10-15T07:58+04:00",
+      "loop": [
+        "validator: define and run the tile's checks on the current standalone HTML at the exact commit; post PASS/FAIL per question",
+        "fixer: fix each FAIL through source + builder (4 identical outputs); freeze a commit; post FIXED / NOT FIXED / DISPUTED",
+        "validator: re-run on that commit; fix the validator where its FAIL was wrong",
+        "tile done at 0 FAIL → next tile"
+      ],
+      "current": {
+        "tile": "QRT-RETRIEVE-D1",
+        "step": "validator g2 onboarding; tile 1 checks next"
+      }
+    },
+    "agents": [
+      {
+        "role": "validator",
+        "alias": "",
+        "generation": 2,
+        "chat_id8": "6ad0506c",
+        "status": "active",
+        "evidence_thread_num": 10
+      },
+      {
+        "role": "fixer (coder)",
+        "alias": "",
+        "generation": 2,
+        "chat_id8": "6ad0508a",
+        "status": "active",
+        "evidence_thread_num": 11
+      },
+      {
+        "role": "validator",
+        "alias": "",
+        "generation": 1,
+        "chat_id8": "6ad02130",
+        "status": "retired",
+        "evidence_thread_num": 9
+      },
+      {
+        "role": "coder",
+        "alias": "",
+        "generation": 1,
+        "chat_id8": "6ad02128",
+        "status": "retired",
+        "evidence_thread_num": 8
+      }
+    ],
+    "open_owner_decisions": [
+      {
+        "id": "G9-DIFF-13",
+        "ask": "approve the 13 difficulty corrections confirmed by both g1 agents against the blueprint (applied in their tile)",
+        "link": "https://github.com/reallakshman19/Grade9v3.5/issues/249#issuecomment-6184002829"
+      },
+      {
+        "id": "PROTO-FREEZE",
+        "ask": "freeze Team protocol v2.0 after the prototype run"
+      },
+      {
+        "id": "WATCHDOG",
+        "ask": "add the GitHub Actions watchdog?"
+      }
+    ],
+    "outside_writes": [],
+    "timeline_source": "events_jsonl",
+    "is_benchmark": true,
+    "benchmark_snapshot": "2026-10-15",
+    "built_at": "2026-10-15T07:23:24.727882+00:00"
+  },
+  {
+    "project": "imo-ab-test",
+    "repository": "reallakshman19/Grade9v3.5",
+    "control": {
+      "epoch": 1,
+      "coordinator": "TeamCoordinator: Claude (Owner, 15 Oct: \"you will be teamcoordinator, ownermember another agent\")",
+      "since": "2026-10-15T08:45+04:00",
+      "owner_teammember": "the Claude session posting as \"OwnerTeammember\" in CoordinatorLandingpage; its relays with quote and time count (Owner, 15 Oct 08:5x)",
+      "hold": null
+    },
+    "workflow": {
+      "owner_words": "Agent A repairs the native renderer until 21/21, Agent B finishes the Q003 plan; each hands over to the other for checking",
+      "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6184438655 (Owner 08:29 \"ok, proceed\")",
+      "loop": [
+        "agent freezes a commit and posts TASK EVIDENCE v2",
+        "other agent checks that exact commit, posts PASS / FAIL / HOLD in its own thread",
+        "first agent fixes",
+        "repeat"
+      ],
+      "current": {
+        "A": "lease granted; R8 readback, contract gap check, then native renderer implementation",
+        "B": "onboarded; prepare_private.py, native Core2 vs G-CORE2-R2, Core1A"
+      }
+    },
+    "agents": [
+      {
+        "role": "implementer (R13 native repair)",
+        "alias": "Agent A",
+        "generation": 1,
+        "chat_id8": "6ad0449d",
+        "status": "active",
+        "evidence_thread_num": 13
+      },
+      {
+        "role": "analyst (Q003 plan R3)",
+        "alias": "Agent B",
+        "generation": 1,
+        "chat_id8": "6ad04451",
+        "status": "active",
+        "evidence_thread_num": 14
+      }
+    ],
+    "open_owner_decisions": [
+      {
+        "id": "AB-DISPATCH",
+        "ask": "who dispatches the manual R14 workflow imo182-r8-qrt-intent-contract.yml on agent/182-r13-native-repair-matrix-20261015: the Owner, or authorize Agent A?"
+      }
+    ],
+    "outside_writes": [
+      "PR #240 branch feat/imo-grade9-68-questions-master-suite moved 90c85970 -> 5a117f69 (1 commit, 15 files, pushed outside this project, ~10:31); contains A render_core.py change (+56/-13): second writer outside A lease; A 21-case run must state its base (FTC-006)"
+    ],
+    "timeline_source": "reconstructed",
+    "is_benchmark": true,
+    "benchmark_snapshot": "2026-10-15",
+    "built_at": "2026-10-15T07:23:24.751839+00:00"
+  }
+]
