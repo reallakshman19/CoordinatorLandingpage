@@ -617,3 +617,16 @@ tr:hover td { background: var(--bg-2); }
 .trace-waiting { color: var(--text-2); font-size: 0.9rem; }
 .trace-explanation { margin: 12px 16px; padding: 12px; background: var(--bg-2); border-left: 3px solid var(--warn); line-height: 1.5; overflow-wrap: anywhere; }
 #trace-disclaimer { margin: 12px 16px 0; font-size: 0.82rem; line-height: 1.4; }
+
+
+.owner-json-card { margin-bottom: 16px; }
+.owner-json-form { padding: 14px 16px; display: grid; gap: 12px; max-width: 680px; }
+.owner-json-form label { display: flex; flex-direction: column; gap: 5px; font-size: 0.9rem; }
+.owner-json-form input, .owner-json-form select, .owner-json-form textarea {
+  border: 1px solid var(--border); border-radius: 5px; padding: 9px;
+  background: var(--bg-2); color: var(--text); max-width: 100%;
+  font-family: inherit; font-size: 0.9rem;
+}
+.owner-json-form textarea { resize: vertical; }
+.owner-json-card > p.note { padding: 0 16px 15px; line-height: 1.5; }
+#oi-json-result { overflow-wrap: anywhere; font-size: 0.85rem; }

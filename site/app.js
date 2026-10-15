@@ -306,6 +306,7 @@ function summarizeFreshness(projects) {
   return all.every(s => s === 'RUNNING-observed') ? 'RUNNING-observed' : 'UNKNOWN';
 }
 function safeReceipt(inp) {
+  if (inp?.source_kind === 'json_file') return traceSafeGitHubURL(inp.receipt);
   const match = /^https:\/\/github\.com\/reallakshman19\/CoordinatorLandingpage\/issues\/([0-9]+)#issuecomment-([0-9]+)$/.exec(inp && inp.receipt);
   return match && Number(match[1]) === Number(inp.number) ? match[0] : null;
 }
@@ -319,6 +320,58 @@ function ownerStatusBadge(status) {
                    NEEDS_CLARIFICATION: 'badge-red', HANDLED: 'badge-green',
                    SUPERSEDED: 'badge-grey'};
   return el('span', 'badge ' + (classes[status] || 'badge-grey'), status);
+}
+
+
+function ownerJSONCommitURL(values, date = new Date(), randomBytes = null) {
+  const project = String(values.project || '');
+  if (!state.projects.some(p => p.project === project) ||
+      !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(project)) throw new Error('Choose a listed project.');
+  const target = String(values.target || '').trim();
+  const type = String(values.type || '').trim();
+  const message = String(values.text || '').trim();
+  const replaces = String(values.replaces || '').trim();
+  if (!target || target.length > 160 || !type || type.length > 64 ||
+      !message || message.length > 1500) throw new Error('Enter a target, type and message.');
+  if (replaces && !/^OI-\d{8}-\d{6}-[0-9a-f]{4}$/.test(replaces))
+    throw new Error('The replacement ID is invalid.');
+  const stamp = date.toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15);
+  const bytes = randomBytes || crypto.getRandomValues(new Uint8Array(2));
+  const rnd = Array.from(bytes).map(n => n.toString(16).padStart(2, '0')).join('');
+  const id = 'OI-' + stamp + '-' + rnd;
+  const record = {id, project, target, type, text: message,
+                  replaces: replaces || null, created_at: date.toISOString()};
+  const path = 'logs/' + project + '/inputs/' + id + '.json';
+  const url = 'https://github.com/' + REPO + '/new/main?filename=' +
+    encodeURIComponent(path) + '&value=' + encodeURIComponent(JSON.stringify(record, null, 2));
+  if (url.length >= 7000) throw new Error('Request too long. Shorten the message.');
+  return {url, record, path};
+}
+
+function setupJSONInputForm() {
+  const form = $('oi-json-form'), projects = $('oi-json-project');
+  if (!form || !projects) return;
+  for (const p of state.projects) {
+    const opt = el('option', '', p.project);
+    opt.value = p.project;
+    projects.appendChild(opt);
+  }
+  if (state.benchmarkMode) { form.style.display = 'none'; return; }
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    try {
+      const result = ownerJSONCommitURL({
+        project: projects.value, target: $('oi-json-target').value,
+        type: $('oi-json-type').value, text: $('oi-json-text').value,
+        replaces: $('oi-json-replaces').value,
+      });
+      window.open(result.url, '_blank', 'noopener,noreferrer');
+      $('oi-json-result').textContent = 'GitHub opened with ' + result.record.id +
+        '. Review the JSON and click Commit changes. Nothing is posted until then.';
+    } catch (error) {
+      $('oi-json-result').textContent = error.message;
+    }
+  });
 }
 
 // ── Router ─────────────────────────────────────────────────
@@ -385,7 +438,7 @@ async function renderHome(app) {
           !['OWNER', 'MEMBER', 'COLLABORATOR'].includes(inp.author_association)) continue;
       if (status === 'HANDLED' || status === 'SUPERSEDED') continue;
       const li = el('li', 'needs-input');
-      li.appendChild(el('strong', '', 'Owner input #' + String(inp.number || '—') + ' '));
+      li.appendChild(el('strong', '', 'Owner input ' + String(inp.id || ('#' + inp.number) || '—') + ' '));
       li.appendChild(ownerStatusBadge(status));
       if (inp.protected_action) {
         li.appendChild(el('span', 'badge badge-grey', 'UNVERIFIED · no action'));
@@ -395,7 +448,7 @@ async function renderHome(app) {
         ' · For: ' + String(inp.target || 'the team') +
         ' · Waiting for: ' + String(inp.trace?.waiting_for || 'TeamCoordinator')));
       const trace = el('a', 'btn btn-small', 'Trace →');
-      trace.href = '#trace/' + encodeURIComponent(String(inp.number));
+      trace.href = '#trace/' + encodeURIComponent(String(inp.id || inp.number));
       li.appendChild(trace);
       const link = el('a', 'btn btn-small', 'View input →');
       link.href = '#owner-inputs';
@@ -1012,6 +1065,7 @@ async function renderOwnerInputs(app) {
   app.appendChild(frag);
 
   $('new-input-btn').href = ownerInputURL();
+  setupJSONInputForm();
   if (state.benchmarkMode) {
     $('new-input-btn').style.display = 'none';
   }
@@ -1055,7 +1109,7 @@ async function renderOwnerInputs(app) {
     const outsider = !trusted.includes(inp);
     const status = ownerInputState(inp);
     const row = el('div', 'oi-row');
-    row.dataset.issue = String(inp.number || '');
+    row.dataset.issue = String(inp.id || inp.number || '');
     row.appendChild(el('span', 'oi-state')).appendChild(ownerStatusBadge(status));
     if (outsider) {
       row.appendChild(el('span', 'badge badge-grey', 'OUTSIDER'));
@@ -1090,11 +1144,13 @@ async function renderOwnerInputs(app) {
         'pending · no linked handler receipt'));
     }
     const trace = el('a', 'btn btn-small', 'Trace →');
-    trace.href = '#trace/' + encodeURIComponent(String(inp.number || ''));
+    trace.href = '#trace/' + encodeURIComponent(String(inp.id || inp.number || ''));
     message.appendChild(trace);
-    const issue = el('a', 'oi-issue-link', 'Issue #' + String(inp.number || '—') + ' →');
-    issue.href = 'https://github.com/' + REPO + '/issues/' +
-      encodeURIComponent(String(inp.number || ''));
+    const issue = el('a', 'oi-issue-link', inp.source_kind === 'json_file'
+      ? 'Committed JSON →' : 'Issue #' + String(inp.number || '—') + ' →');
+    issue.href = inp.source_kind === 'json_file'
+      ? (traceSafeGitHubURL(inp.issue_url) || '#owner-inputs')
+      : 'https://github.com/' + REPO + '/issues/' + encodeURIComponent(String(inp.number || ''));
     issue.target = '_blank';
     issue.rel = 'noopener noreferrer';
     message.appendChild(issue);
@@ -1108,8 +1164,9 @@ async function renderOwnerInputs(app) {
 // ── Owner request trace (read-only, recorded links only) ─────
 function traceSafeGitHubURL(url) {
   if (typeof url !== 'string') return null;
-  return /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/(?:issues|pull)\/\d+(?:#issuecomment-\d+)?$/.test(url)
-    ? url : null;
+  const match = /^https:\/\/github\.com\/([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)\/(?:(?:issues|pull)\/\d+(?:#issuecomment-\d+)?|blob\/[0-9a-f]{40}\/logs\/[A-Za-z0-9._-]+\/(?:inputs\/OI-\d{8}-\d{6}-[0-9a-f]{4}\.json|receipts\.jsonl)(?:#L\d+)?)$/.exec(url);
+  const permitted = new Set([REPO, ...state.projects.map(p => p.repository)]);
+  return match && permitted.has(match[1]) ? url : null;
 }
 
 async function renderTrace(app, numberRaw) {
@@ -1118,8 +1175,8 @@ async function renderTrace(app, numberRaw) {
   app.appendChild(frag);
   const number = String(numberRaw || '');
   const inputs = await loadOwnerInputs();
-  const item = /^\d+$/.test(number) && Array.isArray(inputs)
-    ? inputs.find(x => String(x.number) === number) : null;
+  const item = /^(?:\d+|OI-\d{8}-\d{6}-[0-9a-f]{4})$/.test(number) && Array.isArray(inputs)
+    ? inputs.find(x => String(x.id || x.number) === number) : null;
   $('trace-back').href = '#owner-inputs';
   if (!item) {
     $('trace-title').textContent = 'Request not found';
