@@ -1,0 +1,19 @@
+{
+ "project": "grade9-pilot",
+ "snapshot": "2026-10-15",
+ "source": "reallakshman19/CoordinatorLandingpage",
+ "files": [
+  "inbox-1.json",
+  "logs\\2026-10-15_epoch2\\events.jsonl",
+  "logs\\2026-10-15_epoch2\\handovers\\handover-coder-g2.md",
+  "logs\\2026-10-15_epoch2\\handovers\\handover-validator-g2.md",
+  "logs\\2026-10-15_epoch2\\raw\\6ad02128\\turn-4.md",
+  "logs\\registry.json",
+  "threads\\issue-10.json",
+  "threads\\issue-11.json",
+  "threads\\issue-6.json",
+  "threads\\issue-8.json",
+  "threads\\issue-9.json"
+ ],
+ "note": "Frozen benchmark copy for the Team Protocol landing page. Chat links reduced to id8."
+}

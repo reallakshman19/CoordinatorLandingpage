@@ -1,0 +1,91 @@
+{
+ "number": 12,
+ "title": "[Status] imo-ab-test · Team protocol v2.0 test",
+ "body": "Project status for the imo-ab-test project (Team protocol v2.0 prototype test on the Owner's chats A and B). ONE COORDINATOR EVIDENCE v1 comment, edited in place. Registry: logs/imo-ab-test/registry.json",
+ "comments": [
+  {
+   "id": 6184294027,
+   "created_at": "2026-10-15T04:17:26Z",
+   "updated_at": "2026-10-15T06:55:46Z",
+   "body": "```text\r\nCOORDINATOR EVIDENCE v1 · imo-ab-test · cycle 18 · epoch 1 · 10:53–10:55 +04:00 · steps 6\r\nHealth: TC ✓ 10:55 · OwnerTeammember ✓ 10:54 · watchdog — · agents 0 working, 2 waiting, 0 stopped\r\nWorkflow: \"Agent A repairs the native renderer until 21/21, Agent B finishes the Q003 plan; each hands over to the other for checking\"\r\nNEEDS YOU (1)\r\n  1. AB-DISPATCH: run the manual R14 workflow (Grade9v3.5 → Actions → \"IMO182 R8 QRT Intent Contract P0…\" → Run workflow, branch agent/182-r13-native-repair-matrix-20261015, after B checks 3db7f685), or authorize Agent A to dispatch it. Recommended: authorize A.\r\n```\r\n| Agent | State | Doing → outcome | Last evidence | Proof | Meter | Next (who) |\r\n|---|---|---|---|---|---|---|\r\n| implementer 6ad0449d | 🟡 waiting on You | R14 21-source run (base: PR #268 renderer, not PR #240) | STATUS v2 10:46 · blocker OWNER | OTM ✅ #9 | — | You: AB-DISPATCH |\r\n| analyst 6ad04451 | 🟡 waiting on You | 5a117f69 review done: (a) FAIL, (b) HOLD (core1b pre-attempt reveal), (c) FAIL, (d) FAIL (stale data.js) | [#13](https://github.com/reallakshman19/CoordinatorLandingpage/issues/14#issuecomment-6186316102) DONE | OTM ✅ #13 | 7 min · 1 t | You: OTM summary of 5a117f69; local Q003 run |\r\n\r\n```text\r\nChanged since last cycle: B #13 review of 5a117f69 (OTM ✅; goes to the Owner as one summary); A STATUS: blocked on dispatch\r\nSent this cycle: none (both gated on the Owner)\r\n```\r\n"
+  },
+  {
+   "id": 6184584361,
+   "created_at": "2026-10-15T04:42:28Z",
+   "updated_at": "2026-10-15T04:42:28Z",
+   "body": "```text\nCOORDINATOR EVIDENCE v1 · imo-ab-test · receipt · epoch 1 · 09:1x +04:00\nSent: A 6ad0449d ← §10 onboarding (thread #13; lease still open: work in own lane or report waiting) → DELIVERED (agent working)\nOwner decisions recorded (Owner chat, 09:1x): OwnerTeammember = Owner · Q003 academic/QRT acceptance waits for final phase · \"File given to agent B\"\n```\n"
+  },
+  {
+   "id": 6184638361,
+   "created_at": "2026-10-15T04:47:12Z",
+   "updated_at": "2026-10-15T04:47:12Z",
+   "body": "```text\nCOORDINATOR EVIDENCE v1 · imo-ab-test · receipt · epoch 1 · 09:2x +04:00\nOwner decision relay 6184438655 delivered (Owner confirmed it stands, 09:2x):\nA 6ad0449d ← AB-LEASE granted (limits as relayed) + workflow card + own Next → DELIVERED\nB 6ad04451 ← §10 onboarding (#14) + workflow card + AB-SOURCE direct + Q003 acceptance in final phase → DELIVERED\n```\n"
+  },
+  {
+   "id": 6184694886,
+   "created_at": "2026-10-15T04:52:10Z",
+   "updated_at": "2026-10-15T04:52:10Z",
+   "body": "```text\nCOORDINATOR EVIDENCE v1 · imo-ab-test · correction · epoch 1 · 08:51 +04:00 (machine clock)\nreplaces the times in receipts 6184584361 and 6184638361: \"09:1x\" read 08:4x and \"09:2x\" read 08:4x–08:5x (TeamCoordinator wrote estimated times, not the clock). Content unchanged.\n```\n"
+  },
+  {
+   "id": 6184791602,
+   "created_at": "2026-10-15T05:00:28Z",
+   "updated_at": "2026-10-15T05:00:28Z",
+   "body": "```text\nCOORDINATOR EVIDENCE v1 · imo-ab-test · receipt · epoch 1 · 08:59 +04:00\nOwner decision (Owner chat, 08:58): \"need to work with this\" — AB-SOURCE closed: no further private Q003 source item; Agent B works with the inputs it has (render_core.py, SOURCE-CUSTODY-RECEIPTS.md); canonical Core2 admission recorded as a final-phase gap.\nSent: B 6ad04451 ← that decision + its own Next (CORE2-NATIVE-GOLDEN, CORE1A-NATIVE) → DELIVERED\n```\n"
+  },
+  {
+   "id": 6184867051,
+   "created_at": "2026-10-15T05:06:12Z",
+   "updated_at": "2026-10-15T05:06:12Z",
+   "body": "```text\nCOORDINATOR EVIDENCE v1 · imo-ab-test · receipt · epoch 1 · 09:05 +04:00\nSent: A 6ad0449d ← OwnerTeammember FOR-TC 6184745878 word for word → DELIVERED\n```\n"
+  },
+  {
+   "id": 6184915947,
+   "created_at": "2026-10-15T05:10:05Z",
+   "updated_at": "2026-10-15T05:10:05Z",
+   "body": "```text\nCOORDINATOR EVIDENCE v1 · imo-ab-test · Owner decision · epoch 1 · 09:09 +04:00\nAB-HARNESS decided. Source: Owner chat, 09:08. Owner's words: \"My recommendation: A, with one condition. Agent B must check A's test-setup change on the exact commit before any result counts.\"\nAction: Agent A may modify only the R8 TEST qualification workflow/runner paths needed for the 21-cell check of its renderer, preserving source/golden receipts. Condition: Agent B checks that harness change on the exact commit (PASS/FAIL/HOLD in #14) before any 21-cell result counts.\nRelay to A and B: when each is idle (both working at 09:09).\n```\n"
+  },
+  {
+   "id": 6184993655,
+   "created_at": "2026-10-15T05:16:16Z",
+   "updated_at": "2026-10-15T05:16:16Z",
+   "body": "```text\nCOORDINATOR EVIDENCE v1 · imo-ab-test · receipt · epoch 1 · 09:15 +04:00\nSent: A 6ad0449d ← AB-HARNESS (Owner 09:08, quoted) + OwnerTeammember question 13#6184968241 → DELIVERED\nHeld: B 6ad04451 (working, already re-checking 5f3c3bb7 per 1#6184968890); AB-SOURCE PDF hash-match ask goes after its current turn\n```\n"
+  },
+  {
+   "id": 6185118374,
+   "created_at": "2026-10-15T05:26:37Z",
+   "updated_at": "2026-10-15T05:26:37Z",
+   "body": "```text\nCOORDINATOR EVIDENCE v1 · imo-ab-test · receipt · epoch 1 · 09:26 +04:00\nFOR-TC FTC-001 → DELIVERED (adopted: §6b form, receipts name the id)\nFOR-TC 1#6184988431 → DELIVERED to A 6ad0449d (word for word; noted #5 already answered Core1B and added the harness; hub pages = Owner decision)\nAB-HARNESS check of b8d29af4 + AB-SOURCE hash-match (1#6184864349) → DELIVERED to B 6ad04451\nFOR-TC 1#6184968890 (B re-check of 5f3c3bb7) → no send needed: B posted #6 HOLD before it was relayed\n```\n"
+  },
+  {
+   "id": 6185254610,
+   "created_at": "2026-10-15T05:36:09Z",
+   "updated_at": "2026-10-15T05:36:09Z",
+   "body": "```text\nCOORDINATOR EVIDENCE v1 · imo-ab-test · receipt · epoch 1 · 09:35 +04:00\nFOR-TC FTC-002 → DELIVERED to A 6ad0449d (word for word) · registry: AB-HUBPAGES closed\n```\n"
+  },
+  {
+   "id": 6185385251,
+   "created_at": "2026-10-15T05:46:06Z",
+   "updated_at": "2026-10-15T05:46:06Z",
+   "body": "```text\nCOORDINATOR EVIDENCE v1 · imo-ab-test · receipt · epoch 1 · 09:45 +04:00\nFOR-TC FTC-003 → DELIVERED to B 6ad04451 (word for word), with the 5916a75 check added after it. Correction accepted: cycle 10 should have nudged B (own non-blocked Next).\n```\n"
+  },
+  {
+   "id": 6185525633,
+   "created_at": "2026-10-15T05:56:16Z",
+   "updated_at": "2026-10-15T05:56:16Z",
+   "body": "```text\nCOORDINATOR EVIDENCE v1 · imo-ab-test · receipt · epoch 1 · 09:55 +04:00\nFOR-TC FTC-004 → DELIVERED to A 6ad0449d (word for word) · registry: AB-DOCSMIRROR closed\n```\n"
+  },
+  {
+   "id": 6185675763,
+   "created_at": "2026-10-15T06:06:54Z",
+   "updated_at": "2026-10-15T06:06:54Z",
+   "body": "```text\nCOORDINATOR EVIDENCE v1 · imo-ab-test · receipt · epoch 1 · 10:06 +04:00\nFOR-TC FTC-005 → DELIVERED to B 6ad04451 (word for word) · registry: AB-Q003-RUN closed\nA 6ad0449d ← own Next (learner-platform mirror gate readback at 3db7f685) → DELIVERED\n```\n"
+  },
+  {
+   "id": 6186233234,
+   "created_at": "2026-10-15T06:46:59Z",
+   "updated_at": "2026-10-15T06:46:59Z",
+   "body": "```text\nCOORDINATOR EVIDENCE v1 · imo-ab-test · receipt · epoch 1 · 10:46 +04:00\nFOR-TC FTC-006 → DELIVERED: B 6ad04451 (review task, word for word); A 6ad0449d (second-writer facts, state base); registry updated\n```\n"
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+{
+ "project": "imo-ab-test",
+ "snapshot": "2026-10-15",
+ "source": "reallakshman19/CoordinatorLandingpage",
+ "files": [
+  "inbox-1.json",
+  "logs\\registry.json",
+  "threads\\issue-12.json",
+  "threads\\issue-13.json",
+  "threads\\issue-14.json"
+ ],
+ "note": "Frozen benchmark copy for the Team Protocol landing page. Chat links reduced to id8."
+}
