@@ -918,6 +918,15 @@ def build_owner_inputs(issues, capture, repo='reallakshman19/CoordinatorLandingp
                      if e.get('event') in ('edited', 'reopened')]
         revisions = [v for v in revisions if v]
         created = _owner_time(issue.get('created_at'))
+        # A row's "updated" clock is GitHub source activity, not an
+        # invented ACK or Owner approval. A missing REST updated_at in test
+        # fixtures can still be reconstructed from timestamped comments.
+        activity = [created, _owner_time(issue.get('updated_at'))] + [
+            _owner_time(c.get('updated_at') or c.get('created_at'))
+            for c in comments
+        ] + revisions
+        activity = [v for v in activity if v is not None]
+        last_updated = max(activity).isoformat() if activity else None
         boundary = max(revisions) if revisions else created
         state, receipt, previous_handled = 'OPEN', None, False
         for comment in comments:
@@ -1009,6 +1018,7 @@ def build_owner_inputs(issues, capture, repo='reallakshman19/CoordinatorLandingp
             'target': form.get('target') or issue.get('target') or '',
             'text': scrub_chat_url((form.get('text') or body)[:300]),
             'project': project, 'ts': issue.get('created_at'),
+            'updated_at': last_updated,
             'reason': reason,
             'flags': (['project_mismatch'] if mismatch else []) +
                      (['label_missing'] if missing_label else []),

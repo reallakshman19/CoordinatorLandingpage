@@ -220,6 +220,50 @@ function fmtDateTime(ts) {
   } catch { return ts; }
 }
 
+// The screen uses Muscat (+04) clocks. Never turn missing or malformed
+// source timestamps into a plausible-looking time.
+function sourceTime(ts) {
+  if (!ts || !Number.isFinite(new Date(ts).getTime())) return 'unknown';
+  return fmtTime(ts);
+}
+function ownerActivityText(inp) {
+  return 'posted ' + sourceTime(inp.ts) + ' · updated ' + sourceTime(inp.updated_at);
+}
+function decisionAskedAt(d) {
+  return d.asked_at || d.created_at || d.ts || null;
+}
+function decisionAskedText(d) {
+  const asked = decisionAskedAt(d);
+  return asked && sourceTime(asked) !== 'unknown'
+    ? 'Asked at ' + sourceTime(asked)
+    : 'Asked at: not recorded in source';
+}
+async function loadProtocolSource() {
+  if (state.protocolMd) return state.protocolMd;
+  for (const url of ['protocol/TEAM_PROTOCOL.md', '../protocol/TEAM_PROTOCOL.md']) {
+    try {
+      const res = await fetch(url, { cache: 'no-store' });
+      if (res.ok) { state.protocolMd = await res.text(); return state.protocolMd; }
+    } catch { /* next source path */ }
+  }
+  return null;
+}
+async function currentProtocolVersion() {
+  const md = await loadProtocolSource();
+  const match = md?.match(/^#\s+Team protocol\s+(v\d+(?:\.\d+)+)\b/im);
+  return match ? match[1] : null;
+}
+async function displayedDecisionAsk(d) {
+  if (d.id !== 'PROTO-FREEZE') return String(d.ask || 'Decision');
+  const version = await currentProtocolVersion();
+  // Keep the original historic ask in the registry. Never silently turn
+  // that into a new approval for a later protocol version.
+  return version
+    ? 'Review freeze of current Team protocol ' + version +
+      ' (from protocol source; original request remains in registry)'
+    : 'Current protocol version UNKNOWN — read source before any freeze';
+}
+
 function agentStateBadge(status) {
   const map = {
     active: ['🟢', 'badge-green', 'active'],
@@ -441,6 +485,9 @@ async function renderHome(app) {
   app.innerHTML = '';
   app.appendChild(frag);
 
+  const newInput = $('home-new-input');
+  newInput.href = '#owner-inputs';
+  if (state.benchmarkMode) newInput.hidden = true;
   const nyList = $('needs-you-list');
   const nySection = $('needs-you');
   const inputs = await loadOwnerInputs();
@@ -464,6 +511,7 @@ async function renderHome(app) {
       li.appendChild(el('div', 'needs-plain', 'What: ' + what +
         ' · For: ' + String(inp.target || 'the team') +
         ' · Waiting for: ' + String(inp.trace?.waiting_for || 'TeamCoordinator')));
+      li.appendChild(el('div', 'owner-clock', ownerActivityText(inp)));
       const trace = el('a', 'btn btn-small', 'Trace →');
       trace.href = '#trace/' + encodeURIComponent(String(inp.id || inp.number));
       li.appendChild(trace);
@@ -478,8 +526,11 @@ async function renderHome(app) {
       const li = el('li', 'needs-pending');
       li.appendChild(el('strong', '', String(d.id || 'Decision')));
       li.appendChild(el('div', 'needs-plain',
-        'Decision needed: ' + String(d.ask || d.id || 'a decision') +
+        'Decision needed: ' + await displayedDecisionAsk(d) +
         ' · Waiting for: Owner to answer'));
+      li.appendChild(el('div', 'owner-clock',
+        'posted ' + sourceTime(decisionAskedAt(d)) +
+        ' · updated ' + sourceTime(d.updated_at || decisionAskedAt(d))));
       const link = el('a', 'btn btn-small', 'Trace →');
       link.href = '#decision/' + encodeURIComponent(p.project) +
         '/' + encodeURIComponent(d.id || '');
@@ -668,13 +719,15 @@ async function renderProject(app, projectName) {
   if (!ood.length) {
     odSection.innerHTML = '<p style="color:var(--text-3);font-size:0.85rem">No open decisions.</p>';
   } else {
-    ood.forEach(d => {
+    for (const d of ood) {
       const card = el('div', 'decision-card');
+      const visibleAsk = await displayedDecisionAsk(d);
       card.innerHTML = `
         <div class="decision-card-header">
           <span class="decision-card-id">${escapeHtml(d.id)}</span>
-          <span class="decision-card-ask">${escapeHtml(d.ask)}</span>
+          <span class="decision-card-ask">${escapeHtml(visibleAsk)}</span>
           <span class="needs-plain">Waiting for Owner to answer</span>
+          <span class="decision-asked">${escapeHtml(decisionAskedText(d))}</span>
         </div>
         <div class="decision-card-body">
           ${d.link ? `<a href="${escapeHtml(d.link)}" target="_blank" rel="noopener" class="btn btn-small">Evidence →</a>` : ''}
@@ -682,7 +735,7 @@ async function renderProject(app, projectName) {
         </div>
       `;
       odSection.appendChild(card);
-    });
+    }
   }
 
   // Standing Owner decisions (read-only record; superseded entries labelled as such)
@@ -1060,9 +1113,10 @@ async function renderDecision(app, projectName, decisionId) {
   }
 
   $('dc-id').textContent = d.id;
-  $('dc-ask').textContent = d.ask;
+  $('dc-ask').textContent = await displayedDecisionAsk(d);
   $('dc-ask').appendChild(el('div', 'needs-plain',
     'Waiting for Owner to answer this decision.'));
+  $('dc-ask').appendChild(el('div', 'decision-asked', decisionAskedText(d)));
 
   if (d.link) {
     $('dc-links').innerHTML = `<a href="${escapeHtml(d.link)}" target="_blank" rel="noopener" class="btn btn-small">Evidence →</a>`;
@@ -1172,7 +1226,12 @@ async function renderOwnerInputs(app) {
     issue.rel = 'noopener noreferrer';
     message.appendChild(issue);
     row.appendChild(message);
-    row.appendChild(el('span', 'oi-ts', fmtDateTime(inp.ts)));
+    const clocks = el('span', 'oi-ts owner-clock', ownerActivityText(inp));
+    clocks.title = 'Posted: ' + (inp.ts && sourceTime(inp.ts) !== 'unknown'
+      ? fmtDateTime(inp.ts) : 'unknown') + ' · Last update: ' +
+      (inp.updated_at && sourceTime(inp.updated_at) !== 'unknown'
+      ? fmtDateTime(inp.updated_at) : 'unknown');
+    row.appendChild(clocks);
     (outsider ? $('oi-outsider-list') : list).appendChild(row);
   }
 }
@@ -1236,6 +1295,7 @@ async function renderTrace(app, numberRaw) {
       li.appendChild(el('span', 'trace-step-time', fmtDateTime(datum.at)));
     } else {
       li.appendChild(el('span', 'trace-waiting', 'waiting for ' + who));
+      li.appendChild(el('span', 'trace-step-time', 'time not recorded'));
     }
     $('trace-steps').appendChild(li);
   }
@@ -1253,20 +1313,7 @@ async function renderProtocol(app) {
   app.innerHTML = '';
   app.appendChild(frag);
 
-  if (!state.protocolMd) {
-    // Try to load the protocol markdown
-    try {
-      const r = await fetch('../protocol/TEAM_PROTOCOL.md');
-      if (r.ok) state.protocolMd = await r.text();
-    } catch { /* ok */ }
-
-    if (!state.protocolMd) {
-      try {
-        const r = await fetch('protocol/TEAM_PROTOCOL.md');
-        if (r.ok) state.protocolMd = await r.text();
-      } catch { /* ok */ }
-    }
-  }
+  await loadProtocolSource();
 
   const mdEl = $('protocol-md');
   const tocEl = $('toc-list');
