@@ -30,7 +30,7 @@ def prepare(artifact, destination):
         p["freshness_status"] = "STALE"
         p["last_cycle_at"] = "2026-10-15T10:00:00+00:00"
         p["source_health"] = {"status": "ok", "errors": []}
-        p["open_owner_decisions"] = []
+        # Preserve real benchmark decision links for the Answer route test.
         p["is_benchmark"] = False
     (data / "projects.json").write_text(json.dumps(projects))
     fixture = json.loads((ROOT / "tests/fixtures/f5_owner_input_history.json").read_text())

@@ -350,7 +350,7 @@ jobs:
           output = Path('wp2-browser-red.log').read_text(encoding='utf-8')
           failed = re.findall(r'^FAIL (WP2_(\d\d)_[A-Za-z0-9_]+)$',
                               output, re.MULTILINE)
-          got = {number for number in failed}
+          got = {number for _, number in failed}
           expected = {str(i).zfill(2) for i in list(range(1, 11)) + [12]}
           counts = re.search(r'^WP2_BROWSER_COUNTS pass=\d+ fail=\d+ error=(\d+)$',
                              output, re.MULTILINE)
