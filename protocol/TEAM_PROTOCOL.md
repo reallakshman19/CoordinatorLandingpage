@@ -104,6 +104,17 @@ OwnerTeammember compares three things for each new block: **intent** (Owner hand
 
 Verdict, replied in the agent's evidence thread: **✅ ALIGNED** · **✏ CORRECTED** (plan or next action changed, with the question) · **⚑ ESCALATE** (route conflicts with the Owner's intent → one line to the Owner).
 
+## 6b. FOR TeamCoordinator — when OwnerTeammember instructs the coordinator (Owner, 15 Oct: "lets start using")
+
+Only by exception, as ONE comment in inbox #1, in this form:
+```text
+FOR TeamCoordinator · <project> · <TYPE> · <id>
+Do: send to <agent id8> word for word: "<text>"   |   <action for the coordinator>
+Why: <one line> · Evidence: <links>
+```
+TYPE: **RELAY** (an Owner decision, quoted with time; always) · **CORRECTION** (a verdict that must reach the agent's chat) · **ROUTE** (a finished step not routed within one coordinator cycle) · **STATUS** (status wrong vs GitHub, a missing Needs-you item, or no completed cycle for 30 min) · **BREACH** (send to a retired chat, hold ignored, wrong epoch, claim treated as accepted) · **GATE** (a milestone claim: freeze both agents' commits for the final check before the Owner's acceptance card).
+The coordinator acts on it in its next cycle and posts a receipt that names the id (`FOR-TC <id> → DELIVERED | NOT_SENT <why>`). Never used for routine nudges, task choice, engineering, or anything that still needs the Owner's approval.
+
 ## 7. Authority
 
 Protected: merge, release/publish, new chat, upload, change of writer or role, acceptance (academic, QRT, source rights). Only the Owner decides. OwnerTeammember relays a decision only as: `OwnerTeammember — relaying Owner decision. Source: Owner chat, <time>. Owner's words: "<quote>". Action / Target / Limits: …`. A prefix alone is never approval.
