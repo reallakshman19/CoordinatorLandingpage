@@ -1,0 +1,148 @@
+{
+  "project": "grade9-pilot",
+  "agent": {
+    "role": "validator",
+    "alias": "",
+    "generation": 2,
+    "chat_id8": "6ad0506c",
+    "status": "active",
+    "retired": null,
+    "evidence_thread_num": 10,
+    "branch": "new from a6b42cd9 (to be reported)",
+    "started": "2026-10-15T08:03+04:00",
+    "evidence": [
+      {
+        "type": "evidence",
+        "comment_id": 6185196067,
+        "ts": "2026-10-15T05:31:44Z",
+        "project": "grade9-pilot",
+        "role": "validator-g2",
+        "chat_id8": "6ad0506c",
+        "seq": 2,
+        "header_ts": "15 Oct 09:31 +04:00",
+        "task": "G9-QRT-T1 validator correction and exact-repair-SHA CI gate    Status: DONE (validator lane); TILE FAIL",
+        "status": "DONE",
+        "aim": "Improve independent QRT-RETRIEVE-D1 validation before coder freeze → user sees pinned reproducible checks, never academic approval.",
+        "did": "Updated validator to require a native keyboard-operable named Core button, distinguish topic-only browsing from a falsely claimed exact link, and check rendered jumpToCoreUnit against source-declared linked_core2_refs. Changed unsafe-H2 witness handling: altered wording reopens explicit W review instead of silently becoming approved. Added five synthetic mutations (12→17).",
+        "where": "reallakshman19/Grade9v3.5 · validator branch agent/qrt-tile-validator-g2 · commit 7233d7432c105f84b621247f90945cd864cdaa31 · draft PR #269 → feature PR #240 branch. Files: Shared/tools/imo_qrt_tile_validator_g2.py; tests/test_imo_qrt_tile_validator_g2.py; .github/workflows/qrt-tile-g2-pinned.yml. No coder/source, scorer, bank, builder or HTML writes.",
+        "proofs": [
+          {
+            "line": "- Exact validator commit/head and draft PR → https://github.com/reallakshman19/Grade9v3.5/pull/269 [READBACK]",
+            "grade": "READBACK"
+          },
+          {
+            "line": "- Green integrity run at SOURCE_SHA=90c859705feb0dfcedc6d33a013d9e563b7cac9d and VALIDATOR_SHA=7233d7432c105f84b621247f90945cd864cdaa31; builder regenerated all four HTML outputs with no diff; 55/55 tests passed → https://github.com/reallakshman19/Grade9v3.5/actions/runs/38687162630 [CI]",
+            "grade": "CI"
+          },
+          {
+            "line": "- Four independently hashed output paths identical, SHA-256 05b73273c8b437aac20975b14d094f4af2a0392c5035bafb5b0da788712fdbdd → same run [CI]",
+            "grade": "CI"
+          },
+          {
+            "line": "- Full baseline tile report / question-level findings → https://github.com/reallakshman19/Grade9v3.5/actions/runs/38687162630/artifacts/11950407804 [CI]",
+            "grade": "CI"
+          },
+          {
+            "line": "- Coder PR #270 remains SOURCE-ONLY a70b87565c3f3f551a32298d20803854501ab2e0; no complete rebuild/frozen repair SHA in #11 → https://github.com/reallakshman19/Grade9v3.5/pull/270 and https://github.com/reallakshman19/CoordinatorLandingpage/issues/11#issuecomment-6184418496 [READBACK]",
+            "grade": "READBACK"
+          }
+        ],
+        "tests": "12 predecessor-validator + 13 HTML disclosure + 13 Core relationships + 17 validator-g2 mutations = 55 PASS / 0 FAIL; builder/rebuild/committed-HTML equality PASS at exact original baseline. Baseline corpus: 12/12 tile questions FAIL with 47 mechanical findings: 12 mouse-only spans, 12 missing native-button controls (same underlying keyboard issue, not 12 new regressions), 11 missing exact Core relationships, 5 five-factor score mismatches, 1 band mismatch, 6 protected-W hint2 disclosures. This is ORIGINAL SOURCE 90c8597, not a repair recheck.",
+        "would_be_wrong": "the native button activates an incorrect Core destination in a browser despite markup checks; a changed H2 still performs W; a later source SHA lacks the four built outputs or exact-source provenance; or a genuine concept-only link is mistakenly certified from a structural ref. Runtime KaTeX and semantic/concept teaching remain review-required.",
+        "not_done": "No recheck against a frozen repaired source commit; coder must build, test, hash, commit all four HTML endpoints and freeze in #11. No browser academic/semantic acceptance, source-rights acceptance, merge or release. Five scorer values plus the A-Q028 D-band stay Owner HOLD. Tile does not advance while FAIL remains.",
+        "needs_owner": "Existing V06 decision unchanged: authorize individually after academic review for 2024-25-B Q022/Q025/Q028 and 2025-26-A Q025/Q028 (A-Q028 band D1→D2), or hold (recommended HOLD until reviewed).",
+        "next": "Receive coder's rebuilt/frozen PR #270 exact SHA in #11 → workflow_dispatch with source_sha, independently classify each question and any false positives → post G9-QRT-T1 recheck #3 in #10; do not advance tile on residual FAIL.",
+        "meter": "worked ~8 min this turn · 3 validator turns · ~unknown cumulative min · ok    Posted: https://github.com/reallakshman19/CoordinatorLandingpage/issues/10 (this comment; GitHub assigns permalink)",
+        "raw": "```text\nTASK EVIDENCE v2 · grade9-pilot · validator-g2 · chat 6ad0506c · #2 · 15 Oct 09:31 +04:00\nTask: G9-QRT-T1 validator correction and exact-repair-SHA CI gate    Status: DONE (validator lane); TILE FAIL\nAim: Improve independent QRT-RETRIEVE-D1 validation before coder freeze → user sees pinned reproducible checks, never academic approval.\nDid: Updated validator to require a native keyboard-operable named Core button, distinguish topic-only browsing from a falsely claimed exact link, and check rendered jumpToCoreUnit against source-declared linked_core2_refs. Changed unsafe-H2 witness handling: altered wording reopens explicit W review instead of silently becoming approved. Added five synthetic mutations (12→17).\n  Updated CI to allow a full 40-hex repair commit from PR #270 ancestry on manual dispatch; pins actual validator PR head independently of GitHub's synthetic PR merge SHA. It now reruns the existing builder in a detached source worktree and fails on stale/unreproducible committed HTML before auditing all four endpoints. Exposed the job in draft PR checks.\nWhere: reallakshman19/Grade9v3.5 · validator branch agent/qrt-tile-validator-g2 · commit 7233d7432c105f84b621247f90945cd864cdaa31 · draft PR #269 → feature PR #240 branch. Files: Shared/tools/imo_qrt_tile_validator_g2.py; tests/test_imo_qrt_tile_validator_g2.py; .github/workflows/qrt-tile-g2-pinned.yml. No coder/source, scorer, bank, builder or HTML writes.\nProof:\n  - Exact validator commit/head and draft PR → https://github.com/reallakshman19/Grade9v3.5/pull/269 [READBACK]\n  - Green integrity run at SOURCE_SHA=90c859705feb0dfcedc6d33a013d9e563b7cac9d and VALIDATOR_SHA=7233d7432c105f84b621247f90945cd864cdaa31; builder regenerated all four HTML outputs with no diff; 55/55 tests passed → https://github.com/reallakshman19/Grade9v3.5/actions/runs/38687162630 [CI]\n  - Four independently hashed output paths identical, SHA-256 05b73273c8b437aac20975b14d094f4af2a0392c5035bafb5b0da788712fdbdd → same run [CI]\n  - Full baseline tile report / question-level findings → https://github.com/reallakshman19/Grade9v3.5/actions/runs/38687162630/artifacts/11950407804 [CI]\n  - Coder PR #270 remains SOURCE-ONLY a70b87565c3f3f551a32298d20803854501ab2e0; no complete rebuild/frozen repair SHA in #11 → https://github.com/reallakshman19/Grade9v3.5/pull/270 and https://github.com/reallakshman19/CoordinatorLandingpage/issues/11#issuecomment-6184418496 [READBACK]\nTests: 12 predecessor-validator + 13 HTML disclosure + 13 Core relationships + 17 validator-g2 mutations = 55 PASS / 0 FAIL; builder/rebuild/committed-HTML equality PASS at exact original baseline. Baseline corpus: 12/12 tile questions FAIL with 47 mechanical findings: 12 mouse-only spans, 12 missing native-button controls (same underlying keyboard issue, not 12 new regressions), 11 missing exact Core relationships, 5 five-factor score mismatches, 1 band mismatch, 6 protected-W hint2 disclosures. This is ORIGINAL SOURCE 90c8597, not a repair recheck.\nWould be wrong if: the native button activates an incorrect Core destination in a browser despite markup checks; a changed H2 still performs W; a later source SHA lacks the four built outputs or exact-source provenance; or a genuine concept-only link is mistakenly certified from a structural ref. Runtime KaTeX and semantic/concept teaching remain review-required.\nNot done / HOLD: No recheck against a frozen repaired source commit; coder must build, test, hash, commit all four HTML endpoints and freeze in #11. No browser academic/semantic acceptance, source-rights acceptance, merge or release. Five scorer values plus the A-Q028 D-band stay Owner HOLD. Tile does not advance while FAIL remains.\nLane & authority: Validator-only ✓ · no Owner decision presumed; checker corrected inside validator lane, source lane untouched.\nNeeds Owner: Existing V06 decision unchanged: authorize individually after academic review for 2024-25-B Q022/Q025/Q028 and 2025-26-A Q025/Q028 (A-Q028 band D1→D2), or hold (recommended HOLD until reviewed).\nNext: Receive coder's rebuilt/frozen PR #270 exact SHA in #11 → workflow_dispatch with source_sha, independently classify each question and any false positives → post G9-QRT-T1 recheck #3 in #10; do not advance tile on residual FAIL.\nMeter: worked ~8 min this turn · 3 validator turns · ~unknown cumulative min · ok    Posted: https://github.com/reallakshman19/CoordinatorLandingpage/issues/10 (this comment; GitHub assigns permalink)\n```",
+        "replaces": null
+      },
+      {
+        "type": "evidence",
+        "comment_id": 6185779420,
+        "ts": "2026-10-15T06:14:39Z",
+        "project": "grade9-pilot",
+        "role": "validator-g2",
+        "chat_id8": "6ad0506c",
+        "seq": 3,
+        "header_ts": "15 Oct 10:13 +04:00",
+        "task": "G9-QRT-T1 read-only coder build handoff for PR #270 @ 97fb400    Status: DONE (CI handoff); TILE FAIL",
+        "status": "DONE",
+        "aim": "Unblock coder's missing checkout without touching coder source → user receives generated HTML artifact, hashes, a test receipt, and an explicitly UNFROZEN preliminary tile ledger.",
+        "did": "Checked #11 evidence #2 / coder head 97fb4004a3dfabf3c7c3ad0f400f654817345b00. Added a validator-owned GitHub Actions handoff workflow; its detached worktree checked exact PR #270 head, ran the existing Python builder, compared all four bytes/hashes, verified that exactly the four HTML endpoints changed, ran 55 selected regression/mutation tests, and produced a PRELIMINARY audit with generated but not yet committed HTML. No writes to repair branch; no merge or acceptance.",
+        "where": "validator branch agent/qrt-tile-validator-g2 · commit 1c093b18c44a175f19fbb36c7c954a625eb7762a · added only .github/workflows/qrt-g2-repair-build-handoff.yml; repair source checked at 97fb4004; draft PR #269 is validator lane, draft PR #270 remains coder lane.",
+        "proofs": [
+          {
+            "line": "- Exact-source detached build successful; 55/55 tests green; four HTML outputs 4,865,212 bytes each; same SHA-256 2aaf5ddec96e33c65e13809bf95cccf0894bfac6d76e1cacdb8c5f95b914c180 → https://github.com/reallakshman19/Grade9v3.5/actions/runs/38691061200 [CI]",
+            "grade": "CI"
+          },
+          {
+            "line": "- Download artifact with four built HTML files, generator log, manifest and unfrozen tile report → https://github.com/reallakshman19/Grade9v3.5/actions/runs/38691061200/artifacts/11951799621 [CI]",
+            "grade": "CI"
+          },
+          {
+            "line": "- Coder PR #270 head 97fb400 and evidence #2 explicitly marked PARTIAL / no generated HTML commit → https://github.com/reallakshman19/CoordinatorLandingpage/issues/11#issuecomment-6185406544 [READBACK]",
+            "grade": "READBACK"
+          }
+        ],
+        "tests": "CI job success, 12 predecessor validator + 13 disclosure + 13 Core relationships + 17 tile-g2 mutations = 55 PASS / 0 FAIL. Builder generated only the expected four modified outputs in detached worktree; hashes identical. Browser/semantic checks not run.",
+        "would_be_wrong": "future coder-committed HTML diverges from this artifact; direct Core buttons do not reach declared destinations in a browser; an H2 revision still reveals W; claimed exact Core links do not teach the inferential bridge; or Owner has not authorized score/band changes.",
+        "not_done": "Artifact contains uncommitted candidate files; repair PR #270 is NOT frozen and is not QRT-accepted. Coder must commit all four outputs on its own repair branch, rerun source/full tests, declare exact new SHA in #11, and request an independent check of that SHA. Missing Core teaching units remain unproven; 5 scores and A-Q028 D-band stay Owner HOLD. No source-rights, academic acceptance, merge or release.",
+        "needs_owner": "Individual score/band decision still requested (2024-25-B Q022/Q025/Q028, 2025-26-A Q025/Q028 and A-Q028 D1→D2); preserve HOLD absent explicit authorization.",
+        "next": "Coordinator relay artifact URL/hash to coder #11. Coder uses artifact and/or a self-committing Actions builder in own lane to land four generated files at PR #270, full-test and freeze exact SHA; validator independently reruns pinned checks and posts #4, retains tile until zero FAIL.",
+        "meter": "worked ~4 min this turn · 4 validator turns · cumulative unknown · ok    Posted: https://github.com/reallakshman19/CoordinatorLandingpage/issues/10 (GitHub assigns this comment permalink)",
+        "raw": "```text\nTASK EVIDENCE v2 · grade9-pilot · validator-g2 · chat 6ad0506c · #3 · 15 Oct 10:13 +04:00\nTask: G9-QRT-T1 read-only coder build handoff for PR #270 @ 97fb400    Status: DONE (CI handoff); TILE FAIL\nAim: Unblock coder's missing checkout without touching coder source → user receives generated HTML artifact, hashes, a test receipt, and an explicitly UNFROZEN preliminary tile ledger.\nDid: Checked #11 evidence #2 / coder head 97fb4004a3dfabf3c7c3ad0f400f654817345b00. Added a validator-owned GitHub Actions handoff workflow; its detached worktree checked exact PR #270 head, ran the existing Python builder, compared all four bytes/hashes, verified that exactly the four HTML endpoints changed, ran 55 selected regression/mutation tests, and produced a PRELIMINARY audit with generated but not yet committed HTML. No writes to repair branch; no merge or acceptance.\nWhere: validator branch agent/qrt-tile-validator-g2 · commit 1c093b18c44a175f19fbb36c7c954a625eb7762a · added only .github/workflows/qrt-g2-repair-build-handoff.yml; repair source checked at 97fb4004; draft PR #269 is validator lane, draft PR #270 remains coder lane.\nProof:\n  - Exact-source detached build successful; 55/55 tests green; four HTML outputs 4,865,212 bytes each; same SHA-256 2aaf5ddec96e33c65e13809bf95cccf0894bfac6d76e1cacdb8c5f95b914c180 → https://github.com/reallakshman19/Grade9v3.5/actions/runs/38691061200 [CI]\n  - Download artifact with four built HTML files, generator log, manifest and unfrozen tile report → https://github.com/reallakshman19/Grade9v3.5/actions/runs/38691061200/artifacts/11951799621 [CI]\n  - Coder PR #270 head 97fb400 and evidence #2 explicitly marked PARTIAL / no generated HTML commit → https://github.com/reallakshman19/CoordinatorLandingpage/issues/11#issuecomment-6185406544 [READBACK]\nPreliminary per-question mechanical findings (UNCOMMITTED built outputs, NOT frozen-source recheck):\n  - 2023-24-A Q020 FAIL exact Core link; Q021 FAIL exact Core link; Q027 PASS mechanical\n  - 2024-25-B Q022 FAIL factor score; Q025 FAIL factor score + exact Core link; Q028 FAIL factor score + exact Core link\n  - 2025-26-A Q022 FAIL exact Core link; Q025 FAIL factor score + exact Core link; Q028 FAIL factor score + band + exact Core link\n  - 2025-26-B Q011 FAIL exact Core link; Q017 PASS mechanical; Q037 PASS mechanical\n  - Totals 12 questions / 3 mechanical PASS / 9 FAIL / 14 findings: 8 exact Core links, 5 scores, 1 band. All 12 Core native navigation failures absent in this BUILT candidate. Six changed H2 witnesses now REVIEW_REQUIRED, not academic W clearance.\nTests: CI job success, 12 predecessor validator + 13 disclosure + 13 Core relationships + 17 tile-g2 mutations = 55 PASS / 0 FAIL. Builder generated only the expected four modified outputs in detached worktree; hashes identical. Browser/semantic checks not run.\nWould be wrong if: future coder-committed HTML diverges from this artifact; direct Core buttons do not reach declared destinations in a browser; an H2 revision still reveals W; claimed exact Core links do not teach the inferential bridge; or Owner has not authorized score/band changes.\nNot done / HOLD: Artifact contains uncommitted candidate files; repair PR #270 is NOT frozen and is not QRT-accepted. Coder must commit all four outputs on its own repair branch, rerun source/full tests, declare exact new SHA in #11, and request an independent check of that SHA. Missing Core teaching units remain unproven; 5 scores and A-Q028 D-band stay Owner HOLD. No source-rights, academic acceptance, merge or release.\nLane & authority: read-only build/evidence in validator CI lane only ✓ · source/editor ownership remains coder, protected Owner decisions unchanged.\nNeeds Owner: Individual score/band decision still requested (2024-25-B Q022/Q025/Q028, 2025-26-A Q025/Q028 and A-Q028 D1→D2); preserve HOLD absent explicit authorization.\nNext: Coordinator relay artifact URL/hash to coder #11. Coder uses artifact and/or a self-committing Actions builder in own lane to land four generated files at PR #270, full-test and freeze exact SHA; validator independently reruns pinned checks and posts #4, retains tile until zero FAIL.\nMeter: worked ~4 min this turn · 4 validator turns · cumulative unknown · ok    Posted: https://github.com/reallakshman19/CoordinatorLandingpage/issues/10 (GitHub assigns this comment permalink)\n```",
+        "replaces": null
+      },
+      {
+        "type": "evidence",
+        "comment_id": 6185900339,
+        "ts": "2026-10-15T06:23:32Z",
+        "project": "grade9-pilot",
+        "role": "validator-g2",
+        "chat_id8": "6ad0506c",
+        "seq": 4,
+        "header_ts": "15 Oct 10:22 +04:00",
+        "task": "G9-QRT-T1 independent exact-frozen-SHA recheck and Core-target validator correction    Status: DONE (validator task); TILE FAIL / HOLD",
+        "status": "DONE",
+        "aim": "Verify coder's complete source+HTML freeze without source-lane writes → user sees exact-commit build/tests, 12 per-question mechanical dispositions and residual authority split.",
+        "did": "Independently verified coder #11 evidence #3, freeze workflow and four-HTML commit 17ba4dae624b981350925cd9b7fea4e02976ec52. Added Core1A destination-existence and runtime package_id lookup checks with two new synthetic mutations (17→19); archived stale 97fb400 auto-handoff trigger after coder branch advanced. Pinned own audit to exact 17ba4dae and ran hosted builder, committed-HTML byte comparison, all validator mutations and full first-tile scan. Commented residual dispositions in coder PR #270 without editing its files.",
+        "where": "validator branch agent/qrt-tile-validator-g2 · validator commit 5e1923defd1a00429926a2124c70c0a0f9c2b2b8 · draft PR #269. Validator files: Shared/tools/imo_qrt_tile_validator_g2.py; tests/test_imo_qrt_tile_validator_g2.py; .github/workflows/qrt-tile-g2-pinned.yml; .github/workflows/qrt-g2-repair-build-handoff.yml. Inspected (no writes): coder PR #270 commit 17ba4dae624b981350925cd9b7fea4e02976ec52.",
+        "proofs": [
+          {
+            "line": "- Frozen coder full rebuild/hash/458 regression tests/commit+clean rebuild → https://github.com/reallakshman19/Grade9v3.5/actions/runs/38691661134 [CI]",
+            "grade": "CI"
+          },
+          {
+            "line": "- Coder freeze evidence #3, exact committed SHA and all four generated paths → https://github.com/reallakshman19/CoordinatorLandingpage/issues/11#issuecomment-6185867584 [READBACK]",
+            "grade": "READBACK"
+          },
+          {
+            "line": "- Independent detached worktree SOURCE_SHA=17ba4dae624b981350925cd9b7fea4e02976ec52, VALIDATOR_SHA=5e1923defd1a00429926a2124c70c0a0f9c2b2b8: deterministic builder, four committed HTML unchanged, 57/57 tests PASS and exact tile report 3/12 mechanical PASS, 9/12 FAIL (14 findings) → https://github.com/reallakshman19/Grade9v3.5/actions/runs/38691954815 [CI]",
+            "grade": "CI"
+          },
+          {
+            "line": "- Full 12-question report → https://github.com/reallakshman19/Grade9v3.5/actions/runs/38691954815/artifacts/11951549288 [CI]",
+            "grade": "CI"
+          },
+          {
+            "line": "- Four SHA-256 hashes identical: 2aaf5ddec96e33c65e13809bf95cccf0894bfac6d76e1cacdb8c5f95b914c180; actual UTF-8 bytes per file = 4,882,528 [CI]. CORRECTION to prior validator evidence #3: generator's 'Saved 4865212 bytes' message counted Python string characters, not UTF-8 bytes. The hashes and parity there were correct.",
+            "grade": "CI"
+          },
+          {
+            "line": "- Coder PR #270 exact recheck finding handoff → https://github.com/reallakshman19/Grade9v3.5/pull/270#issuecomment-6185891192 [READBACK]",
+            "grade": "READBACK"
+          }
+        ],
+        "tests": "validator CI 12 predecessor + 13 disclosure + 13 Core relationship + 19 tile-g2 mutation = 57/57 PASS; four actual committed HTML outputs match regenerated bytes/hash; independent tile audit FAIL as designed. Coder freeze CI 458/458 PASS. Browser Core scroll/focus, KaTeX runtime and academic/semantic quality not attested. Baseline-red unrelated jobs are not claimed green.",
+        "would_be_wrong": "a structurally linked Core unit does not teach the exact inferential bridge; revised hint2 content still does protected W; an accessible button is not keyboard-actuated at runtime; Core1A package navigation fails in browser; or Owner authorization for proposed V06 values is presumed.",
+        "not_done": "Tile 1 cannot advance at 14 residual mechanical FAIL findings / 9 FAIL questions. Coder owns eight genuine missing authored concept links (do not invent generic refs); Owner must decide five score mismatches plus A-Q028 D1→D2, with no score edits by validator. Six revised W hints, three claimed direct Core teaching links, browser KaTeX and learner interactions need human/runtime review; no QRT/academic/source-rights acceptance, merge or release.",
+        "needs_owner": "Grant item-specific academic authorization for 2024-25-B Q022/Q025/Q028 and 2025-26-A Q025/Q028 factor scores and 2025-26-A Q028 band change, or retain explicit HOLD (recommended HOLD until reviewed). Decide/assign concept-specific authoring where no matching Core1A unit exists; no arbitrary mapping permitted.",
+        "next": "Coder authors or evidences eight exact Core bridges in own lane and freezes the next source+HTML SHA; Owner resolves protected V06 individually; independently rerun at exact SHA and correct any validator false positives, repeat until zero mechanical FAIL before considering next tile.",
+        "meter": "worked ~6 min this turn · 5 validator turns · cumulative unknown · ok    Posted: https://github.com/reallakshman19/CoordinatorLandingpage/issues/10 (this comment; GitHub assigns permalink)",
+        "raw": "```text\nTASK EVIDENCE v2 · grade9-pilot · validator-g2 · chat 6ad0506c · #4 · 15 Oct 10:22 +04:00\nTask: G9-QRT-T1 independent exact-frozen-SHA recheck and Core-target validator correction    Status: DONE (validator task); TILE FAIL / HOLD\nAim: Verify coder's complete source+HTML freeze without source-lane writes → user sees exact-commit build/tests, 12 per-question mechanical dispositions and residual authority split.\nDid: Independently verified coder #11 evidence #3, freeze workflow and four-HTML commit 17ba4dae624b981350925cd9b7fea4e02976ec52. Added Core1A destination-existence and runtime package_id lookup checks with two new synthetic mutations (17→19); archived stale 97fb400 auto-handoff trigger after coder branch advanced. Pinned own audit to exact 17ba4dae and ran hosted builder, committed-HTML byte comparison, all validator mutations and full first-tile scan. Commented residual dispositions in coder PR #270 without editing its files.\nWhere: validator branch agent/qrt-tile-validator-g2 · validator commit 5e1923defd1a00429926a2124c70c0a0f9c2b2b8 · draft PR #269. Validator files: Shared/tools/imo_qrt_tile_validator_g2.py; tests/test_imo_qrt_tile_validator_g2.py; .github/workflows/qrt-tile-g2-pinned.yml; .github/workflows/qrt-g2-repair-build-handoff.yml. Inspected (no writes): coder PR #270 commit 17ba4dae624b981350925cd9b7fea4e02976ec52.\nProof:\n  - Frozen coder full rebuild/hash/458 regression tests/commit+clean rebuild → https://github.com/reallakshman19/Grade9v3.5/actions/runs/38691661134 [CI]\n  - Coder freeze evidence #3, exact committed SHA and all four generated paths → https://github.com/reallakshman19/CoordinatorLandingpage/issues/11#issuecomment-6185867584 [READBACK]\n  - Independent detached worktree SOURCE_SHA=17ba4dae624b981350925cd9b7fea4e02976ec52, VALIDATOR_SHA=5e1923defd1a00429926a2124c70c0a0f9c2b2b8: deterministic builder, four committed HTML unchanged, 57/57 tests PASS and exact tile report 3/12 mechanical PASS, 9/12 FAIL (14 findings) → https://github.com/reallakshman19/Grade9v3.5/actions/runs/38691954815 [CI]\n  - Full 12-question report → https://github.com/reallakshman19/Grade9v3.5/actions/runs/38691954815/artifacts/11951549288 [CI]\n  - Four SHA-256 hashes identical: 2aaf5ddec96e33c65e13809bf95cccf0894bfac6d76e1cacdb8c5f95b914c180; actual UTF-8 bytes per file = 4,882,528 [CI]. CORRECTION to prior validator evidence #3: generator's 'Saved 4865212 bytes' message counted Python string characters, not UTF-8 bytes. The hashes and parity there were correct.\n  - Coder PR #270 exact recheck finding handoff → https://github.com/reallakshman19/Grade9v3.5/pull/270#issuecomment-6185891192 [READBACK]\nPer-question results at exact frozen source:\n  - SOF-IMO-G09-L1-2023-24-A-Q020 FAIL P2/V19 EXACT_CORE_CONCEPT_LINK_MISSING; Q021 FAIL same; Q027 PASS mechanical, Core crux semantic review outstanding.\n  - SOF-IMO-G09-L1-2024-25-B-Q022 FAIL V06 FIVE_FACTOR_SCORE_MISMATCH; Q025 FAIL V06 score + P2/V19 exact Core link; Q028 FAIL V06 score + P2/V19 exact Core link.\n  - SOF-IMO-G09-L1-2025-26-A-Q022 FAIL P2/V19 exact Core link; Q025 FAIL V06 score + P2/V19 exact Core link; Q028 FAIL V06 score + V06 FIVE_FACTOR_BAND_MISMATCH + P2/V19 exact Core link.\n  - SOF-IMO-G09-L1-2025-26-B-Q011 FAIL P2/V19 exact Core link; Q017 PASS mechanical, Core crux semantic review outstanding; Q037 PASS mechanical.\n  - Counts: eight ungrounded exact Core1A links, five canonical factor scores, one derived band. Zero native Core-button, direct package-target, package_id JS lookup, old precommit H2 marker, or four-HTML parity FAIL at frozen source. Six altered H2 hints remain REVIEW_REQUIRED for semantic W (not approved).\nTests: validator CI 12 predecessor + 13 disclosure + 13 Core relationship + 19 tile-g2 mutation = 57/57 PASS; four actual committed HTML outputs match regenerated bytes/hash; independent tile audit FAIL as designed. Coder freeze CI 458/458 PASS. Browser Core scroll/focus, KaTeX runtime and academic/semantic quality not attested. Baseline-red unrelated jobs are not claimed green.\nWould be wrong if: a structurally linked Core unit does not teach the exact inferential bridge; revised hint2 content still does protected W; an accessible button is not keyboard-actuated at runtime; Core1A package navigation fails in browser; or Owner authorization for proposed V06 values is presumed.\nNot done / HOLD: Tile 1 cannot advance at 14 residual mechanical FAIL findings / 9 FAIL questions. Coder owns eight genuine missing authored concept links (do not invent generic refs); Owner must decide five score mismatches plus A-Q028 D1→D2, with no score edits by validator. Six revised W hints, three claimed direct Core teaching links, browser KaTeX and learner interactions need human/runtime review; no QRT/academic/source-rights acceptance, merge or release.\nLane & authority: Own validator, tests and CI only ✓; PR #270 source/generator/HTML unchanged by validator; Owner protected decisions retained.\nNeeds Owner: Grant item-specific academic authorization for 2024-25-B Q022/Q025/Q028 and 2025-26-A Q025/Q028 factor scores and 2025-26-A Q028 band change, or retain explicit HOLD (recommended HOLD until reviewed). Decide/assign concept-specific authoring where no matching Core1A unit exists; no arbitrary mapping permitted.\nNext: Coder authors or evidences eight exact Core bridges in own lane and freezes the next source+HTML SHA; Owner resolves protected V06 individually; independently rerun at exact SHA and correct any validator false positives, repeat until zero mechanical FAIL before considering next tile.\nMeter: worked ~6 min this turn · 5 validator turns · cumulative unknown · ok    Posted: https://github.com/reallakshman19/CoordinatorLandingpage/issues/10 (this comment; GitHub assigns permalink)\n```",
+        "replaces": null
+      }
+    ]
+  },
+  "built_at": "2026-10-15T07:23:24.727882+00:00"
+}

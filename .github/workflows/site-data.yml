@@ -1,0 +1,114 @@
+name: Build and deploy Team Protocol landing page
+
+on:
+  issues:
+    types: [opened, edited, closed, reopened, labeled, unlabeled]
+  issue_comment:
+    types: [created, edited, deleted]
+  schedule:
+    # Refresh the live page every 10 minutes
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+# One concurrent deployment; cancel in-progress if a newer run queues
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+# Minimal permissions: read repo + write Pages artifact + OIDC for Pages deploy
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  issues: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}   # used by `gh api` in fetch_live_data.py
+
+    steps:
+      - name: Checkout default branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          # No 'ref' override — always uses the branch this workflow file is on
+          # (after merge to main, that will be main)
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # ── Fix 1: fetch live threads via GITHUB_TOKEN (read-only) ──────────────
+      - name: Fetch live issue threads
+        run: |
+          python scripts/fetch_live_data.py \
+            --root . \
+            --repo ${{ github.repository }} \
+            --cache-dir _live_cache
+        # If logs/ dir is absent (e.g. the branch has no live projects yet)
+        # fetch_live_data.py exits 0 with a message — that is fine.
+
+      # ── Build site data (live + benchmarks) ─────────────────────────────────
+      - name: Build live site data
+        run: |
+          python scripts/build_data.py \
+            --root . \
+            --out _artifact/data \
+            --cache-dir _live_cache
+
+      - name: Build benchmark data
+        run: |
+          python scripts/build_data.py \
+            --root . \
+            --out _artifact/data/benchmarks \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+
+      # ── Hard-case test suite ─────────────────────────────────────────────────
+      - name: Run hard-case tests (Python)
+        run: python tests/build_test.py
+
+      # ── Assemble Pages artifact ──────────────────────────────────────────────
+      - name: Copy site files into artifact root
+        run: |
+          cp -r site/. _artifact/
+          # site/ already contains a data/ placeholder — overwrite with fresh build
+          # (already written directly to _artifact/data above)
+
+      # ── Fix 2: include protocol/ so Protocol view doesn't 404 ───────────────
+      - name: Copy protocol into artifact
+        run: |
+          cp -r protocol/ _artifact/protocol/
+
+      # ── Fix 5: headless browser smoke test ──────────────────────────────────
+      - name: Install Playwright
+        run: |
+          pip install playwright
+          playwright install --with-deps chromium
+
+      - name: Headless smoke test (hard cases visible in browser)
+        run: python tests/browser_smoke_test.py _artifact
+
+      # ── Upload and deploy ────────────────────────────────────────────────────
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _artifact/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    # Fix 3: required environment declaration for Pages deploy
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
