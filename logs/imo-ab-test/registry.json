@@ -1,81 +1,121 @@
 {
-  "project": "imo-ab-test",
-  "protocol": "Team protocol v2.0 PROTOTYPE (protocol/TEAM_PROTOCOL.md)",
-  "repository": "reallakshman19/Grade9v3.5",
-  "updated": "2026-10-15T11:37+04:00",
-  "updated_by": "TeamCoordinator (Claude, candidate)",
-  "control": {
-    "epoch": 1,
-    "coordinator": "TeamCoordinator: Claude (Owner, 15 Oct: \"you will be teamcoordinator, ownermember another agent\")",
-    "since": "2026-10-15T08:45+04:00",
-    "owner_teammember": "paused since 2026-10-15T10:58+04:00 (FTC-008, Owner: \"step back from this project for a while\"); Owner decisions come only from the Owner directly",
-    "hold": null
-  },
-  "workflow": {
-    "owner_words": "Agent A repairs the native renderer until 21/21, Agent B finishes the Q003 plan; each hands over to the other for checking",
-    "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6184438655 (Owner 08:29 \"ok, proceed\")",
-    "loop": [
-      "agent freezes a commit and posts TASK EVIDENCE v2",
-      "other agent checks that exact commit, posts PASS / FAIL / HOLD in its own thread",
-      "first agent fixes",
-      "repeat"
-    ],
-    "current": {
-      "A": "lease granted; R8 readback, contract gap check, then native renderer implementation",
-      "B": "onboarded; prepare_private.py, native Core2 vs G-CORE2-R2, Core1A"
-    }
-  },
-  "agents": [
-    {
-      "role": "implementer (R13 native repair)",
-      "alias": "Agent A",
-      "generation": 1,
-      "chat_id8": "6ad0449d",
-      "status": "active, chat FULL since ~11:33 (no relay possible)",
-      "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/13",
-      "work": "Grade9v3.5 #182 (parent #137), PR #268 @9d225535 (agent claim)",
-      "onboarded": "2026-10-15T08:4x+04:00 DELIVERED; lease relay 08:5x DELIVERED"
-    },
-    {
-      "role": "analyst (Q003 plan R3)",
-      "alias": "Agent B",
-      "generation": 1,
-      "chat_id8": "6ad04451",
-      "status": "active",
-      "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/14",
-      "work": "Grade9v3.5 #183, plan R3 (agent claim)",
-      "onboarded": "2026-10-15T08:5x+04:00 DELIVERED (with workflow card and decisions)"
-    }
-  ],
-  "standing_owner_decisions": [
-    "coordinator cadence 10 min (Owner, 15 Oct)",
-    "academic and Owner QRT acceptance deferred to the final phase (Owner, to the predecessor of A)",
-    "BuddyRunner v1.7 for new handovers",
-    "Q003 academic/QRT acceptance waits for the final phase; Agent B does not hold other work for it (Owner, 15 Oct)",
-    "agents onboarded with the \u00a710 message; until a decision comes, an agent works in its own lane or reports it waits on the Owner (Owner, 15 Oct)",
-    "AB-LEASE granted: Agent A 6ad0449d exclusive render_core.py writer lease, native-repair scope only, own branch/PR #268, no merge to main, no release; Agent B does not write render_core.py (relay 6184438655)",
-    "AB-SOURCE: Owner supplies the private source input to Agent B directly, never via the public repo (Owner: \"File given to agent B\")",
-    "AB-HARNESS (Owner 09:08): Agent A may modify only the R8 TEST qualification workflow/runner paths for the 21-cell check; Agent B must check that change on the exact commit before any result counts",
-    "AB-SOURCE update (Owner 09:05 \"done\", relay 1#6184864349, supersedes 08:58): original SOF IMO 2023-24 Class IX PDF attached in Agent B chat; B extracts Q003 and confirms custody hashes (source_item 31ce6243\u2026, private_input b263644c\u2026); original stays out of git/public repo; DEVELOPMENT_ONLY_NO_PUBLISHER_LICENSE",
-    "AB-HUBPAGES granted (Owner 09:29 \"ok\", FTC-002): Agent A regenerates exactly public/test/index.html, public/test/rungs/index.html, public/test/deployments/index.html with the repo generator, PR #268 branch, one frozen commit; Agent B checks it; no release",
-    "AB-DOCSMIRROR granted (Owner 09:46 \"yes narrowly\", FTC-004): Agent A regenerates only the docs/test mirror copies of the three TEST hub pages, generator only, one frozen commit on PR #268; Agent B checks it; no release",
-    "Owner 10:37 \"ok\" (FTC-006): keep 5a117f69; Agent B reviews it; the 100% QRT claim is not acceptance",
-    "AB-DISPATCH done (FTC-007): R14 run 38695396622 started 10:55 at 3db7f685 (conclusion: failure); Agent A reports, Agent B checks",
-    "AB-Q003-RUN parked (Owner 10:55 \"nothing more, need to proceed with whatever we have!\"): original-source Q003 native render is a final-phase gap; B finishes the rest of plan R3",
-    "AB-5A117F69-OWNER (Owner 11:07 \"ok proceed\", on TeamCoordinator recommendation): Agent A fixes the 5a117f69 findings narrowly, one frozen commit each with an exact file list, Agent B checks each; order after A R14 result: (1) regenerate tools/data.js + public/core-learning/data.js via generator, (2) core1b commitment gate, (3) audit fail-closed + no CDN fallback; no other pushes to the PR #240 branch outside this project until the 5a117f69 author is known; QRT/academic acceptance stays final-phase",
-    "AB-R14-REDISPATCH (Owner 11:37 \"go ahead as per your recomendation\"): Agent A may dispatch the manual R14 workflow on PR #268 once Agent B passes 1b232a61; B checks the result",
-    "AB-DOCS-DATAJS (Owner 11:37 same words): Agent A regenerates docs/core-learning/data.js and docs/tools/data.js on PR #240 with the generator, one frozen commit, B checks"
-  ],
-  "open_owner_decisions": [
-    {
-      "id": "AB-A-NEWCHAT",
-      "ask": "Agent A chat 6ad0449d is FULL (max length, ~11:33). New chat for Agent A (same role, lease, branch), handover from #13?"
-    }
-  ],
-  "status_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/12",
-  "log_folder": "logs/imo-ab-test/2026-10-15_epoch1/",
-  "facts": [
-    "PR #240 branch feat/imo-grade9-68-questions-master-suite moved 90c85970 -> 5a117f69 (1 commit, 15 files, pushed outside this project, ~10:31); contains A render_core.py change (+56/-13): second writer outside A lease; A 21-case run must state its base (FTC-006)",
-    "5a117f69 findings (Agent B #13): (a) audit 100% claim FAIL, (b) core1b pre-attempt reveal HOLD/FAIL (master-suite html identical to validated outputs), (c) audit not fail-closed + CDN fallback FAIL, (d) core1a-tablet-browser FAIL on stale data.js; no owner assigned yet"
-  ]
+    "project":  "imo-ab-test",
+    "protocol":  "Team protocol v2.0 PROTOTYPE (protocol/TEAM_PROTOCOL.md)",
+    "repository":  "reallakshman19/Grade9v3.5",
+    "updated":  "2026-10-15T12:02:00+04:00",
+    "updated_by":  "TeamCoordinator (FTC-010)",
+    "control":  {
+                    "epoch":  1,
+                    "coordinator":  "TeamCoordinator: Claude (Owner, 15 Oct: \"you will be teamcoordinator, ownermember another agent\")",
+                    "since":  "2026-10-15T08:45+04:00",
+                    "owner_teammember":  "paused since 2026-10-15T10:58+04:00 (FTC-008, Owner: \"step back from this project for a while\"); Owner decisions come only from the Owner directly",
+                    "hold":  null
+                },
+    "workflow":  {
+                     "owner_words":  "Agent A repairs the native renderer until 21/21, Agent B finishes the Q003 plan; each hands over to the other for checking",
+                     "source":  "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6184438655 (Owner 08:29 \"ok, proceed\")",
+                     "loop":  [
+                                  "agent freezes a commit and posts TASK EVIDENCE v2",
+                                  "other agent checks that exact commit, posts PASS / FAIL / HOLD in its own thread",
+                                  "first agent fixes",
+                                  "repeat"
+                              ],
+                     "current":  {
+                                     "A":  "lease granted; R8 readback, contract gap check, then native renderer implementation",
+                                     "B":  "onboarded; prepare_private.py, native Core2 vs G-CORE2-R2, Core1A"
+                                 }
+                 },
+    "agents":  [
+                   {
+                       "role":  "implementer (R13 native repair)",
+                       "alias":  "Agent A",
+                       "generation":  1,
+                       "chat_id8":  "6ad0449d",
+                       "status":  "active, chat FULL since ~11:33 (no relay possible)",
+                       "evidence_thread":  "https://github.com/reallakshman19/CoordinatorLandingpage/issues/13",
+                       "work":  "Grade9v3.5 #182 (parent #137), PR #268 @9d225535 (agent claim)",
+                       "onboarded":  "2026-10-15T08:4x+04:00 DELIVERED; lease relay 08:5x DELIVERED"
+                   },
+                   {
+                       "role":  "analyst (Q003 plan R3)",
+                       "alias":  "Agent B",
+                       "generation":  1,
+                       "chat_id8":  "6ad04451",
+                       "status":  "active",
+                       "evidence_thread":  "https://github.com/reallakshman19/CoordinatorLandingpage/issues/14",
+                       "work":  "Grade9v3.5 #183, plan R3 (agent claim)",
+                       "onboarded":  "2026-10-15T08:5x+04:00 DELIVERED (with workflow card and decisions)"
+                   }
+               ],
+    "standing_owner_decisions":  [
+                                     "coordinator cadence 10 min (Owner, 15 Oct)",
+                                     "academic and Owner QRT acceptance deferred to the final phase (Owner, to the predecessor of A)",
+                                     "BuddyRunner v1.7 for new handovers",
+                                     "Q003 academic/QRT acceptance waits for the final phase; Agent B does not hold other work for it (Owner, 15 Oct)",
+                                     "agents onboarded with the §10 message; until a decision comes, an agent works in its own lane or reports it waits on the Owner (Owner, 15 Oct)",
+                                     "AB-LEASE granted: Agent A 6ad0449d exclusive render_core.py writer lease, native-repair scope only, own branch/PR #268, no merge to main, no release; Agent B does not write render_core.py (relay 6184438655)",
+                                     "AB-SOURCE: Owner supplies the private source input to Agent B directly, never via the public repo (Owner: \"File given to agent B\")",
+                                     "AB-HARNESS (Owner 09:08): Agent A may modify only the R8 TEST qualification workflow/runner paths for the 21-cell check; Agent B must check that change on the exact commit before any result counts",
+                                     "AB-SOURCE update (Owner 09:05 \"done\", relay 1#6184864349, supersedes 08:58): original SOF IMO 2023-24 Class IX PDF attached in Agent B chat; B extracts Q003 and confirms custody hashes (source_item 31ce6243…, private_input b263644c…); original stays out of git/public repo; DEVELOPMENT_ONLY_NO_PUBLISHER_LICENSE",
+                                     "AB-HUBPAGES granted (Owner 09:29 \"ok\", FTC-002): Agent A regenerates exactly public/test/index.html, public/test/rungs/index.html, public/test/deployments/index.html with the repo generator, PR #268 branch, one frozen commit; Agent B checks it; no release",
+                                     "AB-DOCSMIRROR granted (Owner 09:46 \"yes narrowly\", FTC-004): Agent A regenerates only the docs/test mirror copies of the three TEST hub pages, generator only, one frozen commit on PR #268; Agent B checks it; no release",
+                                     "Owner 10:37 \"ok\" (FTC-006): keep 5a117f69; Agent B reviews it; the 100% QRT claim is not acceptance",
+                                     "AB-DISPATCH done (FTC-007): R14 run 38695396622 started 10:55 at 3db7f685 (conclusion: failure); Agent A reports, Agent B checks",
+                                     "AB-Q003-RUN parked (Owner 10:55 \"nothing more, need to proceed with whatever we have!\"): original-source Q003 native render is a final-phase gap; B finishes the rest of plan R3",
+                                     "AB-5A117F69-OWNER (Owner 11:07 \"ok proceed\", on TeamCoordinator recommendation): Agent A fixes the 5a117f69 findings narrowly, one frozen commit each with an exact file list, Agent B checks each; order after A R14 result: (1) regenerate tools/data.js + public/core-learning/data.js via generator, (2) core1b commitment gate, (3) audit fail-closed + no CDN fallback; no other pushes to the PR #240 branch outside this project until the 5a117f69 author is known; QRT/academic acceptance stays final-phase",
+                                     "AB-R14-REDISPATCH (Owner 11:37 \"go ahead as per your recomendation\"): Agent A may dispatch the manual R14 workflow on PR #268 once Agent B passes 1b232a61; B checks the result",
+                                     "AB-DOCS-DATAJS (Owner 11:37 same words): Agent A regenerates docs/core-learning/data.js and docs/tools/data.js on PR #240 with the generator, one frozen commit, B checks"
+                                 ],
+    "open_owner_decisions":  [
+                                 {
+                                     "id":  "AB-A-NEWCHAT",
+                                     "ask":  "Agent A chat 6ad0449d is FULL (max length, ~11:33). New chat for Agent A (same role, lease, branch), handover from #13?"
+                                 }
+                             ],
+    "status_issue":  "https://github.com/reallakshman19/CoordinatorLandingpage/issues/12",
+    "log_folder":  "logs/imo-ab-test/2026-10-15_epoch1/",
+    "facts":  [
+                  "PR #240 branch feat/imo-grade9-68-questions-master-suite moved 90c85970 -\u003e 5a117f69 (1 commit, 15 files, pushed outside this project, ~10:31); contains A render_core.py change (+56/-13): second writer outside A lease; A 21-case run must state its base (FTC-006)",
+                  "5a117f69 findings (Agent B #13): (a) audit 100% claim FAIL, (b) core1b pre-attempt reveal HOLD/FAIL (master-suite html identical to validated outputs), (c) audit not fail-closed + CDN fallback FAIL, (d) core1a-tablet-browser FAIL on stale data.js; no owner assigned yet"
+              ],
+    "leases":  [
+                   {
+                       "paths":  "Shared/tools/render_core.py",
+                       "grant":  "AB-LEASE",
+                       "pr":  "#268",
+                       "holder":  "A 6ad0449d"
+                   },
+                   {
+                       "paths":  "public/test/{index,rungs,deployments}.html + docs/test mirrors",
+                       "grant":  "AB-HUBPAGES / AB-DOCSMIRROR",
+                       "pr":  "#268",
+                       "holder":  "A 6ad0449d"
+                   },
+                   {
+                       "paths":  "R8 workflow + runner paths",
+                       "grant":  "AB-HARNESS (B checks first)",
+                       "pr":  "#268",
+                       "holder":  "A 6ad0449d"
+                   },
+                   {
+                       "paths":  "docs/core-learning/data.js, docs/tools/data.js",
+                       "grant":  "AB-DOCS-DATAJS",
+                       "pr":  "#240",
+                       "holder":  "A 6ad0449d"
+                   },
+                   {
+                       "paths":  "5a117f69 findings, narrow commits",
+                       "grant":  "AB-5A117F69-OWNER",
+                       "pr":  "#240",
+                       "holder":  "A 6ad0449d"
+                   }
+               ],
+    "cross_project_writes":  {
+                                 "commits":  [
+                                                 "5d609786",
+                                                 "01f29334",
+                                                 "40f9267b"
+                                             ],
+                                 "note":  "Each A commit on PR #240 is also logged in logs/grade9-pilot/registry.json as an imo-ab-test write (FTC-010)"
+                             }
 }
