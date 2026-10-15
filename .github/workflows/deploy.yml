@@ -1,105 +1,164 @@
-name: Deploy to GitHub Pages
+name: One truthful Pages publisher
 
 on:
-  # Manually trigger from any branch via the Actions tab
-  workflow_dispatch:
-
-  # Also fires on every push to feat/landing-page (during review)
-  # and to main (after merge)
   push:
-    branches:
-      - feat/landing-page
-      - main
+    branches: [main]
     paths:
+      - 'logs/**'
       - 'site/**'
       - 'scripts/**'
-      - 'protocol/**'
-      - 'benchmarks/**'
       - '.github/workflows/deploy.yml'
+  issues:
+    types: [opened, edited, closed, reopened, labeled, unlabeled]
+  issue_comment:
+    types: [created, edited, deleted]
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
 
+# Exactly ONE enabled Pages writer. All triggers share this serial gate.
 concurrency:
-  group: pages-deploy
-  cancel-in-progress: true
+  group: pages
+  cancel-in-progress: false
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
   issues: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       GH_TOKEN: ${{ github.token }}
-
+    outputs:
+      source_sha: ${{ steps.source.outputs.sha }}
     steps:
-      - name: Checkout
+      - name: Checkout exact current main
         uses: actions/checkout@v4
         with:
+          ref: main
+          persist-credentials: false
           fetch-depth: 1
 
-      - name: Set up Python
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      # ── Fetch live issue threads (read-only GITHUB_TOKEN) ─────────────────
-      - name: Fetch live issue threads
+      - name: Identify checked-out source commit
+        id: source
+        shell: bash
         run: |
-          python scripts/fetch_live_data.py \
-            --root . \
-            --repo ${{ github.repository }} \
-            --cache-dir _live_cache
-        continue-on-error: true   # no logs/ dir on feat/landing-page yet is fine
+          set -euo pipefail
+          sha="$(git rev-parse HEAD)"
+          [[ "$sha" =~ ^[0-9a-f]{40}$ ]]
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "Building source commit $sha"
 
-      # ── Build data ────────────────────────────────────────────────────────
-      - name: Build live site data
+      - name: Stage static site BEFORE generating live JSON
+        shell: bash
         run: |
-          python scripts/build_data.py \
-            --root . \
-            --out _artifact/data \
+          set -euo pipefail
+          rm -rf _artifact _live_cache
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          # The repo contains a committed benchmark snapshot at site/data.
+          # Remove ALL copied data, then generate live from current registries.
+          rm -rf _artifact/data
+          mkdir -p _artifact/data
+          cp -r protocol/. _artifact/protocol/
+
+      - name: Read-only fetch current registry issue and Owner-input sources
+        shell: bash
+        env:
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+        run: |
+          set -euo pipefail
+          GITHUB_SHA="$SOURCE_SHA" python scripts/fetch_live_data.py \
+            --root . --repo "${{ github.repository }}" --cache-dir _live_cache
+
+      - name: Fail closed on incomplete or degraded source capture
+        shell: bash
+        env:
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+        run: |
+          set -euo pipefail
+          python scripts/publish_site.py capture \
+            --cache _live_cache --repo "${{ github.repository }}" \
+            --source "$SOURCE_SHA"
+
+      - name: Build LIVE root strictly from current registries and captured threads
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/build_data.py --root . --out _artifact/data \
             --cache-dir _live_cache
 
-      - name: Build benchmark data
+      - name: Build frozen benchmarks in distinct path only
+        shell: bash
         run: |
-          python scripts/build_data.py \
-            --root . \
-            --out _artifact/data/benchmarks \
+          set -euo pipefail
+          python scripts/build_data.py --root . --out _artifact/data/benchmarks \
             --benchmark benchmarks/grade9-pilot-2026-10-15 \
             --benchmark benchmarks/imo-ab-test-2026-10-15
 
-      # ── Run test suites ───────────────────────────────────────────────────
-      - name: Python hard-case tests
+      - name: Verify provenance and stamp build-info.json before any upload
+        shell: bash
+        env:
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+        run: |
+          set -euo pipefail
+          python scripts/publish_site.py stamp --artifact _artifact \
+            --logs logs --cache _live_cache \
+            --repo "${{ github.repository }}" \
+            --source "$SOURCE_SHA" --run-id "${{ github.run_id }}"
+          mkdir -p _publish_proof
+          cp _artifact/build-info.json _publish_proof/build-info.json
+          sha256sum _publish_proof/build-info.json
+
+      - name: Run original 31 benchmark checks
         run: python tests/build_test.py
 
-      - name: Install Playwright for browser smoke test
+      - name: Run unchanged WP1a+WP1b unit checks and WP4 publisher checks
+        run: python -m unittest tests/test_wp1a.py tests/test_wp1a_behavioural.py tests/test_wp1b.py tests/test_wp4.py -v
+
+      - name: Build isolated historical browser fixture (not published)
+        shell: bash
         run: |
-          pip install playwright
-          playwright install --with-deps chromium
+          set -euo pipefail
+          mkdir -p _test_artifact
+          cp -r site/. _test_artifact/
+          rm -rf _test_artifact/data
+          python scripts/build_data.py --root . --out _test_artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          python scripts/build_data.py --root . --out _test_artifact/data/benchmarks \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _test_artifact/protocol/
 
-      # ── Assemble Pages artifact ───────────────────────────────────────────
-      - name: Copy site files into artifact
-        run: cp -r site/. _artifact/
-
-      - name: Copy protocol into artifact
-        run: cp -r protocol/ _artifact/protocol/
-
-      # ── Browser smoke test against the artifact ───────────────────────────
-      - name: Browser smoke test (19 hard-case checks)
-        run: python tests/browser_smoke_test.py _artifact
-
-      # ── Stamp build info ─────────────────────────────────────────────────
-      - name: Write build-info.json
+      - name: Install Playwright and Chromium
+        shell: bash
         run: |
-          echo '{
-            "built_at": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",
-            "ref": "${{ github.ref_name }}",
-            "sha": "${{ github.sha }}",
-            "run_id": "${{ github.run_id }}"
-          }' > _artifact/build-info.json
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
 
-      - name: Upload Pages artifact
+      - name: Original 19 browser hard cases
+        run: python tests/browser_smoke_test.py _test_artifact
+
+      - name: WP2 27 browser/route/theme checks
+        run: python tests/wp2_browser_test.py _test_artifact
+
+      - name: Upload exact build-info readback proof for deploy job
+        uses: actions/upload-artifact@v4
+        with:
+          name: published-build-info-proof
+          path: _publish_proof/build-info.json
+          if-no-files-found: error
+
+      - name: Upload ONE Pages artifact after all gates succeeded
         uses: actions/upload-pages-artifact@v3
         with:
           path: _artifact/
@@ -107,13 +166,43 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    permissions:
-      pages: write
-      id-token: write
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Checkout publisher readback verifier
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Download exact expected build-info from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: published-build-info-proof
+          path: _publish_proof
+
+      - name: Deploy the already qualified artifact
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Read back DEPLOYED build-info and verify exact SHA256 and source commit
+        shell: bash
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+          SOURCE_SHA: ${{ needs.build.outputs.source_sha }}
+        run: |
+          set -euo pipefail
+          python scripts/publish_site.py readback \
+            --url "$PAGE_URL" --expected _publish_proof/build-info.json \
+            --source "$SOURCE_SHA"

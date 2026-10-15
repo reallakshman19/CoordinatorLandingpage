@@ -1,4 +1,4 @@
-name: landing-live WP1a + WP1b + WP2 browser qualification
+name: landing-live WP1a + WP1b + WP2 + WP4 qualification
 
 on:
   pull_request:
@@ -40,6 +40,14 @@ jobs:
         run: |
           set -o pipefail
           python -m unittest tests/test_wp1a.py tests/test_wp1a_behavioural.py tests/test_wp1b.py -v 2>&1 | tee wp1a-head.log
+
+      - name: Run seven WP4 publisher source/publish-gate checks
+        id: wp4
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m unittest tests.test_wp4 -v 2>&1 | tee wp4-head.log
 
       - name: Assemble benchmark-backed browser artifact (no live API)
         id: artifact
@@ -94,6 +102,7 @@ jobs:
             wp1a-head.log
             wp1a-browser.log
             wp2-head.log
+            wp4-head.log
           if-no-files-found: ignore
 
       - name: Prove injected failure rejected and enforce all HEAD gates
@@ -126,7 +135,8 @@ jobs:
           require_success "chromium" "${{ steps.chromium.outcome }}"
           require_success "original-browser-19" "${{ steps.browser.outcome }}"
           require_success "WP2-visible-browser" "${{ steps.wp2_browser.outcome }}"
-          echo "FINAL GATE: 6/6 actual head outcomes success"
+          require_success "WP4-single-publisher-and-provenance" "${{ steps.wp4.outcome }}"
+          echo "FINAL GATE: 7/7 actual head outcomes success"
 
   red-control:
     name: red-control · require seven behavioural FAIL and zero ERROR
@@ -373,4 +383,84 @@ jobs:
         with:
           name: wp2-browser-base-red
           path: wp2-browser-red.log
+          if-no-files-found: error
+
+
+  wp4-red-control:
+    name: WP4 base publisher behavioural red · three FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact PR head and WP4 behavioural tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore EXACT three publisher workflows from pinned BASE
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=5d8a586c18a3907edd3b9779b2af4a1e4a0c4ef0
+          git cat-file -e "${BASE}^{commit}"
+          for path in deploy.yml site-data.yml jekyll-gh-pages.yml; do
+            git show "${BASE}:.github/workflows/$path" > ".github/workflows/$path"
+          done
+          echo "WP4_BASE=${BASE} · test source stays PR HEAD"
+      - name: Demand three behavioural failures, zero missing API errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp4.BaseCompatiblePublisherTests -v \
+            > wp4-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp4-red.log
+          export RED_EXIT="$rc"
+          python - <<'PY'
+          import os
+          import re
+          import sys
+          from pathlib import Path
+
+          log = Path('wp4-red.log').read_text(encoding='utf-8')
+          names = re.findall(
+              r'^(test_wp4_[A-Za-z0-9_]+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',
+              log, re.MULTILINE)
+          fails = [n for n, kind in names if kind == 'FAIL']
+          errors = [n for n, kind in names if kind == 'ERROR']
+          expected = {
+              'test_wp4_only_one_pages_publisher',
+              'test_wp4_old_benchmark_snapshot_cannot_overwrite_live_projects',
+              'test_wp4_failed_fetch_cannot_be_masked_as_green',
+          }
+          print('WP4 RED: base behavioural FAILs', len(fails))
+          for n in fails:
+              print('WP4 RED:', n, 'FAIL')
+          print('WP4 RED: API/runner ERRORs', len(errors))
+          good = (int(os.environ['RED_EXIT']) != 0 and
+                  set(fails) == expected and len(fails) == 3 and
+                  len(errors) == 0 and
+                  re.search(r'^Ran 3 tests in ', log, re.MULTILINE) and
+                  re.search(r'^FAILED \(failures=3\)$', log, re.MULTILINE) and
+                  not re.search(r'^ERROR:', log, re.MULTILINE) and
+                  not any(x in log for x in (
+                      'TypeError:', 'AttributeError:', 'ImportError:',
+                      'ModuleNotFoundError:', 'SyntaxError:')))
+          print('WP4 RED VERDICT:',
+                'EXPECTED BEHAVIOURAL RED' if good else 'INVALID RED')
+          if not good:
+              sys.exit(1)
+          PY
+      - name: Upload WP4 red output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp4-publisher-base-red
+          path: wp4-red.log
           if-no-files-found: error

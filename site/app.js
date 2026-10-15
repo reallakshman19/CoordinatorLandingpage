@@ -397,14 +397,14 @@ async function renderHome(app) {
 
     const tr = el('tr');
     tr.innerHTML = `
-      <td><a href="#project/${p.project}">${escapeHtml(p.project)}</a></td>
+      <td><a href="#project/${escapeHtml(encodeURIComponent(p.project))}">${escapeHtml(p.project)}</a></td>
       <td>${escapeHtml(ctrl.coordinator || '—')}<br>
           <span class="badge badge-grey" style="margin-top:3px">epoch ${ctrl.epoch || 1}</span></td>
       <td>${agentsActive} active, ${agentsRetired} retired</td>
       <td>${healthEl}</td>
       <td>${lastCycle}</td>
       <td>
-        <a href="#project/${p.project}" class="btn btn-small">View →</a>
+        <a href="#project/${escapeHtml(encodeURIComponent(p.project))}" class="btn btn-small">View →</a>
       </td>
     `;
     tbody.appendChild(tr);
@@ -469,19 +469,19 @@ async function renderProject(app, projectName) {
 
     tr.innerHTML = `
       <td>
-        <a href="#agent/${projectName}/${a.chat_id8}">
+        <a href="#agent/${escapeHtml(encodeURIComponent(projectName))}/${escapeHtml(encodeURIComponent(a.chat_id8))}">
           ${escapeHtml(a.role)}${a.alias ? ` (${escapeHtml(a.alias)})` : ''}
         </a>
-        <br><code style="font-size:0.78rem;color:var(--text-3)">${a.chat_id8}</code>
+        <br><code style="font-size:0.78rem;color:var(--text-3)">${escapeHtml(a.chat_id8)}</code>
         ${retiredNote}
       </td>
       <td>${genBadge}</td>
-      <td id="agent-state-${a.chat_id8}"></td>
+      <td class="agent-state"></td>
       <td>${threadLink}</td>
       <td><code style="font-size:0.75rem;word-break:break-all">${escapeHtml(a.branch || '—')}</code></td>
-      <td><a href="#agent/${projectName}/${a.chat_id8}" class="btn btn-small">Evidence →</a></td>
+      <td><a href="#agent/${escapeHtml(encodeURIComponent(projectName))}/${escapeHtml(encodeURIComponent(a.chat_id8))}" class="btn btn-small">Evidence →</a></td>
     `;
-    const stateCell = tr.querySelector(`#agent-state-${a.chat_id8}`);
+    const stateCell = tr.querySelector(".agent-state");
     stateCell.appendChild(agentStateBadge(a.status));
     tbody.appendChild(tr);
   });
@@ -533,7 +533,7 @@ async function renderProject(app, projectName) {
         </div>
         <div class="decision-card-body">
           ${d.link ? `<a href="${escapeHtml(d.link)}" target="_blank" rel="noopener" class="btn btn-small">Evidence →</a>` : ''}
-          <a href="#decision/${projectName}/${encodeURIComponent(d.id)}" class="btn btn-small" style="margin-left:6px">Decision card →</a>
+          <a href="#decision/${escapeHtml(encodeURIComponent(projectName))}/${escapeHtml(encodeURIComponent(d.id))}" class="btn btn-small" style="margin-left:6px">Decision card →</a>
         </div>
       `;
       odSection.appendChild(card);
