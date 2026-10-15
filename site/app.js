@@ -37,6 +37,7 @@ const state = {
   buildInfo: null,
   buildSignature: null,
   pollInFlight: false,
+  decisionDraft: null, // uncommitted form prefill, NEVER a recorded Owner answer
 };
 
 // ── DOM helpers ────────────────────────────────────────────
@@ -409,6 +410,94 @@ function ownerJSONCommitURL(values, date = new Date(), randomBytes = null) {
   return {url, record, path};
 }
 
+// WP9: decision answers remain unverified until a real associated JSON file
+// has been committed and read back. A draft, popup and git link are NOT receipts.
+function decisionAnswerText(decision, visibleAsk, answer) {
+  const cleanId = String(decision.id || '');
+  if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$/.test(cleanId))
+    throw new Error('Decision identifier cannot be safely submitted.');
+  const cleanAnswer = String(answer || '').replace(/\s+/g, ' ').trim();
+  // WP7's public projection currently shows the first 300 characters.
+  // Keep the identifying quote in that projection even for an Other answer.
+  if (!cleanAnswer || cleanAnswer.length > 140)
+    throw new Error('Enter an answer of at most 140 characters.');
+  const ask = String(visibleAsk || decision.ask || '').replace(/\s+/g, ' ').trim();
+  // Bound the quote: even a long question must remain within the 1500-byte
+  // form limit; the GitHub new-file URL has a separate 7000-char guard.
+  return cleanId + ': ' + cleanAnswer + '\nQuestion: "' + ask.slice(0, 700) + '"';
+}
+function recordedDecisionAnswer(project, decision, inputs) {
+  if (!Array.isArray(inputs)) return null;  // unavailable is UNKNOWN
+  const id = String(decision.id || '');
+  return inputs.filter(row =>
+    row && row.source_kind === 'json_file' &&
+    row.project === project &&
+    row.type === 'DECISION' && row.target === 'TeamCoordinator' &&
+    row.is_outsider === false &&
+    ['OWNER', 'MEMBER', 'COLLABORATOR'].includes(row.author_association) &&
+    Array.isArray(row.flags) && row.flags.length === 0 &&
+    /^[0-9a-f]{40}$/.test(String(row.source_commit || '')) &&
+    !!traceSafeGitHubURL(row.issue_url) &&
+    typeof row.text === 'string' && row.text.startsWith(id + ': ') &&
+    /\nQuestion: "/.test(row.text) &&
+    ['OPEN','ACKNOWLEDGED','NEEDS_CLARIFICATION','HANDLED'].includes(ownerInputState(row))
+  ).sort((a,b) => String(b.ts || '').localeCompare(String(a.ts || '')))[0] || null;
+}
+function decisionRecordedState(project, decision, inputs) {
+  const row = recordedDecisionAnswer(project, decision, inputs);
+  if (!row) return null;
+  return ownerInputState(row) === 'HANDLED' && safeReceipt(row)
+    ? 'linked handler receipt recorded · not Owner approval'
+    : 'answered, waiting for receipt';
+}
+function renderDecisionAnswers(container, project, decision, visibleAsk, inputs) {
+  const wrapper = el('div', 'decision-answers');
+  if (state.benchmarkMode) return wrapper;
+  const recorded = decisionRecordedState(project, decision, inputs);
+  if (recorded) {
+    wrapper.appendChild(el('div', 'decision-answer-state', recorded));
+  }
+  for (const choice of ['Accept', 'Hold', 'Other…']) {
+    const button = el('button', 'btn btn-small decision-answer-btn', choice);
+    button.type = 'button';
+    button.dataset.choice = choice === 'Other…' ? 'Other' : choice;
+    button.dataset.decisionId = String(decision.id);
+    button.dataset.project = project;
+    button.addEventListener('click', () => {
+      try {
+        let answer = choice;
+        if (choice === 'Other…') {
+          const typed = window.prompt('Your answer to ' + decision.id + ':', '');
+          if (typed === null) return; // cancel is a NO-OP
+          if (!typed.trim()) throw new Error('Enter an answer before continuing.');
+          answer = 'Other: ' + typed.trim();
+        }
+        const data = {
+          project, target: 'TeamCoordinator', type: 'DECISION',
+          text: decisionAnswerText(decision, visibleAsk, answer), replaces: ''
+        };
+        const prepared = ownerJSONCommitURL(data);
+        // Synchronous user gesture: keep the new tab eligible for popup.
+        state.decisionDraft = data;
+        window.open(prepared.url, '_blank', 'noopener,noreferrer');
+        navigate('#owner-inputs');
+        // We do not change decision status until a real committed source is
+        // published and its author passes the pre-existing provenance gate.
+      } catch (error) {
+        const message = container.querySelector('.decision-answer-error')
+          || el('span', 'decision-answer-error');
+        message.textContent = String(error.message || 'Unable to prepare an answer.');
+        wrapper.appendChild(message);
+      }
+    });
+    wrapper.appendChild(button);
+  }
+  wrapper.appendChild(el('p', 'decision-commit-hint',
+    'GitHub opens — click Commit changes twice. Your answer is not sent until you commit.'));
+  container.appendChild(wrapper);
+  return wrapper;
+}
+
 function setupJSONInputForm() {
   const form = $('oi-json-form'), projects = $('oi-json-project');
   if (!form || !projects) return;
@@ -418,6 +507,17 @@ function setupJSONInputForm() {
     projects.appendChild(opt);
   }
   if (state.benchmarkMode) { form.style.display = 'none'; return; }
+  if (state.decisionDraft) {
+    const draft = state.decisionDraft;
+    projects.value = draft.project;
+    $('oi-json-target').value = draft.target;
+    $('oi-json-type').value = draft.type;
+    $('oi-json-text').value = draft.text;
+    $('oi-json-replaces').value = draft.replaces || '';
+    $('oi-json-result').textContent =
+      'Decision prepared · GitHub opens — click Commit changes twice. ' +
+      'Only a committed file can appear as answered, waiting for receipt.';
+  }
   form.addEventListener('submit', event => {
     event.preventDefault();
     try {
@@ -535,6 +635,7 @@ async function renderHome(app) {
       link.href = '#decision/' + encodeURIComponent(p.project) +
         '/' + encodeURIComponent(d.id || '');
       li.appendChild(link);
+      renderDecisionAnswers(li, p.project, d, await displayedDecisionAsk(d), inputs);
       nyList.appendChild(li);
     }
   }
@@ -719,6 +820,7 @@ async function renderProject(app, projectName) {
   if (!ood.length) {
     odSection.innerHTML = '<p style="color:var(--text-3);font-size:0.85rem">No open decisions.</p>';
   } else {
+    const inputs = await loadOwnerInputs();
     for (const d of ood) {
       const card = el('div', 'decision-card');
       const visibleAsk = await displayedDecisionAsk(d);
@@ -734,6 +836,8 @@ async function renderProject(app, projectName) {
           <a href="#decision/${escapeHtml(encodeURIComponent(projectName))}/${escapeHtml(encodeURIComponent(d.id))}" class="btn btn-small" style="margin-left:6px">Decision card →</a>
         </div>
       `;
+      renderDecisionAnswers(card.querySelector('.decision-card-body'),
+        projectName, d, visibleAsk, inputs);
       odSection.appendChild(card);
     }
   }
@@ -1122,11 +1226,16 @@ async function renderDecision(app, projectName, decisionId) {
     $('dc-links').innerHTML = `<a href="${escapeHtml(d.link)}" target="_blank" rel="noopener" class="btn btn-small">Evidence →</a>`;
   }
 
+  // Native GitHub issue path remains as an explicit fallback, not the
+  // main decision answer flow. It does not mark the card as answered.
   if (state.benchmarkMode) {
     $('dc-answer-btn').style.display = 'none';
   } else {
     $('dc-answer-btn').href = decisionURL(projectName, d.id);
+    $('dc-answer-btn').textContent = 'GitHub issue (backup)';
   }
+  renderDecisionAnswers($('dc-links').parentElement, projectName, d,
+    await displayedDecisionAsk(d), await loadOwnerInputs());
 }
 
 // ── Owner inputs view ──────────────────────────────────────

@@ -1,4 +1,4 @@
-name: landing-live WP1a + WP1b + WP2 + WP4 + WP3 + WP5a + WP5b + WP6 + WP7 + WP8a + WP8b qualification
+name: landing-live WP1a + WP1b + WP2 + WP4 + WP3 + WP5a + WP5b + WP6 + WP7 + WP8a + WP8b + WP9 qualification
 
 on:
   pull_request:
@@ -210,6 +210,15 @@ jobs:
           set -o pipefail
           python tests/wp8b_browser_test.py _artifact 2>&1 | tee wp8b-browser-head.log
 
+      - name: Run WP9 Accept Hold Other new-file and receipt-state browser controls
+        id: wp9_browser
+        if: steps.artifact.outcome == 'success' && steps.chromium.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python tests/wp9_browser_test.py _artifact 2>&1 | tee wp9-browser-head.log
+
       - name: Upload qualification output
         if: always()
         uses: actions/upload-artifact@v4
@@ -235,6 +244,7 @@ jobs:
             wp8a-browser-head.log
             wp8b-unit-head.log
             wp8b-browser-head.log
+            wp9-browser-head.log
           if-no-files-found: ignore
 
       - name: Prove injected failure rejected and enforce all HEAD gates
@@ -282,7 +292,8 @@ jobs:
           require_success "WP8a-version-banner-browser" "${{ steps.wp8a_browser.outcome }}"
           require_success "WP8b-source-activity-clocks" "${{ steps.wp8b_unit.outcome }}"
           require_success "WP8b-times-protocol-and-home-shortcut-browser" "${{ steps.wp8b_browser.outcome }}"
-          echo "FINAL GATE: 21/21 actual head outcomes success"
+          require_success "WP9-decision-buttons-prefill-and-verified-receipt-browser" "${{ steps.wp9_browser.outcome }}"
+          echo "FINAL GATE: 22/22 actual head outcomes success"
 
   red-control:
     name: red-control · require seven behavioural FAIL and zero ERROR
@@ -1420,4 +1431,77 @@ jobs:
         with:
           name: wp8b-base-browser-red
           path: wp8b-browser-red.log
+          if-no-files-found: error
+
+  wp9-browser-red-control:
+    name: WP9 previous WP8b decision buttons behavioural red · 13 FAIL zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact WP9 PR HEAD tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only original merged WP8b JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=e23d7cc7d25d43c6df48f7bd4d34f6e9904d1cfc
+          git show "${BASE}:site/app.js" > site/app.js
+          echo "WP9 RED: restored old UI code from $BASE, keeping all HEAD tests"
+      - name: Build isolated browser artifact (no GitHub API write)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          python scripts/build_data.py --root . --out _artifact/data/benchmarks \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Demand thirteen wrong old-page behaviours and zero API or browser errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp9_browser_test.py _artifact > wp9-browser-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp9-browser-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path('wp9-browser-red.log').read_text()
+          names=set(re.findall(r'^FAIL (WP9_UI_(?:0[1-9]|1[0-3])_\w+)$',log,re.M))
+          m=re.search(r'^WP9_BROWSER_COUNTS pass=(\d+) fail=(\d+) error=(\d+)$',log,re.M)
+          ok=(int(os.environ['RC'])!=0 and len(names)==13 and m
+              and m.groups()==('0','13','0')
+              and 'Traceback (most recent call last)' not in log)
+          print('WP9 BROWSER RED: behavioural FAIL count',len(names))
+          print('WP9 BROWSER RED: runner ERROR count',m.group(3) if m else 'MISSING')
+          print('WP9 BROWSER RED VERDICT', 'EXPECTED BEHAVIOURAL RED' if ok else 'INVALID RED')
+          if not ok:sys.exit(1)
+          PY
+      - name: Upload WP9 old UI negative-control log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp9-base-browser-red
+          path: wp9-browser-red.log
           if-no-files-found: error
