@@ -661,3 +661,16 @@ tr:hover td { background: var(--bg-2); }
 .oi-ts.owner-clock { min-width:170px; white-space:normal; }
 .decision-card-header .decision-asked { width:100%; flex-basis:100%; }
 #needs-you .owner-clock { margin:3px 0 5px; }
+
+
+/* WP9 decision answering: all actions are buttons, not simulated receipts. */
+.decision-answers { display:flex; align-items:center; flex-wrap:wrap; gap:7px;
+  margin:10px 0 4px; }
+.decision-answer-btn { cursor:pointer; }
+.decision-answer-state { flex-basis:100%; font-size:0.85rem; font-weight:650;
+  color:var(--warn); overflow-wrap:anywhere; }
+.decision-commit-hint { flex-basis:100%; font-size:0.8rem; color:var(--text-2);
+  margin:3px 0 0; line-height:1.45; }
+.decision-answer-error { color:var(--danger); font-size:0.85rem; flex-basis:100%; }
+#needs-you .decision-answers { margin-top:7px; }
+#needs-you .decision-commit-hint { font-weight:400; }
