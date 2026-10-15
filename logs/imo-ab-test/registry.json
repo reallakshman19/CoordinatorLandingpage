@@ -2,8 +2,8 @@
     "project":  "imo-ab-test",
     "protocol":  "Team protocol v2.0 PROTOTYPE (protocol/TEAM_PROTOCOL.md)",
     "repository":  "reallakshman19/Grade9v3.5",
-    "updated":  "2026-10-15T18:05:00+04:00",
-    "updated_by":  "TeamCoordinator (FTC-022)",
+    "updated":  "2026-10-15T18:35:00+04:00",
+    "updated_by":  "TeamCoordinator (FTC-023)",
     "control":  {
                     "epoch":  1,
                     "coordinator":  "TeamCoordinator: Claude (Owner, 15 Oct: \"you will be teamcoordinator, ownermember another agent\")",
@@ -109,6 +109,11 @@
                                          "source":  "Owner to OwnerTeammember 15 Oct 18:02 \"go ahead\" (FTC-022)",
                                          "id":  "AB-R14-RUN4",
                                          "decision":  "ONE R14 run at 35c79d5e after B #27 setup PASS; started by OwnerTeammember as run 38747898235; no further run"
+                                     },
+                                     {
+                                         "source":  "Owner to OwnerTeammember 15 Oct 18:28 \"ok proceed\" (FTC-023)",
+                                         "id":  "AB-R14-PRACTICE",
+                                         "decision":  "Keep PRACTICE_LINKS in renderer; new versioned CORE1A golden sibling of G-IMO-G9-FIVE-CORE-20261012 (old kept), written reason, R14 comparator points to new version; only PRACTICE_LINKS differs; one frozen commit, draft PR; B checks; run needs new Owner word; academic/QRT acceptance HOLD"
                                      }
                                  ],
     "open_owner_decisions":  [
