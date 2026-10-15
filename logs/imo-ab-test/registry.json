@@ -2,20 +2,27 @@
   "project": "imo-ab-test",
   "protocol": "Team protocol v2.0 PROTOTYPE (protocol/TEAM_PROTOCOL.md)",
   "repository": "reallakshman19/Grade9v3.5",
-  "updated": "2026-10-15T09:1x+04:00",
+  "updated": "2026-10-15T09:2x+04:00",
   "updated_by": "TeamCoordinator (Claude, candidate)",
   "control": {
     "epoch": 1,
     "coordinator": "TeamCoordinator: Claude (Owner, 15 Oct: \"you will be teamcoordinator, ownermember another agent\")",
     "since": "2026-10-15T08:45+04:00",
-    "owner_teammember": "the Owner (Owner, 15 Oct: \"OwnerTeammember: me\")",
+    "owner_teammember": "the Claude session posting as \"OwnerTeammember\" in CoordinatorLandingpage; its relays with quote and time count (Owner, 15 Oct 09:2x)",
     "hold": null
   },
   "workflow": {
-    "owner_words": "TO BE SET BY THE OWNER",
+    "owner_words": "Agent A repairs the native renderer until 21/21, Agent B finishes the Q003 plan; each hands over to the other for checking",
+    "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6184438655 (Owner 08:29 \"ok, proceed\")",
+    "loop": [
+      "agent freezes a commit and posts TASK EVIDENCE v2",
+      "other agent checks that exact commit, posts PASS / FAIL / HOLD in its own thread",
+      "first agent fixes",
+      "repeat"
+    ],
     "current": {
-      "A": "R13 hardening done; native repair 0/21 waits on the render_core.py writer lease",
-      "B": "plan R3 P0-P2 done; waits on private source input and the Q003 academic decision"
+      "A": "lease granted; R8 readback, contract gap check, then native renderer implementation",
+      "B": "onboarded; prepare_private.py, native Core2 vs G-CORE2-R2, Core1A"
     }
   },
   "agents": [
@@ -27,7 +34,7 @@
       "status": "active",
       "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/13",
       "work": "Grade9v3.5 #182 (parent #137), PR #268 @9d225535 (agent claim)",
-      "onboarded": "2026-10-15T09:1x+04:00 DELIVERED"
+      "onboarded": "2026-10-15T09:1x+04:00 DELIVERED; lease relay 09:2x DELIVERED"
     },
     {
       "role": "analyst (Q003 plan R3)",
@@ -37,7 +44,7 @@
       "status": "active",
       "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/14",
       "work": "Grade9v3.5 #183, plan R3 (agent claim)",
-      "onboarded": "pending (agent working on the Owner-provided file)"
+      "onboarded": "2026-10-15T09:2x+04:00 DELIVERED (with workflow card and decisions)"
     }
   ],
   "standing_owner_decisions": [
@@ -45,18 +52,11 @@
     "academic and Owner QRT acceptance deferred to the final phase (Owner, to the predecessor of A)",
     "BuddyRunner v1.7 for new handovers",
     "Q003 academic/QRT acceptance waits for the final phase; Agent B does not hold other work for it (Owner, 15 Oct)",
-    "agents onboarded with the \u00a710 message; until a decision comes, an agent works in its own lane or reports it waits on the Owner (Owner, 15 Oct)"
+    "agents onboarded with the \u00a710 message; until a decision comes, an agent works in its own lane or reports it waits on the Owner (Owner, 15 Oct)",
+    "AB-LEASE granted: Agent A 6ad0449d exclusive render_core.py writer lease, native-repair scope only, own branch/PR #268, no merge to main, no release; Agent B does not write render_core.py (relay 6184438655)",
+    "AB-SOURCE: Owner supplies the private source input to Agent B directly, never via the public repo (Owner: \"File given to agent B\")"
   ],
-  "open_owner_decisions": [
-    {
-      "id": "AB-LEASE",
-      "ask": "grant Agent A the exclusive render_core.py writer lease for native repair (0/21)?"
-    },
-    {
-      "id": "AB-WORKFLOW",
-      "ask": "the workflow card (Owner's words) for this project"
-    }
-  ],
+  "open_owner_decisions": [],
   "status_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/12",
   "log_folder": "logs/imo-ab-test/2026-10-15_epoch1/"
 }
