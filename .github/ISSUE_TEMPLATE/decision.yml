@@ -1,0 +1,73 @@
+name: Respond to a decision
+description: Approve, reject, modify or defer an exact coordinator decision card.
+title: "[Decision response] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Open this form from a real coordinator decision card.
+        The card ID, revision and digest may be prefilled. They are editable fields,
+        not authentication: the coordinator must validate the actual response author,
+        canonical card, scope and current target before any protected action.
+        If you have no card, use Request or change instead. Submission alone does
+        not prove approval, execution, agent delivery or product acceptance.
+  - type: dropdown
+    id: project_id
+    attributes:
+      label: Project
+      options:
+        - dash-v2
+        - aa3
+    validations:
+      required: true
+  - type: input
+    id: card_id
+    attributes:
+      label: Decision card ID
+      description: Keep the exact ID from the coordinator card.
+    validations:
+      required: true
+  - type: input
+    id: card_revision
+    attributes:
+      label: Card revision
+      description: Use the exact revision displayed on the card.
+    validations:
+      required: true
+  - type: input
+    id: card_digest
+    attributes:
+      label: Card digest
+      description: Keep the complete digest from the card or its prefilled link.
+    validations:
+      required: true
+  - type: input
+    id: card_link
+    attributes:
+      label: Decision card link
+      description: Link the original request or comment containing this exact card version.
+    validations:
+      required: true
+  - type: dropdown
+    id: decision
+    attributes:
+      label: Your decision
+      options:
+        - Approve
+        - Reject
+        - Modify
+        - Defer
+    validations:
+      required: true
+  - type: textarea
+    id: limits_or_changes
+    attributes:
+      label: Limits, requested changes or reason
+      description: Explain any modification. A modification requires a revised card; it does not approve the original action.
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Confirm the referenced decision
+      options:
+        - label: I reviewed the exact referenced card version and its listed action and limits.
+          required: true

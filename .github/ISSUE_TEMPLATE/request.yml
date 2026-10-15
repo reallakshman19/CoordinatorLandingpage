@@ -1,0 +1,59 @@
+name: Request or change
+description: Ask for status, the next eligible task, or a change to project instructions.
+title: "[Request] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Send an instruction to the coordinator from GitHub.
+        This repository is public: use public evidence or restricted references;
+        do not include credentials, private transcripts, or draft contents.
+        Submission records a request. It does not itself execute or release work.
+  - type: dropdown
+    id: project_id
+    attributes:
+      label: Project
+      description: AA3 remains on HOLD unless its applicable scope is explicitly released.
+      options:
+        - dash-v2
+        - aa3
+    validations:
+      required: true
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: What do you need?
+      options:
+        - status
+        - next
+        - question
+        - change
+        - hold
+        - resume
+    validations:
+      required: true
+  - type: input
+    id: target
+    attributes:
+      label: Agent or task
+      description: Optional stable assignment or task ID within the selected project.
+      placeholder: "For example: M2 or M3-G3"
+  - type: textarea
+    id: instruction
+    attributes:
+      label: Your instruction
+      description: Describe the outcome you want and any limits on the action.
+      placeholder: Show current status and advance the next authorized task.
+    validations:
+      required: true
+  - type: input
+    id: supersedes
+    attributes:
+      label: Earlier instruction being changed
+      description: For a change, link the earlier request or decision when available.
+      placeholder: https://github.com/owner/repository/issues/number
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence or references
+      description: Optional public links, or a reference to information already supplied privately.

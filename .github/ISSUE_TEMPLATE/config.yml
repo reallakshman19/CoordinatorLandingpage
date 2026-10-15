@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Coordinator inbox and replies
+    url: https://github.com/reallakshman19/CoordinatorLandingpage/issues/1
+    about: Use the existing comment inbox or read coordinator responses.
+  - name: Protocol and current implementation boundary
+    url: https://github.com/reallakshman19/CoordinatorLandingpage/blob/main/PROTOCOL_PROPOSAL.md
+    about: Review authority, privacy, project isolation and execution limitations.

@@ -1,0 +1,72 @@
+name: Agent or successor change
+description: Register an existing conversation, request an agent, or retire an assignment.
+title: "[Agent change] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        An existing conversation and a request to create a new one are different actions.
+        Registration is provisional until the coordinator checks scope, handover,
+        actual conversation mode and plan adoption. Selected ChatGPT agents use
+        regular ChatGPT High, never ChatGPT Work.
+        This public form must not contain private chat contents or private URLs.
+        Use a restricted reference for a route already supplied privately.
+  - type: dropdown
+    id: project_id
+    attributes:
+      label: Project
+      description: Registration does not resume AA3 engineering or its retired scheduler.
+      options:
+        - dash-v2
+        - aa3
+    validations:
+      required: true
+  - type: dropdown
+    id: operation
+    attributes:
+      label: Change requested
+      options:
+        - register existing successor
+        - register existing agent
+        - request new agent
+        - retire assignment
+    validations:
+      required: true
+  - type: input
+    id: previous_assignment
+    attributes:
+      label: Agent or assignment reference
+      description: Identify the current agent and generation, or the proposed agent alias.
+      placeholder: "For example: M3 generation 2 to generation 3"
+    validations:
+      required: true
+  - type: textarea
+    id: role_scope
+    attributes:
+      label: Role and scope
+      description: Describe the proposed role and allowed work, or the scope being retired.
+    validations:
+      required: true
+  - type: input
+    id: existing_route_ref
+    attributes:
+      label: Existing conversation reference
+      description: Optional restricted reference to an already-opened route. Do not publish a private URL here.
+      placeholder: Route already supplied to the coordinator as M3 G3.
+  - type: textarea
+    id: handover
+    attributes:
+      label: Handover or source assignment
+      description: Link public handover evidence or identify the retained assignment. No private transcript contents.
+  - type: textarea
+    id: owner_already_supplied
+    attributes:
+      label: What have you already done?
+      description: State whether the chat is open and whether instructions or files were already supplied. Use summaries only.
+  - type: textarea
+    id: requested_effect
+    attributes:
+      label: What should the coordinator do?
+      description: Distinguish registration, grounding, creation, attachment, retirement or another exact action.
+    validations:
+      required: true
