@@ -290,17 +290,39 @@ def main():
     owner_index = gh_api(
         f"/repos/{args.repo}/issues?state=all&labels=owner-input&per_page=100"
     )
-    owner_complete = isinstance(owner_index, list)
+    all_issues = gh_api(f"/repos/{args.repo}/issues?state=all&per_page=100")
+    # This is a build-time guard, not a mutating label creation.
+    # The existing publisher refuses a degraded capture BEFORE Pages upload.
+    label_check = gh_api(f"/repos/{args.repo}/labels/owner-input")
+    if not (isinstance(label_check, dict) and
+            label_check.get("name") == "owner-input"):
+        errors.append("owner_input_label_missing")
+    owner_complete = isinstance(owner_index, list) and isinstance(all_issues, list)
     owner_issues = []
     if not owner_complete:
         errors.append("owner_input_index_failed")
     else:
+        selected = {}
+        for candidate in all_issues:
+            if (isinstance(candidate, dict) and not candidate.get("pull_request")
+                    and re.match(r'^\[Owner input\](?:\s|$)',
+                                 candidate.get("title") or "", re.I)):
+                selected[candidate.get("number")] = candidate
+        # The labelled index is still authoritative for non-standard titles.
         for candidate in owner_index:
-            if not isinstance(candidate, dict) or candidate.get("pull_request"):
-                continue
-            num = candidate.get("number")
+            if isinstance(candidate, dict) and not candidate.get("pull_request"):
+                row = dict(candidate)
+                row_labels = row.get("labels") or []
+                if not any((x.get("name") if isinstance(x, dict) else x)
+                           == "owner-input" for x in row_labels):
+                    row_labels = list(row_labels) + [{"name": "owner-input"}]
+                row["labels"] = row_labels
+                selected[row.get("number")] = row
+        for num, candidate in sorted(selected.items(),
+                                     key=lambda pair: str(pair[0])):
             if not isinstance(num, int):
                 errors.append("owner_input_number_invalid")
+                owner_complete = False
                 continue
             detail = fetch_issue(args.repo, num)
             events = gh_api(f"/repos/{args.repo}/issues/{num}/events?per_page=100")
@@ -312,6 +334,7 @@ def main():
                 "number": num, "title": candidate.get("title", ""),
                 "body": detail.get("body", ""),
                 "type": "OWNER_INPUT", "project": "",
+                "labels": detail.get("labels", candidate.get("labels", [])),
                 "state": candidate.get("state"),
                 "created_at": candidate.get("created_at"),
                 "updated_at": candidate.get("updated_at"),

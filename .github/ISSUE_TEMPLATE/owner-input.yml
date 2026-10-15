@@ -11,6 +11,7 @@ body:
       options:
         - grade9-pilot
         - imo-ab-test
+        - landing-live
         - all projects
     validations:
       required: true
