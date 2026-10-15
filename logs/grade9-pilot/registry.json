@@ -2,7 +2,7 @@
   "project": "grade9-pilot",
   "protocol": "Team protocol v2.1",
   "repository": "reallakshman19/Grade9v3.5",
-  "updated": "2026-10-15T15:12:25+04:00",
+  "updated": "2026-10-15T15:25:05+04:00",
   "updated_by": "Codex (TeamCoordinator + OwnerTeammember)",
   "control": {
     "epoch": 3,
@@ -16,7 +16,7 @@
     "notice": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6189583454",
     "paused": [],
     "hold": null,
-    "phase_gate": "Successor read-only own-words grounding then real new-branch/writer lease; outgoing builder retired, tester unchanged.",
+    "phase_gate": "G3 sole validator TEST writer; independent exact-head review required; protected source/academic/release boundaries retained.",
     "old_coordinator": "epoch2 authority superseded; execution stop not freshly observed"
   },
   "workflow": {
@@ -29,9 +29,9 @@
       "builder fixes checker within approved lane; tester independently rechecks"
     ],
     "current": {
-      "step": "builderG3 read-only grounding processing; tester unchanged",
-      "material_release": false,
-      "next_actor": "builder6ad0b471 then Codex own-words review"
+      "step": "G3 regression unit authorized; guarded task delivery pending",
+      "material_release": true,
+      "next_actor": "builder6ad0b471"
     },
     "parked": [
       "source HTML repairs",
@@ -110,14 +110,18 @@
       "status": "active",
       "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/23",
       "handover": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/23",
-      "branch": null,
+      "branch": "agent/qrt-tile-validator-g3-regression1",
       "base": "90adfd690bfb439ff4131eb9a04ee5de524cb1ed",
       "started": "2026-10-15T15:12:25+04:00",
       "mode": "regular ChatGPT High3of3 observed",
-      "adoption": "PENDING",
+      "adoption": "ALIGNED",
       "delivery": "BOOTSTRAP_OBSERVED_FULL_BODY_ID_END",
       "capture": "2026-10-15T11:11:20.744Z",
-      "state_at_capture": "GENERATING"
+      "state_at_capture": "GENERATING",
+      "adoption_evidence": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/23#issuecomment-6190742517",
+      "branch_base": "90adfd690bfb439ff4131eb9a04ee5de524cb1ed",
+      "current_task": "QRT-B3-REGRESSION-1",
+      "lease": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/23#issuecomment-6190920489"
     }
   ],
   "source": {
@@ -229,8 +233,11 @@
     {
       "actor": "6ad0b471",
       "scope": "successor branch from90adfd69, existing TEST/imo-qrt-tile validator and additive regressions only",
-      "state": "HOLD_GROUNDING_AND_REAL_BRANCH",
-      "independent_checker": "6ad0508a"
+      "state": "SOLE_WRITER_AUTHORIZED",
+      "independent_checker": "6ad0508a",
+      "branch": "agent/qrt-tile-validator-g3-regression1",
+      "base": "90adfd690bfb439ff4131eb9a04ee5de524cb1ed",
+      "release": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/23#issuecomment-6190920489"
     }
   ],
   "validator_basis": {
@@ -296,19 +303,20 @@
   "builder_successor": {
     "generation": 3,
     "role": "validator builder",
-    "state": "BOUND_READ_ONLY_GROUNDING",
+    "state": "GROUNDED_BRANCH_VERIFIED",
     "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/23",
     "handover": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/23",
     "authority": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6190583324",
     "base": "90adfd690bfb439ff4131eb9a04ee5de524cb1ed",
     "launch_count": 1,
     "mode": "regular ChatGPT High",
-    "material_release": false,
+    "material_release": true,
     "chat_id8": "6ad0b471",
     "created": "2026-10-15T15:12:25+04:00",
     "bootstrap": "DELIVERED_OBSERVED_FULL_BODY_ID_END",
     "bootstrap_receipt": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6190698781",
-    "adoption": "PENDING",
-    "branch": null
+    "adoption": "ALIGNED",
+    "branch": "agent/qrt-tile-validator-g3-regression1",
+    "release": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/23#issuecomment-6190920489"
   }
 }
