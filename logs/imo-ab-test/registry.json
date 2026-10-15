@@ -2,8 +2,8 @@
     "project":  "imo-ab-test",
     "protocol":  "Team protocol v2.0 PROTOTYPE (protocol/TEAM_PROTOCOL.md)",
     "repository":  "reallakshman19/Grade9v3.5",
-    "updated":  "2026-10-15T16:55:00+04:00",
-    "updated_by":  "TeamCoordinator (FTC-020)",
+    "updated":  "2026-10-15T17:25:00+04:00",
+    "updated_by":  "TeamCoordinator (FTC-021)",
     "control":  {
                     "epoch":  1,
                     "coordinator":  "TeamCoordinator: Claude (Owner, 15 Oct: \"you will be teamcoordinator, ownermember another agent\")",
@@ -99,6 +99,11 @@
                                          "source":  "Owner to OwnerTeammember 15 Oct 16:52 \"agreed\" (FTC-020)",
                                          "id":  "AB-R14-RUN3",
                                          "decision":  "ONE R14 run at 0ba72fca after B setup PASS; started by OwnerTeammember 16:52:29 as run 38737979785; no further run"
+                                     },
+                                     {
+                                         "source":  "Owner to OwnerTeammember 15 Oct 17:17 \"agrees ... both ok\" (FTC-021)",
+                                         "id":  "AB-R14-NEXT",
+                                         "decision":  "A: (1) fix R14 cleanup (owning repo, aggregate always written); (2) read-only diagnosis of shared GOLDEN_COMPONENT_MISMATCH. Test runner only; no renderer/golden/witness/workflow change; one frozen commit, draft PR; B checks; no run"
                                      }
                                  ],
     "open_owner_decisions":  [
