@@ -1,4 +1,4 @@
-name: landing-live WP1a qualification
+name: landing-live WP1a + WP1b qualification
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   head:
-    name: head · original 31 + F3/F6 + original 19 browser
+    name: head · original 31 + WP1a and F5 + original 19 browser
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -33,13 +33,13 @@ jobs:
           set -o pipefail
           python tests/build_test.py 2>&1 | tee wp1a-original.log
 
-      - name: Run 11 F3/F6 and 7 base-compatible behavioural controls at HEAD
+      - name: Run WP1a 18 and WP1b F5 14 controls at HEAD
         id: wp1a
         continue-on-error: true
         shell: bash
         run: |
           set -o pipefail
-          python -m unittest tests/test_wp1a.py tests/test_wp1a_behavioural.py -v 2>&1 | tee wp1a-head.log
+          python -m unittest tests/test_wp1a.py tests/test_wp1a_behavioural.py tests/test_wp1b.py -v 2>&1 | tee wp1a-head.log
 
       - name: Assemble benchmark-backed browser artifact (no live API)
         id: artifact
@@ -111,7 +111,7 @@ jobs:
           cat gate-negative.log
           echo "FINAL GATE SELF-TEST: injected failure -> exit 1 (REJECTED)"
           require_success "original-31" "${{ steps.original.outcome }}"
-          require_success "new-F3-F6-18" "${{ steps.wp1a.outcome }}"
+          require_success "WP1a-18-and-WP1b-F5-14" "${{ steps.wp1a.outcome }}"
           require_success "benchmark-artifact" "${{ steps.artifact.outcome }}"
           require_success "chromium" "${{ steps.chromium.outcome }}"
           require_success "original-browser-19" "${{ steps.browser.outcome }}"
@@ -200,3 +200,78 @@ jobs:
           name: wp1a-base-red-output
           path: wp1a-red.log
           if-no-files-found: ignore
+
+  wp1b-red-control:
+    name: F5 behavioural red against merged WP1a main · 8 FAIL, 0 ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact PR head including F5 tests and fixtures
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only both scripts from merged WP1a baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=59f821ff2b729ddbda00204dda629df4eaef8252
+          git cat-file -e "${BASE}^{commit}"
+          git show "${BASE}:scripts/fetch_live_data.py" > scripts/fetch_live_data.py
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+          echo "WP1b_RED_BASE=${BASE} · HEAD tests and F5 fixture unchanged"
+      - name: Assert eight behavioural red failures with no runtime errors
+        id: f5_red
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp1b.BaseCompatibleF5 -v > wp1b-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp1b-red.log
+          export RED_EXIT="$rc"
+          python - <<'PY'
+          from pathlib import Path
+          import os
+          import re
+          import sys
+
+          output = Path('wp1b-red.log').read_text(encoding='utf-8')
+          found = re.findall(
+              r'^(test_f5_[A-Za-z0-9_]+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',
+              output, re.M,
+          )
+          failures = [name for name, verdict in found if verdict == 'FAIL']
+          errors = [name for name, verdict in found if verdict == 'ERROR']
+          print('F5 RED: exit', os.environ['RED_EXIT'])
+          print('F5 RED: expected failing behaviours:')
+          for name in failures:
+              print('  F5', name, 'FAIL (projection semantics)')
+          print('F5 RED: failed assertion count', len(failures))
+          print('F5 RED: error count', len(errors))
+          valid = (int(os.environ['RED_EXIT']) != 0 and
+                   re.search(r'^Ran 8 tests in ', output, re.M) and
+                   re.search(r'^FAILED \(failures=8\)$', output, re.M) and
+                   len(failures) == 8 and len(errors) == 0 and
+                   not re.search(r'^ERROR:', output, re.M) and
+                   not any(x in output for x in (
+                       'TypeError:', 'AttributeError:', 'ImportError:',
+                       'SyntaxError:', 'ModuleNotFoundError:')))
+          print('F5 RED VERDICT:', 'EXPECTED BEHAVIOURAL RED' if valid else
+                'INVALID RED')
+          if not valid:
+              sys.exit(1)
+          PY
+      - name: Upload F5 behavioural red output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp1b-base-red-output
+          path: wp1b-red.log
+          if-no-files-found: error

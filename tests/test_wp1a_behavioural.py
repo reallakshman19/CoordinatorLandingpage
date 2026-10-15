@@ -35,6 +35,7 @@ class BaseCompatibleBehaviouralControls(unittest.TestCase):
 
     def fetch_with(self, cache, root, fake_issue):
         with mock.patch.object(fetch_live_data, "fetch_issue", side_effect=fake_issue), \
+             mock.patch.object(fetch_live_data, "gh_api", return_value=[]), \
              mock.patch.object(sys, "argv", [
                  "fetch_live_data.py", "--root", str(root),
                  "--repo", CONTROL_REPO, "--cache-dir", str(cache)

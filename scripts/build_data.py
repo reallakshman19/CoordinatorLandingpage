@@ -653,6 +653,149 @@ def build_project_data(root: Path, project_name: str, registry: dict,
     }, timeline
 
 
+
+# G02/G05/G06: projection is reporting, NOT authorization.
+_OWNER_RECEIPT = re.compile(
+    r'^HANDLED:\s*owner-input\s*#(?P<n>\d+)\s+receipt:\s*'
+    r'(?P<url>https://github\.com/[\w.-]+/[\w.-]+/issues/\d+#issuecomment-\d+)\s*$',
+    re.I | re.M)
+_OWNER_ACK = re.compile(r'^ACK(?:NOWLEDGED)?:\s*(?:owner-input\s*)?#(\d+)\s*$',
+                        re.I | re.M)
+_OWNER_CLARIFY = re.compile(
+    r'^NEEDS CLARIFICATION:\s*(?:owner-input\s*)?#(\d+)\b', re.I | re.M)
+_OWNER_SUPERSEDES = re.compile(r'\bsupersedes\s+(?:owner-input\s*)?#(\d+)\b', re.I)
+_OWNER_FROZEN = re.compile(r'^Frozen-SHA:\s*([0-9a-f]{40})\s*$', re.I | re.M)
+_OWNER_REVIEW_SHA = re.compile(r'^Review-SHA:\s*([0-9a-f]{40})\s*$', re.I | re.M)
+_OWNER_REVIEW_ROLE = re.compile(r'^Review-Role:\s*(\S+)\s*$', re.M)
+_OWNER_REVIEW_TARGET = re.compile(r'^Review-Target:\s*#(\d+)\s*$', re.M)
+_OWNER_REVIEW_RESULT = re.compile(r'^Review-Result:\s*(PASS|HOLD)\s*$', re.I | re.M)
+_OWNER_PROTECTED = re.compile(
+    r'\b(?:merge|release|publish|deploy|new[\s-]+chat|start[\s-]+agent|'
+    r'writer[\s-]+grant|role[\s-]+change|acceptance|freeze|upload)\b', re.I)
+
+
+def _owner_time(value):
+    try:
+        dt = datetime.fromisoformat((value or '').replace('Z', '+00:00'))
+        return dt.astimezone(timezone.utc) if dt.tzinfo else None
+    except (TypeError, ValueError, AttributeError):
+        return None
+
+
+def build_owner_inputs(issues, capture, repo='reallakshman19/CoordinatorLandingpage'):
+    """Immutable, strictly linked versioned issue receipts; fail closed."""
+    source_ok = (isinstance(capture, dict) and capture.get('status') == 'ok'
+                 and 1 in capture.get('issues_fetched', [])
+                 and capture.get('owner_inputs_complete') is True)
+    by_num = {}
+    for issue in sorted((i for i in (issues if isinstance(issues, list) else [])
+                         if isinstance(i, dict) and isinstance(i.get('number'), int)),
+                        key=lambda i: (i.get('updated_at') or '', i['number'])):
+        by_num[issue['number']] = issue
+    result = []
+    for number, issue in sorted(by_num.items()):
+        body = issue.get('body') or ''
+        cm = {}
+        for comment in issue.get('comments', []):
+            if isinstance(comment, dict) and isinstance(comment.get('id'), int):
+                cm[comment['id']] = comment
+        comments = sorted(cm.values(),
+                          key=lambda c: (c.get('created_at') or '', c['id']))
+        events = {}
+        for event in issue.get('events', []):
+            if isinstance(event, dict) and isinstance(event.get('id'), int):
+                events[event['id']] = event
+        revisions = [_owner_time(e.get('created_at')) for e in events.values()
+                     if e.get('event') in ('edited', 'reopened')]
+        revisions = [v for v in revisions if v]
+        created = _owner_time(issue.get('created_at'))
+        boundary = max(revisions) if revisions else created
+        state, receipt, previous_handled = 'OPEN', None, False
+        for comment in comments:
+            stamp = _owner_time(comment.get('created_at'))
+            text = comment.get('body') or ''
+            m = _OWNER_RECEIPT.search(text)
+            expected_url = (f'https://github.com/{repo}/issues/{number}'
+                            f'#issuecomment-{comment["id"]}')
+            is_receipt = bool(m and int(m.group('n')) == number and
+                              m.group('url').lower() == expected_url.lower())
+            if stamp is None or (boundary and stamp <= boundary):
+                previous_handled |= is_receipt
+                continue
+            if is_receipt:
+                state, receipt = 'HANDLED', expected_url
+            elif (m := _OWNER_CLARIFY.search(text)) and int(m.group(1)) == number:
+                state, receipt = 'NEEDS_CLARIFICATION', None
+            elif (m := _OWNER_ACK.search(text)) and int(m.group(1)) == number:
+                if state != 'HANDLED':
+                    state, receipt = 'ACKNOWLEDGED', None
+        if previous_handled and revisions and state != 'HANDLED':
+            state = 'NEEDS_CLARIFICATION'
+        if state == 'HANDLED' and (not source_ok or
+                                   issue.get('events_complete') is not True):
+            state, receipt = 'NEEDS_CLARIFICATION', None
+        project = (issue.get('project') or '').strip()
+        if not project:
+            p = re.search(r'^Project:\s*(.+)$', body, re.M | re.I)
+            project = p.group(1).strip() if p else ''
+        fsha = _OWNER_FROZEN.search(body)
+        frozen_sha = fsha.group(1).lower() if fsha else None
+        review = {'state': 'UNVERIFIED', 'reason': 'review_missing_or_unbound',
+                  'frozen_sha': frozen_sha, 'comment_id': None}
+        for comment in comments:
+            text = comment.get('body') or ''
+            target = _OWNER_REVIEW_TARGET.search(text)
+            sha = _OWNER_REVIEW_SHA.search(text)
+            role = _OWNER_REVIEW_ROLE.search(text)
+            verdict = _OWNER_REVIEW_RESULT.search(text)
+            if not (target and sha and role and verdict):
+                continue
+            review['comment_id'] = comment['id']
+            if int(target.group(1)) != number:
+                review['reason'] = 'target_mismatch'
+            elif not frozen_sha:
+                review['reason'] = 'frozen_sha_missing'
+            elif sha.group(1).lower() != frozen_sha:
+                review['reason'] = 'sha_mismatch'
+            elif role.group(1) != 'OwnerTeammember':
+                review['reason'] = 'role_mismatch'
+            elif verdict.group(1).upper() != 'PASS':
+                review['reason'] = 'review_hold'
+            else:
+                review.update(state='MATCHED',
+                              reason='sha_and_role_claim_match_not_owner_approval')
+        sup = _OWNER_SUPERSEDES.search(body)
+        result.append({
+            'schema_version': 'wp1b.1', 'number': number,
+            'issue_url': f'https://github.com/{repo}/issues/{number}',
+            'type': issue.get('type') or 'OWNER_INPUT',
+            'text': scrub_chat_url(body[:300]),
+            'project': project, 'ts': issue.get('created_at'),
+            'issue_state': issue.get('state'), 'status': state,
+            'state': state.lower(), 'needs_you': state != 'HANDLED',
+            'receipt': receipt,
+            'revision_time': boundary.isoformat() if boundary else None,
+            'fresh_receipt_required': bool(previous_handled and revisions and
+                                           state != 'HANDLED'),
+            'closed_without_receipt': issue.get('state') == 'closed' and
+                                      state != 'HANDLED',
+            'supersedes': int(sup.group(1)) if sup else None,
+            'superseded_by': None,
+            'protected_action': bool(_OWNER_PROTECTED.search(
+                (issue.get('title') or '') + '\n' + body)),
+            'authority': 'UNVERIFIED', 'review': review, 'effective': False,
+            'source_health': 'ok' if source_ok else 'UNVERIFIED',
+        })
+    index = {item['number']: item for item in result}
+    for row in result:
+        old = index.get(row['supersedes'])
+        if old and old is not row and old['project'] == row['project']:
+            old.update(state='superseded', status='SUPERSEDED',
+                       needs_you=False, superseded_by=row['number'],
+                       effective=False, receipt=None)
+    return result
+
+
 def load_benchmark(bm_dir: Path) -> tuple:
     """Load data from a benchmark directory."""
     manifest = load_json(bm_dir / 'MANIFEST.json') or {}
@@ -721,6 +864,11 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
     all_projects = []
     all_timelines = {}
     evidence_names = {}
+    owner_source, owner_capture = [], None
+    if not benchmark_dirs:
+        _owner_cache = cache_dir if cache_dir else root / '_live_cache'
+        owner_source = load_json(_owner_cache / 'owner-inputs-source.json') or []
+        owner_capture = load_json(_owner_cache / 'capture-info.json')
 
     for source_type, source_path in sources:
         if source_type == 'benchmark':
@@ -828,6 +976,9 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
         })
 
     save_json(out_dir / 'projects.json', summary)
+    if not benchmark_dirs:
+        save_json(out_dir / 'owner-inputs.json', build_owner_inputs(
+            owner_source, owner_capture))
 
     # Save full project detail files
     for pd in all_projects:
