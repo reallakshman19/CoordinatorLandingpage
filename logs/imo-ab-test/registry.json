@@ -2,8 +2,8 @@
     "project":  "imo-ab-test",
     "protocol":  "Team protocol v2.0 PROTOTYPE (protocol/TEAM_PROTOCOL.md)",
     "repository":  "reallakshman19/Grade9v3.5",
-    "updated":  "2026-10-15T12:15:00+04:00",
-    "updated_by":  "TeamCoordinator (FTC-011/012)",
+    "updated":  "2026-10-15T14:45:00+04:00",
+    "updated_by":  "TeamCoordinator (FTC-015)",
     "control":  {
                     "epoch":  1,
                     "coordinator":  "TeamCoordinator: Claude (Owner, 15 Oct: \"you will be teamcoordinator, ownermember another agent\")",
@@ -79,6 +79,11 @@
                                          "source":  "Owner to TeamCoordinator 15 Oct 12:04 \"can you start a new agent A?\", 12:05 \"opened blank tab for agent A\"; Owner to OwnerTeammember 12:07 \"already agent A is on board\" (FTC-012)",
                                          "id":  "AB-A-NEWCHAT",
                                          "decision":  "New chat 6ad08966 for Agent A, gen 2; 6ad0449d retired"
+                                     },
+                                     {
+                                         "source":  "Owner to OwnerTeammember 15 Oct 14:36 \"ok\" (FTC-015)",
+                                         "id":  "AB-R14-FANOUT",
+                                         "decision":  "A builds all-21 per-case R14 harness (harness-only, new branch from 3691af85, renderer unchanged); B checks exact commit; OwnerTeammember starts ONE R14 run; no renderer change, no further runs, no acceptance"
                                      }
                                  ],
     "open_owner_decisions":  [
