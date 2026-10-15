@@ -29,9 +29,9 @@
       "builder fixes checker within approved lane; tester independently rechecks"
     ],
     "current": {
-      "step": "Independent tester checks frozen G3 candidate; builder writer-stop",
+      "step": "Independent bounded lexical review completed; Owner stage/scope decision pending; semantic hold retained",
       "material_release": false,
-      "next_actor": "tester6ad0508a"
+      "next_actor": "Owner"
     },
     "parked": [
       "source HTML repairs",
@@ -79,11 +79,11 @@
       "delivery": "DELIVERED",
       "adoption_evidence": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/11#issuecomment-6189818287",
       "last_sent_body_sha256": "b64d3d719bdbc212c29a4e8016459df416111c1d61602a7369cd70f74c8f4ebe",
-      "current_task": "QRT-B3-INDEPENDENT-1",
-      "state_at_capture": "GENERATING",
-      "capture": "2026-10-15T11:53:47.012Z",
+      "current_task": "QRT-B3-INDEPENDENT-1 DONE; STOP",
+      "state_at_capture": "IDLE",
+      "capture": "2026-10-15T12:09:47.181Z",
       "delivery_receipt": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6191424629",
-      "completed_evidence": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/11#issuecomment-6190311876"
+      "completed_evidence": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/11#issuecomment-6191529377"
     },
     {
       "role": "validator",
@@ -116,7 +116,7 @@
       "mode": "regular ChatGPT High3of3 observed",
       "adoption": "ALIGNED",
       "delivery": "DELIVERED",
-      "capture": "2026-10-15T11:50:29.768Z",
+      "capture": "2026-10-15T12:09:44.572Z",
       "state_at_capture": "IDLE",
       "adoption_evidence": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/23#issuecomment-6190742517",
       "branch_base": "90adfd690bfb439ff4131eb9a04ee5de524cb1ed",
@@ -323,5 +323,14 @@
     "branch": "agent/qrt-tile-validator-g3-regression1",
     "release": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/23#issuecomment-6190920489",
     "delivery": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6190997532"
-  }
+  },
+  "open_decisions": [
+    {
+      "id": "QRT-G3-LEXICAL-1",
+      "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6191722755",
+      "status": "OPEN",
+      "actor": "Owner",
+      "scope": "next stage; no merge/release"
+    }
+  ]
 }
