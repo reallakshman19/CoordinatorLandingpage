@@ -379,6 +379,9 @@ async function renderHome(app) {
   } else {
     for (const inp of inputs) {
       const status = ownerInputState(inp);
+      // Missing/foreign GitHub association is never an Owner input in Needs-you.
+      if (inp.is_outsider === true ||
+          !['OWNER', 'MEMBER', 'COLLABORATOR'].includes(inp.author_association)) continue;
       if (status === 'HANDLED' || status === 'SUPERSEDED') continue;
       const li = el('li', 'needs-input');
       li.appendChild(el('strong', '', 'Owner input #' + String(inp.number || '—') + ' '));
@@ -1002,21 +1005,42 @@ async function renderOwnerInputs(app) {
       'Owner-inputs source unavailable · cannot confirm a receipt or action.'));
     return;
   }
-  count.textContent = String(inputs.length);
+  const trusted = inputs.filter(inp => inp.is_outsider !== true &&
+    ['OWNER', 'MEMBER', 'COLLABORATOR'].includes(inp.author_association));
+  const outsiders = inputs.filter(inp => !trusted.includes(inp));
+  count.textContent = String(trusted.length);
   if (!inputs.length) {
     list.appendChild(el('div', 'oi-row',
       'No captured Owner inputs. Missing evidence is never considered handled.'));
     return;
   }
 
+  if (!trusted.length) {
+    list.appendChild(el('div', 'oi-row',
+      'No captured Owner-associated inputs. Outside submissions are shown separately.'));
+  }
+  if (outsiders.length) {
+    $('oi-outsider-panel').style.display = '';
+    $('oi-outsider-count').textContent = String(outsiders.length);
+  }
   for (const inp of inputs) {
+    const outsider = !trusted.includes(inp);
     const status = ownerInputState(inp);
     const row = el('div', 'oi-row');
     row.dataset.issue = String(inp.number || '');
     row.appendChild(el('span', 'oi-state')).appendChild(ownerStatusBadge(status));
+    if (outsider) {
+      row.appendChild(el('span', 'badge badge-grey', 'OUTSIDER'));
+      row.appendChild(el('span', 'badge badge-grey', 'UNVERIFIED'));
+    }
     row.appendChild(el('span', 'oi-type', String(inp.type || 'OWNER_INPUT')));
     const message = el('div', 'oi-text');
     message.appendChild(el('div', '', String(inp.text || '')));
+    if (outsider) {
+      message.appendChild(el('div', 'oi-pending',
+        'GitHub author_association: ' + String(inp.author_association || 'MISSING') +
+        ' · untrusted submission, not an Owner instruction'));
+    }
     if (inp.protected_action) {
       message.appendChild(el('span', 'badge badge-grey',
         'UNVERIFIED · no action authorized'));
@@ -1025,7 +1049,7 @@ async function renderOwnerInputs(app) {
       message.appendChild(el('span', 'badge badge-grey',
         'Review metadata: ' + String(inp.review.state) + ' · not Owner approval'));
     }
-    const receipt = status === 'HANDLED' ? safeReceipt(inp) : null;
+    const receipt = !outsider && status === 'HANDLED' ? safeReceipt(inp) : null;
     if (receipt) {
       const a = el('a', 'oi-receipt', 'Linked handler receipt →');
       a.href = receipt;
@@ -1045,7 +1069,7 @@ async function renderOwnerInputs(app) {
     message.appendChild(issue);
     row.appendChild(message);
     row.appendChild(el('span', 'oi-ts', fmtDateTime(inp.ts)));
-    list.appendChild(row);
+    (outsider ? $('oi-outsider-list') : list).appendChild(row);
   }
 }
 

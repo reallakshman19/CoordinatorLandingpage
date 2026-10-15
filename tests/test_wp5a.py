@@ -37,9 +37,9 @@ def capture_f7(label_exists=True):
         labelled=[dict(row) for row in F7["issues"] if row["labels"]]
         full=[dict(row) for row in F7["issues"]]
         def fake_api(path):
-            if path.endswith("issues?state=all&labels=owner-input&per_page=100"):
+            if "issues?state=all&labels=owner-input&per_page=100" in path:
                 return labelled
-            if path.endswith("issues?state=all&per_page=100"):
+            if "issues?state=all&per_page=100" in path:
                 return full
             if path.endswith("/labels/owner-input"):
                 return {"name":"owner-input"} if label_exists else None
