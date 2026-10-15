@@ -106,11 +106,31 @@ def check_artifact(artifact, logs_dir, manifest, expected_names=None):
     return summary
 
 
+def stamp_asset_urls(artifact, source_commit):
+    """Version the *published* HTML; each commit gives JS/CSS a fresh URL."""
+    version = assert_sha(source_commit)[:8]
+    path = Path(artifact) / "index.html"
+    html = path.read_text(encoding="utf-8")
+    changes = (
+        ('href="style.css"', f'href="style.css?v={version}"'),
+        ('src="app.js"', f'src="app.js?v={version}"'),
+        ('</head>', f'  <meta name="site-version" content="{version}">\n</head>'),
+    )
+    for original, replacement in changes:
+        if html.count(original) != 1:
+            raise ValueError("cannot version published index.html: " + original)
+        html = html.replace(original, replacement, 1)
+    path.write_text(html, encoding="utf-8")
+    print("SITE_ASSETS_VERSIONED=" + version)
+    return version
+
+
 def stamp(artifact, logs, cache_dir, repo, source_commit, run_id):
     manifest = check_capture(cache_dir, repo, source_commit)
     projects = check_artifact(artifact, logs, manifest)
     artifact = Path(artifact)
     data = artifact / "data"
+    site_version = stamp_asset_urls(artifact, source_commit)
     # Hash the files that determine the visible live page; build-info itself
     # is separately hashed (no self-referential hash). All SHA values are
     # source readbacks, not a claim that GitHub Pages is already published.
@@ -120,6 +140,7 @@ def stamp(artifact, logs, cache_dir, repo, source_commit, run_id):
     info = {
         "schema_version": "wp4.1",
         "source_commit": assert_sha(source_commit),
+        "site_version": site_version,
         "source_capture_at": manifest["source_capture_at"],
         "built_at": datetime.now(timezone.utc).isoformat(),
         "published_at": None,
@@ -145,6 +166,8 @@ def verify_readback_bytes(expected_path, response, expected_source):
     observed = json.loads(response)
     if observed.get("source_commit") != assert_sha(expected_source):
         raise ValueError("deployed source SHA mismatch")
+    if observed.get("site_version") != assert_sha(expected_source)[:8]:
+        raise ValueError("deployed site version mismatch")
     if observed.get("capture_status") != "ok":
         raise ValueError("deployed capture status is not ok")
     return observed_sha

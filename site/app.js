@@ -20,6 +20,8 @@ const REPO = 'reallakshman19/CoordinatorLandingpage';
 const NEW_ISSUE_BASE = `https://github.com/${REPO}/issues/new`;
 const DATA_BASE = 'data/';
 const BM_DATA_BASE = 'data/benchmarks/';
+// Read the commit stamped into this HTML, not the newest data fetch.
+const LOADED_SITE_VERSION = document.querySelector('meta[name="site-version"]')?.content || null;
 
 // ── State ──────────────────────────────────────────────────
 const state = {
@@ -115,6 +117,21 @@ async function pollBuildInfo(initial = false) {
         typeof info.built_at !== 'string' ||
         typeof info.source_commit !== 'string' ||
         typeof info.run_id === 'undefined') return false;
+    // A newer deployment may change JavaScript and CSS. Do not quietly run
+    // old code on new data or discard an Owner's unfinished form.
+    if (/^[0-9a-f]{8}$/.test(LOADED_SITE_VERSION || '') &&
+        /^[0-9a-f]{8}$/.test(info.site_version || '') &&
+        info.site_version !== LOADED_SITE_VERSION) {
+      const banner = $('site-update-banner');
+      const reload = $('site-update-reload');
+      if (banner && reload) {
+        const dest = new URL(window.location.href);
+        dest.searchParams.set('v', info.site_version);
+        reload.href = dest.toString(); // fresh index URL, same hash/route
+        banner.hidden = false;
+      }
+      return false; // Owner decides when to reload; no background navigation
+    }
     const signature = JSON.stringify([
       info.source_commit, info.source_capture_at, info.built_at,
       info.run_id, info.live_file_sha256,

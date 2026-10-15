@@ -155,7 +155,9 @@ class PublisherGateTests(unittest.TestCase):
         (data / "benchmarks").mkdir()
         (data / "benchmarks/projects.json").write_text(
             json.dumps([{"is_benchmark": True, "project": "frozen"}]))
-        (self.root / "artifact/index.html").write_text("<title>Test</title>")
+        (self.root / "artifact/index.html").write_text(
+            '<!doctype html><html><head><link rel="stylesheet" href="style.css">'
+            '</head><body><script src="app.js"></script></body></html>')
         p = self.root / "artifact/protocol"
         p.mkdir()
         (p / "TEAM_PROTOCOL.md").write_text("# Test source")
