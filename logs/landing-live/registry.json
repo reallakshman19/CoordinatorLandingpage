@@ -3,7 +3,7 @@
   "protocol": "Team protocol v2.3 FINAL CANDIDATE (protocol/TEAM_PROTOCOL.md)",
   "repository": "reallakshman19/CoordinatorLandingpage",
   "parent_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/21",
-  "updated": "2026-10-15T14:46:00+04:00",
+  "updated": "2026-10-15T18:52:00+04:00",
   "updated_by": "TeamCoordinator/OwnerTeammember (Claude session)",
   "control": {
     "epoch": 1,
@@ -15,17 +15,48 @@
     "known_gap": "no independent checker inside the team; C15 needs an Owner-named checker"
   },
   "workflow": {
-    "loop": ["L1 posts TASK EVIDENCE v2 in #22", "coordinator checks against GitHub", "GO / FIX / HOLD", "next slice"],
-    "current": "WP0 read-only traceability table in #21"
+    "loop": [
+      "L1 posts TASK EVIDENCE v2 in #22",
+      "coordinator checks against GitHub",
+      "GO / FIX / HOLD",
+      "next slice"
+    ],
+    "current": "WP0-WP4 merged (#24-#28); next WP5 + F7 Owner round trip"
   },
   "agents": [
-    {"alias": "Agent L1", "role": "implementer", "generation": 1, "chat_id8": "6ad0adca",
-     "status": "active (pane tab-1)", "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22",
-     "onboarded": "2026-10-15T14:44+04:00 DELIVERED"}
+    {
+      "alias": "Agent L1",
+      "role": "implementer",
+      "generation": 1,
+      "chat_id8": "6ad0adca",
+      "status": "active (pane tab-1), idle after WP3",
+      "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22",
+      "onboarded": "2026-10-15T14:44+04:00 DELIVERED"
+    }
   ],
   "leases": [
-    {"holder": "Agent L1 g1", "branches": "l1/*", "paths": ["scripts/fetch_live_data.py", "scripts/build_data.py", "tests/**"],
-     "granted": "2026-10-15T14:42+04:00", "note": "WP0 is read-only; writes start only after GO in #22"}
+    {
+      "holder": "Agent L1 g1",
+      "branches": "l1/*",
+      "paths": [
+        "scripts/*",
+        "site/*",
+        ".github/workflows/*",
+        "tests/**",
+        ".github/ISSUE_TEMPLATE/owner-input.yml"
+      ],
+      "granted": "2026-10-15T14:42+04:00",
+      "note": "WP0 is read-only; writes start only after GO in #22"
+    }
   ],
-  "decisions": []
+  "decisions": [
+    {
+      "id": "MERGE-STANDING",
+      "owner_words": "go ahead. merge approved further.",
+      "at": "2026-10-15T18:0x+04:00",
+      "scope": "landing-live PRs after independent C1 PASS or verified FIX at exact head; revocable"
+    }
+  ],
+  "status_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/30",
+  "status_comment": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/30#issuecomment-6194870889"
 }
