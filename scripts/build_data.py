@@ -504,7 +504,23 @@ def load_benchmark(bm_dir: Path) -> tuple:
     return project_name, registry, threads, inbox_data, events_path
 
 
-def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = None):
+def load_live_threads(cache_dir: Path) -> tuple[dict, list]:
+    """Load threads and inbox from _live_cache/ (written by fetch_live_data.py)."""
+    threads: dict = {}
+    threads_dir = cache_dir / 'threads'
+    if threads_dir.exists():
+        for tf in threads_dir.glob('issue-*.json'):
+            t = load_json(tf)
+            if t:
+                threads[t['number']] = t
+
+    inbox_path = cache_dir / 'inbox-1.json'
+    inbox = load_json(inbox_path) or []
+    return threads, inbox
+
+
+def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = None,
+              cache_dir: Path | None = None):
     """Main build entry point."""
     print(f"Building site data → {out_dir}")
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -533,10 +549,9 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
         else:
             project_name = source_path.name
             registry = load_json(source_path / 'registry.json') or {}
-            inbox_path = root / 'logs' / 'inbox-1.json'
-            inbox = load_json(inbox_path) or []
-            # Load threads from benchmark mirror or live issues (would need GH API in live)
-            threads = {}
+            # Load threads + inbox from _live_cache/ (populated by fetch_live_data.py)
+            _cache = cache_dir if cache_dir else root / '_live_cache'
+            threads, inbox = load_live_threads(_cache)
             events_path = None
             for session_dir in source_path.iterdir():
                 if session_dir.is_dir():
@@ -631,6 +646,8 @@ if __name__ == '__main__':
     parser.add_argument('--out', default='site/data', help='Output directory')
     parser.add_argument('--benchmark', action='append', dest='benchmarks',
                         help='Benchmark directory (may be specified multiple times)')
+    parser.add_argument('--cache-dir', default=None,
+                        help='Directory written by fetch_live_data.py (live mode only)')
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
@@ -642,4 +659,8 @@ if __name__ == '__main__':
     if args.benchmarks:
         bm_dirs = [Path(b) if Path(b).is_absolute() else root / b for b in args.benchmarks]
 
-    build_all(root, out, bm_dirs)
+    cache = Path(args.cache_dir) if args.cache_dir else None
+    if cache and not cache.is_absolute():
+        cache = root / cache
+
+    build_all(root, out, bm_dirs, cache_dir=cache)

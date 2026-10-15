@@ -474,6 +474,31 @@ async function renderProject(app, projectName) {
     });
   }
 
+  // Standing Owner decisions (read-only record; superseded entries labelled as such)
+  const sodSection = $('standing-decisions-section');
+  const sodEntries = detail?.registry?.standing_owner_decisions || [];
+  if (sodEntries.length) {
+    const h2 = el('h2', '', 'Standing Owner decisions');
+    h2.style.cssText = 'font-size:1rem;margin:0 0 8px';
+    sodSection.appendChild(h2);
+    const note = el('p', 'note', 'Read-only record of Owner words still in effect, including superseded entries (labelled). Agent claims are not included here.');
+    note.style.marginBottom = '8px';
+    sodSection.appendChild(note);
+    sodEntries.forEach(entry => {
+      const d = el('div');
+      d.style.cssText = 'padding:6px 10px;border-left:3px solid var(--border);margin-bottom:6px;font-size:0.85rem;word-break:break-word';
+      const text = typeof entry === 'string' ? entry : JSON.stringify(entry);
+      // Highlight superseded entries
+      if (text.toLowerCase().includes('supersedes')) {
+        d.style.borderColor = 'var(--warn)';
+        d.innerHTML = `<span class="badge badge-yellow" style="margin-right:6px">superseded</span>${escapeHtml(text)}`;
+      } else {
+        d.textContent = text;
+      }
+      sodSection.appendChild(d);
+    });
+  }
+
   // Post to team button
   const postBtn = $('post-btn');
   if (state.benchmarkMode) {
