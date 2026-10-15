@@ -1,0 +1,70 @@
+{
+  "fixture": "F7 sanitized replay of Owner live issue #31; synthetic controls #32/#33; NO Owner approvals",
+  "repo": "reallakshman19/CoordinatorLandingpage",
+  "capture": {
+    "status": "ok",
+    "issues_fetched": [
+      1,
+      12
+    ],
+    "owner_inputs_complete": true,
+    "errors": []
+  },
+  "issues": [
+    {
+      "number": 31,
+      "title": "[Owner input] INFO (landing-live)",
+      "body": "### Project\n\ngrade9-pilot\n\n### Target\n\nTeamCoordinator\n\n### Input type\n\nINFO\n\n### Your instruction or message\n\nF7 test: please acknowledge.\n\n### Evidence link (optional)\n\n_No response_\n\n### Confirmation\n\n- [x] I am the Owner. This input is mine and is time-stamped by GitHub.",
+      "labels": [
+        {
+          "name": "owner-input"
+        }
+      ],
+      "state": "open",
+      "created_at": "2026-10-15T15:03:23Z",
+      "updated_at": "2026-10-15T15:07:34Z",
+      "events": [],
+      "events_complete": true,
+      "comments": [
+        {
+          "id": 31001,
+          "created_at": "2026-10-15T15:04:00Z",
+          "body": "ACK: owner-input #31"
+        },
+        {
+          "id": 31002,
+          "created_at": "2026-10-15T15:07:00Z",
+          "body": "HANDLED: owner-input #31 receipt: https://github.com/reallakshman19/CoordinatorLandingpage/issues/31#issuecomment-31002"
+        }
+      ]
+    },
+    {
+      "number": 32,
+      "title": "[Owner input] QUESTION (landing-live)",
+      "body": "### Project\n\nlanding-live\n\n### Target\n\nOwnerTeammember\n\n### Input type\n\nQUESTION\n\n### Your instruction or message\n\nPlease review progress.\n\n### Evidence link (optional)\n\n_No response_\n",
+      "labels": [
+        {
+          "name": "owner-input"
+        }
+      ],
+      "state": "open",
+      "created_at": "2026-10-15T15:10:00Z",
+      "updated_at": "2026-10-15T15:10:00Z",
+      "events": [],
+      "events_complete": true,
+      "comments": []
+    },
+    {
+      "number": 33,
+      "title": "[Owner input] INFO (imo-ab-test)",
+      "body": "### Project\n\nimo-ab-test\n\n### Target\n\nwhole team\n\n### Input type\n\nINFO\n\n### Your instruction or message\n\nSynthetic missing-label request.\n",
+      "labels": [],
+      "state": "open",
+      "created_at": "2026-10-15T15:11:00Z",
+      "updated_at": "2026-10-15T15:11:00Z",
+      "events": [],
+      "events_complete": true,
+      "comments": []
+    }
+  ]
+}

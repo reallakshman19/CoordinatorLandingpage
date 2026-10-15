@@ -1,4 +1,4 @@
-name: landing-live WP1a + WP1b + WP2 + WP4 + WP3 qualification
+name: landing-live WP1a + WP1b + WP2 + WP4 + WP3 + WP5a qualification
 
 on:
   pull_request:
@@ -56,6 +56,22 @@ jobs:
         run: |
           set -o pipefail
           python -m unittest tests.test_wp3 -v 2>&1 | tee wp3-unit-head.log
+
+      - name: Check G13 registry-driven Issue Form projects
+        id: wp5a_form
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python scripts/sync_owner_input_form.py --check 2>&1 | tee wp5a-form-head.log
+
+      - name: Run WP5a F7 replay / label and Issue Form controls
+        id: wp5a
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m unittest tests.test_wp5a -v 2>&1 | tee wp5a-head.log
 
       - name: Assemble benchmark-backed browser artifact (no live API)
         id: artifact
@@ -122,6 +138,8 @@ jobs:
             wp4-head.log
             wp3-unit-head.log
             wp3-browser-head.log
+            wp5a-form-head.log
+            wp5a-head.log
           if-no-files-found: ignore
 
       - name: Prove injected failure rejected and enforce all HEAD gates
@@ -157,7 +175,9 @@ jobs:
           require_success "WP4-single-publisher-and-provenance" "${{ steps.wp4.outcome }}"
           require_success "WP3-liveness-repository-F4" "${{ steps.wp3_unit.outcome }}"
           require_success "WP3-browser-60s-polling" "${{ steps.wp3_browser.outcome }}"
-          echo "FINAL GATE: 9/9 actual head outcomes success"
+          require_success "WP5a-form-registry-options" "${{ steps.wp5a_form.outcome }}"
+          require_success "WP5a-F7-labels-and-parsing" "${{ steps.wp5a.outcome }}"
+          echo "FINAL GATE: 11/11 actual head outcomes success"
 
   red-control:
     name: red-control · require seven behavioural FAIL and zero ERROR
@@ -670,4 +690,75 @@ jobs:
         with:
           name: wp3-base-browser-red
           path: wp3-browser-red.log
+          if-no-files-found: error
+
+  wp5a-f7-red-control:
+    name: WP5a F7 BASE behavioural red · six FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact HEAD test and sanitized F7 fixture
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only F7-affected scripts and Issue Form from pinned WP3 base
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=702fde116e1f37a0c7ae4eb98ea85584e302f6b2
+          git cat-file -e "${BASE}^{commit}"
+          for file in scripts/build_data.py scripts/fetch_live_data.py .github/ISSUE_TEMPLATE/owner-input.yml; do
+            git show "${BASE}:$file" > "$file"
+          done
+          echo "F7 RED source base=${BASE}, new fixture/test unchanged"
+      - name: Execute six behaviour tests on BASE; require assertions not API errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp5a.BaseCompatibleF7 -v > wp5a-f7-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp5a-f7-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path('wp5a-f7-red.log').read_text(encoding='utf-8')
+          matches=re.findall(r'^(test_f7_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',
+                             log,re.MULTILINE)
+          failures={n for n,kind in matches if kind=='FAIL'}
+          errors={n for n,kind in matches if kind=='ERROR'}
+          expected={
+              'test_f7_issue_form_project_target_type_text',
+              'test_f7_title_body_project_mismatch_fails_closed',
+              'test_f7_unlabelled_issue_is_flagged_and_pending',
+              'test_f7_registered_projects_are_in_issue_form',
+              'test_f7_fetches_unlabelled_title_in_addition_to_labelled_issues',
+              'test_f7_missing_repo_label_fails_the_publisher_capture_guard',
+          }
+          valid=(int(os.environ['RC'])!=0 and failures==expected
+                 and not errors and
+                 re.search(r'^Ran 6 tests in ',log,re.MULTILINE)
+                 and re.search(r'^FAILED \(failures=6\)$',log,re.MULTILINE)
+                 and not any(e in log for e in ('TypeError:','AttributeError:',
+                       'ImportError:','ModuleNotFoundError:','SyntaxError:')))
+          print('F7 RED: behavioural FAIL count',len(failures))
+          print('F7 RED: runner ERROR count',len(errors))
+          print('F7 RED VERDICT',
+                'EXPECTED BEHAVIOURAL RED' if valid else 'INVALID RED')
+          if not valid:sys.exit(1)
+          PY
+      - name: Upload F7 red-control output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp5a-f7-base-red
+          path: wp5a-f7-red.log
           if-no-files-found: error

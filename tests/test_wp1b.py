@@ -164,6 +164,8 @@ class DetailedF5(unittest.TestCase):
             cache.mkdir()
             (cache / "owner-inputs-source.json").write_text('[{"number":999}]')
             def fake_api(path):
+                if path.endswith("/labels/owner-input"):
+                    return {"name": "owner-input"}
                 if path.endswith("issues?state=all&labels=owner-input&per_page=100"):
                     return None
                 return []

@@ -90,7 +90,7 @@ class WP1aNegativeControls(unittest.TestCase):
                 return {"number": number, "repository": repo,
                         "comments": [{"id": number, "body": f"comment from #{number}"}]}
             with mock.patch.object(fetch_live_data, "fetch_issue", side_effect=fake_issue), \
-             mock.patch.object(fetch_live_data, "gh_api", return_value=[]), \
+             mock.patch.object(fetch_live_data, "gh_api", side_effect=lambda path: {"name": "owner-input"} if path.endswith("/labels/owner-input") else []), \
                  mock.patch.object(sys, "argv", ["fetch_live_data.py",
                      "--root", str(root), "--repo", CONTROL_REPO,
                      "--cache-dir", str(cache)]):
@@ -180,7 +180,7 @@ class WP1aNegativeControls(unittest.TestCase):
                     return None
                 return {"number": number, "comments": []}
             with mock.patch.object(fetch_live_data, "fetch_issue", side_effect=fake_issue), \
-             mock.patch.object(fetch_live_data, "gh_api", return_value=[]), \
+             mock.patch.object(fetch_live_data, "gh_api", side_effect=lambda path: {"name": "owner-input"} if path.endswith("/labels/owner-input") else []), \
                  mock.patch.object(sys, "argv", ["fetch_live_data.py",
                      "--root", str(root), "--repo", CONTROL_REPO,
                      "--cache-dir", str(cache)]):

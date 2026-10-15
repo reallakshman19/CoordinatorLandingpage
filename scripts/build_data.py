@@ -763,6 +763,41 @@ def _owner_time(value):
         return None
 
 
+
+_FORM_SECTION = re.compile(r'^###\s+(.+?)\s*$', re.M)
+_OWNER_TITLE_PROJECT = re.compile(r'^\[Owner input\][^\n]*?\(([^()\n]+)\)\s*$', re.I)
+_OWNER_TITLE = re.compile(r'^\[Owner input\](?:\s|$)', re.I)
+_FORM_MAP = {
+    'Project': 'project', 'Target': 'target', 'Input type': 'type',
+    'Your instruction or message': 'text',
+}
+
+
+def owner_form_fields(body):
+    """Read GitHub Issue Form markdown sections, NOT the raw form as text."""
+    if not isinstance(body, str):
+        return {}
+    matches = list(_FORM_SECTION.finditer(body))
+    sections = {}
+    for i, marker in enumerate(matches):
+        key = _FORM_MAP.get(marker.group(1).strip())
+        if not key:
+            continue
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(body)
+        value = body[marker.end():end].strip()
+        if value and value != '_No response_':
+            sections[key] = value
+    return sections
+
+
+def owner_issue_is_labelled(issue):
+    labels = issue.get('labels')
+    if not isinstance(labels, list):
+        return False
+    return any((x.get('name') if isinstance(x, dict) else x) == 'owner-input'
+               for x in labels)
+
+
 def build_owner_inputs(issues, capture, repo='reallakshman19/CoordinatorLandingpage'):
     """Immutable, strictly linked versioned issue receipts; fail closed."""
     source_ok = (isinstance(capture, dict) and capture.get('status') == 'ok'
@@ -815,10 +850,28 @@ def build_owner_inputs(issues, capture, repo='reallakshman19/CoordinatorLandingp
         if state == 'HANDLED' and (not source_ok or
                                    issue.get('events_complete') is not True):
             state, receipt = 'NEEDS_CLARIFICATION', None
-        project = (issue.get('project') or '').strip()
-        if not project:
-            p = re.search(r'^Project:\s*(.+)$', body, re.M | re.I)
-            project = p.group(1).strip() if p else ''
+        form = owner_form_fields(body)
+        title = issue.get('title') or ''
+        title_match = _OWNER_TITLE_PROJECT.match(title.strip())
+        title_project = title_match.group(1).strip() if title_match else ''
+        body_project = (form.get('project') or '').strip()
+        legacy_project = (issue.get('project') or '').strip()
+        if not body_project:
+            legacy = re.search(r'^Project:\s*(.+)$', body, re.M | re.I)
+            body_project = legacy.group(1).strip() if legacy else ''
+        mismatch = bool(title_project and body_project and
+                        title_project.casefold() != body_project.casefold())
+        # Conflicting Title/Form claims must NOT become a project assignment.
+        project = '' if mismatch else (body_project or legacy_project or title_project)
+        missing_label = bool(_OWNER_TITLE.match(title.strip())
+                             and not owner_issue_is_labelled(issue))
+        reason = None
+        if mismatch:
+            reason = 'project_mismatch'
+        elif missing_label:
+            reason = 'label_missing'
+        if reason:
+            state, receipt = 'NEEDS_CLARIFICATION', None
         fsha = _OWNER_FROZEN.search(body)
         frozen_sha = fsha.group(1).lower() if fsha else None
         review = {'state': 'UNVERIFIED', 'reason': 'review_missing_or_unbound',
@@ -849,9 +902,16 @@ def build_owner_inputs(issues, capture, repo='reallakshman19/CoordinatorLandingp
         result.append({
             'schema_version': 'wp1b.1', 'number': number,
             'issue_url': f'https://github.com/{repo}/issues/{number}',
-            'type': issue.get('type') or 'OWNER_INPUT',
-            'text': scrub_chat_url(body[:300]),
+            'type': form.get('type') or issue.get('type') or 'OWNER_INPUT',
+            'target': form.get('target') or issue.get('target') or '',
+            'text': scrub_chat_url((form.get('text') or body)[:300]),
             'project': project, 'ts': issue.get('created_at'),
+            'reason': reason,
+            'flags': (['project_mismatch'] if mismatch else []) +
+                     (['label_missing'] if missing_label else []),
+            'label_missing': missing_label,
+            'project_claims': {'title': title_project, 'form': body_project},
+
             'issue_state': issue.get('state'), 'status': state,
             'state': state.lower(), 'needs_you': state != 'HANDLED',
             'receipt': receipt,
