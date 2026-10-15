@@ -430,12 +430,13 @@ def build_project_data(root: Path, project_name: str, registry: dict,
     sod = registry.get('standing_owner_decisions', [])
     lease_pattern = re.compile(r'AB-LEASE granted.*?(?:Agent\s+\w+\s+[0-9a-f]{8})', re.IGNORECASE | re.DOTALL)
     for sd in sod:
-        if 'lease' in sd.lower() and not leases:
+        sd_str = sd if isinstance(sd, str) else json.dumps(sd)
+        if 'lease' in sd_str.lower() and not leases:
             leases.append({'description': sd})
 
     # Facts / outside writes
     facts = registry.get('facts', [])
-    outside_writes = [f for f in facts if OUTSIDE_WRITE_RE.search(f)]
+    outside_writes = [f for f in facts if OUTSIDE_WRITE_RE.search(f if isinstance(f, str) else json.dumps(f))]
 
     # Status comment
     status_issue_url = registry.get('status_comment') or registry.get('status_issue', '')

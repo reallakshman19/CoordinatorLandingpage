@@ -426,7 +426,7 @@ async function renderProject(app, projectName) {
   const sod = detail?.registry?.standing_owner_decisions || [];
   const leaseEntries = leases.length
     ? leases
-    : sod.filter(d => d.toLowerCase().includes('lease'));
+    : sod.filter(d => (typeof d === 'string' ? d : JSON.stringify(d)).toLowerCase().includes('lease'));
 
   if (leaseEntries.length) {
     leaseEntries.forEach(l => {
