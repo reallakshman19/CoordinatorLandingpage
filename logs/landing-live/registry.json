@@ -1,0 +1,31 @@
+{
+  "project": "landing-live",
+  "protocol": "Team protocol v2.3 FINAL CANDIDATE (protocol/TEAM_PROTOCOL.md)",
+  "repository": "reallakshman19/CoordinatorLandingpage",
+  "parent_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/21",
+  "updated": "2026-10-15T14:46:00+04:00",
+  "updated_by": "TeamCoordinator/OwnerTeammember (Claude session)",
+  "control": {
+    "epoch": 1,
+    "coordinator": "Claude session (dual role with OwnerTeammember)",
+    "owner_words": "read this issue .../issues/21 . improvise, lauch a new agent in your tab. you will be teamcoodinator and ownerteammember",
+    "since": "2026-10-15T14:42+04:00",
+    "control_post": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6190161629",
+    "hold": null,
+    "known_gap": "no independent checker inside the team; C15 needs an Owner-named checker"
+  },
+  "workflow": {
+    "loop": ["L1 posts TASK EVIDENCE v2 in #22", "coordinator checks against GitHub", "GO / FIX / HOLD", "next slice"],
+    "current": "WP0 read-only traceability table in #21"
+  },
+  "agents": [
+    {"alias": "Agent L1", "role": "implementer", "generation": 1, "chat_id8": "6ad0adca",
+     "status": "active (pane tab-1)", "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22",
+     "onboarded": "2026-10-15T14:44+04:00 DELIVERED"}
+  ],
+  "leases": [
+    {"holder": "Agent L1 g1", "branches": "l1/*", "paths": ["scripts/fetch_live_data.py", "scripts/build_data.py", "tests/**"],
+     "granted": "2026-10-15T14:42+04:00", "note": "WP0 is read-only; writes start only after GO in #22"}
+  ],
+  "decisions": []
+}

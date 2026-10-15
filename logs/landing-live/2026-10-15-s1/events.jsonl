@@ -1,0 +1,5 @@
+{"t":"2026-10-15T14:40:08+04:00","actor":"OwnerTeammember","type":"READ","what":"issue #21 read; main 83e9eef9"}
+{"t":"2026-10-15T14:41+04:00","actor":"TeamCoordinator","type":"CREATE","what":"evidence issue #22 with L1 handover"}
+{"t":"2026-10-15T14:42+04:00","actor":"TeamCoordinator","type":"CONTROL","what":"#1 comment 6190161629 epoch 1","owner_quote":"you will be teamcoodinator and ownerteammember"}
+{"t":"2026-10-15T14:42+04:00","actor":"OwnerTeammember","type":"PLAN","what":"#21 comment 6190162030 plan changes"}
+{"t":"2026-10-15T14:44+04:00","actor":"TeamCoordinator","type":"SEND","to":"Agent L1 6ad0adca","what":"start prompt (WP0 only), new chat in pane tab-1","result":"DELIVERED, generating"}
