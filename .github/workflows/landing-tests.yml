@@ -209,7 +209,7 @@ jobs:
       - name: Checkout exact PR head including F5 tests and fixtures
         uses: actions/checkout@v4
         with:
-          ref: \${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
       - name: Set up Python 3.11
@@ -221,10 +221,10 @@ jobs:
         run: |
           set -euo pipefail
           BASE=59f821ff2b729ddbda00204dda629df4eaef8252
-          git cat-file -e "\${BASE}^{commit}"
-          git show "\${BASE}:scripts/fetch_live_data.py" > scripts/fetch_live_data.py
-          git show "\${BASE}:scripts/build_data.py" > scripts/build_data.py
-          echo "WP1b_RED_BASE=\${BASE} · HEAD tests and F5 fixture unchanged"
+          git cat-file -e "${BASE}^{commit}"
+          git show "${BASE}:scripts/fetch_live_data.py" > scripts/fetch_live_data.py
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+          echo "WP1b_RED_BASE=${BASE} · HEAD tests and F5 fixture unchanged"
       - name: Assert eight behavioural red failures with no runtime errors
         id: f5_red
         shell: bash
