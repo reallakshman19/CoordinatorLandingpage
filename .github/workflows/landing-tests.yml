@@ -1,4 +1,4 @@
-name: landing-live WP1a + WP1b + WP2 + WP4 + WP3 + WP5a + WP5b qualification
+name: landing-live WP1a + WP1b + WP2 + WP4 + WP3 + WP5a + WP5b + WP6 qualification
 
 on:
   pull_request:
@@ -81,6 +81,14 @@ jobs:
           set -o pipefail
           python -m unittest tests.test_wp5b -v 2>&1 | tee wp5b-head.log
 
+      - name: Run WP6 source-grounded trace unit tests
+        id: wp6_unit
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m unittest tests.test_wp6 -v 2>&1 | tee wp6-unit-head.log
+
       - name: Assemble benchmark-backed browser artifact (no live API)
         id: artifact
         continue-on-error: true
@@ -142,6 +150,15 @@ jobs:
           set -o pipefail
           python tests/wp5b_browser_test.py _artifact 2>&1 | tee wp5b-browser-head.log
 
+      - name: Run WP6 plain trace browser checks
+        id: wp6_browser
+        if: steps.artifact.outcome == 'success' && steps.chromium.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python tests/wp6_browser_test.py _artifact 2>&1 | tee wp6-browser-head.log
+
       - name: Upload qualification output
         if: always()
         uses: actions/upload-artifact@v4
@@ -159,6 +176,8 @@ jobs:
             wp5a-head.log
             wp5b-head.log
             wp5b-browser-head.log
+            wp6-unit-head.log
+            wp6-browser-head.log
           if-no-files-found: ignore
 
       - name: Prove injected failure rejected and enforce all HEAD gates
@@ -198,7 +217,9 @@ jobs:
           require_success "WP5a-F7-labels-and-parsing" "${{ steps.wp5a.outcome }}"
           require_success "WP5b-outside-source-and-page-limit" "${{ steps.wp5b_unit.outcome }}"
           require_success "WP5b-outsider-badge-and-needsyou-browser" "${{ steps.wp5b_browser.outcome }}"
-          echo "FINAL GATE: 13/13 actual head outcomes success"
+          require_success "WP6-trace-source-links-and-why" "${{ steps.wp6_unit.outcome }}"
+          require_success "WP6-trace-browser-and-per-project-coordinator" "${{ steps.wp6_browser.outcome }}"
+          echo "FINAL GATE: 15/15 actual head outcomes success"
 
   red-control:
     name: red-control · require seven behavioural FAIL and zero ERROR
@@ -855,4 +876,143 @@ jobs:
         with:
           name: wp5b-base-red
           path: wp5b-red.log
+          if-no-files-found: error
+
+  wp6-unit-red-control:
+    name: WP6 previous main trace data behavioural red · four FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore previous main builder, retaining WP6 tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=5c7497386f0e45082284e3dc598814ef0a5b7c8b
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+      - name: Require four genuine base assertion failures and zero errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp6.BaseCompatibleWP6 -v > wp6-unit-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp6-unit-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          out=Path("wp6-unit-red.log").read_text()
+          rows=re.findall(r'^(test_wp6_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',
+                          out,re.M)
+          fails={n for n,k in rows if k=="FAIL"}
+          errors={n for n,k in rows if k=="ERROR"}
+          wanted={
+            "test_wp6_f7_posted_and_ack_have_real_links_and_dates",
+            "test_wp6_f7_real_handled_comment_does_not_clear_project_mismatch",
+            "test_wp6_f7_why_line_explains_both_conflicting_projects",
+            "test_wp6_unrecorded_handoff_agent_and_check_are_missing_not_guessed",
+          }
+          ok=(int(os.environ["RC"])!=0 and fails==wanted and not errors
+              and re.search(r'^Ran 4 tests in ',out,re.M)
+              and re.search(r'^FAILED \(failures=4\)$',out,re.M)
+              and not any(x in out for x in
+                  ("TypeError:","AttributeError:","ImportError:","SyntaxError:")))
+          print("WP6 UNIT RED: behavioural FAIL count",len(fails))
+          print("WP6 UNIT RED: API/runner ERROR count",len(errors))
+          print("WP6 UNIT RED VERDICT",
+                "EXPECTED BEHAVIOURAL RED" if ok else "INVALID RED")
+          if not ok:sys.exit(1)
+          PY
+      - name: Upload previous main unit red log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp6-main-unit-red
+          path: wp6-unit-red.log
+          if-no-files-found: error
+
+  wp6-browser-red-control:
+    name: WP6 previous main browser red · eight FAIL and zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact HEAD tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only main page files, retaining new fixture and tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=5c7497386f0e45082284e3dc598814ef0a5b7c8b
+          for path in site/app.js site/index.html site/style.css; do
+            git show "${BASE}:$path" > "$path"
+          done
+      - name: Build synthetic browser artifact with HEAD builder
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          python scripts/build_data.py --root . --out _artifact/data/benchmarks \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install Chromium
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Require eight old-site behaviour failures with zero runner errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp6_browser_test.py _artifact > wp6-browser-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp6-browser-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          out=Path("wp6-browser-red.log").read_text()
+          rows=re.findall(r'^FAIL (WP6_UI_0[1-8]_\w+)$',out,re.M)
+          counts=re.search(r'^WP6_BROWSER_COUNTS pass=(\d+) fail=(\d+) error=(\d+)$',
+                           out,re.M)
+          ok=(int(os.environ["RC"])!=0 and len(set(rows))==8
+              and counts and counts.groups()==("0","8","0")
+              and "Traceback (most recent call last)" not in out)
+          print("WP6 BROWSER RED: behavioural FAIL count",len(set(rows)))
+          print("WP6 BROWSER RED: runner ERROR count",counts.group(3) if counts else "MISSING")
+          print("WP6 BROWSER RED VERDICT",
+                "EXPECTED BEHAVIOURAL RED" if ok else "INVALID RED")
+          if not ok:sys.exit(1)
+          PY
+      - name: Upload previous main browser red log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp6-main-browser-red
+          path: wp6-browser-red.log
           if-no-files-found: error

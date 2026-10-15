@@ -358,6 +358,7 @@ async function render() {
     case 'timeline': await renderTimeline(app, arg1); break;
     case 'decision': await renderDecision(app, arg1, arg2); break;
     case 'owner-inputs': await renderOwnerInputs(app); break;
+    case 'trace': await renderTrace(app, arg1); break;
     case 'protocol': await renderProtocol(app); break;
     case 'benchmarks': await renderBenchmarks(app); break;
     default: await renderHome(app);
@@ -389,7 +390,13 @@ async function renderHome(app) {
       if (inp.protected_action) {
         li.appendChild(el('span', 'badge badge-grey', 'UNVERIFIED · no action'));
       }
-      li.appendChild(el('span', 'needs-pending', ' · pending until linked receipt '));
+      const what = String(inp.text || inp.type || 'Request').slice(0, 140);
+      li.appendChild(el('div', 'needs-plain', 'What: ' + what +
+        ' · For: ' + String(inp.target || 'the team') +
+        ' · Waiting for: ' + String(inp.trace?.waiting_for || 'TeamCoordinator')));
+      const trace = el('a', 'btn btn-small', 'Trace →');
+      trace.href = '#trace/' + encodeURIComponent(String(inp.number));
+      li.appendChild(trace);
       const link = el('a', 'btn btn-small', 'View input →');
       link.href = '#owner-inputs';
       li.appendChild(link);
@@ -400,8 +407,10 @@ async function renderHome(app) {
     for (const d of p.open_owner_decisions || []) {
       const li = el('li', 'needs-pending');
       li.appendChild(el('strong', '', String(d.id || 'Decision')));
-      li.appendChild(el('span', '', ' · pending · no linked handler receipt '));
-      const link = el('a', 'btn btn-small', 'Decision card →');
+      li.appendChild(el('div', 'needs-plain',
+        'Decision needed: ' + String(d.ask || d.id || 'a decision') +
+        ' · Waiting for: Owner to answer'));
+      const link = el('a', 'btn btn-small', 'Trace →');
       link.href = '#decision/' + encodeURIComponent(p.project) +
         '/' + encodeURIComponent(d.id || '');
       li.appendChild(link);
@@ -411,12 +420,28 @@ async function renderHome(app) {
   if (!nyList.children.length) nySection.classList.add('empty');
 
   // Captured cycle state, never inferred uptime from absence of HOLD.
-  const observed = summarizeFreshness(state.projects);
-  $('live-tc').className = 'dot ' + ({
-    'RUNNING-observed': 'dot-green', STALE: 'dot-yellow',
-    UNKNOWN: 'dot-grey', HOLD: 'dot-purple'
-  }[observed] || 'dot-grey');
-  $('live-tc-time').textContent = observed;
+  // Each coordinator is shown beside its own project; a single global
+  // STALE label would hide which project's observation is old.
+  const coordinatorList = $('live-coordinators');
+  if (!state.projects.length) {
+    coordinatorList.appendChild(el('span', 'live-item',
+      'Projects · coordinator status UNKNOWN'));
+  }
+  state.projects.forEach(p => {
+    const observed = freshState(p);
+    const line = el('div', 'live-item coordinator-by-project');
+    const dot = el('span', 'dot ' + ({
+      'RUNNING-observed': 'dot-green', STALE: 'dot-yellow',
+      UNKNOWN: 'dot-grey', HOLD: 'dot-purple'
+    }[observed] || 'dot-grey'));
+    line.appendChild(dot);
+    line.appendChild(el('span', '', String(p.project) + ' · ' +
+      String(p.control?.coordinator || 'coordinator not recorded') +
+      ' · ' + observed +
+      (p.last_cycle_at ? ' · last update ' + fmtDateTime(p.last_cycle_at) :
+       ' · last update unknown')));
+    coordinatorList.appendChild(line);
+  });
   // Even accepted GitHub contributors share one account across team roles.
   // This is evidence of a scoped post, not proof of coordinator identity.
   const limit = el('span', 'liveness-limit',
@@ -579,6 +604,7 @@ async function renderProject(app, projectName) {
         <div class="decision-card-header">
           <span class="decision-card-id">${escapeHtml(d.id)}</span>
           <span class="decision-card-ask">${escapeHtml(d.ask)}</span>
+          <span class="needs-plain">Waiting for Owner to answer</span>
         </div>
         <div class="decision-card-body">
           ${d.link ? `<a href="${escapeHtml(d.link)}" target="_blank" rel="noopener" class="btn btn-small">Evidence →</a>` : ''}
@@ -965,6 +991,8 @@ async function renderDecision(app, projectName, decisionId) {
 
   $('dc-id').textContent = d.id;
   $('dc-ask').textContent = d.ask;
+  $('dc-ask').appendChild(el('div', 'needs-plain',
+    'Waiting for Owner to answer this decision.'));
 
   if (d.link) {
     $('dc-links').innerHTML = `<a href="${escapeHtml(d.link)}" target="_blank" rel="noopener" class="btn btn-small">Evidence →</a>`;
@@ -1061,6 +1089,9 @@ async function renderOwnerInputs(app) {
         status === 'SUPERSEDED' ? 'Superseded · not effective' :
         'pending · no linked handler receipt'));
     }
+    const trace = el('a', 'btn btn-small', 'Trace →');
+    trace.href = '#trace/' + encodeURIComponent(String(inp.number || ''));
+    message.appendChild(trace);
     const issue = el('a', 'oi-issue-link', 'Issue #' + String(inp.number || '—') + ' →');
     issue.href = 'https://github.com/' + REPO + '/issues/' +
       encodeURIComponent(String(inp.number || ''));
@@ -1071,6 +1102,75 @@ async function renderOwnerInputs(app) {
     row.appendChild(el('span', 'oi-ts', fmtDateTime(inp.ts)));
     (outsider ? $('oi-outsider-list') : list).appendChild(row);
   }
+}
+
+
+// ── Owner request trace (read-only, recorded links only) ─────
+function traceSafeGitHubURL(url) {
+  if (typeof url !== 'string') return null;
+  return /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/(?:issues|pull)\/\d+(?:#issuecomment-\d+)?$/.test(url)
+    ? url : null;
+}
+
+async function renderTrace(app, numberRaw) {
+  const frag = cloneTemplate('tpl-trace');
+  app.innerHTML = '';
+  app.appendChild(frag);
+  const number = String(numberRaw || '');
+  const inputs = await loadOwnerInputs();
+  const item = /^\d+$/.test(number) && Array.isArray(inputs)
+    ? inputs.find(x => String(x.number) === number) : null;
+  $('trace-back').href = '#owner-inputs';
+  if (!item) {
+    $('trace-title').textContent = 'Request not found';
+    $('trace-explanation').textContent = inputs === null
+      ? 'The request records are unavailable. Nothing can be confirmed.'
+      : 'No recorded Owner input matches this number.';
+    return;
+  }
+  $('trace-title').textContent = 'Follow request #' + number;
+  $('trace-subtitle').textContent = 'What: ' + String(item.text || 'Request') +
+    ' · For: ' + String(item.target || 'the team');
+  const status = ownerInputState(item);
+  $('trace-status').appendChild(ownerStatusBadge(status));
+  if (item.is_outsider) {
+    $('trace-status').appendChild(el('span', 'badge badge-grey', 'OUTSIDER · UNVERIFIED'));
+  }
+  const steps = item.trace?.steps || {};
+  const specs = [
+    ['posted', 'Posted', 'Owner'],
+    ['ack', 'ACK', 'TeamCoordinator'],
+    ['sent', 'Sent to agent', 'TeamCoordinator'],
+    ['evidence', 'Agent evidence', 'agent'],
+    ['check', 'Check', 'checker'],
+    ['result', 'Result', 'TeamCoordinator']
+  ];
+  for (const [key, label, who] of specs) {
+    const li = el('li', 'trace-step');
+    li.dataset.step = key;
+    li.appendChild(el('strong', 'trace-step-name', label));
+    const datum = steps[key];
+    const safe = traceSafeGitHubURL(datum?.url);
+    if (safe && datum?.at) {
+      const a = el('a', 'trace-proof-link',
+        (key === 'result' && datum.accepted === false)
+          ? 'Recorded note (not accepted)' : 'View recorded link →');
+      a.href = safe;
+      a.rel = 'noopener noreferrer';
+      a.target = '_blank';
+      li.appendChild(a);
+      li.appendChild(el('span', 'trace-step-time', fmtDateTime(datum.at)));
+    } else {
+      li.appendChild(el('span', 'trace-waiting', 'waiting for ' + who));
+    }
+    $('trace-steps').appendChild(li);
+  }
+  $('trace-explanation').textContent =
+    'Why this status: ' + String(item.trace?.why ||
+      'No confirmed explanation was published with this input.');
+  $('trace-disclaimer').textContent =
+    'These are recorded links, not proof of completion or Owner approval. ' +
+    'If a step has no linked record, it says who we are waiting for.';
 }
 
 // ── Protocol view ──────────────────────────────────────────
