@@ -1,6 +1,6 @@
-# Team protocol v2.2 (final candidate) — CoordinatorLandingpage
+# Team protocol v2.3 (final candidate) — CoordinatorLandingpage
 
-Status: **v2.2 FINAL CANDIDATE** (15 Oct 2026; v2.1 + §19.13–19.19 and the Owner-input channel, from the afternoon run of imo-ab-test, the landing-page build and Codex onboarding). v2.0 plus §19, the rules proven necessary by the imo-ab-test stress test (two agents, a separate Claude coordinator, OwnerTeammember). Becomes **FROZEN** on the Owner's word "freeze"; after that, changes need the Owner's words, a change note and a version bump. Dubai time (+04:00) everywhere.
+Status: **v2.3 FINAL CANDIDATE** (15 Oct 2026; v2.2 + §19.20–19.22 from the R14 fix loop; v2.1 + §19.13–19.19 and the Owner-input channel, from the afternoon run of imo-ab-test, the landing-page build and Codex onboarding). v2.0 plus §19, the rules proven necessary by the imo-ab-test stress test (two agents, a separate Claude coordinator, OwnerTeammember). Becomes **FROZEN** on the Owner's word "freeze"; after that, changes need the Owner's words, a change note and a version bump. Dubai time (+04:00) everywhere.
 
 **Machine copy:** `protocol/TEAM_PROTOCOL.md` in this repository (read the raw file). **Start here as a new agent:** §2 places → your project's `registry.json` → your role's rows in §1 → §3 or §4 → §13–§17.
 
@@ -197,7 +197,11 @@ A new TeamCoordinator (any capable agent with GitHub comment access and control 
 18. **A full chat is a changeover.** When an agent's chat hits its length limit: Owner's word → new chat → §14 (successor branch, v1.7 first reply, OwnerTeammember grounding check before edits). The coordinator records the Owner's words in #1 before or with the start message.
 19. **The coordinator must be able to reach every active chat.** A chat tab that is closed or unreachable is a liveness item for the Owner (one line), never a silent skip.
 
+20. **Grants follow the work through a changeover.** When a successor branch or PR replaces the one a lease or grant names, the coordinator re-maps every affected registry entry to the new branch/PR in the same cycle and says so in its receipt. Any change of scope (other files, other repos) needs the Owner again (observed: AB-R14-REDISPATCH named PR #268, while the passed runner lived on successor PR #272).
+21. **One review target at a time.** Each evidence block names exactly one frozen SHA for checking and lists the intermediate SHAs it supersedes. The checker checks only the latest named SHA (observed: c98cf322 and b0a0de94 superseded by 8192d28d, then 3691af85).
+22. **Role tags on proof.** Besides the proof grade, a link to another role's post carries that role: `[OWNER]` only for the Owner's own decision, `[OWNERTEAMMEMBER]`, `[CHECKER]`, `[COORDINATOR]`. Mislabelling a role is a §19.16 correction (observed: OwnerTeammember's confirmation tagged "[B / OWNER]").
+
 ## 18. Open Owner decisions
 
 Decided 15 Oct ~07:25: no standing approval for agent replacement (Owner decides each case); timeouts approved; stand-in during an outage approved.
-Open: **freeze v2.1** (one word: "freeze"). **Watchdog workflow** (§1): a scheduled GitHub Actions job, every 15 min, reads the status comment's "Cycle completed" time and, if older than 45 min, opens/updates an alert issue mentioning the Owner. It runs on GitHub, not on the home computer, so it still alerts when the computer or both sessions are down. Free on a public repository, no AI; blind during a GitHub outage.
+Open: **freeze v2.3** (one word: "freeze"). **Watchdog workflow** (§1): a scheduled GitHub Actions job, every 15 min, reads the status comment's "Cycle completed" time and, if older than 45 min, opens/updates an alert issue mentioning the Owner. It runs on GitHub, not on the home computer, so it still alerts when the computer or both sessions are down. Free on a public repository, no AI; blind during a GitHub outage.
