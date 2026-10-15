@@ -30,6 +30,8 @@ const state = {
   benchmarkProject: null,
   dataBuiltAt: null,
   protocolMd: null,
+  ownerInputs: null,
+  ownerInputsLoaded: false,
 };
 
 // ── DOM helpers ────────────────────────────────────────────
@@ -86,6 +88,15 @@ async function loadEvidence(id8) {
 async function loadProjectDetail(projectName) {
   const base = state.benchmarkMode ? BM_DATA_BASE : DATA_BASE;
   return await fetchJSON(base + `project-${projectName}.json`);
+}
+
+async function loadOwnerInputs() {
+  if (state.benchmarkMode) return [];
+  if (state.ownerInputsLoaded) return state.ownerInputs;
+  const data = await fetchJSON(DATA_BASE + 'owner-inputs.json');
+  state.ownerInputs = Array.isArray(data) ? data : null;
+  state.ownerInputsLoaded = true;
+  return state.ownerInputs;
 }
 
 // ── URL helpers ────────────────────────────────────────────
@@ -235,6 +246,41 @@ function escapeHtml(text) {
     .replace(/"/g, '&quot;');
 }
 
+const FRESHNESS = new Set(['RUNNING-observed', 'STALE', 'UNKNOWN', 'HOLD']);
+const OWNER_STATES = new Set(['OPEN', 'ACKNOWLEDGED', 'NEEDS_CLARIFICATION', 'HANDLED', 'SUPERSEDED']);
+function freshState(p) {
+  if (p && p.control && p.control.hold) return 'HOLD';
+  return p && FRESHNESS.has(p.freshness_status) ? p.freshness_status : 'UNKNOWN';
+}
+function freshnessBadge(status) {
+  const classes = {'RUNNING-observed': 'badge-green', STALE: 'badge-yellow',
+                   UNKNOWN: 'badge-grey', HOLD: 'badge-purple'};
+  return el('span', 'badge ' + (classes[status] || 'badge-grey'), status);
+}
+function summarizeFreshness(projects) {
+  if (!projects.length) return 'UNKNOWN';
+  const all = projects.map(freshState);
+  if (all.includes('HOLD')) return 'HOLD';
+  if (all.includes('UNKNOWN')) return 'UNKNOWN';
+  if (all.includes('STALE')) return 'STALE';
+  return all.every(s => s === 'RUNNING-observed') ? 'RUNNING-observed' : 'UNKNOWN';
+}
+function safeReceipt(inp) {
+  const match = /^https:\/\/github\.com\/reallakshman19\/CoordinatorLandingpage\/issues\/([0-9]+)#issuecomment-([0-9]+)$/.exec(inp && inp.receipt);
+  return match && Number(match[1]) === Number(inp.number) ? match[0] : null;
+}
+function ownerInputState(inp) {
+  const status = String(inp && (inp.status || inp.state) || '').toUpperCase();
+  if (!OWNER_STATES.has(status)) return 'OPEN';
+  return status === 'HANDLED' && !safeReceipt(inp) ? 'NEEDS_CLARIFICATION' : status;
+}
+function ownerStatusBadge(status) {
+  const classes = {OPEN: 'badge-blue', ACKNOWLEDGED: 'badge-yellow',
+                   NEEDS_CLARIFICATION: 'badge-red', HANDLED: 'badge-green',
+                   SUPERSEDED: 'badge-grey'};
+  return el('span', 'badge ' + (classes[status] || 'badge-grey'), status);
+}
+
 // ── Router ─────────────────────────────────────────────────
 function navigate(hash) {
   window.location.hash = hash;
@@ -284,32 +330,56 @@ async function renderHome(app) {
   app.innerHTML = '';
   app.appendChild(frag);
 
-  // Needs-you
   const nyList = $('needs-you-list');
   const nySection = $('needs-you');
-  let nyCount = 0;
-
-  state.projects.forEach(p => {
-    const ood = p.open_owner_decisions || [];
-    ood.forEach(d => {
-      const li = el('li');
-      li.innerHTML = `<strong>${d.id}</strong> — ${escapeHtml(d.ask)} `;
-      const link = el('a', 'btn btn-small');
-      link.textContent = 'Decision card →';
-      link.href = `#decision/${p.project}/${encodeURIComponent(d.id)}`;
+  const inputs = await loadOwnerInputs();
+  if (inputs === null && !state.benchmarkMode) {
+    nyList.appendChild(el('li', 'needs-unknown',
+      'Owner-inputs source unavailable · UNKNOWN · cannot presume handled.'));
+  } else {
+    for (const inp of inputs) {
+      const status = ownerInputState(inp);
+      if (status === 'HANDLED' || status === 'SUPERSEDED') continue;
+      const li = el('li', 'needs-input');
+      li.appendChild(el('strong', '', 'Owner input #' + String(inp.number || '—') + ' '));
+      li.appendChild(ownerStatusBadge(status));
+      if (inp.protected_action) {
+        li.appendChild(el('span', 'badge badge-grey', 'UNVERIFIED · no action'));
+      }
+      li.appendChild(el('span', 'needs-pending', ' · pending until linked receipt '));
+      const link = el('a', 'btn btn-small', 'View input →');
+      link.href = '#owner-inputs';
       li.appendChild(link);
       nyList.appendChild(li);
-      nyCount++;
-    });
-    // Owner inputs (open)
-    if (p.is_benchmark) return; // no live inputs in benchmark
-  });
+    }
+  }
+  for (const p of state.projects) {
+    for (const d of p.open_owner_decisions || []) {
+      const li = el('li', 'needs-pending');
+      li.appendChild(el('strong', '', String(d.id || 'Decision')));
+      li.appendChild(el('span', '', ' · pending · no linked handler receipt '));
+      const link = el('a', 'btn btn-small', 'Decision card →');
+      link.href = '#decision/' + encodeURIComponent(p.project) +
+        '/' + encodeURIComponent(d.id || '');
+      li.appendChild(link);
+      nyList.appendChild(li);
+    }
+  }
+  if (!nyList.children.length) nySection.classList.add('empty');
 
-  if (nyCount === 0) nySection.classList.add('empty');
-
-  // Liveness strip
+  // Captured cycle state, never inferred uptime from absence of HOLD.
+  const observed = summarizeFreshness(state.projects);
+  $('live-tc').className = 'dot ' + ({
+    'RUNNING-observed': 'dot-green', STALE: 'dot-yellow',
+    UNKNOWN: 'dot-grey', HOLD: 'dot-purple'
+  }[observed] || 'dot-grey');
+  $('live-tc-time').textContent = observed;
+  $('live-otm').className = 'dot dot-grey';
+  $('live-otm-time').textContent = 'UNKNOWN (no independent observation)';
+  $('live-gh').className = 'dot dot-grey';
   if (state.dataBuiltAt) {
-    $('data-built-at').textContent = `Data: ${fmtDateTime(state.dataBuiltAt)}`;
+    $('data-built-at').textContent =
+      'Data built: ' + fmtDateTime(state.dataBuiltAt) + ' · not a publish readback';
   }
 
   // Projects table
@@ -322,12 +392,8 @@ async function renderHome(app) {
     const agentsActive = (p.agents || []).filter(a => a.status === 'active').length;
     const agentsRetired = (p.agents || []).filter(a => a.status === 'retired').length;
 
-    const hold = ctrl.hold;
-    const healthEl = hold
-      ? `<span class="badge badge-purple">⏸ HOLD</span>`
-      : `<span class="badge badge-green">▶ running</span>`;
-
-    const lastCycle = '—'; // would come from coordinator evidence
+    const healthEl = freshnessBadge(freshState(p)).outerHTML;
+    const lastCycle = p.last_cycle_at ? fmtDateTime(p.last_cycle_at) : '—';
 
     const tr = el('tr');
     tr.innerHTML = `
@@ -876,51 +942,65 @@ async function renderOwnerInputs(app) {
   const list = $('oi-list');
   const count = $('oi-count');
 
-  // In real mode: would fetch owner-inputs.json
-  // In benchmark mode: show a simulated handled example
   if (state.benchmarkMode) {
-    const simEx = el('div', 'oi-row');
-    simEx.innerHTML = `
-      <span class="oi-state"><span class="badge badge-green">handled</span></span>
-      <span class="oi-type">DECISION</span>
-      <span class="oi-text">Approve the 13 difficulty corrections confirmed by both g1 agents (G9-DIFF-13). Option A.
-        <br><em style="font-size:0.78rem;color:var(--text-3)">Handler receipt (simulated): HANDLED: 13 corrections approved. Routed to validator g2 for implementation.</em>
-      </span>
-      <span class="oi-ts">15 Oct 08:20 +04</span>
-    `;
-    list.appendChild(simEx);
-    count.textContent = '1 (simulated)';
+    count.textContent = 'frozen snapshot';
+    list.appendChild(el('div', 'oi-row',
+      'Owner input receipts are not part of this frozen benchmark. No handled state inferred.'));
     return;
   }
 
-  const ownerInputs = await fetchJSON(DATA_BASE + 'owner-inputs.json') || [];
-  count.textContent = `${ownerInputs.length}`;
-
-  if (!ownerInputs.length) {
-    list.innerHTML = `<div style="padding:20px 16px;color:var(--text-3);font-size:0.875rem">
-      No owner inputs yet. Use the "New input" button to post one.
-    </div>`;
+  const inputs = await loadOwnerInputs();
+  if (inputs === null) {
+    count.textContent = 'UNKNOWN';
+    list.appendChild(el('div', 'oi-row',
+      'Owner-inputs source unavailable · cannot confirm a receipt or action.'));
+    return;
+  }
+  count.textContent = String(inputs.length);
+  if (!inputs.length) {
+    list.appendChild(el('div', 'oi-row',
+      'No captured Owner inputs. Missing evidence is never considered handled.'));
     return;
   }
 
-  ownerInputs.forEach(inp => {
+  for (const inp of inputs) {
+    const status = ownerInputState(inp);
     const row = el('div', 'oi-row');
-    const stateBadge = inp.state === 'handled'
-      ? `<span class="badge badge-green">handled</span>`
-      : inp.state === 'acknowledged'
-      ? `<span class="badge badge-yellow">acknowledged</span>`
-      : `<span class="badge badge-blue">open</span>`;
-
-    row.innerHTML = `
-      <span class="oi-state">${stateBadge}</span>
-      <span class="oi-type">${escapeHtml(inp.type || '')}</span>
-      <span class="oi-text">${escapeHtml(inp.text || '')}
-        ${inp.receipt ? `<br><em style="font-size:0.78rem;color:var(--text-3)">${escapeHtml(inp.receipt)}</em>` : ''}
-      </span>
-      <span class="oi-ts">${fmtDateTime(inp.ts)}</span>
-    `;
+    row.dataset.issue = String(inp.number || '');
+    row.appendChild(el('span', 'oi-state')).appendChild(ownerStatusBadge(status));
+    row.appendChild(el('span', 'oi-type', String(inp.type || 'OWNER_INPUT')));
+    const message = el('div', 'oi-text');
+    message.appendChild(el('div', '', String(inp.text || '')));
+    if (inp.protected_action) {
+      message.appendChild(el('span', 'badge badge-grey',
+        'UNVERIFIED · no action authorized'));
+    }
+    if (inp.review && inp.review.state) {
+      message.appendChild(el('span', 'badge badge-grey',
+        'Review metadata: ' + String(inp.review.state) + ' · not Owner approval'));
+    }
+    const receipt = status === 'HANDLED' ? safeReceipt(inp) : null;
+    if (receipt) {
+      const a = el('a', 'oi-receipt', 'Linked handler receipt →');
+      a.href = receipt;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      message.appendChild(a);
+    } else {
+      message.appendChild(el('span', 'oi-pending',
+        status === 'SUPERSEDED' ? 'Superseded · not effective' :
+        'pending · no linked handler receipt'));
+    }
+    const issue = el('a', 'oi-issue-link', 'Issue #' + String(inp.number || '—') + ' →');
+    issue.href = 'https://github.com/' + REPO + '/issues/' +
+      encodeURIComponent(String(inp.number || ''));
+    issue.target = '_blank';
+    issue.rel = 'noopener noreferrer';
+    message.appendChild(issue);
+    row.appendChild(message);
+    row.appendChild(el('span', 'oi-ts', fmtDateTime(inp.ts)));
     list.appendChild(row);
-  });
+  }
 }
 
 // ── Protocol view ──────────────────────────────────────────
@@ -951,6 +1031,12 @@ async function renderProtocol(app) {
     mdEl.innerHTML = `<div class="empty-state">Protocol file not found. <a href="https://github.com/${REPO}/blob/main/protocol/TEAM_PROTOCOL.md" target="_blank" rel="noopener">View on GitHub →</a></div>`;
     return;
   }
+
+  const sourceHeader = state.protocolMd.match(/^#\s+(.+)$/m);
+  const sourceStatus = state.protocolMd.match(/^Status:\s*\*\*(.+?)\*\*/m);
+  $('protocol-label').textContent = sourceStatus ?
+    'Protocol ' + sourceStatus[1].trim() :
+    sourceHeader ? sourceHeader[1].trim() : 'Protocol · source label UNKNOWN';
 
   mdEl.innerHTML = markdownToHTML(state.protocolMd);
 
@@ -1013,6 +1099,8 @@ async function renderBenchmarks(app) {
       state.projects = [];
       state.timelines = {};
       state.evidenceCache = {};
+      state.ownerInputs = null;
+      state.ownerInputsLoaded = false;
 
       // Update banner
       const banner = $('benchmark-banner');
@@ -1041,6 +1129,8 @@ function init() {
     state.projects = [];
     state.timelines = {};
     state.evidenceCache = {};
+    state.ownerInputs = null;
+    state.ownerInputsLoaded = false;
     $('benchmark-banner').classList.remove('visible');
     navigate('#home');
   });

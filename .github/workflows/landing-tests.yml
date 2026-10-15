@@ -1,4 +1,4 @@
-name: landing-live WP1a + WP1b qualification
+name: landing-live WP1a + WP1b + WP2 browser qualification
 
 on:
   pull_request:
@@ -75,6 +75,15 @@ jobs:
           set -o pipefail
           python tests/browser_smoke_test.py _artifact 2>&1 | tee wp1a-browser.log
 
+      - name: Run WP2 visible browser and mobile/theme checks
+        id: wp2_browser
+        if: steps.artifact.outcome == 'success' && steps.chromium.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python tests/wp2_browser_test.py _artifact 2>&1 | tee wp2-head.log
+
       - name: Upload qualification output
         if: always()
         uses: actions/upload-artifact@v4
@@ -84,6 +93,7 @@ jobs:
             wp1a-original.log
             wp1a-head.log
             wp1a-browser.log
+            wp2-head.log
           if-no-files-found: ignore
 
       - name: Prove injected failure rejected and enforce all HEAD gates
@@ -115,7 +125,8 @@ jobs:
           require_success "benchmark-artifact" "${{ steps.artifact.outcome }}"
           require_success "chromium" "${{ steps.chromium.outcome }}"
           require_success "original-browser-19" "${{ steps.browser.outcome }}"
-          echo "FINAL GATE: 5/5 actual head outcomes success"
+          require_success "WP2-visible-browser" "${{ steps.wp2_browser.outcome }}"
+          echo "FINAL GATE: 6/6 actual head outcomes success"
 
   red-control:
     name: red-control · require seven behavioural FAIL and zero ERROR
@@ -274,4 +285,92 @@ jobs:
         with:
           name: wp1b-base-red-output
           path: wp1b-red.log
+          if-no-files-found: error
+
+
+  wp2-browser-red-control:
+    name: WP2 visible behavioural red on BASE · no runner errors
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout HEAD tests and fixtures
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only three visible files from WP2 pinned base
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=9909cc2b05a6e1d9f67406308770b8d266c9d70a
+          git cat-file -e "${BASE}^{commit}"
+          git show "${BASE}:site/app.js" > site/app.js
+          git show "${BASE}:site/index.html" > site/index.html
+          git show "${BASE}:site/style.css" > site/style.css
+          echo "WP2_RED_BASE=${BASE} · HEAD browser suite and F5 data unchanged"
+      - name: Build same isolated benchmark artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          python scripts/build_data.py --root . --out _artifact/data/benchmarks \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/ _artifact/protocol/
+      - name: Install Playwright and Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Run new browser assertions against BASE source and require 11 expected failures
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp2_browser_test.py _artifact > wp2-browser-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp2-browser-red.log
+          export RED_EXIT="$rc"
+          python - <<'PY'
+          from pathlib import Path
+          import os
+          import re
+          import sys
+          output = Path('wp2-browser-red.log').read_text(encoding='utf-8')
+          failed = re.findall(r'^FAIL (WP2_(\d\d)_[A-Za-z0-9_]+)$',
+                              output, re.MULTILINE)
+          got = {number for number in failed}
+          expected = {str(i).zfill(2) for i in list(range(1, 11)) + [12]}
+          counts = re.search(r'^WP2_BROWSER_COUNTS pass=\d+ fail=\d+ error=(\d+)$',
+                             output, re.MULTILINE)
+          print('WP2 RED: exit', os.environ['RED_EXIT'])
+          print('WP2 RED: observed behaviour failures', len(failed))
+          print('WP2 RED: missing expected', sorted(expected - got))
+          print('WP2 RED: runner errors', counts.group(1) if counts else 'NOT_RECORDED')
+          ok = (int(os.environ['RED_EXIT']) != 0 and
+                len(failed) == 11 and got == expected and
+                counts is not None and counts.group(1) == '0' and
+                'Traceback (most recent call last)' not in output)
+          print('WP2 RED VERDICT:',
+                'EXPECTED BEHAVIOURAL RED' if ok else 'INVALID RED')
+          if not ok:
+              sys.exit(1)
+          PY
+      - name: Upload WP2 red browser log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp2-browser-base-red
+          path: wp2-browser-red.log
           if-no-files-found: error

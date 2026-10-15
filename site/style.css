@@ -577,3 +577,21 @@ tr:hover td { background: var(--bg-2); }
   display: inline-block;
   margin-top: 4px;
 }
+
+
+/* WP2: readable evidence and attention states at 390 px in both themes. */
+.oi-row { min-width: 0; gap: 8px; }
+.oi-text { min-width: 0; overflow-wrap: anywhere; flex-basis: 210px; }
+.oi-receipt, .oi-pending, .oi-issue-link { display: inline-block; margin: 5px 8px 0 0; font-size: 0.8rem; }
+.oi-pending, .needs-pending { color: var(--text-2); }
+.oi-text .badge, .needs-input .badge { margin: 2px 5px 2px 0; white-space: normal; }
+#needs-you li { overflow-wrap: anywhere; }
+#liveness-strip .live-item { min-width: 0; flex-wrap: wrap; }
+#data-built-at { overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  #nav { height: auto; min-height: var(--nav-h); flex-wrap: wrap; padding: 6px 10px; }
+  #nav-tabs { width: 100%; flex-basis: 100%; }
+  .nav-tab { padding: 4px 6px; }
+  .oi-row { align-items: flex-start; }
+  .oi-state { min-width: 0; }
+}
