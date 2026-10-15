@@ -1,121 +1,135 @@
 {
-  "project": "grade9-pilot",
-  "protocol": "Team protocol v2.0 PROTOTYPE (protocol/TEAM_PROTOCOL.md)",
-  "repository": "reallakshman19/Grade9v3.5",
-  "updated": "2026-10-15T08:10:21+04:00",
-  "updated_by": "OwnerTeammember",
-  "control": {
-    "epoch": 2,
-    "coordinator": "OwnerTeammember (stand-in TeamCoordinator)",
-    "since": "2026-10-15T07:12:23+04:00",
-    "notice": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6183540238",
-    "paused": [
-      {
-        "who": "Codex (TeamCoordinator, epoch 1)",
-        "state": "Owner HOLD since 2026-10-15T06:54+04:00; must not send to these chats until a CONTROL epoch notice names it"
-      }
-    ],
-    "hold": {
-      "since": "2026-10-15T08:10:21+04:00",
-      "owner_words": "HOLD further task on tabs",
-      "effect": "no coordinator sends to any agent chat until the Owner resumes"
-    }
-  },
-  "workflow": {
-    "owner_words": "QRT tile by tile: idea is to design a validator (by one agent), fix existing standalone html based on validator outcome (another agent), check and fix the validator if required",
-    "given": "2026-10-15T07:58+04:00",
-    "loop": [
-      "validator: define and run the tile's checks on the current standalone HTML at the exact commit; post PASS/FAIL per question",
-      "fixer: fix each FAIL through source + builder (4 identical outputs); freeze a commit; post FIXED / NOT FIXED / DISPUTED",
-      "validator: re-run on that commit; fix the validator where its FAIL was wrong",
-      "tile done at 0 FAIL → next tile"
-    ],
-    "current": {
-      "tile": "QRT-RETRIEVE-D1",
-      "step": "validator g2 onboarding; tile 1 checks next"
-    }
-  },
-  "agents": [
-    {
-      "role": "validator",
-      "generation": 2,
-      "chat_id8": "6ad0506c",
-      "status": "active",
-      "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/10",
-      "handover": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/10",
-      "branch": "new from a6b42cd9 (to be reported)",
-      "started": "2026-10-15T08:03+04:00"
-    },
-    {
-      "role": "fixer (coder)",
-      "generation": 2,
-      "chat_id8": "6ad0508a",
-      "status": "active",
-      "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/11",
-      "handover": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/11",
-      "branch": "new from 90c85970 (to be reported)",
-      "started": "2026-10-15T08:04+04:00"
-    },
-    {
-      "role": "validator",
-      "generation": 1,
-      "chat_id8": "6ad02130",
-      "status": "retired",
-      "retired": "2026-10-15T08:01+04:00",
-      "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/9",
-      "branch": "agent/issue249-qrt-validator-v1 @ a6b42cd9 (PR #250, frozen)"
-    },
-    {
-      "role": "coder",
-      "generation": 1,
-      "chat_id8": "6ad02128",
-      "status": "retired",
-      "retired": "2026-10-15T08:01+04:00",
-      "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/8",
-      "branch": "repair/qrt249-fivefactor-evidence-batch01 @ 6c92d526 (PR #267, frozen)"
-    }
-  ],
-  "source": {
-    "pr": 240,
-    "branch": "feat/imo-grade9-68-questions-master-suite",
-    "head": "90c859705feb0dfcedc6d33a013d9e563b7cac9d",
-    "generator": "Mathematics/research/build_full_master_suite.py",
-    "outputs": [
-      "standalone/mathematics-imo-grade9-master-suite.html",
-      "public/standalone/mathematics-imo-grade9-master-suite.html",
-      "public/test/imo-grade9/core2.html",
-      "docs/test/imo-grade9/core2.html"
-    ],
-    "baseline_red": [
-      "guardrails",
-      "learner-platform-code-tests"
-    ]
-  },
-  "standing_owner_decisions": [
-    "G9-V36-1 option B: v3.6 managed lifecycle off",
-    "BuddyRunner v1.7 for new handovers",
-    "no standing approval for replacing agents (Owner decides each case)",
-    "timeouts: agent 60 min, coordinator 2x cadence max 30, OwnerTeammember 30",
-    "OwnerTeammember may stand in as coordinator during an outage",
-    "pilot cycles up to 10x tokens for 24 h from 15 Oct",
-    "coordinator cadence 10 min",
-    "log: CoordinatorLandingpage logs/<project>/<session>/"
-  ],
-  "open_owner_decisions": [
-    {
-      "id": "G9-DIFF-13",
-      "ask": "approve the 13 difficulty corrections confirmed by both g1 agents against the blueprint (applied in their tile)",
-      "link": "https://github.com/reallakshman19/Grade9v3.5/issues/249#issuecomment-6184002829"
-    },
-    {
-      "id": "PROTO-FREEZE",
-      "ask": "freeze Team protocol v2.0 after the prototype run"
-    },
-    {
-      "id": "WATCHDOG",
-      "ask": "add the GitHub Actions watchdog?"
-    }
-  ],
-  "status_comment": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/6#issuecomment-6183558219",
-  "log_folder": "logs/grade9-pilot/2026-10-15_epoch2/"
+    "project":  "grade9-pilot",
+    "protocol":  "Team protocol v2.0 PROTOTYPE (protocol/TEAM_PROTOCOL.md)",
+    "repository":  "reallakshman19/Grade9v3.5",
+    "updated":  "2026-10-15T08:10:21+04:00",
+    "updated_by":  "OwnerTeammember",
+    "control":  {
+                    "epoch":  2,
+                    "coordinator":  "OwnerTeammember (stand-in TeamCoordinator)",
+                    "since":  "2026-10-15T07:12:23+04:00",
+                    "notice":  "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6183540238",
+                    "paused":  [
+                                   {
+                                       "who":  "Codex (TeamCoordinator, epoch 1)",
+                                       "state":  "Owner HOLD since 2026-10-15T06:54+04:00; must not send to these chats until a CONTROL epoch notice names it"
+                                   }
+                               ],
+                    "hold":  {
+                                 "since":  "2026-10-15T08:10:21+04:00",
+                                 "owner_words":  "HOLD further task on tabs",
+                                 "effect":  "no coordinator sends to any agent chat until the Owner resumes"
+                             }
+                },
+    "workflow":  {
+                     "owner_words":  "QRT tile by tile: idea is to design a validator (by one agent), fix existing standalone html based on validator outcome (another agent), check and fix the validator if required",
+                     "given":  "2026-10-15T07:58+04:00",
+                     "loop":  [
+                                  "validator: define and run the tile\u0027s checks on the current standalone HTML at the exact commit; post PASS/FAIL per question",
+                                  "fixer: fix each FAIL through source + builder (4 identical outputs); freeze a commit; post FIXED / NOT FIXED / DISPUTED",
+                                  "validator: re-run on that commit; fix the validator where its FAIL was wrong",
+                                  "tile done at 0 FAIL → next tile"
+                              ],
+                     "current":  {
+                                     "tile":  "QRT-RETRIEVE-D1",
+                                     "step":  "validator g2 onboarding; tile 1 checks next"
+                                 }
+                 },
+    "agents":  [
+                   {
+                       "role":  "validator",
+                       "generation":  2,
+                       "chat_id8":  "6ad0506c",
+                       "status":  "active",
+                       "evidence_thread":  "https://github.com/reallakshman19/CoordinatorLandingpage/issues/10",
+                       "handover":  "https://github.com/reallakshman19/CoordinatorLandingpage/issues/10",
+                       "branch":  "new from a6b42cd9 (to be reported)",
+                       "started":  "2026-10-15T08:03+04:00"
+                   },
+                   {
+                       "role":  "fixer (coder)",
+                       "generation":  2,
+                       "chat_id8":  "6ad0508a",
+                       "status":  "active",
+                       "evidence_thread":  "https://github.com/reallakshman19/CoordinatorLandingpage/issues/11",
+                       "handover":  "https://github.com/reallakshman19/CoordinatorLandingpage/issues/11",
+                       "branch":  "new from 90c85970 (to be reported)",
+                       "started":  "2026-10-15T08:04+04:00"
+                   },
+                   {
+                       "role":  "validator",
+                       "generation":  1,
+                       "chat_id8":  "6ad02130",
+                       "status":  "retired",
+                       "retired":  "2026-10-15T08:01+04:00",
+                       "evidence_thread":  "https://github.com/reallakshman19/CoordinatorLandingpage/issues/9",
+                       "branch":  "agent/issue249-qrt-validator-v1 @ a6b42cd9 (PR #250, frozen)"
+                   },
+                   {
+                       "role":  "coder",
+                       "generation":  1,
+                       "chat_id8":  "6ad02128",
+                       "status":  "retired",
+                       "retired":  "2026-10-15T08:01+04:00",
+                       "evidence_thread":  "https://github.com/reallakshman19/CoordinatorLandingpage/issues/8",
+                       "branch":  "repair/qrt249-fivefactor-evidence-batch01 @ 6c92d526 (PR #267, frozen)"
+                   }
+               ],
+    "source":  {
+                   "pr":  240,
+                   "branch":  "feat/imo-grade9-68-questions-master-suite",
+                   "head":  "90c859705feb0dfcedc6d33a013d9e563b7cac9d",
+                   "generator":  "Mathematics/research/build_full_master_suite.py",
+                   "outputs":  [
+                                   "standalone/mathematics-imo-grade9-master-suite.html",
+                                   "public/standalone/mathematics-imo-grade9-master-suite.html",
+                                   "public/test/imo-grade9/core2.html",
+                                   "docs/test/imo-grade9/core2.html"
+                               ],
+                   "baseline_red":  [
+                                        "guardrails",
+                                        "learner-platform-code-tests"
+                                    ]
+               },
+    "standing_owner_decisions":  [
+                                     "G9-V36-1 option B: v3.6 managed lifecycle off",
+                                     "BuddyRunner v1.7 for new handovers",
+                                     "no standing approval for replacing agents (Owner decides each case)",
+                                     "timeouts: agent 60 min, coordinator 2x cadence max 30, OwnerTeammember 30",
+                                     "OwnerTeammember may stand in as coordinator during an outage",
+                                     "pilot cycles up to 10x tokens for 24 h from 15 Oct",
+                                     "coordinator cadence 10 min",
+                                     "log: CoordinatorLandingpage logs/\u003cproject\u003e/\u003csession\u003e/"
+                                 ],
+    "open_owner_decisions":  [
+                                 {
+                                     "id":  "G9-DIFF-13",
+                                     "ask":  "approve the 13 difficulty corrections confirmed by both g1 agents against the blueprint (applied in their tile)",
+                                     "link":  "https://github.com/reallakshman19/Grade9v3.5/issues/249#issuecomment-6184002829"
+                                 },
+                                 {
+                                     "id":  "PROTO-FREEZE",
+                                     "ask":  "freeze Team protocol v2.0 after the prototype run"
+                                 },
+                                 {
+                                     "id":  "WATCHDOG",
+                                     "ask":  "add the GitHub Actions watchdog?"
+                                 }
+                             ],
+    "status_comment":  "https://github.com/reallakshman19/CoordinatorLandingpage/issues/6#issuecomment-6183558219",
+    "log_folder":  "logs/grade9-pilot/2026-10-15_epoch2/",
+    "external_writes":  [
+                            {
+                                "grant":  "AB-5A117F69-OWNER / AB-DOCS-DATAJS",
+                                "agent":  "A 6ad0449d",
+                                "pr":  "#240",
+                                "logged":  "2026-10-15T12:02:00+04:00",
+                                "commits":  [
+                                                "5d609786",
+                                                "01f29334",
+                                                "40f9267b"
+                                            ],
+                                "project":  "imo-ab-test"
+                            }
+                        ]
 }
