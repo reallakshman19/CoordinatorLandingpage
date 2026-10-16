@@ -2,8 +2,8 @@
   "project": "grade9-pilot",
   "protocol": "Team protocol v2.1",
   "repository": "reallakshman19/Grade9v3.5",
-  "updated": "2026-10-16T14:17:30+04:00",
-  "updated_by": "Codex combined TeamCoordinator/OwnerTeammember: direct Owner custody approval, no product release",
+  "updated": "2026-10-16T15:17:00+04:00",
+  "updated_by": "Codex TC/OT: Owner-approved one execution-only runner; no V/M code release",
   "control": {
     "epoch": 3,
     "coordinator": "Codex",
@@ -516,7 +516,23 @@
           ]
         }
       ],
-      "legacy_G4": "Unchanged; no retirement or two-file semantic-triage scope transfer"
+      "legacy_G4": "Unchanged; no retirement or two-file semantic-triage scope transfer",
+      "execution_runner": {
+        "chat_id8": "01a1446d",
+        "role": "Owner-designated execution-only local Coder",
+        "task": "V36-249-RUN01",
+        "plan": "V36-249-PLAN-02",
+        "evidence_thread": "https://github.com/reallakshman19/Grade9v3.5/issues/288",
+        "authority": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6214278065",
+        "instance_sha256": "cb07605418cbdb310368cf7b750016445c301038a7ccfb56f1912d82f027790f",
+        "adoption": "PENDING_ACTUAL_RECEIPT",
+        "state": "ACTIVE_READ_ONLY_ONBOARDING",
+        "material_release": false,
+        "product_paths": [],
+        "local_scope": "Fresh isolated checkout/reports only; no product edits or acceptance",
+        "observed_at": "2026-10-16T11:16:34Z",
+        "observation_source": "Native Codex wait_threads active snapshot; not engineering result"
+      }
     }
   }
 }
