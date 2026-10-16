@@ -2,8 +2,8 @@
   "project": "grade9-pilot",
   "protocol": "Team protocol v2.1",
   "repository": "reallakshman19/Grade9v3.5",
-  "updated": "2026-10-15T22:28:14+04:00",
-  "updated_by": "Codex (TeamCoordinator + OwnerTeammember)",
+  "updated": "2026-10-16T14:17:30+04:00",
+  "updated_by": "Codex combined TeamCoordinator/OwnerTeammember: direct Owner custody approval, no product release",
   "control": {
     "epoch": 3,
     "coordinator": "Codex",
@@ -291,7 +291,7 @@
           "validator: define and run the tile's checks on the current standalone HTML at the exact commit; post PASS/FAIL per question",
           "fixer: fix each FAIL through source + builder (4 identical outputs); freeze a commit; post FIXED / NOT FIXED / DISPUTED",
           "validator: re-run on that commit; fix the validator where its FAIL was wrong",
-          "tile done at 0 FAIL \u2192 next tile"
+          "tile done at 0 FAIL → next tile"
         ],
         "current": {
           "tile": "QRT-RETRIEVE-D1",
@@ -321,6 +321,46 @@
       "branch": "agent/qrt-tile-validator-g3-regression1",
       "base": "90adfd690bfb439ff4131eb9a04ee5de524cb1ed",
       "release": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/23#issuecomment-6190920489"
+    },
+    {
+      "actor": "6ad1a35a",
+      "workstream": "QRT-VM",
+      "paths": [
+        "Shared/tools/imo_qrt_validator.py",
+        "tests/test_imo_qrt_validator.py",
+        "tests/test_imo_qrt_findings_contract.py",
+        "TEST/imo-qrt-validator/question-findings.v1.schema.json"
+      ],
+      "scope": "Exact Owner-approved QRT-VM path boundaries only",
+      "state": "OWNER_APPROVED_BOUNDARY_EXECUTION_HOLD",
+      "exclusive": true,
+      "authority": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6213310885",
+      "proposed_branch": "codex/qrt-vm-v01-findings",
+      "proposed_base": "b9dd05e3d89b8bbd4bcf1c9904ffabffbc75a7b8",
+      "branch_base_qualified": false,
+      "material_release": false,
+      "independent_checker": "6ad1a384",
+      "incumbent_stop": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/38#issuecomment-6199371271",
+      "exclusions": "G4 semantic triage files; other agent paths; content/Core/HTML; protected scores; no merge/release/acceptance"
+    },
+    {
+      "actor": "6ad1a384",
+      "workstream": "QRT-VM",
+      "paths": [
+        "TEST/imo-qrt-validator/negative-controls/",
+        "tests/qrt_negative_controls/"
+      ],
+      "scope": "Exact Owner-approved QRT-VM path boundaries only",
+      "state": "OWNER_APPROVED_BOUNDARY_EXECUTION_HOLD",
+      "exclusive": true,
+      "authority": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6213310885",
+      "proposed_branch": "codex/qrt-vm-m01-controls",
+      "proposed_base": "b9dd05e3d89b8bbd4bcf1c9904ffabffbc75a7b8",
+      "branch_base_qualified": false,
+      "material_release": false,
+      "independent_checker": "6ad1a35a",
+      "incumbent_stop": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/38#issuecomment-6199371271",
+      "exclusions": "G4 semantic triage files; other agent paths; content/Core/HTML; protected scores; no merge/release/acceptance"
     }
   ],
   "validator_basis": {
@@ -437,6 +477,46 @@
     "actual": {
       "builder": "6ad11aaa",
       "tester": "6ad11aab"
+    }
+  },
+  "workstreams": {
+    "QRT-VM": {
+      "parent": "reallakshman19/Grade9v3.5#249",
+      "criticality": "NON_CRITICAL",
+      "owner_approval": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6213310885",
+      "protocol_commit": "b92b6096c656c0c7f8f51b896ec4ea1da3c5a22e",
+      "plan": "V36-249-PLAN-01",
+      "label_sha": "17be272",
+      "state": "PATH_CUSTODY_APPROVED_EXECUTION_PREREQUISITES_HOLD",
+      "material_release": false,
+      "source_sha": "40f9267bb81db20c55a98c40650fc3b7ac054b5c",
+      "proposed_base": "b9dd05e3d89b8bbd4bcf1c9904ffabffbc75a7b8",
+      "agents": [
+        {
+          "role": "V validator production",
+          "chat_id8": "6ad1a35a",
+          "evidence_thread": "https://github.com/reallakshman19/Grade9v3.5/issues/284",
+          "adoption": "https://github.com/reallakshman19/Grade9v3.5/issues/284#issuecomment-6209633313",
+          "paths": [
+            "Shared/tools/imo_qrt_validator.py",
+            "tests/test_imo_qrt_validator.py",
+            "tests/test_imo_qrt_findings_contract.py",
+            "TEST/imo-qrt-validator/question-findings.v1.schema.json"
+          ]
+        },
+        {
+          "role": "M independent controls/review",
+          "chat_id8": "6ad1a384",
+          "evidence_thread": "https://github.com/reallakshman19/Grade9v3.5/issues/285",
+          "review_child": "https://github.com/reallakshman19/Grade9v3.5/issues/286",
+          "adoption": "https://github.com/reallakshman19/Grade9v3.5/issues/285#issuecomment-6212821350",
+          "paths": [
+            "TEST/imo-qrt-validator/negative-controls/",
+            "tests/qrt_negative_controls/"
+          ]
+        }
+      ],
+      "legacy_G4": "Unchanged; no retirement or two-file semantic-triage scope transfer"
     }
   }
 }
