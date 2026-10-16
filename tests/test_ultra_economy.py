@@ -50,7 +50,7 @@ def fixture(*, end=True, limit=3, cycle=1, state="SENT_TO_CHAT", hold=None,
                              "source_bindings":bindings,
                              "monitoring_grants":{"11111111":dict(grant)},
                              "execution_grants":{"11111111":dict(grant)},
-                             "cycle_ledger":{"11111111/WP16":{"completed_cycles":cycle-1}}},
+                             "cycle_ledger":{"https://github.com/reallakshman19/CoordinatorLandingpage/issues/21|WP16":{"completed_cycles":cycle-1}}},
            "control": {"hold": hold}}
     agents = [{"chat_id8": "11111111", "role": "implementer", "status": "active",
                "evidence_thread_url": URL}]

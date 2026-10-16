@@ -113,7 +113,7 @@ class WP17Guards(unittest.TestCase):
 
     def test_15_persisted_cycle_ledger_not_reset_on_restart(self):
         reg,agents,threads,view=fixture(end=False)
-        reg["ultra_economy"]["cycle_ledger"][ID+"/WP16"]["completed_cycles"]=1
+        reg["ultra_economy"]["cycle_ledger"]["https://github.com/reallakshman19/CoordinatorLandingpage/issues/21|WP16"]["completed_cycles"]=1
         self.assertEqual(examine(reg,agents,threads,view)["state"],"UEM_CYCLE_RESTART_OR_GAP")
 
     def test_16_separate_cycle_counters(self):
@@ -208,6 +208,28 @@ class WP17Guards(unittest.TestCase):
         self.assertEqual(len({r["key"] for r in rows}),2)
         self.assertTrue(any("workstream:@root" in r["key"] for r in rows))
         self.assertTrue(any("workstream:@ws:main" in r["key"] for r in rows))
+
+    def test_26_successor_cannot_reset_the_same_workplan_task(self):
+        reg,agents,threads,view=fixture(end=False)
+        key="https://github.com/reallakshman19/CoordinatorLandingpage/issues/21|WP16"
+        reg["ultra_economy"]["cycle_ledger"][key]["completed_cycles"]=1
+        new_id="22222222"
+        grant=dict(reg["ultra_economy"]["execution_grants"][ID],holder_id8=new_id)
+        reg["ultra_economy"]["execution_grants"]={new_id:grant}
+        reg["ultra_economy"]["monitoring_grants"]={new_id:dict(grant)}
+        agents[0]["chat_id8"]=new_id
+        body=threads[22]["comments"][0]["body"].replace(
+            "chat 11111111","chat 22222222").replace("cycle 1/3","cycle 2/3")
+        threads[22]["comments"][0]["body"]=body
+        reg["ultra_economy"]["source_bindings"]["101"]["body_sha256"]=hashlib.sha256(body.encode()).hexdigest()
+        out=uem.project(reg,agents,threads,view,now=NOW)["agents"][new_id]
+        self.assertEqual(out["state"],"WORKING_CLAIM")
+        # A successor attempting cycle 1 on the same workplan cannot refill it.
+        body=body.replace("cycle 2/3","cycle 1/3")
+        threads[22]["comments"][0]["body"]=body
+        reg["ultra_economy"]["source_bindings"]["101"]["body_sha256"]=hashlib.sha256(body.encode()).hexdigest()
+        out=uem.project(reg,agents,threads,view,now=NOW)["agents"][new_id]
+        self.assertEqual(out["state"],"UEM_CYCLE_RESTART_OR_GAP")
 
     def test_26_wp3_workflow_allowlist_keeps_exclusivity_gate(self):
         text=(ROOT/"tests"/"test_wp3.py").read_text()

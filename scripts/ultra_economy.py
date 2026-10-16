@@ -229,12 +229,14 @@ def _execution_guard(registry,agent,id8,now,cfg):
     leases=(registry.get("writer_leases") or [])+(registry.get("leases") or [])
     for lease in leases:
         if not isinstance(lease,dict):continue
-        holder=str(lease.get("actor") or lease.get("holder") or "")
-        # Never infer a lease from string aliases: require registered id8
-        owner=lease.get("holder_id8")
-        if owner and owner!=id8 and lease.get("exclusive") is True and (
-                lease.get("active") is True or str(lease.get("state")).upper()=="ACTIVE"):
-            return "WRITER_LEASE_CONFLICT"
+        if lease.get("exclusive") is not True or not (
+                lease.get("active") is True or
+                str(lease.get("state")).upper()=="ACTIVE"):
+            continue
+        # An active exclusive lease with unknown custody is a conflict too.
+        actor=str(lease.get("actor") or "")
+        owner=lease.get("holder_id8") or (actor if ID8.fullmatch(actor) else None)
+        if owner!=id8:return "WRITER_LEASE_CONFLICT"
     return None
 
 
@@ -296,7 +298,10 @@ def project(registry,agents,threads,next_view,now=None):
                 not current["start_binding_valid"]):
             item.update(state="SOURCE_BINDING_INVALID")
             result["agents"][id8]=item;continue
-        ledger=(cfg.get("cycle_ledger") or {}).get(id8+"/"+current["task"]) or {}
+        # The workplan/task identifier survives a chat restart and a successor
+        # id8. A per-agent key would incorrectly replenish consumed cycles.
+        ledger_key=current["workplan"]+"|"+current["task"]
+        ledger=(cfg.get("cycle_ledger") or {}).get(ledger_key) or {}
         completed=ledger.get("completed_cycles",0) if isinstance(ledger,dict) else 0
         if type(completed) is not int or completed<0 or current["cycle"]!=completed+1:
             item["state"]="UEM_CYCLE_RESTART_OR_GAP"

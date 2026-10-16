@@ -165,7 +165,7 @@ retired/STOP status, unqualified successor/adoption, and competing exclusive
 writer lease. A result is a read-only assertion, not a GitHub write grant.
 Missing or invalid fields remain blocked.
 
-The separately persisted \`cycle_ledger\` maps \`<id8>/<task>\` to
+The separately persisted \`cycle_ledger\` maps \`<workplan issue URL>|<task>\` to
 \`{completed_cycles:n}\`. START cycle must equal n+1; no chat restart,
 handover, registry reload or changed Next Move task counter resets it.
 A delivered move is never permission unless *all* source and authority

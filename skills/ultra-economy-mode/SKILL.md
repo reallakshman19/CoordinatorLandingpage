@@ -58,7 +58,7 @@ Fallback: NOT_ARMED no authorized host receipt
    delivery gates, recheck **current** HOLD, source binding, writer lease, grant,
    exact head, and persisted per-task UEM cycle ledger before any further
    work. The next cycle is permitted only for n < limit and recorded
-   completed_cycles=n (so a restart/handover cannot reset to cycle one).
+   completed_cycles=n (keyed by workplan URL + task, not by chat id8; a successor/restart cannot reset to cycle one).
    Next Move task counter and Owner delegation cycle never refill UEM credit.
    Otherwise record `WAITING_NEXT_MOVE` and stop your reply.
    Never loop by assuming the draft is approval.
