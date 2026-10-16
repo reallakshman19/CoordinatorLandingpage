@@ -458,7 +458,7 @@ function ownerStatusBadge(status) {
 
 function ownerJSONCommitURL(values, date = new Date(), randomBytes = null) {
   const project = String(values.project || '');
-  if (!state.projects.some(p => p.project === project && (p.repository === REPO || p.is_benchmark === true)) ||
+  if (!state.projects.some(p => p.project === project && (p.repository === REPO || p.is_benchmark === true || !!p.benchmark_snapshot)) ||
       !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(project))
     throw new Error('Choose a listed project (hub only; external projects are read-only).');
   const target = String(values.target || '').trim();
@@ -577,7 +577,7 @@ function renderDecisionAnswers(container, project, decision, visibleAsk, inputs)
 function setupJSONInputForm() {
   const form = $('oi-json-form'), projects = $('oi-json-project');
   if (!form || !projects) return;
-  for (const p of state.projects.filter(p => p.repository === REPO || p.is_benchmark === true)) {
+  for (const p of state.projects.filter(p => p.repository === REPO || p.is_benchmark === true || !!p.benchmark_snapshot)) {
     const opt = el('option', '', p.project);
     opt.value = p.project;
     projects.appendChild(opt);
@@ -996,7 +996,7 @@ async function renderProject(app, projectName) {
 
   // Post to team button
   const postBtn = $('post-btn');
-  if (state.benchmarkMode || (proj.repository !== REPO && !proj.is_benchmark)) {
+  if (state.benchmarkMode || (proj.repository !== REPO && !proj.is_benchmark && !proj.benchmark_snapshot)) {
     postBtn.style.display = 'none'; // external projects are read-only
   } else {
     postBtn.href = postToTeamURL(projectName, 'INFO');
@@ -1041,7 +1041,8 @@ async function renderAgent(app, projectName, id8) {
 
   // Action buttons
   if (state.benchmarkMode || (state.projects.find(p => p.project === projectName)?.repository !== REPO &&
-      !state.projects.find(p => p.project === projectName)?.is_benchmark)) {
+      !state.projects.find(p => p.project === projectName)?.is_benchmark &&
+      !state.projects.find(p => p.project === projectName)?.benchmark_snapshot)) {
     $('agent-action-buttons').style.display = 'none';
   } else {
     $('btn-ground').href = groundURL(id8, projectName);
