@@ -219,6 +219,15 @@ jobs:
           set -o pipefail
           python tests/wp9_browser_test.py _artifact 2>&1 | tee wp9-browser-head.log
 
+      - name: Run WP8c browser security, route and fallback-UX checks
+        id: wp8c_browser
+        if: steps.artifact.outcome == 'success' && steps.chromium.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python tests/wp8c_browser_test.py _artifact 2>&1 | tee wp8c-browser-head.log
+
       - name: Upload qualification output
         if: always()
         uses: actions/upload-artifact@v4
@@ -245,6 +254,7 @@ jobs:
             wp8b-unit-head.log
             wp8b-browser-head.log
             wp9-browser-head.log
+            wp8c-browser-head.log
           if-no-files-found: ignore
 
       - name: Prove injected failure rejected and enforce all HEAD gates
@@ -293,7 +303,8 @@ jobs:
           require_success "WP8b-source-activity-clocks" "${{ steps.wp8b_unit.outcome }}"
           require_success "WP8b-times-protocol-and-home-shortcut-browser" "${{ steps.wp8b_browser.outcome }}"
           require_success "WP9-decision-buttons-prefill-and-verified-receipt-browser" "${{ steps.wp9_browser.outcome }}"
-          echo "FINAL GATE: 22/22 actual head outcomes success"
+          require_success "WP8c-XSS-project-id8-fence-and-backup-UX" "${{ steps.wp8c_browser.outcome }}"
+          echo "FINAL GATE: 23/23 actual head outcomes success"
 
   red-control:
     name: red-control · require seven behavioural FAIL and zero ERROR
