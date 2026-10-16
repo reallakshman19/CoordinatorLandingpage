@@ -1363,6 +1363,7 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
                     sources.append(('live', proj_dir))
 
     all_projects = []
+    selected_registries = {}  # raw complete logs/*/registry.json, never UI summary
     all_timelines = {}
     evidence_names = {}
     owner_source, owner_capture = [], None
@@ -1468,6 +1469,7 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             load_json(source_path / 'MANIFEST.json') or {}
         ).get('snapshot') if is_benchmark else None
 
+        selected_registries[project_name] = registry
         all_projects.append(project_data)
         all_timelines[project_name] = timeline
 
@@ -1502,7 +1504,7 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
     # WP16 covers the entire selected registry roster, not just the older
     # dashboard's top-level agent projection. Both OT/TC views use this one file.
     status_bar = build_status_bar(
-        {pd['project']: pd['registry'] for pd in all_projects},
+        selected_registries,
         {pd['project']: pd for pd in all_projects},
         now=datetime.now(timezone.utc))
     if not status_bar['coverage']['complete']:
