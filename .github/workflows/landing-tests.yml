@@ -1525,6 +1525,80 @@ jobs:
           path: wp8c-unit-red.log
           if-no-files-found: error
 
+  wp10-browser-red-control:
+    name: WP10 pinned main UI RED · 9 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact head tests and builder
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only old UI from exact pre-WP10 main
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=3016be6bd94e2fa823ff6e104273eae404ba930a
+          git cat-file -e "${BASE}^{commit}"
+          for path in site/app.js site/index.html site/style.css; do
+            git show "${BASE}:${path}" > "${path}"
+          done
+      - name: Build an isolated synthetic browser artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          python scripts/build_data.py --root . --out _artifact/data/benchmarks \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Require nine exact old-page failures and zero errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp10_browser_test.py _artifact > wp10-browser-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp10-browser-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os, re, sys
+          from pathlib import Path
+          log = Path("wp10-browser-red.log").read_text()
+          observed = set(re.findall(r'^FAIL (WP10_UI_0[1-9]_\w+)$', log, re.M))
+          m = re.search(r'^WP10_BROWSER_COUNTS pass=(\d+) fail=(\d+) error=(\d+)$', log, re.M)
+          valid = (int(os.environ["RC"]) != 0 and len(observed) == 9
+                   and m and m.groups() == ("0", "9", "0")
+                   and "Traceback (most recent call last)" not in log)
+          print("WP10 BROWSER RED:",len(observed),"behavioural FAIL;",
+                m.group(3) if m else "?", "ERROR;", "PASS" if valid else "INVALID")
+          if not valid: sys.exit(1)
+          PY
+      - name: Upload WP10 old UI negative-control output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp10-base-browser-red
+          path: wp10-browser-red.log
+          if-no-files-found: error
+
   wp10-unit-red-control:
     name: WP10 pinned main behaviour RED · 4 FAIL, zero ERROR
     runs-on: ubuntu-latest
