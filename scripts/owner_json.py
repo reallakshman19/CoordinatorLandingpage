@@ -185,11 +185,45 @@ def read_committed_inputs(root,repo=REPO,resolver=None):
                 "trace":{"steps":steps,"why":why,
                          "waiting_for":None if status=="HANDLED" else ("Owner" if errors else "TeamCoordinator")},
             })
-    index={row["id"]:row for row in records}
+    # A syntactically valid replacement is not enough: it must point to a
+    # distinct, recorded, trusted request in this SAME project. Index by the
+    # project as well as the id to avoid cross-project successor collisions.
+    index={(row["project"],row["id"]):row for row in records}
     for row in records:
-        old=index.get(row["replaces"])
-        if (old and old is not row and row["project"]==old["project"]
-                and not row["is_outsider"] and not old["is_outsider"] and not row["flags"]):
+        previous=row["replaces"]
+        if previous is None:
+            continue
+        old=index.get((row["project"],previous))
+        bad=(old is None or old is row or old["is_outsider"]
+             or bool(old["flags"]))
+        # Cycles can otherwise supersede their own source and hide both rows.
+        seen=set()
+        cursor=row
+        while cursor and not bad:
+            key=(cursor["project"],cursor["id"])
+            if key in seen:
+                bad=True
+                break
+            seen.add(key)
+            next_id=cursor["replaces"]
+            cursor=index.get((row["project"],next_id)) if next_id else None
+        if bad:
+            row["flags"]=sorted(set(row["flags"]+["replaces"]))
+            row["reason"]="replaces"
+            row["status"]="NEEDS_CLARIFICATION"
+            row["state"]="needs_clarification"
+            row["needs_you"]=not row["is_outsider"]
+            row["receipt"]=None
+            row["trace"]["steps"]["result"]=None
+            row["trace"]["why"]=(
+                "Replacement must point to a different verified request "
+                "in the same project; no replacement is effective.")
+            row["trace"]["waiting_for"]="Owner"
+    for row in records:
+        old=index.get((row["project"],row["replaces"]))
+        if (old and old is not row and not row["flags"]
+                and not row["is_outsider"] and not old["is_outsider"]
+                and not old["flags"]):
             old.update(status="SUPERSEDED",state="superseded",
                        needs_you=False,superseded_by=row["id"],receipt=None,
                        updated_at=row["ts"])
