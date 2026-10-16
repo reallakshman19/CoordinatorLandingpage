@@ -2,8 +2,8 @@
     "project":  "imo-ab-test",
     "protocol":  "Team protocol v2.0 PROTOTYPE (protocol/TEAM_PROTOCOL.md)",
     "repository":  "reallakshman19/Grade9v3.5",
-    "updated":  "2026-10-16T12:01:00+04:00",
-    "updated_by":  "TeamCoordinator (FTC-034)",
+    "updated":  "2026-10-16T12:16:00+04:00",
+    "updated_by":  "TeamCoordinator",
     "control":  {
                     "epoch":  1,
                     "coordinator":  "TeamCoordinator: Claude (Owner, 15 Oct: \"you will be teamcoordinator, ownermember another agent\")",
@@ -162,6 +162,12 @@
                                      }
                                  ],
     "open_owner_decisions":  [
+                                 {
+                                     "link":  "https://github.com/reallakshman19/CoordinatorLandingpage/issues/14#issuecomment-6210953472",
+                                     "ask":  "Option A needs an Owner action (B #47): name the approved holder of the private original Q003 source with a complete local runtime, and permit the secure local runs (Core2 native, Core1A original-linked benchmark, browser, A4) that return source-safe receipts only; or keep recovery pending. No public upload",
+                                     "id":  "AB-Q003-PRIVATE-RUN",
+                                     "asked_at":  "2026-10-16T12:09:00+04:00"
+                                 },
                                  {
                                      "link":  "https://github.com/reallakshman19/CoordinatorLandingpage/issues/14#issuecomment-6210521197",
                                      "ask":  "Option A approved (delegated) 11:51; acceptance pending. Q003 academic/QRT acceptance after B closes the Core2, Core1A, browser and A4 evidence via the private exact-original path",
