@@ -725,7 +725,11 @@ def build_project_data(root: Path, project_name: str, registry: dict,
                               or a.get('chat_end_seen') is True),
             'handover': _wp10_link(a.get('handover'), {
                 owner_json.REPO, registry.get('repository')}),
+            # A numeric issue id is not a repository identity. Only the
+            # registry's own product repository can be linked as agent evidence.
             'evidence_thread_num': thread_num,
+            'evidence_thread_url': _wp10_link(thread_url, {
+                registry.get('repository')}),
             'branch': a.get('branch', ''),
             'started': a.get('started'),
             'evidence': evidence,
@@ -1355,6 +1359,7 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
                     'chat_end_risk': a['chat_end_risk'],
                     'handover': a['handover'],
                     'evidence_thread_num': a['evidence_thread_num'],
+                    'evidence_thread_url': a['evidence_thread_url'],
                 }
                 for a in pd['agents']
             ],

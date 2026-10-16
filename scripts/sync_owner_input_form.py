@@ -7,6 +7,10 @@ import re
 import sys
 
 SENTINEL = "all projects"
+HUB_REPO = "reallakshman19/CoordinatorLandingpage"
+# Historical benchmark projects remain selectable; newly registered product
+# repositories are read-only C10 views and are not hub Owner-input targets.
+LEGACY_BENCHMARK_FORM_PROJECTS = {"grade9-pilot", "imo-ab-test"}
 
 
 def registry_projects(root):
@@ -18,6 +22,12 @@ def registry_projects(root):
             raise ValueError("registry/project mismatch: " + name)
         if not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9._-]*", name):
             raise ValueError("invalid project name: " + name)
+        product = item.get("repository")
+        # Missing repository in older synthetic registries is retained; only
+        # explicit external product links are excluded from writable hub form.
+        if (product and product != HUB_REPO
+                and name not in LEGACY_BENCHMARK_FORM_PROJECTS):
+            continue
         projects.append(name)
     if not projects:
         raise ValueError("no registries found: refuse empty Project dropdown")

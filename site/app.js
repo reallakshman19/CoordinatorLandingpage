@@ -208,6 +208,13 @@ function renderAutoResponseTable(container, projects) {
       tr.appendChild(el('td','',String(p.project)));
       const whoCell = el('td','auto-response-who');
       whoCell.appendChild(el('span','',who));
+      if (response?.allowed === 'critical' &&
+          /not authorised|not authorized/i.test(response?.owner_words || '')) {
+        whoCell.firstElementChild.textContent = 'No automatic response — Owner required';
+      }
+      if (response?.allowed)
+        whoCell.appendChild(el('span','badge badge-grey auto-response-allowed',
+                               String(response.allowed)));
       if (current === 'EXPIRED') whoCell.appendChild(el('span','badge badge-red','EXPIRED'));
       tr.appendChild(whoCell);
       tr.appendChild(el('td','',String(response?.scope || 'Not recorded')));
@@ -451,8 +458,9 @@ function ownerStatusBadge(status) {
 
 function ownerJSONCommitURL(values, date = new Date(), randomBytes = null) {
   const project = String(values.project || '');
-  if (!state.projects.some(p => p.project === project) ||
-      !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(project)) throw new Error('Choose a listed project.');
+  if (!state.projects.some(p => p.project === project && (p.repository === REPO || p.is_benchmark === true || !!p.benchmark_snapshot)) ||
+      !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(project))
+    throw new Error('Choose a listed project (hub only; external projects are read-only).');
   const target = String(values.target || '').trim();
   const type = String(values.type || '').trim();
   const message = String(values.text || '').trim();
@@ -569,7 +577,7 @@ function renderDecisionAnswers(container, project, decision, visibleAsk, inputs)
 function setupJSONInputForm() {
   const form = $('oi-json-form'), projects = $('oi-json-project');
   if (!form || !projects) return;
-  for (const p of state.projects) {
+  for (const p of state.projects.filter(p => p.repository === REPO || p.is_benchmark === true || !!p.benchmark_snapshot)) {
     const opt = el('option', '', p.project);
     opt.value = p.project;
     projects.appendChild(opt);
@@ -826,6 +834,13 @@ async function renderProject(app, projectName) {
   const external = $('external-project-links');
   if (proj.repository !== REPO) {
     external.appendChild(el('h2', '', 'Owning repository links (read-only)'));
+    if (/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(proj.repository)) {
+      const owning = el('a', 'btn btn-small external-project-repo',
+        'Repository: ' + proj.repository + ' (read-only) →');
+      owning.href = 'https://github.com/' + proj.repository;
+      owning.target = '_blank'; owning.rel = 'noopener noreferrer';
+      external.appendChild(owning);
+    }
     const links = Array.isArray(proj.external_links) ? proj.external_links : [];
     if (!links.length) external.appendChild(el('p','note','No verified owning issue or PR links.'));
     for (const item of links) {
@@ -852,9 +867,12 @@ async function renderProject(app, projectName) {
       : '';
 
     const tnum = a.evidence_thread_num;
-    const threadLink = tnum
-      ? `<a href="https://github.com/${REPO}/issues/${tnum}" target="_blank" rel="noopener">#${tnum}</a>`
-      : '—';
+    const threadHref = allowedExternalLink(a.evidence_thread_url, proj.repository);
+    const threadLink = threadHref
+      ? `<a class="agent-evidence-thread" href="${escapeHtml(threadHref)}" target="_blank" rel="noopener noreferrer">#${tnum}</a>`
+      : (proj.repository === REPO && tnum
+        ? `<a class="agent-evidence-thread" href="https://github.com/${REPO}/issues/${tnum}" target="_blank" rel="noopener noreferrer">#${tnum}</a>`
+        : '—');
 
     tr.innerHTML = `
       <td>
@@ -978,8 +996,8 @@ async function renderProject(app, projectName) {
 
   // Post to team button
   const postBtn = $('post-btn');
-  if (state.benchmarkMode) {
-    postBtn.style.display = 'none';
+  if (state.benchmarkMode || (proj.repository !== REPO && !proj.is_benchmark && !proj.benchmark_snapshot)) {
+    postBtn.style.display = 'none'; // external projects are read-only
   } else {
     postBtn.href = postToTeamURL(projectName, 'INFO');
   }
@@ -1022,7 +1040,9 @@ async function renderAgent(app, projectName, id8) {
   }
 
   // Action buttons
-  if (state.benchmarkMode) {
+  if (state.benchmarkMode || (state.projects.find(p => p.project === projectName)?.repository !== REPO &&
+      !state.projects.find(p => p.project === projectName)?.is_benchmark &&
+      !state.projects.find(p => p.project === projectName)?.benchmark_snapshot)) {
     $('agent-action-buttons').style.display = 'none';
   } else {
     $('btn-ground').href = groundURL(id8, projectName);

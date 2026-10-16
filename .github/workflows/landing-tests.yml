@@ -121,6 +121,14 @@ jobs:
           set -o pipefail
           python -m unittest tests.test_wp10 -v 2>&1 | tee wp10-unit-head.log
 
+      - name: Verify WP11 real two-repo C10 source and collision isolation
+        id: wp11_unit
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m unittest tests.test_wp11 -v 2>&1 | tee wp11-unit-head.log
+
       - name: Assemble benchmark-backed browser artifact (no live API)
         id: artifact
         continue-on-error: true
@@ -245,6 +253,15 @@ jobs:
           set -o pipefail
           python tests/wp10_browser_test.py _artifact 2>&1 | tee wp10-browser-head.log
 
+      - name: Verify WP11 real external project cards in Chromium (read-only)
+        id: wp11_browser
+        if: steps.artifact.outcome == 'success' && steps.chromium.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python tests/wp11_browser_test.py _artifact 2>&1 | tee wp11-browser-head.log
+
       - name: Upload qualification output
         if: always()
         uses: actions/upload-artifact@v4
@@ -274,6 +291,8 @@ jobs:
             wp8c-browser-head.log
             wp10-unit-head.log
             wp10-browser-head.log
+            wp11-unit-head.log
+            wp11-browser-head.log
           if-no-files-found: ignore
 
       - name: Prove injected failure rejected and enforce all HEAD gates
@@ -325,7 +344,9 @@ jobs:
           require_success "WP8c-XSS-project-id8-fence-and-backup-UX" "${{ steps.wp8c_browser.outcome }}"
           require_success "WP10-registry-authority-safety" "${{ steps.wp10_unit.outcome }}"
           require_success "WP10-browser-UX-and-commit-message" "${{ steps.wp10_browser.outcome }}"
-          echo "FINAL GATE: 25/25 actual head outcomes success"
+          require_success "WP11-real-two-repo-C10-and-collision-isolation" "${{ steps.wp11_unit.outcome }}"
+          require_success "WP11-real-two-repo-readonly-Chromium" "${{ steps.wp11_browser.outcome }}"
+          echo "FINAL GATE: 27/27 actual head outcomes success"
 
   red-control:
     name: red-control · require seven behavioural FAIL and zero ERROR
@@ -1597,6 +1618,68 @@ jobs:
         with:
           name: wp10-base-browser-red
           path: wp10-browser-red.log
+          if-no-files-found: error
+
+  wp11-real-two-repo-red-control:
+    name: WP11 real source/form links fail on pinned main · 3 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout HEAD tests and real registries
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only pinned WP11 base data builder
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=bc8f904873ab62f6d19bf9ef30d7b7653376065c
+          git cat-file -e "${BASE}^{commit}"
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+          git show "${BASE}:scripts/sync_owner_input_form.py" > scripts/sync_owner_input_form.py
+      - name: Demand three real link/form failures and no runner errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp11.WP11ActualRegistry -v > wp11-base-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp11-base-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path("wp11-base-red.log").read_text()
+          matches=re.findall(
+              r'^(test_wp11_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',
+              log,re.M)
+          failures={name for name,state in matches if state=="FAIL"}
+          errors={name for name,state in matches if state=="ERROR"}
+          expected={
+              "test_wp11_cii_real_registry_has_own_evidence_links",
+              "test_wp11_xml_real_registry_has_own_evidence_links",
+              "test_wp11_external_registries_are_not_writable_issue_form_options",
+          }
+          good=(int(os.environ["RC"])!=0 and failures==expected and not errors
+                and re.search(r"^Ran 5 tests in ",log,re.M)
+                and "FAILED (failures=3)" in log)
+          print("WP11 RED:",len(failures),"behavioural FAIL;",
+                len(errors),"ERROR;","PASS" if good else "INVALID")
+          if not good: sys.exit(1)
+          PY
+      - name: Upload WP11 old-source RED proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp11-pinned-main-red
+          path: wp11-base-red.log
           if-no-files-found: error
 
   wp10-unit-red-control:
