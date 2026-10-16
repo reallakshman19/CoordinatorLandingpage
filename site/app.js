@@ -396,6 +396,24 @@ function wp13ReadOnly(container, view, agentId = null) {
   flagBox.appendChild(el('strong','','Flags: '));
   flagBox.appendChild(el('span','',flags.length ? flags.join(' · ') : 'none'));
   container.appendChild(flagBox);
+  // EVALUATED is actual only when present in moves.jsonl, never a proposed row.
+  const evalPanel = el('div','wp15-evaluator-panel');
+  evalPanel.appendChild(el('h3','', 'Evaluator cross-check · read-only'));
+  evalPanel.appendChild(el('p','wp15-last-evaluated',
+    'Last recorded EVALUATED: ' + String(view.evaluator_at || 'none recorded')));
+  evalPanel.appendChild(el('p','wp15-evaluator-stale',
+    'Evaluator stale: ' + ((view.flags || []).includes('evaluator stale') ? 'yes' : 'no')));
+  evalPanel.appendChild(el('p','wp15-not-acted',
+    'Detected, not acted on: ' + ((view.flags || []).includes('detected, not acted on') ? 'yes' : 'no')));
+  const cross = view.evaluator_cross_check || {status:'not_recorded',mismatches:[]};
+  evalPanel.appendChild(el('p','wp15-cross-check',
+    'Evaluator output: ' + String(cross.status || 'not_recorded') +
+    ' · observed: ' + String(cross.observed_at || 'none') +
+    ' · mismatches: ' + (Array.isArray(cross.mismatches) && cross.mismatches.length ?
+      cross.mismatches.join(', ') : 'none or unavailable')));
+  evalPanel.appendChild(el('p','note',
+    'EVALUATED proposal is not a recorded heartbeat; only a committed moves.jsonl row counts.'));
+  container.appendChild(evalPanel);
   if (!agentId) {
     const bad = Array.isArray(view.rejected) ? view.rejected : [];
     const rejected = el('div','wp13-rejected');
