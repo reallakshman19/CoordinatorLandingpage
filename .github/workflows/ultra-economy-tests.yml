@@ -1,12 +1,18 @@
-name: UltraEconomyMode draft qualification
+name: UltraEconomyMode draft and WP16 STATUS BAR qualification
 
 on:
   pull_request:
     paths:
       - "scripts/ultra_economy.py"
       - "scripts/build_data.py"
+      - "scripts/status_bar.py"
       - "site/app.js"
+      - "site/index.html"
+      - "site/style.css"
       - "tests/test_ultra_economy.py"
+      - "tests/test_wp16.py"
+      - "tests/wp16_browser_test.py"
+      - "tests/wp16_red_verify.py"
       - ".github/workflows/ultra-economy-tests.yml"
   workflow_dispatch:
 
@@ -14,21 +20,117 @@ permissions:
   contents: read
 
 jobs:
-  uem-tests:
+  wp16-head:
+    name: WP16 HEAD UEM and inherited source plus OT/TC Chromium
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-      - name: Check existing app JavaScript syntax
-        run: node --check site/app.js
-      - name: Compile UEM and existing builder
-        run: python -m py_compile scripts/ultra_economy.py scripts/build_data.py
-      - name: Run UEM positive and negative controls
-        run: python -m unittest tests.test_ultra_economy -v
-      - name: Check existing builder suite
-        run: python -m unittest tests.test_wp13 tests.test_wp15 -v
+          python-version: '3.11'
+      - name: Validate app syntax and publisher modules
+        run: |
+          node --check site/app.js
+          python -m py_compile scripts/status_bar.py scripts/build_data.py scripts/ultra_economy.py
+      - name: Require all UEM and inherited Next Move + WP16 Python tests
+        run: |
+          set -o pipefail
+          python -m unittest tests.test_ultra_economy tests.test_wp13 tests.test_wp15 tests.test_wp16 -v 2>&1 | tee wp16-head-python.log
+      - name: Install Playwright + Chromium
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Require exact seven OT and TC WP16 browser behaviors
+        run: |
+          set -o pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python tests/wp16_browser_test.py _artifact 2>&1 | tee wp16-head-browser.log
+      - name: Upload HEAD results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp16-qualified-head
+          path: |
+            wp16-head-python.log
+            wp16-head-browser.log
+          if-no-files-found: warn
+
+  wp16-pinned-source-red:
+    name: WP16 PR50 pinned publisher 2 expected FAIL zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore PR50 publisher only
+        run: |
+          set -euo pipefail
+          git show 199d47e417067e8b05c1564cf5d4106cab243edb:scripts/build_data.py > scripts/build_data.py
+      - name: Exact 2 behavioral failures zero execution errors
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp16.WP16PinnedBase -v > wp16-source-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp16-source-red.log
+          python tests/wp16_red_verify.py source wp16-source-red.log "$rc"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wp16-pr50-source-red
+          path: wp16-source-red.log
+          if-no-files-found: error
+
+  wp16-pinned-browser-red:
+    name: WP16 PR50 pinned UI 7 expected FAIL zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore PR50 app and HTML only
+        run: |
+          set -euo pipefail
+          BASE=199d47e417067e8b05c1564cf5d4106cab243edb
+          git show "$BASE:site/app.js" > site/app.js
+          git show "$BASE:site/index.html" > site/index.html
+      - name: Install Playwright + Chromium
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Demand exact seven missing UI behaviors
+        run: |
+          set -uo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          set +e
+          python tests/wp16_browser_test.py _artifact > wp16-browser-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp16-browser-red.log
+          python tests/wp16_red_verify.py browser wp16-browser-red.log "$rc"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wp16-pr50-browser-red
+          path: wp16-browser-red.log
+          if-no-files-found: error

@@ -24,6 +24,7 @@ import sys
 import owner_json
 from next_move import load_project_moves
 from ultra_economy import project as project_ultra_economy
+from status_bar import build_status_bar
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -1498,6 +1499,16 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             }
         )
 
+    # WP16 covers the entire selected registry roster, not just the older
+    # dashboard's top-level agent projection. Both OT/TC views use this one file.
+    status_bar = build_status_bar(
+        {pd['project']: pd['registry'] for pd in all_projects},
+        {pd['project']: pd for pd in all_projects},
+        now=datetime.now(timezone.utc))
+    if not status_bar['coverage']['complete']:
+        raise ValueError('WP16 selected registry roster coverage incomplete')
+    save_json(out_dir / 'status-bar.json', status_bar)
+    status_by_project = {p['project']: p for p in status_bar['projects']}
     # Save projects summary
     summary = []
     for pd in all_projects:
@@ -1522,6 +1533,7 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             'child_progress': pd['child_progress'],
             'evidence_head_status': pd['evidence_head_status'],
             'next_move': pd['next_move'],
+            'status_bar': status_by_project[pd['project']],
             'control': pd['registry']['control'],
             'workflow': pd['registry']['workflow'],
             'agents': [
