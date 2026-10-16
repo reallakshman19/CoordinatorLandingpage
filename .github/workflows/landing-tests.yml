@@ -1444,6 +1444,137 @@ jobs:
           path: wp8b-browser-red.log
           if-no-files-found: error
 
+  wp8c-unit-red-control:
+    name: WP8c base replacement semantics red · 2 FAIL, 0 ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact head WP8c tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only owner JSON projection from exact pre-WP8c main
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=129d70471476e47f2ee55fe261eb760d9579a0a4
+          git cat-file -e "${BASE}^{commit}"
+          git show "${BASE}:scripts/owner_json.py" > scripts/owner_json.py
+          echo "WP8c RED base=${BASE}, HEAD test assertions retained"
+      - name: Demand two replacement assertion failures, zero runner errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp7.WP8cInputSafety -v > wp8c-unit-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp8c-unit-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          s=Path("wp8c-unit-red.log").read_text()
+          found=re.findall(r'^(test_wp8c_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)    name: WP9 previous WP8b decision buttons behavioural red · 13 FAIL zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact WP9 PR HEAD tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only original merged WP8b JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=e23d7cc7d25d43c6df48f7bd4d34f6e9904d1cfc
+          git show "${BASE}:site/app.js" > site/app.js
+          echo "WP9 RED: restored old UI code from $BASE, keeping all HEAD tests"
+      - name: Build isolated browser artifact (no GitHub API write)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          python scripts/build_data.py --root . --out _artifact/data/benchmarks \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Demand thirteen wrong old-page behaviours and zero API or browser errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp9_browser_test.py _artifact > wp9-browser-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp9-browser-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path('wp9-browser-red.log').read_text()
+          names=set(re.findall(r'^FAIL (WP9_UI_(?:0[1-9]|1[0-3])_\w+)$',log,re.M))
+          m=re.search(r'^WP9_BROWSER_COUNTS pass=(\d+) fail=(\d+) error=(\d+)$',log,re.M)
+          ok=(int(os.environ['RC'])!=0 and len(names)==13 and m
+              and m.groups()==('0','13','0')
+              and 'Traceback (most recent call last)' not in log)
+          print('WP9 BROWSER RED: behavioural FAIL count',len(names))
+          print('WP9 BROWSER RED: runner ERROR count',m.group(3) if m else 'MISSING')
+          print('WP9 BROWSER RED VERDICT', 'EXPECTED BEHAVIOURAL RED' if ok else 'INVALID RED')
+          if not ok:sys.exit(1)
+          PY
+      - name: Upload WP9 old UI negative-control log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp9-base-browser-red
+          path: wp9-browser-red.log
+          if-no-files-found: error
+,s,re.M)
+          failures={name for name,kind in found if kind=="FAIL"}
+          errors={name for name,kind in found if kind=="ERROR"}
+          expected={
+            "test_wp8c_self_replacement_is_invalid_not_open",
+            "test_wp8c_unknown_replacement_is_invalid_not_open",
+          }
+          good=(int(os.environ["RC"])!=0 and failures==expected and not errors
+                and re.search(r"^Ran 5 tests in ",s,re.M)
+                and re.search(r"^FAILED \(failures=2\)$",s,re.M)
+                and not re.search(r"^ERROR:",s,re.M))
+          print("WP8C BASE RED:",len(failures),"assertion FAIL;",
+                len(errors),"ERROR;","EXPECTED" if good else "INVALID")
+          if not good:sys.exit(1)
+          PY
+      - name: Upload pinned base red proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp8c-main-base-red
+          path: wp8c-unit-red.log
+          if-no-files-found: error
+
   wp9-browser-red-control:
     name: WP9 previous WP8b decision buttons behavioural red · 13 FAIL zero ERROR
     runs-on: ubuntu-latest
