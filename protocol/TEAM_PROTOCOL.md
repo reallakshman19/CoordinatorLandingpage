@@ -205,3 +205,10 @@ A new TeamCoordinator (any capable agent with GitHub comment access and control 
 
 Decided 15 Oct ~07:25: no standing approval for agent replacement (Owner decides each case); timeouts approved; stand-in during an outage approved.
 Open: **freeze v2.3** (one word: "freeze"). **Watchdog workflow** (§1): a scheduled GitHub Actions job, every 15 min, reads the status comment's "Cycle completed" time and, if older than 45 min, opens/updates an alert issue mentioning the Owner. It runs on GitHub, not on the home computer, so it still alerts when the computer or both sessions are down. Free on a public repository, no AI; blind during a GitHub outage.
+
+## 20. Next Move v1 (pilot, landing-live only)
+
+Change note, 16 Oct 2026 ~19:3x. Owner: "review cycle is over. start planning and implement. any difference, now you dictate (if genuine else adopt)".
+- **Next Move v1** is the auditable record of who should do what next, on what basis and with whose approval. It is specified in `protocol/NEXT_MOVE_v1.md` and reviewed by Codex.
+- It applies **only** where a registry has `next_move.pilot: true`, currently `landing-live`. Everywhere else this protocol is unchanged.
+- Registry `criticality` (`critical | normal`) is set only by the Owner's words. An unset value counts as critical.
