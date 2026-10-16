@@ -380,6 +380,27 @@ function wp13ReadOnly(container, view, agentId = null) {
   const counter = own?.task_cycle || view.task_cycle;
   container.appendChild(el('p','wp13-task-cycle',
     counter?.label || 'task cycle unknown — no GO recorded'));
+  // UEM: show agent-declared plans and source-linked Next Move states only.
+  const uem = view.ultra_economy;
+  if (uem?.enabled) {
+    const pane = el('div','wp13-uem');
+    pane.appendChild(el('h3','','UltraEconomyMode · read-only'));
+    pane.appendChild(el('p','note','Cycle limit: '+String(uem.max_cycles)+' · no chat/timer dispatch by this page'));
+    const rows = Object.entries(uem.agents || {}).filter(([id])=>!agentId || id===agentId);
+    for (const [id,task] of rows) {
+      const item = el('div','wp13-uem-task');
+      item.appendChild(el('strong','',id+' · '+String(task.task || 'no start')+' · '+String(task.state)));
+      if (task.planned_outcome) item.appendChild(el('p','','Planned: '+task.planned_outcome));
+      if (task.expected_next) item.appendChild(el('p','','Expected next: '+task.expected_next));
+      if (task.known_blocker) item.appendChild(el('p','','Known blocker: '+task.known_blocker));
+      if (task.move_id) item.appendChild(el('p','','Matched Next Move: '+task.move_id+' ('+task.move_state+')'));
+      if (task.followup?.next_due_at) item.appendChild(el('p','','Follow-up due: '+task.followup.next_due_at));
+      item.appendChild(el('p','note',task.may_proceed ? 'Delivered move recorded; agent must recheck authority before action.' : 'No autonomous action authorized.'));
+      pane.appendChild(item);
+    }
+    if (!rows.length) pane.appendChild(el('p','note','No registered agent evidence yet.'));
+    container.appendChild(pane);
+  }
   const names = ['active','queue'];
   for (const name of names) {
     const section = el('div','wp13-move-group');
