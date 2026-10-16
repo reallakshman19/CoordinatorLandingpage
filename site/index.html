@@ -29,6 +29,7 @@
     <button class="nav-tab active" data-view="home" role="tab">Home</button>
     <button class="nav-tab" data-view="timeline" role="tab">Timeline</button>
     <button class="nav-tab" data-view="next-moves" role="tab">Next Move board</button>
+    <button class="nav-tab" data-view="status-bar" role="tab">Status bar</button>
     <button class="nav-tab" data-view="owner-inputs" role="tab">Owner inputs</button>
     <button class="nav-tab" data-view="protocol" role="tab">Protocol</button>
     <button class="nav-tab" data-view="benchmarks" role="tab">Benchmarks</button>
@@ -227,6 +228,34 @@
       </div>
     </div>
   </div>
+</template>
+
+<template id="tpl-status-bar">
+  <section id="view-status-bar">
+    <h1>Status bar · source-backed roster</h1>
+    <p class="note">Light is independent of COMPLETE. Green requires fresh observed activity, fresh recorded evaluation, execution grant and full selected-roster coverage. Red means blocked; grey denotes project HOLD. This is read-only, not a writer grant.</p>
+    <p id="wp16-coverage" role="status">Checking selected roster…</p>
+    <label for="wp16-mode">Perspective</label>
+    <select id="wp16-mode" aria-label="Status bar perspective">
+      <option value="ot">OT · projects</option>
+      <option value="tc">TC · agent instances</option>
+    </select>
+    <div id="wp16-ot" class="card">
+      <h2>OT · one row per registered project</h2>
+      <div class="table-wrap"><table id="wp16-ot-table">
+        <thead><tr><th>Project</th><th>Light</th><th>Complete</th><th>Roster</th><th>Active</th><th>Dependencies</th><th>Reason</th></tr></thead>
+        <tbody id="wp16-ot-rows"></tbody>
+      </table></div>
+    </div>
+    <div id="wp16-tc" class="card" hidden>
+      <h2>TC · one row per registered agent instance, including retired and standby</h2>
+      <p class="note">Chat links contain only the public 8-character id; they are references, not proof that a private chat is reachable.</p>
+      <div class="table-wrap"><table id="wp16-tc-table">
+        <thead><tr><th>Project</th><th>Workstream</th><th>Instance</th><th>Chat id8</th><th>Gen</th><th>Light</th><th>Complete</th><th>Work</th><th>Monitoring · last/next</th><th>Execution authority / cycle</th><th>Conflicts</th></tr></thead>
+        <tbody id="wp16-tc-rows"></tbody>
+      </table></div>
+    </div>
+  </section>
 </template>
 
 <template id="tpl-next-moves">

@@ -36,6 +36,7 @@ const state = {
   ownerInputsLoaded: false,
   buildInfo: null,
   buildSignature: null,
+  statusBar: null,
   pollInFlight: false,
   decisionDraft: null, // uncommitted form prefill, NEVER a recorded Owner answer
 };
@@ -147,6 +148,7 @@ async function pollBuildInfo(initial = false) {
       state.projects = [];
       state.timelines = {};
       state.evidenceCache = {};
+    state.statusBar = null;
       state.ownerInputs = null;
       state.ownerInputsLoaded = false;
       await render(); // keep the current route, only refresh changed version
@@ -380,6 +382,27 @@ function wp13ReadOnly(container, view, agentId = null) {
   const counter = own?.task_cycle || view.task_cycle;
   container.appendChild(el('p','wp13-task-cycle',
     counter?.label || 'task cycle unknown — no GO recorded'));
+  // UEM: show agent-declared plans and source-linked Next Move states only.
+  const uem = view.ultra_economy;
+  if (uem?.enabled) {
+    const pane = el('div','wp13-uem');
+    pane.appendChild(el('h3','','UltraEconomyMode · read-only'));
+    pane.appendChild(el('p','note','Cycle limit: '+String(uem.max_cycles)+' · no chat/timer dispatch by this page'));
+    const rows = Object.entries(uem.agents || {}).filter(([id])=>!agentId || id===agentId);
+    for (const [id,task] of rows) {
+      const item = el('div','wp13-uem-task');
+      item.appendChild(el('strong','',id+' · '+String(task.task || 'no start')+' · '+String(task.state)));
+      if (task.planned_outcome) item.appendChild(el('p','','Planned: '+task.planned_outcome));
+      if (task.expected_next) item.appendChild(el('p','','Expected next: '+task.expected_next));
+      if (task.known_blocker) item.appendChild(el('p','','Known blocker: '+task.known_blocker));
+      if (task.move_id) item.appendChild(el('p','','Matched Next Move: '+task.move_id+' ('+task.move_state+')'));
+      if (task.followup?.next_due_at) item.appendChild(el('p','','Follow-up due: '+task.followup.next_due_at));
+      item.appendChild(el('p','note',task.may_proceed ? 'Delivered move recorded; agent must recheck authority before action.' : 'No autonomous action authorized.'));
+      pane.appendChild(item);
+    }
+    if (!rows.length) pane.appendChild(el('p','note','No registered agent evidence yet.'));
+    container.appendChild(pane);
+  }
   const names = ['active','queue'];
   for (const name of names) {
     const section = el('div','wp13-move-group');
@@ -480,12 +503,25 @@ function wp14MoveDraft(project, values, date = new Date(), bytes = null) {
   const kind=String(values.kind || '');
   if (!WP14_DISPATCH_KINDS.includes(kind)) throw new Error('Invalid dispatch kind.');
   const from=String(values.from || '').trim(),to=String(values.to || '').trim();
-  const text=String(values.text || '').trim(),trigger=String(values.trigger || '').trim();
+  const text=String(values.text || '').trim(),triggerInput=String(values.trigger || '').trim();
+  let trigger=triggerInput;
+  if (triggerInput.startsWith('{')) {
+    try {
+      const parsed=JSON.parse(triggerInput);
+      if (parsed?.type!=='uem_end' || !/^[A-Za-z0-9_.-]{1,80}$/.test(parsed.task) ||
+          !Number.isInteger(parsed.cycle) || parsed.cycle<1 || parsed.cycle>5 ||
+          !Number.isInteger(parsed.end_comment_id) || parsed.end_comment_id<1 ||
+          Object.keys(parsed).sort().join(',')!=='cycle,end_comment_id,task,type')
+        throw new Error('Invalid UEM trigger object');
+      trigger=parsed;
+    } catch { throw new Error('Invalid UEM JSON trigger. Select current evidence again.'); }
+  }
   const head=String(values.head || '').trim(),source=String(values.evidence || '').trim();
   const supersedes=String(values.supersedes || '').trim();
   if (!/^[0-9a-f]{8}$/.test(from) || !/^[0-9a-f]{8}$/.test(to) ||
       !/^[0-9a-f]{40}$/i.test(head) || !/^https:\/\/github\.com\/reallakshman19\/CoordinatorLandingpage\/issues\/\d+$/.test(source) ||
-      !text || text.length>600 || !trigger || trigger.length>100 ||
+      !text || text.length>600 || !triggerInput || triggerInput.length>240 ||
+      (typeof trigger==='string' && trigger.length>100) ||
       supersedes && !/^NM-\d{8}-\d{6}-[0-9a-f]{4}$/.test(supersedes)) {
     throw new Error('Supply valid id8s, source issue, assessed 40-hex head, trigger and task.');
   }
@@ -547,6 +583,45 @@ function wp14Controls(container, project) {
     if (name==='text')field.maxLength=600;
     wrapper.appendChild(field);form.appendChild(wrapper);values[name]=field;
   }
+  // The agent already supplied context at TASK START and END. Populate only a
+  // reviewable draft; no approval, GitHub write, or chat dispatch occurs here.
+  const uemRows=Object.entries(project.next_move.ultra_economy?.agents || {})
+    .filter(([id,task])=>Number.isInteger(task?.end_comment_id) &&
+      task?.task && Number.isInteger(task?.cycle) && task?.state!=='NOT_ACTIVE');
+  if (project.next_move.ultra_economy?.enabled && uemRows.length) {
+    const apply=el('button','btn btn-small wp14-uem-prefill','Use latest UEM task evidence');
+    apply.type='button';
+    apply.addEventListener('click',()=>{
+      const [id,task]=uemRows.slice().sort((a,b)=>
+        String(b[1].ended_at || '').localeCompare(String(a[1].ended_at || '')))[0];
+      const agent=(project.agents||[]).find(a=>a.chat_id8===id);
+      if (!agent || !/^https:\/\/github\.com\/reallakshman19\/CoordinatorLandingpage\/issues\/\d+$/.test(agent.evidence_thread_url || '')) {
+        result.textContent='Current registered evidence issue not available; cannot prefill.';
+        return;
+      }
+      values.to.value=id;
+      values.evidence.value=agent.evidence_thread_url;
+      const assessed=agent.evidence_head_status?.current_head || '';
+      values.head.value=/^[0-9a-f]{40}$/i.test(assessed) ? assessed : '';
+      const trigger={type:'uem_end',task:task.task,cycle:task.cycle,
+        end_comment_id:task.end_comment_id};
+      values.trigger.value=JSON.stringify(trigger);
+      const blocked=/BLOCKED|FAILED/i.test(task.claim_status || '') ||
+        /\bHOLD\b/i.test(task.not_done || '');
+      values.kind.value=blocked?'status_check':'next_step';
+      values.text.value=(
+        'Task '+task.task+' ('+String(task.claim_status || 'UNKNOWN')+
+        '). Expected: '+String(task.expected_next || 'UNKNOWN')+
+        '. Agent next: '+String(task.next_claim || 'UNKNOWN')+
+        '. Blocker: '+String(task.known_blocker || 'UNKNOWN')+
+        '. Remaining: '+String(task.not_done || 'UNKNOWN')
+      ).slice(0,600);
+      result.textContent=values.head.value
+        ? 'Review every prefilled claim, blocker, head and authority before opening a draft.'
+        : 'Current PR HEAD unavailable: verify and enter it before composing.';
+    });
+    form.appendChild(apply);
+  }
   const submit=el('button','btn btn-small wp14-compose-submit','Open proposed move on GitHub');
   submit.type='submit';form.appendChild(submit);
   const result=el('p','note wp14-compose-result');result.setAttribute('role','status');
@@ -590,6 +665,75 @@ function wp14Controls(container, project) {
   }
   container.appendChild(el('p','note',
     'Role labels are requests, not identity proof. Critical projects are outside this pilot. The validator checks Owner/OTM tier and refuses unverified approvals.'));
+}
+
+
+function wp16Light(value) {
+  const name=['green','yellow','red','grey'].includes(value)?value:'yellow';
+  return el('span','wp16-light wp16-'+name,name.toUpperCase());
+}
+function wp16Row(body,cells,key) {
+  const tr=el('tr','wp16-row');
+  if(key)tr.dataset.instanceKey=key;
+  for(const value of cells){
+    const td=el('td','');
+    if(value && typeof value==='object' && value.nodeType)td.appendChild(value);
+    else td.textContent=String(value??'');
+    tr.appendChild(td);
+  }
+  body.appendChild(tr);
+}
+async function renderStatusBar(app){
+  app.replaceChildren(cloneTemplate('tpl-status-bar'));
+  const source=await fetchJSON(
+    (state.benchmarkMode?BM_DATA_BASE:DATA_BASE)+'status-bar.json',{cache:'no-store'});
+  state.statusBar=source;
+  const cover=$('wp16-coverage');
+  if(!source || source.schema!=='status_bar.v1' ||
+     !Array.isArray(source.projects) || !Array.isArray(source.instances)){
+    cover.textContent='UNKNOWN · status-bar projection unavailable; no green status.';
+    return;
+  }
+  const c=source.coverage||{};
+  const full=c.complete===true && c.expected===source.instances.length &&
+             c.projected===source.instances.length;
+  cover.textContent='Selected-roster coverage: '+String(c.projected??'?')+
+    '/'+String(c.expected??'?')+' · '+String(c.percent??'?')+'% · '+
+    (full?'FULL':'INCOMPLETE / UNKNOWN');
+  if(!full)cover.classList.add('wp16-coverage-incomplete');
+  for(const p of source.projects){
+    const cv=p.selected_roster_coverage||{};
+    wp16Row($('wp16-ot-rows'),[
+      p.project,wp16Light(full?p.light:'yellow'),
+      p.complete?'COMPLETE (separate)':'—',
+      String(cv.projected??0)+'/'+String(cv.expected??'?'),
+      p.active_count??0,
+      (p.dependencies?.blocked||[]).concat(p.dependencies?.unknown||[]).join(', ')||'none verified',
+      p.reason||'unknown']);
+  }
+  for(const r of source.instances){
+    let link=el('span','note','no registered id8');
+    if(/^[0-9a-f]{8}$/.test(String(r.instance_id8||'')) &&
+       r.chat_link==='https://chatgpt.com/c/'+r.instance_id8){
+      link=el('a','wp16-chat-id8',r.instance_id8);
+      link.href=r.chat_link;link.target='_blank';link.rel='noopener noreferrer';
+      link.title='id8-only chat reference; full private chat ID is not stored';
+    }
+    const mon=r.dimensions?.monitoring||{},auth=r.dimensions?.execution_authority||{};
+    wp16Row($('wp16-tc-rows'),[
+      r.project,r.workstream,String(r.kind)+' · '+String(r.alias||r.role),
+      link,r.generation==null?'unknown':'g'+r.generation,
+      wp16Light(full?r.light:'yellow'),r.complete?'COMPLETE':'—',
+      (r.retired?'RETIRED · ':'')+String(r.dimensions?.work?.state||'unknown'),
+      String(mon.state||'unknown')+' · last '+String(mon.last_evaluation||'not recorded')+
+        ' · next '+String(mon.next_due||'unknown'),
+      String(auth.state||'unknown')+' · '+String(auth.reason||'unknown'),
+      (r.conflicts||[]).join('; ')||'none'
+    ],r.key);
+  }
+  const selector=$('wp16-mode'),ot=$('wp16-ot'),tc=$('wp16-tc');
+  const toggle=()=>{ot.hidden=selector.value!=='ot';tc.hidden=selector.value!=='tc';};
+  selector.addEventListener('change',toggle);toggle();
 }
 
 // ── URL helpers ────────────────────────────────────────────
@@ -1013,6 +1157,7 @@ async function render() {
     case 'agent': await renderAgent(app, arg1, arg2); break;
     case 'timeline': await renderTimeline(app, arg1); break;
     case 'next-moves': await renderNextMoves(app); break;
+    case 'status-bar': await renderStatusBar(app); break;
     case 'decision': await renderDecision(app, arg1, arg2); break;
     case 'owner-inputs': await renderOwnerInputs(app); break;
     case 'trace': await renderTrace(app, arg1); break;
@@ -2030,6 +2175,7 @@ async function renderBenchmarks(app) {
       state.projects = [];
       state.timelines = {};
       state.evidenceCache = {};
+    state.statusBar = null;
       state.ownerInputs = null;
       state.ownerInputsLoaded = false;
 
@@ -2060,6 +2206,7 @@ function init() {
     state.projects = [];
     state.timelines = {};
     state.evidenceCache = {};
+    state.statusBar = null;
     state.ownerInputs = null;
     state.ownerInputsLoaded = false;
     $('benchmark-banner').classList.remove('visible');
