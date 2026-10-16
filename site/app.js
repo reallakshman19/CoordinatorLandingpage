@@ -507,7 +507,7 @@ function wp14Controls(container, project) {
     'GitHub opens a prefilled Owner-input JSON file. Review and commit there. This is not a published move or approval, and nothing is sent to an agent.'));
   const form=el('form','wp14-compose-form');
   const fields=[
-    ['kind','Kind','select',WP14_DISPATCH_KIN],
+    ['kind','Kind','select',WP14_DISPATCH_KINDS],
     ['from','Coordinator chat id8','input'],
     ['to','Recipient chat id8','input'],
     ['head','Assessed commit SHA (40 hex)','input'],
