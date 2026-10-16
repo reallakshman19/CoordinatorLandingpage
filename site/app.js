@@ -157,6 +157,58 @@ async function pollBuildInfo(initial = false) {
   }
 }
 
+
+// WP10: report registry scopes but do not create delegated authority.
+function decisionProvenance(item) {
+  const text = typeof item === 'string' ? item : String(item?.text || '');
+  if (text.toLowerCase().includes('(delegated)')) return 'delegated (OwnerTeammember)';
+  if ((item && typeof item === 'object' && typeof item.owner_words === 'string' &&
+       item.owner_words.trim()) || /Owner(?:'s)? words:\s*["“]/i.test(text)) return 'Owner';
+  return 'unverified';
+}
+function allowedExternalLink(url, repository) {
+  if (typeof url !== 'string' || typeof repository !== 'string' ||
+      !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repository)) return null;
+  return /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/(issues|pull)\/\d+$/.test(url) &&
+    url.startsWith('https://github.com/' + repository + '/') ? url : null;
+}
+function autoResponseStatus(entry) {
+  if (!entry || !['yes','no','critical'].includes(entry.allowed)) return 'UNKNOWN';
+  if (typeof entry.until !== 'string' ||
+      !Number.isFinite(new Date(entry.until).getTime())) return 'UNKNOWN';
+  if (new Date(entry.until).getTime() <= Date.now()) return 'EXPIRED';
+  return entry.allowed === 'no' ? 'NOT_ALLOWED' : 'IN_SCOPE';
+}
+function renderAutoResponseTable(container, projects) {
+  const wrap = el('div','table-wrap'), table = el('table','auto-response-table');
+  const head = el('thead'), headings = el('tr');
+  for (const caption of ['Project','Who may answer routine questions','Scope','Until',
+                         'Critical tier rules']) headings.appendChild(el('th','',caption));
+  head.appendChild(headings); table.appendChild(head);
+  const body = el('tbody');
+  for (const p of projects) {
+    const tr = el('tr'), response = p.auto_response;
+    const current = autoResponseStatus(response);
+    const rules = response?.critical_rules ||
+      'Critical requests require an Owner decision. No delegation recorded.';
+    const who = current === 'EXPIRED' ? 'EXPIRED — no current delegation' :
+      current !== 'IN_SCOPE' ? 'No confirmed routine delegation' :
+      response.allowed === 'critical'
+        ? 'Delegated team — routine only; critical to Owner'
+        : 'Delegated team — within recorded scope';
+    tr.appendChild(el('td','',String(p.project)));
+    const whoCell = el('td','auto-response-who');
+    whoCell.appendChild(el('span','',who));
+    if (current === 'EXPIRED') whoCell.appendChild(el('span','badge badge-red','EXPIRED'));
+    tr.appendChild(whoCell);
+    tr.appendChild(el('td','',String(response?.scope || 'Not recorded')));
+    tr.appendChild(el('td','',String(response?.until || 'Not recorded')));
+    tr.appendChild(el('td','',String(rules)));
+    body.appendChild(tr);
+  }
+  table.appendChild(body); wrap.appendChild(table); container.appendChild(wrap);
+}
+
 // ── URL helpers ────────────────────────────────────────────
 function ownerInputURL(opts = {}) {
   const params = new URLSearchParams({
@@ -272,6 +324,8 @@ function agentStateBadge(status) {
     stopped: ['🔴', 'badge-red', 'stopped'],
     error: ['🔴', 'badge-red', 'error'],
     waiting: ['🟡', 'badge-yellow', 'waiting'],
+    standby: ['⚪', 'badge-grey', 'standby'],
+    hold: ['🟣', 'badge-purple', 'hold'],
   };
   const [icon, cls, text] = map[status] || ['', 'badge-grey', status];
   const b = el('span', `badge ${cls}`);
@@ -404,8 +458,10 @@ function ownerJSONCommitURL(values, date = new Date(), randomBytes = null) {
   const record = {id, project, target, type, text: message,
                   replaces: replaces || null, created_at: date.toISOString()};
   const path = 'logs/' + project + '/inputs/' + id + '.json';
+  const commitMessage = 'Owner input ' + id + ' via landing page';
   const url = 'https://github.com/' + REPO + '/new/main?filename=' +
-    encodeURIComponent(path) + '&value=' + encodeURIComponent(JSON.stringify(record, null, 2));
+    encodeURIComponent(path) + '&value=' + encodeURIComponent(JSON.stringify(record, null, 2)) +
+    '&message=' + encodeURIComponent(commitMessage);
   if (url.length >= 7000) throw new Error('Request too long. Shorten the message.');
   return {url, record, path};
 }
@@ -458,7 +514,9 @@ function renderDecisionAnswers(container, project, decision, visibleAsk, inputs)
     wrapper.appendChild(el('div', 'decision-answer-state', recorded));
   }
   for (const choice of ['Accept', 'Hold', 'Other…']) {
-    const button = el('button', 'btn btn-small decision-answer-btn', choice);
+    const wording = {Accept: 'Accept this decision', Hold: 'Put on hold',
+                     'Other…': 'Write another answer…'};
+    const button = el('button', 'btn btn-small decision-answer-btn', wording[choice]);
     button.type = 'button';
     button.dataset.choice = choice === 'Other…' ? 'Other' : choice;
     button.dataset.decisionId = String(decision.id);
@@ -678,6 +736,8 @@ async function renderHome(app) {
       'data built ' + fmtTime(state.dataBuiltAt) + ' · from build-info, not live uptime';
   }
 
+  renderAutoResponseTable($('auto-response-home'), state.projects);
+
   // Projects table
   const tbody = $('projects-tbody');
   if (!state.projects.length) {
@@ -687,6 +747,8 @@ async function renderHome(app) {
     const ctrl = p.control || {};
     const agentsActive = (p.agents || []).filter(a => a.status === 'active').length;
     const agentsRetired = (p.agents || []).filter(a => a.status === 'retired').length;
+    const agentsStandby = (p.agents || []).filter(a => a.status === 'standby').length;
+    const agentsHold = (p.agents || []).filter(a => a.status === 'hold').length;
 
     const healthEl = freshnessBadge(freshState(p)).outerHTML;
     const lastCycle = p.last_cycle_at ? fmtDateTime(p.last_cycle_at) : '—';
@@ -696,7 +758,7 @@ async function renderHome(app) {
       <td><a href="#project/${escapeHtml(encodeURIComponent(p.project))}">${escapeHtml(p.project)}</a></td>
       <td>${escapeHtml(ctrl.coordinator || '—')}<br>
           <span class="badge badge-grey" style="margin-top:3px">epoch ${ctrl.epoch || 1}</span></td>
-      <td>${agentsActive} active, ${agentsRetired} retired</td>
+      <td>${agentsActive} active, ${agentsStandby} standby, ${agentsHold} hold, ${agentsRetired} retired</td>
       <td>${healthEl}</td>
       <td>${lastCycle}</td>
       <td>
