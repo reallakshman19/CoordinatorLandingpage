@@ -24,6 +24,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Check existing app JavaScript syntax
+        run: node --check site/app.js
       - name: Compile UEM and existing builder
         run: python -m py_compile scripts/ultra_economy.py scripts/build_data.py
       - name: Run UEM positive and negative controls
