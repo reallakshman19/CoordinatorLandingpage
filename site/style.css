@@ -676,3 +676,15 @@ tr:hover td { background: var(--bg-2); }
 .decision-answer-error { color:var(--danger); font-size:0.85rem; flex-basis:100%; }
 #needs-you .decision-answers { margin-top:7px; }
 #needs-you .decision-commit-hint { font-weight:400; }
+
+/* WP10: source-backed scopes, generations and read-only external links. */
+.auto-response-note { padding:10px 16px; line-height:1.5; }
+.auto-response-table { min-width:680px; }
+.auto-response-table td { vertical-align:top; overflow-wrap:anywhere; }
+.auto-response-who { min-width:190px; }
+.auto-response-who .badge { margin:4px 0 0 6px; }
+.agent-state .chat-end-risk { display:inline-flex; margin:5px 2px 0; }
+.agent-takeover-link { display:inline-flex; margin:5px 0 0 8px; }
+.external-project-links { margin:12px 0 16px; display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.external-project-links h2 { width:100%; font-size:0.95rem; }
+.decision-provenance { margin-right:7px; }
