@@ -122,7 +122,7 @@ remain read-only sources of observations, not senders.
 
 ## Source paths
 
-- `skills/ultra-economy-mode/SKILL.md` — an opt-in agent operating contract for publishing START/END, invoking one native hourly fallback and performing immediate GitHub readback; it is not a scheduler.
+- `skills/ultra-economy-mode/SKILL.md` — an opt-in agent operating contract for publishing START/END, recording NOT_ARMED until separately Owner-authorized one-shot creation proof and performing immediate GitHub readback; it is not a scheduler.
 
 - `scripts/ultra_economy.py` — derive task lifecycle, cycle cap, exact-match move,
   source status and follow-up due times.
@@ -176,3 +176,10 @@ the UEM task budget.
 
 **Timer remains NOT_ARMED.** No timer/scheduler, auto-send, new chat,
 GitHub-pull delivery or other project's pilot is activated by this branch.
+
+
+## WP18 single-cycle prepared pilot: do not apply
+
+The landing-live single-cycle diff is staged **only** at `pilot/landing-live-uem-v1.proposed.patch`; it has **NOT** been applied to any registry. The procedure and source-custody roles are in `pilot/WP18_LANDING_LIVE_RUNBOOK.md`. `ultra_economy.enabled=true` with `max_cycles=1` requires new explicit Owner approval before a separate registry PR. The TeamCoordinator (acting as OwnerTeammember) is the named custodian who proposes reviewed START/END URL/comment_id/updated_at/body_sha256 bindings and the persisted workplan-task `cycle_ledger` and separate grants. The implementer cannot self-certify those entries.
+
+A future host timer, if ever approved, requires **Owner words** specific to that timer and scope, independently verified **creation proof** with real host task ID, **one fire** only, and verified **cancellation** or completion. Default and WP18 state remain **NOT_ARMED**; no timer or task is created here. Timer monitoring gives no write, execution or send authority. Reviewer must check the claim and delivery ledger independently (START -> END -> APPROVED -> CLAIMED -> SEND_INTENT -> SENT_TO_CHAT -> PICKED_UP), recognizing that a finished single cycle cannot be restarted even after successful pickup. Replay adds no duplicate comments, moves, sends or timers.
