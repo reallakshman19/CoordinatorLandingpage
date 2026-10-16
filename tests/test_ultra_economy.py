@@ -148,6 +148,7 @@ class UltraEconomyTests(unittest.TestCase):
     def test_12_inactive_agent_no_execution(self):
         reg, agents, threads, view = fixture()
         agents[0]["status"] = "retired"
+        reg["agents"][0]["status"] = "retired"
         item = uem.project(reg, agents, threads, view, now=NOW)["agents"]["11111111"]
         self.assertEqual(item["state"], "RETIRED_OR_STOPPED")
         self.assertFalse(item["may_proceed"])

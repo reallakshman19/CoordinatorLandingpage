@@ -291,6 +291,10 @@ def project(registry,agents,threads,next_view,now=None):
             continue
         rows=_comments(threads,source[1],source[0])
         if rows is None:
+            thread=threads.get(source[1])
+            if isinstance(thread,dict) and thread.get("repository")!=source[0]:
+                # A foreign issue's comments never become an agent candidate.
+                continue
             result["agents"][id8]={"state":"UNKNOWN_SOURCE","may_proceed":False,**basis}
             continue
         starts,warnings,counts=_start_records(rows,registry.get("project"),id8,

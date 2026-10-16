@@ -106,9 +106,12 @@ class WP18PilotControls(unittest.TestCase):
 
     def test_08_edited_end_time_and_body_invalidate_source(self):
         for field,value in (("updated_at","2026-10-16T14:21:00Z"),
-                            ("body",END+"\npost-hoc changed")):
+                            ("body","\npost-hoc changed")):
             reg,agents,threads,view=pilot()
-            threads[22]["comments"][1][field]=value
+            if field=="body":
+                threads[22]["comments"][1]["body"]+=value
+            else:
+                threads[22]["comments"][1][field]=value
             self.assertEqual(observe(reg,agents,threads,view)["agents"][ID]["state"],
                              "SOURCE_BINDING_INVALID")
 
