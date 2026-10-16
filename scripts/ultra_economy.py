@@ -279,6 +279,12 @@ def project(registry,agents,threads,next_view,now=None):
                                     "warnings":warnings,**basis}
             continue
         current=starts[-1]
+        # Preserve the earliest declaration for diagnostics when duplicates
+        # exist; the ambiguity always blocks execution, not a winner choice.
+        if "duplicate_task_start" in warnings:
+            current=next((x for x in starts if
+                          (x["task"],x["cycle"])==(
+                              current["task"],current["cycle"])),current)
         item={**current,"warnings":warnings,"may_proceed":False,
               "monitoring_grant":monitor,"execution_grant":execution,
               "fallback":"NOT_ARMED","timer":"NOT_ARMED"}
