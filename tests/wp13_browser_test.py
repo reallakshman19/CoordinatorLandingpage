@@ -93,6 +93,22 @@ def main():
                 base=f"http://127.0.0.1:{server.server_address[1]}/index.html"
                 def visit(route):
                     page.goto(base+route,wait_until="networkidle")
+                    # Routes fetch data asynchronously. Wait for the view before
+                    # asserting either feature presence or pinned-base absence.
+                    if route.startswith("#project/"):
+                        page.locator("#view-project").wait_for(
+                            state="attached", timeout=9000)
+                        page.wait_for_function("""() => {
+                          const box=document.querySelector('#wp13-project-moves');
+                          return !box || !!box.querySelector('.wp13-criticality');
+                        }""", timeout=9000)
+                    elif route.startswith("#agent/"):
+                        page.locator("#view-agent").wait_for(
+                            state="attached", timeout=9000)
+                        page.wait_for_function("""() => {
+                          const box=document.querySelector('#wp13-agent-moves');
+                          return !box || !!box.querySelector('.wp13-criticality');
+                        }""", timeout=9000)
 
                 visit("#next-moves")
                 check("WP13_UI_01_board_readonly_navigation",
@@ -108,7 +124,6 @@ def main():
                           and M1 in page.locator("#wp13-board").inner_text()
                           and M2 in page.locator("#wp13-board").inner_text())
                 visit("#project/landing-live")
-                print("WP13_DIAG_PROJECT", repr(page.locator("#wp13-project-moves").all_inner_texts()))
                 check("WP13_UI_03_active_queue_and_approver",
                       lambda: page.locator("#wp13-project-moves").count()==1
                         and M1 in page.locator("#wp13-project-moves").inner_text()
