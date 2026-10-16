@@ -417,6 +417,8 @@ tr:hover td { background: var(--bg-2); }
 }
 .btn-danger:hover { background: var(--danger-bg); }
 .btn-small { padding: 3px 10px; font-size: 0.8rem; }
+/* An issue form is only a fallback to the commit-backed Owner request flow. */
+.btn-backup { color: var(--text-3); background: var(--bg-2); border-style: dashed; font-weight: 400; }
 
 /* ── Owner inputs list ─────────────────────────────────── */
 .oi-row {
