@@ -36,6 +36,7 @@ const state = {
   ownerInputsLoaded: false,
   buildInfo: null,
   buildSignature: null,
+  statusBar: null,
   pollInFlight: false,
   decisionDraft: null, // uncommitted form prefill, NEVER a recorded Owner answer
 };
@@ -147,6 +148,7 @@ async function pollBuildInfo(initial = false) {
       state.projects = [];
       state.timelines = {};
       state.evidenceCache = {};
+    state.statusBar = null;
       state.ownerInputs = null;
       state.ownerInputsLoaded = false;
       await render(); // keep the current route, only refresh changed version
@@ -665,6 +667,75 @@ function wp14Controls(container, project) {
     'Role labels are requests, not identity proof. Critical projects are outside this pilot. The validator checks Owner/OTM tier and refuses unverified approvals.'));
 }
 
+
+function wp16Light(value) {
+  const name=['green','yellow','red','grey'].includes(value)?value:'yellow';
+  return el('span','wp16-light wp16-'+name,name.toUpperCase());
+}
+function wp16Row(body,cells,key) {
+  const tr=el('tr','wp16-row');
+  if(key)tr.dataset.instanceKey=key;
+  for(const value of cells){
+    const td=el('td','');
+    if(value && typeof value==='object' && value.nodeType)td.appendChild(value);
+    else td.textContent=String(value??'');
+    tr.appendChild(td);
+  }
+  body.appendChild(tr);
+}
+async function renderStatusBar(app){
+  app.replaceChildren(cloneTemplate('tpl-status-bar'));
+  const source=await fetchJSON(
+    (state.benchmarkMode?BM_DATA_BASE:DATA_BASE)+'status-bar.json',{cache:'no-store'});
+  state.statusBar=source;
+  const cover=$('wp16-coverage');
+  if(!source || source.schema!=='status_bar.v1' ||
+     !Array.isArray(source.projects) || !Array.isArray(source.instances)){
+    cover.textContent='UNKNOWN · status-bar projection unavailable; no green status.';
+    return;
+  }
+  const c=source.coverage||{};
+  const full=c.complete===true && c.expected===source.instances.length &&
+             c.projected===source.instances.length;
+  cover.textContent='Selected-roster coverage: '+String(c.projected??'?')+
+    '/'+String(c.expected??'?')+' · '+String(c.percent??'?')+'% · '+
+    (full?'FULL':'INCOMPLETE / UNKNOWN');
+  if(!full)cover.classList.add('wp16-coverage-incomplete');
+  for(const p of source.projects){
+    const cv=p.selected_roster_coverage||{};
+    wp16Row($('wp16-ot-rows'),[
+      p.project,wp16Light(full?p.light:'yellow'),
+      p.complete?'COMPLETE (separate)':'—',
+      String(cv.projected??0)+'/'+String(cv.expected??'?'),
+      p.active_count??0,
+      (p.dependencies?.blocked||[]).concat(p.dependencies?.unknown||[]).join(', ')||'none verified',
+      p.reason||'unknown']);
+  }
+  for(const r of source.instances){
+    let link=el('span','note','no registered id8');
+    if(/^[0-9a-f]{8}$/.test(String(r.instance_id8||'')) &&
+       r.chat_link==='https://chatgpt.com/c/'+r.instance_id8){
+      link=el('a','wp16-chat-id8',r.instance_id8);
+      link.href=r.chat_link;link.target='_blank';link.rel='noopener noreferrer';
+      link.title='id8-only chat reference; full private chat ID is not stored';
+    }
+    const mon=r.dimensions?.monitoring||{},auth=r.dimensions?.execution_authority||{};
+    wp16Row($('wp16-tc-rows'),[
+      r.project,r.workstream,String(r.kind)+' · '+String(r.alias||r.role),
+      link,r.generation==null?'unknown':'g'+r.generation,
+      wp16Light(full?r.light:'yellow'),r.complete?'COMPLETE':'—',
+      (r.retired?'RETIRED · ':'')+String(r.dimensions?.work?.state||'unknown'),
+      String(mon.state||'unknown')+' · last '+String(mon.last_evaluation||'not recorded')+
+        ' · next '+String(mon.next_due||'unknown'),
+      String(auth.state||'unknown')+' · '+String(auth.reason||'unknown'),
+      (r.conflicts||[]).join('; ')||'none'
+    ],r.key);
+  }
+  const selector=$('wp16-mode'),ot=$('wp16-ot'),tc=$('wp16-tc');
+  const toggle=()=>{ot.hidden=selector.value!=='ot';tc.hidden=selector.value!=='tc';};
+  selector.addEventListener('change',toggle);toggle();
+}
+
 // ── URL helpers ────────────────────────────────────────────
 function ownerInputURL(opts = {}) {
   const params = new URLSearchParams({
@@ -1086,6 +1157,7 @@ async function render() {
     case 'agent': await renderAgent(app, arg1, arg2); break;
     case 'timeline': await renderTimeline(app, arg1); break;
     case 'next-moves': await renderNextMoves(app); break;
+    case 'status-bar': await renderStatusBar(app); break;
     case 'decision': await renderDecision(app, arg1, arg2); break;
     case 'owner-inputs': await renderOwnerInputs(app); break;
     case 'trace': await renderTrace(app, arg1); break;
@@ -2103,6 +2175,7 @@ async function renderBenchmarks(app) {
       state.projects = [];
       state.timelines = {};
       state.evidenceCache = {};
+    state.statusBar = null;
       state.ownerInputs = null;
       state.ownerInputsLoaded = false;
 
@@ -2133,6 +2206,7 @@ function init() {
     state.projects = [];
     state.timelines = {};
     state.evidenceCache = {};
+    state.statusBar = null;
     state.ownerInputs = null;
     state.ownerInputsLoaded = false;
     $('benchmark-banner').classList.remove('visible');
