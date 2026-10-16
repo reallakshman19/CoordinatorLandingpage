@@ -157,6 +157,68 @@ async function pollBuildInfo(initial = false) {
   }
 }
 
+
+// WP10: report registry scopes but do not create delegated authority.
+function decisionProvenance(item) {
+  const text = typeof item === 'string' ? item : String(item?.text || '');
+  if (text.toLowerCase().includes('(delegated)')) return 'delegated (OwnerTeammember)';
+  if ((item && typeof item === 'object' && typeof item.owner_words === 'string' &&
+       item.owner_words.trim()) || /Owner(?:'s)? words:\s*["“]/i.test(text)) return 'Owner';
+  return 'unverified';
+}
+function allowedExternalLink(url, repository) {
+  if (typeof url !== 'string' || typeof repository !== 'string' ||
+      !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repository)) return null;
+  return /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/(issues|pull)\/\d+(?:#issuecomment-\d+)?$/.test(url) &&
+    url.startsWith('https://github.com/' + repository + '/') ? url : null;
+}
+function autoResponseStatus(entry) {
+  if (!entry || !['yes','no','critical'].includes(entry.allowed) ||
+      typeof entry.until !== 'string') return 'UNKNOWN';
+  // "forever" is an explicit recorded end date, not an invalid timestamp.
+  const deadline = entry.until.trim().toLowerCase() === 'forever'
+    ? Infinity : Date.parse(entry.until);
+  if (Number.isNaN(deadline)) return 'UNKNOWN';
+  if (deadline <= Date.now()) return 'EXPIRED';
+  return entry.allowed === 'no' ? 'NOT_ALLOWED' : 'IN_SCOPE';
+}
+function renderAutoResponseTable(container, projects) {
+  const wrap = el('div','table-wrap'), table = el('table','auto-response-table');
+  const head = el('thead'), headings = el('tr');
+  for (const caption of ['Project','Who may answer routine questions','Scope','Until',
+                         'Critical tier rules']) headings.appendChild(el('th','',caption));
+  head.appendChild(headings); table.appendChild(head);
+  const body = el('tbody');
+  for (const p of projects) {
+    // Each list entry is an independent delegation scope. Old dicts remain
+    // one scope; missing declarations still display an UNKNOWN row.
+    const scopes = Array.isArray(p.auto_response)
+      ? p.auto_response : [p.auto_response];
+    for (const response of scopes) {
+      if (response != null && (typeof response !== 'object' ||
+          Array.isArray(response))) continue;
+      const tr = el('tr'), current = autoResponseStatus(response);
+      const rules = response?.critical_rules ||
+        'Critical requests require an Owner decision. No delegation recorded.';
+      const who = current === 'EXPIRED' ? 'EXPIRED — no current delegation' :
+        current !== 'IN_SCOPE' ? 'No confirmed routine delegation' :
+        response.allowed === 'critical'
+          ? 'Delegated team — routine only; critical to Owner'
+          : 'Delegated team — within recorded scope';
+      tr.appendChild(el('td','',String(p.project)));
+      const whoCell = el('td','auto-response-who');
+      whoCell.appendChild(el('span','',who));
+      if (current === 'EXPIRED') whoCell.appendChild(el('span','badge badge-red','EXPIRED'));
+      tr.appendChild(whoCell);
+      tr.appendChild(el('td','',String(response?.scope || 'Not recorded')));
+      tr.appendChild(el('td','',String(response?.until || 'Not recorded')));
+      tr.appendChild(el('td','',String(rules)));
+      body.appendChild(tr);
+    }
+  }
+  table.appendChild(body); wrap.appendChild(table); container.appendChild(wrap);
+}
+
 // ── URL helpers ────────────────────────────────────────────
 function ownerInputURL(opts = {}) {
   const params = new URLSearchParams({
@@ -272,6 +334,8 @@ function agentStateBadge(status) {
     stopped: ['🔴', 'badge-red', 'stopped'],
     error: ['🔴', 'badge-red', 'error'],
     waiting: ['🟡', 'badge-yellow', 'waiting'],
+    standby: ['⚪', 'badge-grey', 'standby'],
+    hold: ['🟣', 'badge-purple', 'hold'],
   };
   const [icon, cls, text] = map[status] || ['', 'badge-grey', status];
   const b = el('span', `badge ${cls}`);
@@ -404,8 +468,10 @@ function ownerJSONCommitURL(values, date = new Date(), randomBytes = null) {
   const record = {id, project, target, type, text: message,
                   replaces: replaces || null, created_at: date.toISOString()};
   const path = 'logs/' + project + '/inputs/' + id + '.json';
+  const commitMessage = 'Owner input ' + id + ' via landing page';
   const url = 'https://github.com/' + REPO + '/new/main?filename=' +
-    encodeURIComponent(path) + '&value=' + encodeURIComponent(JSON.stringify(record, null, 2));
+    encodeURIComponent(path) + '&value=' + encodeURIComponent(JSON.stringify(record, null, 2)) +
+    '&message=' + encodeURIComponent(commitMessage);
   if (url.length >= 7000) throw new Error('Request too long. Shorten the message.');
   return {url, record, path};
 }
@@ -458,7 +524,9 @@ function renderDecisionAnswers(container, project, decision, visibleAsk, inputs)
     wrapper.appendChild(el('div', 'decision-answer-state', recorded));
   }
   for (const choice of ['Accept', 'Hold', 'Other…']) {
-    const button = el('button', 'btn btn-small decision-answer-btn', choice);
+    const wording = {Accept: 'Accept this decision', Hold: 'Put on hold',
+                     'Other…': 'Write another answer…'};
+    const button = el('button', 'btn btn-small decision-answer-btn', wording[choice]);
     button.type = 'button';
     button.dataset.choice = choice === 'Other…' ? 'Other' : choice;
     button.dataset.decisionId = String(decision.id);
@@ -678,6 +746,8 @@ async function renderHome(app) {
       'data built ' + fmtTime(state.dataBuiltAt) + ' · from build-info, not live uptime';
   }
 
+  renderAutoResponseTable($('auto-response-home'), state.projects);
+
   // Projects table
   const tbody = $('projects-tbody');
   if (!state.projects.length) {
@@ -687,6 +757,8 @@ async function renderHome(app) {
     const ctrl = p.control || {};
     const agentsActive = (p.agents || []).filter(a => a.status === 'active').length;
     const agentsRetired = (p.agents || []).filter(a => a.status === 'retired').length;
+    const agentsStandby = (p.agents || []).filter(a => a.status === 'standby').length;
+    const agentsHold = (p.agents || []).filter(a => a.status === 'hold').length;
 
     const healthEl = freshnessBadge(freshState(p)).outerHTML;
     const lastCycle = p.last_cycle_at ? fmtDateTime(p.last_cycle_at) : '—';
@@ -696,7 +768,7 @@ async function renderHome(app) {
       <td><a href="#project/${escapeHtml(encodeURIComponent(p.project))}">${escapeHtml(p.project)}</a></td>
       <td>${escapeHtml(ctrl.coordinator || '—')}<br>
           <span class="badge badge-grey" style="margin-top:3px">epoch ${ctrl.epoch || 1}</span></td>
-      <td>${agentsActive} active, ${agentsRetired} retired</td>
+      <td>${agentsActive} active, ${agentsStandby} standby, ${agentsHold} hold, ${agentsRetired} retired</td>
       <td>${healthEl}</td>
       <td>${lastCycle}</td>
       <td>
@@ -750,6 +822,22 @@ async function renderProject(app, projectName) {
     $('workflow-current').textContent = `Current: ${JSON.stringify(wf.current)}`;
   }
 
+  renderAutoResponseTable($('auto-response-project'), [proj]);
+  const external = $('external-project-links');
+  if (proj.repository !== REPO) {
+    external.appendChild(el('h2', '', 'Owning repository links (read-only)'));
+    const links = Array.isArray(proj.external_links) ? proj.external_links : [];
+    if (!links.length) external.appendChild(el('p','note','No verified owning issue or PR links.'));
+    for (const item of links) {
+      const url = allowedExternalLink(item.url, proj.repository);
+      if (!url) continue;
+      const link = el('a','btn btn-small external-project-link',
+                      String(item.kind) + ' · View on GitHub (read-only) →');
+      link.href = url; link.target = '_blank'; link.rel = 'noopener noreferrer';
+      external.appendChild(link);
+    }
+  }
+
   // Agents table
   const tbody = $('agents-tbody');
   const agents = proj.agents || [];
@@ -784,6 +872,19 @@ async function renderProject(app, projectName) {
     `;
     const stateCell = tr.querySelector(".agent-state");
     stateCell.appendChild(agentStateBadge(a.status));
+    if (a.chat_end_risk || a.chat_end_seen ||
+        (a.handover_meter != null && Number(a.handover_meter) >= 80)) {
+      const risk = el('span','badge badge-red chat-end-risk','chat-end risk');
+      risk.title = 'Handover needed: registry meter 80%+ or chat_end_seen.';
+      stateCell.appendChild(risk);
+    }
+    const takeover = allowedExternalLink(a.handover, proj.repository) ||
+      allowedExternalLink(a.handover, REPO);
+    if (takeover) {
+      const link = el('a','btn btn-small agent-takeover-link','Takeover handover →');
+      link.href = takeover; link.target = '_blank'; link.rel = 'noopener noreferrer';
+      tr.lastElementChild.appendChild(link);
+    }
     tbody.appendChild(tr);
   });
 
@@ -833,7 +934,7 @@ async function renderProject(app, projectName) {
         <div class="decision-card-header">
           <span class="decision-card-id">${escapeHtml(d.id)}</span>
           <span class="decision-card-ask">${escapeHtml(visibleAsk)}</span>
-          <span class="needs-plain">Waiting for Owner to answer</span>
+          <span class="needs-plain">No answer recorded yet. Owner action needed.</span>
           <span class="decision-asked">${escapeHtml(decisionAskedText(d))}</span>
         </div>
         <div class="decision-card-body">
@@ -862,11 +963,14 @@ async function renderProject(app, projectName) {
       d.style.cssText = 'padding:6px 10px;border-left:3px solid var(--border);margin-bottom:6px;font-size:0.85rem;word-break:break-word';
       const text = typeof entry === 'string' ? entry : JSON.stringify(entry);
       // Highlight superseded entries
+      d.appendChild(el('span', 'badge badge-grey decision-provenance',
+                       decisionProvenance(entry)));
       if (text.toLowerCase().includes('supersedes')) {
         d.style.borderColor = 'var(--warn)';
-        d.innerHTML = `<span class="badge badge-yellow" style="margin-right:6px">superseded</span>${escapeHtml(text)}`;
+        d.appendChild(el('span', 'badge badge-yellow', 'superseded'));
+        d.appendChild(document.createTextNode(text));
       } else {
-        d.textContent = text;
+        d.appendChild(document.createTextNode(text));
       }
       sodSection.appendChild(d);
     });
@@ -1165,7 +1269,7 @@ async function renderTimeline(app, projectFilter) {
           summary = `CONTROL EPOCH: ${(ev.text || '').slice(0, 80)}`;
           break;
         case 'OWNER_DECISION':
-          summary = `Owner decision: ${(ev.text || '').slice(0, 80)}`;
+          summary = `Decision record: ${(ev.text || '').slice(0, 80)}`;
           break;
         case 'OUTSIDE_WRITE':
           summary = `⚠ Outside write: ${(ev.text || '').slice(0, 80)}`;
@@ -1174,6 +1278,11 @@ async function renderTimeline(app, projectFilter) {
           summary = ev.type + (ev.text ? ': ' + String(ev.text).slice(0, 60) : '');
       }
       text.textContent = summary;
+      if (ev.type === 'OWNER_DECISION') {
+        const label = decisionProvenance(ev);
+        row.appendChild(el('span','badge badge-grey decision-provenance',
+          label === 'unverified' ? (ev.decision_label || 'unverified') : label));
+      }
 
       // Type badge
       const typeBadge = el('span', `badge badge-grey tl-badge`, ev.type?.replace(/_/g, ' '));
@@ -1235,7 +1344,7 @@ async function renderDecision(app, projectName, decisionId) {
   $('dc-id').textContent = d.id;
   $('dc-ask').textContent = await displayedDecisionAsk(d);
   $('dc-ask').appendChild(el('div', 'needs-plain',
-    'Waiting for Owner to answer this decision.'));
+    'No answer recorded yet. Owner action needed.'));
   $('dc-ask').appendChild(el('div', 'decision-asked', decisionAskedText(d)));
 
   if (d.link) {

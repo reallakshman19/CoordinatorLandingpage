@@ -113,6 +113,14 @@ jobs:
           set -o pipefail
           python -m unittest tests.test_wp8b -v 2>&1 | tee wp8b-unit-head.log
 
+      - name: Run WP10 registry/lifecycle/authority/external-link unit checks
+        id: wp10_unit
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m unittest tests.test_wp10 -v 2>&1 | tee wp10-unit-head.log
+
       - name: Assemble benchmark-backed browser artifact (no live API)
         id: artifact
         continue-on-error: true
@@ -228,6 +236,15 @@ jobs:
           set -o pipefail
           python tests/wp8c_browser_test.py _artifact 2>&1 | tee wp8c-browser-head.log
 
+      - name: Run WP10 auto-response lifecycle and decision-label Chromium controls
+        id: wp10_browser
+        if: steps.artifact.outcome == 'success' && steps.chromium.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python tests/wp10_browser_test.py _artifact 2>&1 | tee wp10-browser-head.log
+
       - name: Upload qualification output
         if: always()
         uses: actions/upload-artifact@v4
@@ -255,6 +272,8 @@ jobs:
             wp8b-browser-head.log
             wp9-browser-head.log
             wp8c-browser-head.log
+            wp10-unit-head.log
+            wp10-browser-head.log
           if-no-files-found: ignore
 
       - name: Prove injected failure rejected and enforce all HEAD gates
@@ -304,7 +323,9 @@ jobs:
           require_success "WP8b-times-protocol-and-home-shortcut-browser" "${{ steps.wp8b_browser.outcome }}"
           require_success "WP9-decision-buttons-prefill-and-verified-receipt-browser" "${{ steps.wp9_browser.outcome }}"
           require_success "WP8c-XSS-project-id8-fence-and-backup-UX" "${{ steps.wp8c_browser.outcome }}"
-          echo "FINAL GATE: 23/23 actual head outcomes success"
+          require_success "WP10-registry-authority-safety" "${{ steps.wp10_unit.outcome }}"
+          require_success "WP10-browser-UX-and-commit-message" "${{ steps.wp10_browser.outcome }}"
+          echo "FINAL GATE: 25/25 actual head outcomes success"
 
   red-control:
     name: red-control · require seven behavioural FAIL and zero ERROR
@@ -1502,6 +1523,143 @@ jobs:
         with:
           name: wp8c-main-base-red
           path: wp8c-unit-red.log
+          if-no-files-found: error
+
+  wp10-browser-red-control:
+    name: WP10 pinned main UI RED · 9 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact head tests and builder
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only old UI from exact pre-WP10 main
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=3016be6bd94e2fa823ff6e104273eae404ba930a
+          git cat-file -e "${BASE}^{commit}"
+          for path in site/app.js site/index.html site/style.css; do
+            git show "${BASE}:${path}" > "${path}"
+          done
+      - name: Build an isolated synthetic browser artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          python scripts/build_data.py --root . --out _artifact/data/benchmarks \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Require nine exact old-page failures and zero errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp10_browser_test.py _artifact > wp10-browser-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp10-browser-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os, re, sys
+          from pathlib import Path
+          log = Path("wp10-browser-red.log").read_text()
+          observed = set(re.findall(r'^FAIL (WP10_UI_0[1-9]_\w+)$', log, re.M))
+          m = re.search(r'^WP10_BROWSER_COUNTS pass=(\d+) fail=(\d+) error=(\d+)$', log, re.M)
+          valid = (int(os.environ["RC"]) != 0 and len(observed) == 9
+                   and m and m.groups() == ("0", "9", "0")
+                   and "Traceback (most recent call last)" not in log)
+          print("WP10 BROWSER RED:",len(observed),"behavioural FAIL;",
+                m.group(3) if m else "?", "ERROR;", "PASS" if valid else "INVALID")
+          if not valid: sys.exit(1)
+          PY
+      - name: Upload WP10 old UI negative-control output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp10-base-browser-red
+          path: wp10-browser-red.log
+          if-no-files-found: error
+
+  wp10-unit-red-control:
+    name: WP10 pinned main behaviour RED · 4 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact HEAD with new tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore original builder from exact pre-WP10 main
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=3016be6bd94e2fa823ff6e104273eae404ba930a
+          git cat-file -e "${BASE}^{commit}"
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+      - name: Assert four behavioural failures and zero execution errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp10.BaseCompatibleWP10 -v > wp10-unit-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp10-unit-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os, re, sys
+          from pathlib import Path
+          output = Path("wp10-unit-red.log").read_text()
+          observed = re.findall(
+              r'^(test_wp10_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',
+              output, re.M)
+          fails = {name for name, state in observed if state == "FAIL"}
+          errors = {name for name, state in observed if state == "ERROR"}
+          expected = {
+              "test_wp10_expired_auto_response_and_critical_rules",
+              "test_wp10_agent_standby_hold_and_chat_end_risk",
+              "test_wp10_owner_vs_delegated_labels_in_timeline",
+              "test_wp10_external_project_read_only_issue_pr_links",
+          }
+          valid = (int(os.environ["RC"]) != 0 and fails == expected and
+                   not errors and re.search(r"^Ran 4 tests in ", output, re.M) and
+                   re.search(r"^FAILED \(failures=4\)$", output, re.M) and
+                   not re.search(r"^ERROR:", output, re.M))
+          print("WP10 RED:",len(fails),"expected FAIL,",len(errors),"ERROR;",
+                "PASS" if valid else "INVALID RED")
+          if not valid: sys.exit(1)
+          PY
+      - name: Upload WP10 base negative-control output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp10-base-red
+          path: wp10-unit-red.log
           if-no-files-found: error
 
   wp9-browser-red-control:

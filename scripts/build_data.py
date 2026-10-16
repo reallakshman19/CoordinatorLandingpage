@@ -575,6 +575,106 @@ def _issue_number(url):
     return int(match.group(1)) if match else None
 
 
+
+# WP10: registry projections report scoped claims, never confer authority.
+_SAFE_GH_LINK = re.compile(
+    r'^https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/(issues|pull)/(\d+)(?:#issuecomment-\d+)?$'
+)
+
+
+def _wp10_link(url, allowed):
+    match = _SAFE_GH_LINK.fullmatch(url) if isinstance(url, str) else None
+    return url if match and match.group(1) in allowed else None
+
+
+def _wp10_external_links(registry):
+    product = registry.get('repository')
+    if not isinstance(product, str) or product == owner_json.REPO:
+        return []
+    result, seen = [], set()
+    groups = [
+        ('Issue', [registry.get('parent_issue'), registry.get('status_issue')]),
+        ('Issue', registry.get('owning_issues', [])),
+        ('PR', registry.get('pull_requests', [])),
+        ('PR', registry.get('owning_prs', [])),
+    ]
+    for kind, entries in groups:
+        for value in (entries if isinstance(entries, list) else []):
+            url = _wp10_link(value.get('url') if isinstance(value, dict) else value,
+                             {product})
+            expected = '/issues/' if kind == 'Issue' else '/pull/'
+            if url and expected in url and url not in seen:
+                seen.add(url)
+                result.append({'kind': kind, 'url': url, 'read_only': True})
+    return result
+
+
+def _wp10_auto_response(registry, now):
+    """Project each recorded scope; retain the legacy single-dict projection."""
+    source = registry.get('auto_response')
+
+    def project_scope(data):
+        allowed = data.get('allowed')
+        until = data.get('until')
+        forever = isinstance(until, str) and until.strip().lower() == 'forever'
+        deadline = (_owner_time(until) if isinstance(until, str) and not forever
+                    else None)
+        state = ('UNKNOWN' if allowed not in ('yes', 'no', 'critical') or
+                 (not forever and deadline is None)
+                 else 'EXPIRED' if deadline is not None and deadline <= now
+                 else 'NOT_ALLOWED' if allowed == 'no' else 'IN_SCOPE')
+        words = data.get('owner_words')
+        words = words if isinstance(words, str) else ''
+        scope = data.get('scope')
+        return {
+            'scope': scope if isinstance(scope, str) else '',
+            'allowed': allowed if allowed in ('yes', 'no', 'critical') else 'unknown',
+            'until': 'forever' if forever else until if deadline else None,
+            'state': state,
+            'owner_words': words,
+            'critical_rules': ('Critical requests require an Owner decision; '
+                               'a delegated response is not Owner approval. ' + words),
+        }
+
+    if isinstance(source, list):
+        return [project_scope(entry) for entry in source if isinstance(entry, dict)]
+    if isinstance(source, dict):
+        return project_scope(source)
+    return None
+
+
+def _wp10_decision_label(item):
+    text = item.get('text', '') if isinstance(item, dict) else item
+    text = text if isinstance(text, str) else ''
+    words = item.get('owner_words') if isinstance(item, dict) else None
+    if '(delegated)' in text.lower():
+        return 'delegated (OwnerTeammember)'
+    if (isinstance(words, str) and words.strip()) or re.search(
+            r'''Owner(?:'s)? words:\s*["“]''', text, re.I):
+        return 'Owner'
+    return 'unverified'
+
+
+def _wp10_agent_status(value):
+    text = str(value or '').lower()
+    for status in ('retired', 'standby', 'active', 'hold'):
+        if text.startswith(status):
+            return status
+    return text or 'unknown'
+
+
+def _wp10_meter(value):
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)) and 0 <= value <= 100:
+        return value
+    if isinstance(value, str):
+        match = re.fullmatch(r'\s*(\d+(?:\.\d+)?)%?\s*', value)
+        if match and 0 <= float(match.group(1)) <= 100:
+            return float(match.group(1))
+    return None
+
+
 def build_project_data(root: Path, project_name: str, registry: dict,
                         threads: dict, inbox: list, events_path: Path | list[Path] | None,
                         source_meta: dict | None = None,
@@ -610,16 +710,21 @@ def build_project_data(root: Path, project_name: str, registry: dict,
             shared=thread_owners.get(thread_num, 0) > 1
         )
 
+        meter = _wp10_meter(a.get('handover_meter'))
         agents.append({
             'role': a.get('role', ''),
             'alias': a.get('alias', ''),
             'generation': a.get('generation', 1),
             'chat_id8': chat,
-            'status': ('retired' if str(a.get('status', '')).lower().startswith('retired')
-                       else 'active' if str(a.get('status', '')).lower().startswith('active')
-                       else a.get('status', '')),
+            'status': _wp10_agent_status(a.get('status')),
             'status_raw': a.get('status', ''),
             'retired': a.get('retired'),
+            'handover_meter': meter,
+            'chat_end_seen': a.get('chat_end_seen') is True,
+            'chat_end_risk': ((meter is not None and meter >= 80)
+                              or a.get('chat_end_seen') is True),
+            'handover': _wp10_link(a.get('handover'), {
+                owner_json.REPO, registry.get('repository')}),
             'evidence_thread_num': thread_num,
             'branch': a.get('branch', ''),
             'started': a.get('started'),
@@ -677,6 +782,9 @@ def build_project_data(root: Path, project_name: str, registry: dict,
             {n for n, count in thread_owners.items() if count > 1}
         )
         timeline_source = 'reconstructed'
+    for event in timeline:
+        if event.get('type') == 'OWNER_DECISION':
+            event['decision_label'] = _wp10_decision_label(event)
 
     capture = source_meta if isinstance(source_meta, dict) else None
     status_pointer = registry.get('status_comment') or registry.get('status_issue') or ''
@@ -700,6 +808,9 @@ def build_project_data(root: Path, project_name: str, registry: dict,
         'schema_version': 'wp1a.1',
         'source_commit': source_commit,
         'registry_blob_sha': registry_blob_sha,
+        'repository': registry.get('repository', ''),
+        'auto_response': _wp10_auto_response(registry, now),
+        'external_links': _wp10_external_links(registry),
         'source_capture_at': source_capture_at,
         'source_health': health,
         'source_refs': {
@@ -721,6 +832,7 @@ def build_project_data(root: Path, project_name: str, registry: dict,
             'workflow': registry.get('workflow', {}),
             'source': registry.get('source', {}),
             'standing_owner_decisions': sod,
+            'auto_response': registry.get('auto_response'),
             'open_owner_decisions': registry.get('open_owner_decisions', []),
             'status_issue': status_issue_url,
             'log_folder': registry.get('log_folder', ''),
@@ -1227,6 +1339,8 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             'liveness_observation_limit': pd['liveness_observation_limit'],
             'published_at': pd['published_at'],
             'stale_lease_count': pd['stale_lease_count'],
+            'auto_response': pd['auto_response'],
+            'external_links': pd['external_links'],
             'control': pd['registry']['control'],
             'workflow': pd['registry']['workflow'],
             'agents': [
@@ -1236,6 +1350,10 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
                     'generation': a['generation'],
                     'chat_id8': a['chat_id8'],
                     'status': a['status'],
+                    'handover_meter': a['handover_meter'],
+                    'chat_end_seen': a['chat_end_seen'],
+                    'chat_end_risk': a['chat_end_risk'],
+                    'handover': a['handover'],
                     'evidence_thread_num': a['evidence_thread_num'],
                 }
                 for a in pd['agents']

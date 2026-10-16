@@ -73,6 +73,13 @@
     <div style="margin-left:auto;font-size:0.75rem;color:var(--text-3)" id="data-built-at"></div>
   </div>
 
+  <!-- WP10 registry-scoped delegation snapshot, read-only -->
+  <div class="card" id="auto-response-section">
+    <div class="card-header"><span class="card-title">Auto-response permissions (registry)</span></div>
+    <p class="note auto-response-note">Scope shown here is a recorded claim, not approval of protected actions. Critical requests require the Owner.</p>
+    <div id="auto-response-home"></div>
+  </div>
+
   <!-- Projects table -->
   <div class="card">
     <div class="card-header">
@@ -110,6 +117,12 @@
       <div class="workflow-steps" id="workflow-steps"></div>
       <div class="note" id="workflow-current"></div>
     </div>
+
+    <div class="card" id="project-auto-response-section">
+      <div class="card-header"><span class="card-title">Who can answer routine questions?</span></div>
+      <div id="auto-response-project"></div>
+    </div>
+    <div id="external-project-links" class="external-project-links"></div>
 
     <!-- Agents table -->
     <div class="card">
