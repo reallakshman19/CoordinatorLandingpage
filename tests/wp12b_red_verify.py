@@ -48,8 +48,10 @@ else:
     errors = set() if count and count.group(3) == "0" else {"runner error"}
     counts_valid = (count and count.groups() ==
                     ("0", str(len(expected[mode])), "0"))
+# unittest prints a Traceback for expected AssertionError FAIL. Reject
+# execution ERROR from parsed outcomes; browser runners must have no Traceback.
 ok = (rc != "0" and fails == expected[mode] and not errors and counts_valid
-      and "Traceback (most recent call last)" not in log)
+      and (mode == "source" or "Traceback (most recent call last)" not in log))
 print(f"WP12b {mode} RED: {len(fails)} expected FAIL, {len(errors)} ERROR — " +
       ("PASS" if ok else "INVALID"))
 if not ok:
