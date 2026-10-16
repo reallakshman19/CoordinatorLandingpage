@@ -64,8 +64,18 @@ def main():
                       page.locator("#needs-you-list").inner_text())
                 if page.locator("#home-new-input").count():
                     page.locator("#home-new-input").click()
+                # Hash navigation schedules asynchronous rendering. Wait for
+                # the actual form, without relaxing the original assertions;
+                # a missing form still produces a behavioural FAIL, not ERROR.
+                def json_form_rendered():
+                    try:
+                        page.locator("#oi-json-form").wait_for(state="attached", timeout=5000)
+                        return True
+                    except Exception:
+                        return False
                 check("WP8B_UI_04_home_shortcut_opens_json_form",
-                      lambda: page.url.endswith("#owner-inputs")
+                      lambda: json_form_rendered()
+                      and page.url.endswith("#owner-inputs")
                       and page.locator("#oi-json-form").count()==1
                       and page.locator("#oi-json-post").count()==1)
                 check("WP8B_UI_05_owner_input_list_posted_updated_local",
