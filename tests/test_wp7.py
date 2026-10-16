@@ -278,7 +278,7 @@ class WP8cInputSafety(unittest.TestCase):
             issue = dict(base_issue, comments=alternative)
             row = build_data.build_owner_inputs([issue], capture)[0]
             self.assertEqual(row["status"],
-                             "HANDLED" if i == 2 else "ACKNOWLEDGED")
+                             "HANDLED" if i == 2 else "NEEDS_CLARIFICATION")
 
 if __name__=="__main__":
     unittest.main(verbosity=2)
