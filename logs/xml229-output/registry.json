@@ -1,0 +1,13 @@
+{
+  "project": "xml229-output",
+  "protocol": "Team protocol v2.3 FINAL CANDIDATE",
+  "repository": "reallakshman19/3D_Converters",
+  "parent_issue": "https://github.com/reallakshman19/3D_Converters/issues/274",
+  "updated": "2026-10-16T18:10:00+04:00",
+  "control": {"epoch": 1, "coordinator": "Claude session (OwnerTeammember + TeamCoordinator)", "hold": "Owner HOLD 16 Oct"},
+  "auto_response": [{"scope": "xml229-output agents", "allowed": "critical", "until": "forever", "owner_words": "Not authorised for auto response"}],
+  "agents": [
+    {"alias": "XML229 G2", "role": "implementer", "generation": 2, "chat_id8": "6ad1cc04", "status": "hold", "evidence_thread": "https://github.com/reallakshman19/3D_Converters/issues/274"}
+  ],
+  "open_owner_decisions": []
+}
