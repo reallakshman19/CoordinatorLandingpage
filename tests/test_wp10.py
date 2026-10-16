@@ -81,7 +81,7 @@ class BaseCompatibleWP10(unittest.TestCase):
                         "https://github.com/malicious/elsewhere/pull/14",
                     ]}
         projected, _ = project(registry)
-        self.assertEqual(projected["repository"], PRODUCT)
+        self.assertEqual(projected.get("repository"), PRODUCT)
         self.assertEqual([x["url"] for x in projected.get("external_links", [])], [
             "https://github.com/example/3D_Converters/issues/12",
             "https://github.com/example/3D_Converters/pull/13",
