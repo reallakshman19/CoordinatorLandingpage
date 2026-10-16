@@ -1,0 +1,14 @@
+{
+  "project": "cii-method-c",
+  "protocol": "Team protocol v2.3 FINAL CANDIDATE + Engineering PR Delivery v3.6",
+  "repository": "reallakshman19/XML_Compare_Utilities",
+  "parent_issue": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/108",
+  "updated": "2026-10-16T18:10:00+04:00",
+  "control": {"epoch": 1, "coordinator": "Claude session (OwnerTeammember + TeamCoordinator)", "hold": "Owner HOLD 16 Oct 18:0x"},
+  "auto_response": [{"scope": "cii-method-c agents", "allowed": "critical", "until": "forever", "owner_words": "Not authorised for auto response"}],
+  "agents": [
+    {"alias": "MemberCoordinator G2", "role": "member coordinator (review + fix at maturity)", "generation": 2, "chat_id8": "6ad1ce42", "status": "hold", "evidence_thread": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/106"},
+    {"alias": "Method C worker", "role": "implementer (v3.6)", "generation": 1, "chat_id8": "6ad1fa79", "status": "hold", "reports_to": "6ad1ce42", "evidence_thread": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/108"}
+  ],
+  "open_owner_decisions": []
+}
