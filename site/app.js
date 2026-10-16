@@ -460,7 +460,7 @@ function ownerJSONCommitURL(values, date = new Date(), randomBytes = null) {
   const project = String(values.project || '');
   if (!state.projects.some(p => p.project === project && (p.repository === REPO || p.is_benchmark === true)) ||
       !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(project))
-    throw new Error('Choose a listed hub project; external projects are read-only.');
+    throw new Error('Choose a listed project (hub only; external projects are read-only).');
   const target = String(values.target || '').trim();
   const type = String(values.type || '').trim();
   const message = String(values.text || '').trim();
@@ -996,7 +996,7 @@ async function renderProject(app, projectName) {
 
   // Post to team button
   const postBtn = $('post-btn');
-  if (state.benchmarkMode || proj.repository !== REPO) {
+  if (state.benchmarkMode || (proj.repository !== REPO && !proj.is_benchmark)) {
     postBtn.style.display = 'none'; // external projects are read-only
   } else {
     postBtn.href = postToTeamURL(projectName, 'INFO');
@@ -1040,7 +1040,8 @@ async function renderAgent(app, projectName, id8) {
   }
 
   // Action buttons
-  if (state.benchmarkMode || state.projects.find(p => p.project === projectName)?.repository !== REPO) {
+  if (state.benchmarkMode || (state.projects.find(p => p.project === projectName)?.repository !== REPO &&
+      !state.projects.find(p => p.project === projectName)?.is_benchmark)) {
     $('agent-action-buttons').style.display = 'none';
   } else {
     $('btn-ground').href = groundURL(id8, projectName);
