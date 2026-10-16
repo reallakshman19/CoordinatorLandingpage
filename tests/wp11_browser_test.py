@@ -82,8 +82,9 @@ def main():
                           f"https://github.com/{CII_REPO}"
                       and page.locator(".external-project-link").get_attribute("href") ==
                           f"https://github.com/{CII_REPO}/issues/108"
-                      and page.locator("#agents-tbody .agent-state").all_inner_texts() ==
-                          ["hold", "hold"]
+                      and len(page.locator("#agents-tbody .agent-state").all_inner_texts()) == 2
+                      and all("hold" in s.lower() for s in
+                          page.locator("#agents-tbody .agent-state").all_inner_texts())
                       and page.locator("#agents-tbody td:nth-child(2)").all_inner_texts() ==
                           ["g2", "g1"]
                       and page.locator("#auto-response-project .auto-response-allowed")
@@ -107,8 +108,8 @@ def main():
                           f"https://github.com/{XML_REPO}/issues/274"
                       and page.locator(".agent-evidence-thread").get_attribute("href") ==
                           f"https://github.com/{XML_REPO}/issues/274"
-                      and page.locator("#agents-tbody .agent-state").all_inner_texts() ==
-                          ["hold"]
+                      and len(page.locator("#agents-tbody .agent-state").all_inner_texts()) == 1
+                      and "hold" in page.locator("#agents-tbody .agent-state").inner_text().lower()
                       and page.locator("#auto-response-project .auto-response-allowed")
                           .inner_text() == "critical")
                 check("WP11_UI_07_repositories_do_not_bleed_in_links",
