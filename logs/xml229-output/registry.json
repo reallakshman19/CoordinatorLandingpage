@@ -2,6 +2,8 @@
   "project": "xml229-output",
   "protocol": "Team protocol v2.3 FINAL CANDIDATE",
   "repository": "reallakshman19/3D_Converters",
+  "criticality": "critical",
+  "criticality_owner_words": "Not authorised for auto response ... Above are rules for CRITICAL projects (16 Oct ~11:3x)",
   "parent_issue": "https://github.com/reallakshman19/3D_Converters/issues/274",
   "updated": "2026-10-16T18:10:00+04:00",
   "control": {"epoch": 1, "coordinator": "Claude session (OwnerTeammember + TeamCoordinator)", "hold": "Owner HOLD 16 Oct"},
