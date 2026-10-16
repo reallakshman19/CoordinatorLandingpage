@@ -172,6 +172,26 @@ class UltraEconomyTests(unittest.TestCase):
         reg["repository"] = "reallakshman19/Other"
         self.assertEqual(uem.project(reg, agents, threads, view, now=NOW)["agents"], {})
 
+    def test_19_recorded_delivery_stops_followup_reminders(self):
+        item = current()
+        self.assertEqual(item["followup"], {"state": "STOPPED", "next_due_at": None})
+
+    def test_20_spoofed_role_does_not_match_registered_agent(self):
+        reg, agents, threads, view = fixture()
+        threads[22]["comments"][0]["body"] = START.replace(
+            "· implementer ·", "· validator ·")
+        item = uem.project(reg, agents, threads, view, now=NOW)["agents"]["11111111"]
+        self.assertEqual(item["state"], "NO_TASK_START")
+        self.assertFalse(item["may_proceed"])
+
+    def test_21_timer_claim_is_not_host_verified(self):
+        reg, agents, threads, view = fixture(end=False)
+        threads[22]["comments"][0]["body"] = START.replace(
+            "Fallback: agent to arm hourly ChatGPT task",
+            "Fallback: ARMED task-receipt-example")
+        item = uem.project(reg, agents, threads, view, now=NOW)["agents"]["11111111"]
+        self.assertEqual(item["fallback"], "AGENT_REPORTED_ARMED_UNVERIFIED")
+
     def test_18_invalid_start_has_no_action(self):
         reg, agents, threads, view = fixture()
         threads[22]["comments"][0]["body"] = START.replace(
