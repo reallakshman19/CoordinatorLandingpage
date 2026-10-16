@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import re
 
+
 ID = re.compile(r"^NM-\d{8}-\d{6}-[0-9a-f]{4}$")
 ID8 = re.compile(r"^[0-9a-f]{8}$")
 HEX = re.compile(r"^[0-9a-fA-F]{40}$")
@@ -272,11 +273,14 @@ def validate_records(registry, raw_moves, rows, claims, now=None):
             rejected.append({"id": mid, "reasons": [problem]})
             del valid[mid]
             continue
-        if item["state"] == "SEND_INTENT":
-            expires = stamp(claim.get("expires_at")) if isinstance(claim, dict) else None
-            if expires and expires <= now:
-                item["state"] = "DELIVERY_UNCERTAIN"
-                item["flags"].append("delivery uncertain")
+        expires = stamp(claim.get("expires_at")) if isinstance(claim, dict) else None
+        if item["state"] == "SEND_INTENT" and expires and expires <= now:
+            item["state"] = "DELIVERY_UNCERTAIN"
+            item["flags"].append("delivery uncertain")
+        # Expiry before SEND_INTENT is not a delivery claim. Flag/queue it for
+        # reconciliation, never silently mark a send or authorize a renewal.
+        if item["state"] == "CLAIMED" and expires and expires <= now:
+            item["flags"].append("claim expired")
         if item["state"] == "DELIVERY_UNCERTAIN":
             item["flags"].append("delivery uncertain")
         if item["state"] == "NOT_SENT": item["flags"].append("not sent")
@@ -287,8 +291,11 @@ def validate_records(registry, raw_moves, rows, claims, now=None):
         if item["basis"].get("registry_sha") != registry.get("_registry_sha"):
             item["flags"].append("stale basis")
         # A moved PR head is not excused by a matching registry checksum.
-        current = registry.get("_current_evidence_head")
-        if current and item["basis"]["head"] != current:
+        # Compare a move only with a verified head for its own recipient.
+        # Never copy another agent's PR head into the project-wide basis.
+        current = (registry.get("_current_evidence_heads") or {}).get(
+            item["to"]["id8"])
+        if current and item["basis"]["head"].lower() != current.lower():
             if "stale basis" not in item["flags"]: item["flags"].append("stale basis")
     # Only one effective active claim per recipient, and queued dispatches cannot
     # start with a second simultaneous CLAiMED record. Reject every contender.
@@ -311,14 +318,11 @@ def task_cycle(agents, threads, moves, project, now=None):
 
     Count across chat generations; no GO boundary -> no invented cycle count.
     """
-    starts = [m for m in moves if m["class"] == "Dispatch" and
-              m.get("trigger") in ("GO", {"type": "GO"} if False else "GO")
-              and m["state"] not in ("REJECTED", "CANCELLED", "EXPIRED")]
-    # Dict triggers are permitted; preserve exact GO semantics.
-    starts += [m for m in moves if m["class"] == "Dispatch" and
-               isinstance(m.get("trigger"), dict) and
-               m["trigger"].get("type") == "GO" and
-               m["state"] not in ("REJECTED", "CANCELLED", "EXPIRED")]
+    starts = [m for m in moves if m["class"] == "Dispatch"
+              and m["state"] not in ("REJECTED", "CANCELLED", "EXPIRED")
+              and (m.get("trigger") == "GO"
+                   or isinstance(m.get("trigger"), dict)
+                   and m["trigger"].get("type") == "GO")]
     if not starts:
         return {"status": "no_go", "count": None, "next": None,
                 "label": "task cycle unknown — no GO recorded"}
@@ -326,12 +330,13 @@ def task_cycle(agents, threads, moves, project, now=None):
     since = stamp(go["created_at"])
     ids = {a.get("chat_id8") for a in agents}
     issue_nums = {a.get("evidence_thread_num") for a in agents}
-    seen = set()
+    # Import once per count, never inside the per-comment loop.
+    from build_data import parse_task_evidence
+    seen = {}
     for number in issue_nums:
         thread = threads.get(number) or {}
         for row in thread.get("comments", []):
             try:
-                from build_data import parse_task_evidence
                 block = parse_task_evidence(row.get("body", ""),
                                             row.get("id", 0),
                                             row.get("created_at", ""))
@@ -340,17 +345,20 @@ def task_cycle(agents, threads, moves, project, now=None):
             if (block and block["project"] == project and block["chat_id8"] in ids
                     and stamp(row.get("created_at")) and
                     stamp(row["created_at"]) >= since):
-                seen.add((thread.get("repository"), number, row.get("id")))
+                seen[(thread.get("repository"), number, row.get("id"))] = stamp(
+                    row["created_at"])
     n = len(seen)
     next_trigger = next(n + distance for distance in range(1, 21)
                         if (n + distance) % 20 in TASK_TRIGGERS)
     trigger = TASK_TRIGGERS.get(n % 20) if n else None
     return {"status": "known", "count": n, "next": next_trigger,
             "due": trigger,
+            "due_at": max(seen.values()).isoformat() if trigger and seen else None,
             "label": f"task {n} · next {TASK_TRIGGERS[next_trigger % 20]} at {next_trigger}"}
 
 
-def load_project_moves(folder, registry, agents, threads, now=None, registry_sha=None):
+def load_project_moves(folder, registry, agents, threads, now=None, registry_sha=None,
+                       evidence_heads=None, owner_inputs=None):
     now = now or datetime.now(timezone.utc)
     path = Path(folder)
     moves_dir = path / "moves"
@@ -376,7 +384,8 @@ def load_project_moves(folder, registry, agents, threads, now=None, registry_sha
     claims = {file.stem: load(file) for file in
               sorted((moves_dir / "claims").glob("*.json"))} if (
                   moves_dir / "claims").is_dir() else {}
-    reg = dict(registry, _registry_sha=registry_sha)
+    reg = dict(registry, _registry_sha=registry_sha,
+               _current_evidence_heads=evidence_heads or {})
     valid, rejected, meta = validate_records(reg, raw, rows, claims, now)
     heartbeat = max((stamp(x) for x in meta["heartbeats"]), default=None)
     flags = []
@@ -406,17 +415,29 @@ def load_project_moves(folder, registry, agents, threads, now=None, registry_sha
             m["kind"] == counters["due"] and m["state"] not in TERMINAL
             for m in valid):
         # Do not turn an unverified time-of-threshold into a made-up alert.
-        if heartbeat and now - heartbeat > timedelta(minutes=20):
+        # The observed checkpoint time is the real evidence comment timestamp,
+        # not the evaluator's optional heartbeat (which may be missing).
+        due = stamp(counters.get("due_at"))
+        if due and now - due > timedelta(minutes=20):
             flags.append("detected, not acted on")
     for item in valid:
         flags.extend(item["flags"])
+    input_requests = []
+    for source in owner_inputs or []:
+        if source.get("project") == registry.get("project") and source.get(
+                "type") in ("NEXT_MOVE_COMPOSE", "NEXT_MOVE_APPROVAL"):
+            input_requests.append({"id": source.get("id"),
+                                   "type": source.get("type"),
+                                   **validate_input_request(
+                                       registry, source, valid, source)})
     return {"pilot": (registry.get("next_move") or {}).get("pilot") is True,
             "criticality": meta["criticality"],
             "approval_required": (registry.get("next_move") or {}).get(
                 "approval_required", True),
             "approver_tier": ("Owner / OwnerTeammember" if meta["criticality"] == "normal"
                               else "Owner only (H1–H3 exception)"),
-            "moves": valid, "rejected": rejected, "board": board,
+            "moves": valid, "rejected": rejected, "input_requests": input_requests,
+            "board": board,
             "active": active_moves, "queue": queue,
             "flags": sorted(set(flags)), "evaluator_at": (
                 heartbeat.isoformat() if heartbeat else None),
@@ -426,3 +447,51 @@ def load_project_moves(folder, registry, agents, threads, now=None, registry_sha
                 "queue": [m for m in queue if m["to"]["id8"] == a["chat_id8"]],
                 "task_cycle": counters}
                 for a in agents if a.get("chat_id8")}}
+
+
+# WP14 Owner-input proposals: never convert a self-asserted role or committed
+# request into an APPROVED transition. A transition must still pass _approval.
+def validate_input_request(registry, record, moves, provenance):
+    """Return a read-only evaluation of a committed OI request.
+
+    GitHub author association is not an OwnerTeammember identity proof.
+    Role claims in text never override the actual transition ledger.
+    """
+    if record.get("project") != "landing-live" or not (
+            registry.get("next_move") or {}).get("pilot"):
+        return {"valid": False, "reason": "pilot_not_enabled"}
+    kind = record.get("type")
+    if kind not in ("NEXT_MOVE_COMPOSE", "NEXT_MOVE_APPROVAL"):
+        return {"valid": False, "reason": "not_next_move_input"}
+    try:
+        payload = json.loads(record.get("text") or "")
+    except (ValueError, TypeError):
+        return {"valid": False, "reason": "request_json_invalid"}
+    if not isinstance(payload, dict):
+        return {"valid": False, "reason": "request_payload_invalid"}
+    if not provenance or provenance.get("author_association") not in (
+            "OWNER", "MEMBER", "COLLABORATOR") or provenance.get("flags"):
+        return {"valid": False, "reason": "unverified_commit_author"}
+    if kind == "NEXT_MOVE_COMPOSE":
+        candidate = payload.get("move")
+        faults = schema(candidate, registry["project"],
+                        str(candidate.get("id", "")) + ".json"
+                        if isinstance(candidate, dict) else "")
+        return {"valid": not faults, "reason": ",".join(faults) if faults
+                else "draft_only_not_published", "effective": False}
+    move_id, by = payload.get("move"), payload.get("by")
+    found = next((m for m in moves if m.get("id") == move_id), None)
+    if not found or found.get("state") != "PUBLISHED":
+        return {"valid": False, "reason": "move_not_waiting_approval"}
+    row = {"by": by, "grant_ref": payload.get("grant_ref")}
+    problem, self_approved = _approval(found, row, criticality(registry), registry)
+    if problem:
+        return {"valid": False, "reason": problem}
+    # Owner tier is independently anchored by the GitHub author association.
+    # No public registry maps OTM to a specific GitHub login, so even a
+    # collaborator's valid tier claim remains a REQUEST pending ledger proof.
+    if by["role"].strip().lower() == "owner" and (
+            provenance.get("author_association") != "OWNER"):
+        return {"valid": False, "reason": "owner_identity_not_verified"}
+    return {"valid": True, "reason": "approval_request_only",
+            "self_approved": self_approved, "effective": False}

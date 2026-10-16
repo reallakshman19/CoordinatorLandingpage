@@ -120,6 +120,7 @@
     </div>
 
     <div id="wp13-project-moves" class="card"></div>
+    <div id="wp14-project-controls" class="card"></div>
     <div id="wp12-project-hold"></div>
     <div class="card">
       <div class="card-header"><span class="card-title">Agent reporting lines (read-only)</span></div>
@@ -198,6 +199,7 @@
 
     <div id="wp12-agent-hold"></div>
     <div id="wp13-agent-moves" class="card"></div>
+    <p id="wp14-agent-request-note" class="note">Next Move draft/approval requests are prepared on the project or board page only. This agent view does not claim, approve or send any Next Move.</p>
     <!-- Grounding / agent action buttons -->
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap" id="agent-action-buttons">
       <a id="btn-ground" class="btn btn-danger btn-small" target="_blank" rel="noopener">
@@ -230,7 +232,7 @@
 <template id="tpl-next-moves">
   <section id="view-next-moves">
     <h1>Next Move · read-only board</h1>
-    <p class="note">Recorded dispatches and evaluator observations only. This page creates no moves, approvals, claims or messages. VERIFIED does not mean Owner acceptance.</p>
+    <p class="note">Validated dispatches and evaluator observations. Pilot compose and approval buttons open GitHub's new Owner-input JSON page; no action is recorded until committed and independently validated. No automatic claims or chat sends. VERIFIED is not Owner acceptance.</p>
     <div id="wp13-board"></div>
   </section>
 </template>

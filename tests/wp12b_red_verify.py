@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Fail-closed shared verifier for WP12b and WP13 RED controls."""
+"""Fail-closed shared verifier for WP12b, WP13 and WP14 RED controls."""
 import re
 import sys
 from pathlib import Path
 
 if len(sys.argv) != 4:
-    raise SystemExit("usage: wp12b_red_verify.py ui|app|source|wp13_ui|wp13_source <log> <test_rc>")
+    raise SystemExit("usage: wp12b_red_verify.py ui|app|source|wp13_ui|wp13_source|wp14_ui|wp14_source <log> <test_rc>")
 mode, log_path, rc = sys.argv[1:]
 log = Path(log_path).read_text(encoding="utf-8")
 expected = {
@@ -40,11 +40,25 @@ expected = {
         "WP13_UI_06_agent_own_dispatch_queue",
         "WP13_UI_07_no_next_move_actions",
     },
+    "wp14_source": {
+        "test_wp14_expired_claimed_flag_was_missing",
+        "test_wp14_missing_heartbeat_must_detect_due_ground",
+    },
+    "wp14_ui": {
+        "WP14_UI_01_pilot_compose_controls_on_board",
+        "WP14_UI_02_project_compose_and_published_approval",
+        "WP14_UI_03_compose_prefills_one_exact_owner_input_json",
+        "WP14_UI_04_invalid_draft_does_not_open_github",
+        "WP14_UI_05_approval_is_request_not_approved",
+        "WP14_UI_06_external_critical_nonpilot_no_controls",
+        "WP14_UI_07_no_agent_auto_claim_or_send",
+    },
 }
 if mode not in expected:
     raise SystemExit("unknown RED mode")
-if mode in ("source", "wp13_source"):
-    prefix = "test_wp12b_" if mode == "source" else "test_wp13_"
+if mode in ("source", "wp13_source", "wp14_source"):
+    prefix = {"source":"test_wp12b_", "wp13_source":"test_wp13_",
+              "wp14_source":"test_wp14_"}[mode]
     matches = re.findall(
         r"^(" + prefix + r"\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$",
         log, re.M)
@@ -54,10 +68,11 @@ if mode in ("source", "wp13_source"):
                     and "FAILED (failures=2)" in log)
 else:
     tag = {"ui":"WP12_UI_BASE", "app":"WP12B_ONLY",
-           "wp13_ui":"WP13_BROWSER"}[mode]
+           "wp13_ui":"WP13_BROWSER", "wp14_ui":"WP14_BROWSER"}[mode]
     pattern = {"ui":r"WP12_UI_0[1-7]_\w+",
                "app":r"WP12B_UI_0[1-3]_\w+",
-               "wp13_ui":r"WP13_UI_0[1-7]_\w+"}[mode]
+               "wp13_ui":r"WP13_UI_0[1-7]_\w+",
+               "wp14_ui":r"WP14_UI_0[1-7]_\w+"}[mode]
     fails = set(re.findall(r"^FAIL (" + pattern + r")$", log, re.M))
     count = re.search(
         rf"^{tag}_COUNTS pass=(\d+) fail=(\d+) error=(\d+)$", log, re.M)
@@ -67,7 +82,7 @@ else:
 # unittest prints a Traceback for expected AssertionError FAIL. Reject
 # execution ERROR from parsed outcomes; browser runners must have no Traceback.
 ok = (rc != "0" and fails == expected[mode] and not errors and counts_valid
-      and (mode in ("source", "wp13_source") or "Traceback (most recent call last)" not in log))
+      and (mode in ("source", "wp13_source", "wp14_source") or "Traceback (most recent call last)" not in log))
 print(f"WP12b {mode} RED: {len(fails)} expected FAIL, {len(errors)} ERROR — " +
       ("PASS" if ok else "INVALID"))
 if not ok:

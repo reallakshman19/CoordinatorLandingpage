@@ -426,9 +426,152 @@ async function renderNextMoves(app) {
         phases.appendChild(part);
       }
       section.appendChild(phases);
+      const actions=el('div','wp14-board-controls');
+      wp14Controls(actions,p);
+      section.appendChild(actions);
     }
     board.appendChild(section);
   }
+}
+
+
+// WP14 pilot-only GitHub Contents new-file prefill. A click opens a *draft*
+// Owner-input file; neither a committed OI nor a typed role is an APPROVED
+// transition. The authenticated author still commits; the coordinator must
+// validate and record the resulting transition separately.
+const WP14_DISPATCH_KINDS = ['next_step','course_correction','new_requirement',
+  'ground','reconcile','handover_trigger','buddy_1a','buddy_1b','buddy_2',
+  'label_request','skill_alignment','status_check'];
+function wp14RequestURL(project, type, payload, date = new Date(), bytes = null) {
+  const p = state.projects.find(x => x.project === project);
+  if (!p || project !== 'landing-live' || p.repository !== REPO ||
+      !p.next_move?.pilot || state.benchmarkMode) {
+    throw new Error('Next Move compose/approve is restricted to the landing-live pilot.');
+  }
+  if (!['NEXT_MOVE_COMPOSE','NEXT_MOVE_APPROVAL'].includes(type))
+    throw new Error('Unsupported Next Move request.');
+  return ownerJSONCommitURL({
+    project, target:'TeamCoordinator', type, text:JSON.stringify(payload),
+    replaces:''
+  },date,bytes);
+}
+function wp14MoveDraft(project, values, date = new Date(), bytes = null) {
+  const p=state.projects.find(x => x.project===project);
+  if (!p || project!=='landing-live' || p.repository!==REPO || !p.next_move?.pilot)
+    throw new Error('Not a registered Next Move pilot.');
+  const kind=String(values.kind || '');
+  if (!WP14_DISPATCH_KINDS.includes(kind)) throw new Error('Invalid dispatch kind.');
+  const from=String(values.from || '').trim(),to=String(values.to || '').trim();
+  const text=String(values.text || '').trim(),trigger=String(values.trigger || '').trim();
+  const head=String(values.head || '').trim(),source=String(values.evidence || '').trim();
+  const supersedes=String(values.supersedes || '').trim();
+  if (!/^[0-9a-f]{8}$/.test(from) || !/^[0-9a-f]{8}$/.test(to) ||
+      !/^[0-9a-f]{40}$/i.test(head) || !/^https:\/\/github\.com\/reallakshman19\/CoordinatorLandingpage\/issues\/\d+$/.test(source) ||
+      !text || text.length>600 || !trigger || trigger.length>100 ||
+      supersedes && !/^NM-\d{8}-\d{6}-[0-9a-f]{4}$/.test(supersedes)) {
+    throw new Error('Supply valid id8s, source issue, assessed 40-hex head, trigger and task.');
+  }
+  if (!/^[0-9a-f]{40}$/i.test(String(p.registry_blob_sha || '')))
+    throw new Error('Registry source SHA missing; cannot compose a basis.');
+  const stamp=date.toISOString().replace(/[-:]/g,'').replace('T','-').slice(0,15);
+  const rnd=Array.from(bytes || crypto.getRandomValues(new Uint8Array(2)))
+    .map(n=>n.toString(16).padStart(2,'0')).join('');
+  const record={id:'NM-'+stamp+'-'+rnd,project,class:'Dispatch',kind,
+    from:{role:'TeamCoordinator',id8:from},to:{role:'implementer',id8:to},
+    text,basis:{evidence:source,head,registry_sha:p.registry_blob_sha},
+    trigger,supersedes:supersedes || null,evidence_format:'TASK EVIDENCE v2',
+    created_at:date.toISOString()};
+  return wp14RequestURL(project,'NEXT_MOVE_COMPOSE',{move:record},date,bytes);
+}
+function wp14ApprovalDraft(project, move, role, id8, date=new Date(),bytes=null) {
+  const p=state.projects.find(x=>x.project===project);
+  if (!p || project!=='landing-live' || !p.next_move?.pilot || p.repository!==REPO ||
+      !p.next_move.moves?.some(m=>m.id===move.id && m.state==='PUBLISHED'))
+    throw new Error('Only published moves in the landing-live pilot can request approval.');
+  if (!['Owner','OwnerTeammember'].includes(role) ||
+      (p.next_move.criticality!=='normal' && role!=='Owner'))
+    throw new Error('Approver tier forbids the requested role.');
+  if (!/^[0-9a-f]{8}$/.test(String(id8)))
+    throw new Error('Approver chat id8 is required.');
+  const payload={move:move.id,by:{role,id8},at:date.toISOString(),
+    request_only:true};
+  return wp14RequestURL(project,'NEXT_MOVE_APPROVAL',payload,date,bytes);
+}
+function wp14Controls(container, project) {
+  if (!container) return;
+  container.replaceChildren();
+  if (project.project !== 'landing-live' || project.repository !== REPO ||
+      !project.next_move?.pilot || state.benchmarkMode) return;
+  container.appendChild(el('h3','','Next Move · compose a request'));
+  container.appendChild(el('p','note',
+    'GitHub opens a prefilled Owner-input JSON file. Review and commit there. This is not a published move or approval, and nothing is sent to an agent.'));
+  const form=el('form','wp14-compose-form');
+  const fields=[
+    ['kind','Kind','select',WP14_DISPATCH_KIN],
+    ['from','Coordinator chat id8','input'],
+    ['to','Recipient chat id8','input'],
+    ['head','Assessed commit SHA (40 hex)','input'],
+    ['evidence','Evidence issue URL','input'],
+    ['trigger','GO or trigger','input'],
+    ['text','Task instruction','textarea'],
+    ['supersedes','Supersedes NM id (optional)','input'],
+  ];
+  const values={};
+  for (const [name,label,tag,choices] of fields) {
+    const wrapper=el('label','wp14-field',label);
+    const field=el(tag,'wp14-'+name);
+    field.name=name;field.setAttribute('aria-label',label);
+    if (choices) for (const choice of choices) {
+      const opt=el('option','',choice);opt.value=choice;field.appendChild(opt);
+    }
+    if (name==='evidence')field.value='https://github.com/'+REPO+'/issues/22';
+    if (name==='to' && project.agents?.length)field.value=project.agents.find(a=>a.status==='active')?.chat_id8||'';
+    if (name==='text')field.maxLength=600;
+    wrapper.appendChild(field);form.appendChild(wrapper);values[name]=field;
+  }
+  const submit=el('button','btn btn-small wp14-compose-submit','Open proposed move on GitHub');
+  submit.type='submit';form.appendChild(submit);
+  const result=el('p','note wp14-compose-result');result.setAttribute('role','status');
+  form.appendChild(result);
+  form.addEventListener('submit',e=>{
+    e.preventDefault();
+    try {
+      const data={};
+      for (const [name,field] of Object.entries(values))data[name]=field.value;
+      const request=wp14MoveDraft(project.project,data);
+      window.open(request.url,'_blank','noopener,noreferrer');
+      result.textContent='Draft '+request.record.id+' opened; no move was created.';
+    } catch(error) { result.textContent=String(error.message); }
+  });
+  container.appendChild(form);
+  container.appendChild(el('h3','','Request approval for a published dispatch'));
+  const published=(project.next_move.moves||[]).filter(m=>m.class==='Dispatch'&&m.state==='PUBLISHED');
+  if (!published.length)container.appendChild(el('p','note','No published dispatch requires approval.'));
+  for (const move of published) {
+    const row=el('div','wp14-approval-row');
+    row.appendChild(el('span','',move.id+' · '+move.kind));
+    const roles=el('select','wp14-approver-role');
+    for (const role of project.next_move.criticality==='normal'
+         ? ['Owner','OwnerTeammember']:['Owner']) {
+      const opt=el('option','',role);opt.value=role;roles.appendChild(opt);
+    }
+    const id=el('input','wp14-approver-id8');id.placeholder='Approver chat id8';
+    id.setAttribute('aria-label','Approver chat id8');
+    const button=el('button','btn btn-small wp14-approval-submit','Request approval on GitHub');
+    button.type='button';
+    const status=el('span','note wp14-approval-result');
+    button.addEventListener('click',()=>{
+      try {
+        const req=wp14ApprovalDraft(project.project,move,roles.value,id.value);
+        window.open(req.url,'_blank','noopener,noreferrer');
+        status.textContent=(id.value===move.from.id8?'self-approval requested · ':'')+
+          'Not approved until an authorized transition is verified.';
+      } catch(error) {status.textContent=String(error.message);}
+    });
+    row.append(roles,id,button,status);container.appendChild(row);
+  }
+  container.appendChild(el('p','note',
+    'Role labels are requests, not identity proof. Critical projects are outside this pilot. The validator checks Owner/OTM tier and refuses unverified approvals.'));
 }
 
 // ── URL helpers ────────────────────────────────────────────
@@ -1014,6 +1157,7 @@ async function renderProject(app, projectName) {
 
   const ctrl = proj.control || detail?.registry?.control || {};
   wp13ReadOnly($('wp13-project-moves'), proj.next_move || detail?.next_move);
+  wp14Controls($('wp14-project-controls'), proj);
   wp12HoldBanner($('wp12-project-hold'),proj.hold_report || detail?.hold_report);
   wp12ReportingTree($('wp12-reporting-tree'),proj.reporting_tree || detail?.reporting_tree);
   wp12ChildProgress($('wp12-child-progress'),proj.child_progress || detail?.child_progress,
