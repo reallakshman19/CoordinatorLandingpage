@@ -351,8 +351,10 @@ function wp13MoveItem(m) {
   const li = el('li', 'wp13-move-row');
   li.appendChild(el('span', '', wp13MoveTitle(m)));
   if (m.self_approved) li.appendChild(el('span','badge badge-grey','self-approved'));
-  for (const flag of m.flags || []) li.appendChild(
-    el('span','badge badge-grey',String(flag)));
+  for (const flag of m.flags || []) {
+    if (flag === 'self-approved' && m.self_approved) continue;
+    li.appendChild(el('span','badge badge-grey',String(flag)));
+  }
   return li;
 }
 function wp13ReadOnly(container, view, agentId = null) {
@@ -364,9 +366,12 @@ function wp13ReadOnly(container, view, agentId = null) {
     container.appendChild(el('p','note','No Next Move projection available.'));
     return;
   }
-  container.appendChild(el('p','wp13-criticality',
-    'Criticality: ' + String(view.criticality || 'critical') +
+  const criticality = el('p', 'wp13-criticality');
+  criticality.appendChild(el('span', 'badge badge-grey wp13-criticality-badge',
+    'Criticality: ' + String(view.criticality || 'critical')));
+  criticality.appendChild(el('span', '',
     ' · Approver: ' + String(view.approver_tier || 'Owner only')));
+  container.appendChild(criticality);
   if (!view.pilot) {
     container.appendChild(el('p','note','Next Move pilot not enabled for this project.'));
     return;
