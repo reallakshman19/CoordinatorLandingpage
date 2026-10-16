@@ -44,6 +44,7 @@ The EVALUATED heartbeat is not a move. It is a `moves.jsonl` row `{state:"EVALUA
 
 ## 4. Files and states
 - `logs/<project>/moves/NM-YYYYMMDD-HHMMSS-xxxx.json`: one immutable file per move. Fields: `id, project, class, kind, from{role,id8}, to{role,id8}, text, basis{evidence, head, registry_sha}, trigger, supersedes, evidence_format, created_at`.
+- **Kinds.** Dispatch: `next_step`, `course_correction`, `new_requirement`, `ground`, `reconcile`, `handover_trigger`, `buddy_1a`, `buddy_1b`, `buddy_2`, `label_request`, `skill_alignment`, `status_check`. Notice: `agent_added`, `agent_retired`. Any other kind is invalid.
 - `logs/<project>/moves.jsonl`: append-only transitions `{move, state, by, at, proof, note}`.
 - `logs/<project>/moves/claims/<move-id>.json`: the claim file (§4.2).
 - Existing files are **unchanged**: OI inputs, receipts, registries, evidence threads, protocol pins.
@@ -67,14 +68,14 @@ side states: REJECTED · HELD · SUPERSEDED(by id) · CANCELLED · EXPIRED
 - **Renewing or taking over an expired claim** is an update with the current `sha`, a compare-and-swap. It is allowed only if the move is not DELIVERY_UNCERTAIN.
 - **Claim TTL** = one coordinator cycle (15 min) unless the claim file says less.
 - **SEND_INTENT** is appended right before typing or posting. An expired claim whose move has a SEND_INTENT and no outcome is **DELIVERY_UNCERTAIN** automatically. It is never re-claimed until it is reconciled.
-- **REJECTED** = an approver refuses, with a reason. **CANCELLED** = the author or the Owner withdraws the move before SENT. **EXPIRED** = the trigger condition no longer holds, or the move waited 24 h with no claim; it needs a new move.
+- **REJECTED** = an approver refuses, with a reason. **CANCELLED** = the author or the Owner withdraws the move before SENT_TO_CHAT or PUBLISHED_TO_THREAD. **EXPIRED** = the trigger condition no longer holds, or the move waited 24 h with no claim; it needs a new move.
 - **Immediately before sending**, the claimer re-checks authority, basis (has the head or registry moved?) and HOLD. Any change → release the claim and record why.
 - Only one dispatch per recipient may be between CLAIMED and VERIFIED. Others wait in the queue, and replacing one needs an explicit `supersedes`.
 
 ## 5. Approval and grants
 - In the pilot, **every dispatch needs APPROVED before CLAIMED.** Approval can become optional per project, only on the Owner's words. After that a valid `grant_ref` is needed: an Owner decision record with exact words, an in-date `auto_response` row, or one of the **three CRITICAL standing rules** (Owner, 16 Oct ~11:3x). The publisher checks it, and each rule covers **only** its matching kind:
   - **(i)** "nudge as usual" → `next_step` whose text is the recipient's **own** stated Next;
-  - **(ii)** "approve takeover via buddy v1.7" → `buddy_1a`, `buddy_1b`, `buddy_2` and the activation notice (§6.3);
+  - **(ii)** "approve takeover via buddy v1.7" → `buddy_1a`, `buddy_1b`, `buddy_2` and the **activation decision** of §6.3. The `agent_added` notice only records that decision; it authorises nothing.
   - **(iii)** "clarify non critical thing within scope of that issue, where no assumptions are required" → `status_check` / clarification inside the owning issue's scope.
 - **Approvers** (Owner, 16 Oct ~19:1x):
   - `criticality: normal` → the **Owner or OwnerTeammember**;
