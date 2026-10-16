@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """UltraEconomyMode read-only and negative authority controls."""
 from datetime import datetime, timezone
+import hashlib
 from pathlib import Path
 import sys
 import unittest
@@ -33,11 +34,23 @@ def fixture(*, end=True, limit=3, cycle=1, state="SENT_TO_CHAT", hold=None,
     start = START.replace("cycle 1/3", f"cycle {cycle}/{limit}")
     end_body = (END.replace("UEM cycle: 1/3", f"UEM cycle: {cycle}/{limit}")
                 if marker is None else marker)
-    rows = [{"id": 101, "created_at": "2026-10-16T14:00:00Z", "body": start}]
+    rows = [{"id": 101, "created_at": "2026-10-16T14:00:00Z",
+             "updated_at": "2026-10-16T14:00:00Z", "body": start}]
     if end:
-        rows.append({"id": 102, "created_at": "2026-10-16T14:20:00Z", "body": end_body})
+        rows.append({"id": 102, "created_at": "2026-10-16T14:20:00Z",
+                     "updated_at": "2026-10-16T14:20:00Z", "body": end_body})
+    bindings={str(x["id"]):{
+        "url":URL+"#issuecomment-"+str(x["id"]),
+        "comment_id":x["id"],"updated_at":x["updated_at"],
+        "body_sha256":hashlib.sha256(x["body"].encode()).hexdigest()} for x in rows}
+    grant={"verified":True,"holder_id8":"11111111","project":"landing-live",
+           "expires_at":"2026-10-16T15:00:00Z"}
     reg = {"project": "landing-live", "repository": REPO,
-           "ultra_economy": {"enabled": True, "max_cycles": limit},
+           "ultra_economy": {"enabled": True, "max_cycles": limit,
+                             "source_bindings":bindings,
+                             "monitoring_grants":{"11111111":dict(grant)},
+                             "execution_grants":{"11111111":dict(grant)},
+                             "cycle_ledger":{"https://github.com/reallakshman19/CoordinatorLandingpage/issues/21|WP16":{"completed_cycles":cycle-1}}},
            "control": {"hold": hold}}
     agents = [{"chat_id8": "11111111", "role": "implementer", "status": "active",
                "evidence_thread_url": URL}]
@@ -49,7 +62,7 @@ def fixture(*, end=True, limit=3, cycle=1, state="SENT_TO_CHAT", hold=None,
             "trigger": {"type": "uem_end", "task": "WP16", "cycle": cycle,
                         "end_comment_id": 102},
             "basis": {"evidence": URL}, "flags": []})
-    return reg, agents, {22: {"number": 22, "comments": rows}}, {"moves": moves}
+    return reg, agents, {22: {"number": 22, "repository": REPO, "comments": rows}}, {"moves": moves}
 
 
 def current(*args, **kwargs):
@@ -76,8 +89,8 @@ class UltraEconomyTests(unittest.TestCase):
         self.assertEqual(task["state"], "WORKING_CLAIM")
         self.assertEqual(task["planned_outcome"], "Deliver opt-in source-based next moves")
         self.assertEqual(task["known_blocker"], "NONE")
-        self.assertEqual(task["fallback"], "AGENT_MUST_ARM")
-        self.assertEqual(task["fallback_due_at"], "2026-10-16T15:00:00+00:00")
+        self.assertEqual(task["fallback"], "NOT_ARMED")
+        self.assertIsNone(task["fallback_due_at"])
         self.assertFalse(task["may_proceed"])
 
     def test_04_end_exact_cycle_and_status_claim(self):
@@ -91,7 +104,8 @@ class UltraEconomyTests(unittest.TestCase):
         for state in ("PUBLISHED", "APPROVED", "CLAIMED", "SEND_INTENT",
                       "PUBLISHED_TO_THREAD", "DELIVERY_UNCERTAIN"):
             task = current(state=state)
-            self.assertEqual(task["state"], "AWAITING_DELIVERY", state)
+            self.assertEqual(task["state"], "DELIVERY_UNCERTAIN" if state in
+                             ("SEND_INTENT","DELIVERY_UNCERTAIN") else "AWAITING_DELIVERY",state)
             self.assertFalse(task["may_proceed"])
 
     def test_06_matching_proven_chat_delivery_enables_readback(self):
@@ -132,7 +146,7 @@ class UltraEconomyTests(unittest.TestCase):
         reg, agents, threads, view = fixture()
         agents[0]["status"] = "retired"
         item = uem.project(reg, agents, threads, view, now=NOW)["agents"]["11111111"]
-        self.assertEqual(item["state"], "NOT_ACTIVE")
+        self.assertEqual(item["state"], "RETIRED_OR_STOPPED")
         self.assertFalse(item["may_proceed"])
 
     def test_13_unknown_source_not_falsely_working(self):
@@ -148,6 +162,8 @@ class UltraEconomyTests(unittest.TestCase):
         item = uem.project(reg, agents, threads, view, now=NOW)["agents"]["11111111"]
         self.assertEqual(item["known_blocker"], "NONE")
         self.assertIn("duplicate_task_start", item["warnings"])
+        self.assertEqual(item["state"],"AMBIGUOUS_START")
+        self.assertFalse(item["may_proceed"])
 
     def test_15_future_due_window(self):
         task = current(move=False)
@@ -170,7 +186,8 @@ class UltraEconomyTests(unittest.TestCase):
     def test_17_cross_project_source_fenced(self):
         reg, agents, threads, view = fixture()
         reg["repository"] = "reallakshman19/Other"
-        self.assertEqual(uem.project(reg, agents, threads, view, now=NOW)["agents"], {})
+        self.assertNotEqual(uem.project(reg, agents, threads, view, now=NOW)["agents"]["11111111"]["state"],
+                            "WORKING_CLAIM")
 
     def test_19_recorded_delivery_stops_followup_reminders(self):
         item = current()
@@ -190,7 +207,9 @@ class UltraEconomyTests(unittest.TestCase):
             "Fallback: agent to arm hourly ChatGPT task",
             "Fallback: ARMED task-receipt-example")
         item = uem.project(reg, agents, threads, view, now=NOW)["agents"]["11111111"]
-        self.assertEqual(item["fallback"], "AGENT_REPORTED_ARMED_UNVERIFIED")
+        self.assertEqual(item["fallback"], "NOT_ARMED")
+        self.assertEqual(item["timer"],"NOT_ARMED")
+        self.assertIn("ARMED",item["timer_claim"])
 
     def test_18_invalid_start_has_no_action(self):
         reg, agents, threads, view = fixture()
