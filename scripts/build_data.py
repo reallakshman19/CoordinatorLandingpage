@@ -578,7 +578,7 @@ def _issue_number(url):
 
 # WP10: registry projections report scoped claims, never confer authority.
 _SAFE_GH_LINK = re.compile(
-    r'^https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/(issues|pull)/(\d+)$'
+    r'^https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/(issues|pull)/(\d+)(?:#issuecomment-\d+)?$'
 )
 
 
