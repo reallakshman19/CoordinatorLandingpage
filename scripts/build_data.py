@@ -576,9 +576,95 @@ def _issue_number(url):
 
 
 
-# WP10 projections report registry scopes and GitHub links, not new authority.
+# WP10: registry projections report scoped claims, never confer authority.
 _SAFE_GH_LINK = re.compile(
-    r'^https://github\\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/(issues|pull)/(\\d+)
+    r'^https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/(issues|pull)/(\d+)$'
+)
+
+
+def _wp10_link(url, allowed):
+    match = _SAFE_GH_LINK.fullmatch(url) if isinstance(url, str) else None
+    return url if match and match.group(1) in allowed else None
+
+
+def _wp10_external_links(registry):
+    product = registry.get('repository')
+    if not isinstance(product, str) or product == owner_json.REPO:
+        return []
+    result, seen = [], set()
+    groups = [
+        ('Issue', [registry.get('parent_issue'), registry.get('status_issue')]),
+        ('Issue', registry.get('owning_issues', [])),
+        ('PR', registry.get('pull_requests', [])),
+        ('PR', registry.get('owning_prs', [])),
+    ]
+    for kind, entries in groups:
+        for value in (entries if isinstance(entries, list) else []):
+            url = _wp10_link(value.get('url') if isinstance(value, dict) else value,
+                             {product})
+            expected = '/issues/' if kind == 'Issue' else '/pull/'
+            if url and expected in url and url not in seen:
+                seen.add(url)
+                result.append({'kind': kind, 'url': url, 'read_only': True})
+    return result
+
+
+def _wp10_auto_response(registry, now):
+    data = registry.get('auto_response')
+    if not isinstance(data, dict):
+        return None
+    allowed = data.get('allowed')
+    until = data.get('until')
+    deadline = _owner_time(until) if isinstance(until, str) else None
+    state = ('UNKNOWN' if allowed not in ('yes', 'no', 'critical') or not deadline
+             else 'EXPIRED' if deadline <= now
+             else 'NOT_ALLOWED' if allowed == 'no' else 'IN_SCOPE')
+    words = data.get('owner_words')
+    words = words if isinstance(words, str) else ''
+    scope = data.get('scope')
+    return {
+        'scope': scope if isinstance(scope, str) else '',
+        'allowed': allowed if allowed in ('yes', 'no', 'critical') else 'unknown',
+        'until': until if deadline else None, 'state': state,
+        'owner_words': words,
+        'critical_rules': ('Critical requests require an Owner decision; '
+                           'a delegated response is not Owner approval. ' + words),
+    }
+
+
+def _wp10_decision_label(item):
+    text = item.get('text', '') if isinstance(item, dict) else item
+    text = text if isinstance(text, str) else ''
+    words = item.get('owner_words') if isinstance(item, dict) else None
+    if '(delegated)' in text.lower():
+        return 'delegated (OwnerTeammember)'
+    if (isinstance(words, str) and words.strip()) or re.search(
+            r'''Owner(?:'s)? words:\s*["“]''', text, re.I):
+        return 'Owner'
+    return 'unverified'
+
+
+def _wp10_agent_status(value):
+    text = str(value or '').lower()
+    for status in ('retired', 'standby', 'active', 'hold'):
+        if text.startswith(status):
+            return status
+    return text or 'unknown'
+
+
+def _wp10_meter(value):
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)) and 0 <= value <= 100:
+        return value
+    if isinstance(value, str):
+        match = re.fullmatch(r'\s*(\d+(?:\.\d+)?)%?\s*', value)
+        if match and 0 <= float(match.group(1)) <= 100:
+            return float(match.group(1))
+    return None
+
+
+def build_project_data(root: Path, project_name: str, registry: dict,
                         threads: dict, inbox: list, events_path: Path | list[Path] | None,
                         source_meta: dict | None = None,
                         status_thread: dict | None = None,
@@ -614,7 +700,6 @@ _SAFE_GH_LINK = re.compile(
         )
 
         meter = _wp10_meter(a.get('handover_meter'))
-        risk = (meter is not None and meter >= 80) or a.get('chat_end_seen') is True
         agents.append({
             'role': a.get('role', ''),
             'alias': a.get('alias', ''),
@@ -625,7 +710,8 @@ _SAFE_GH_LINK = re.compile(
             'retired': a.get('retired'),
             'handover_meter': meter,
             'chat_end_seen': a.get('chat_end_seen') is True,
-            'chat_end_risk': risk,
+            'chat_end_risk': ((meter is not None and meter >= 80)
+                              or a.get('chat_end_seen') is True),
             'handover': _wp10_link(a.get('handover'), {
                 owner_json.REPO, registry.get('repository')}),
             'evidence_thread_num': thread_num,
@@ -712,8 +798,8 @@ _SAFE_GH_LINK = re.compile(
         'source_commit': source_commit,
         'registry_blob_sha': registry_blob_sha,
         'repository': registry.get('repository', ''),
-        'external_links': _wp10_external_links(registry),
         'auto_response': _wp10_auto_response(registry, now),
+        'external_links': _wp10_external_links(registry),
         'source_capture_at': source_capture_at,
         'source_health': health,
         'source_refs': {
@@ -1257,821 +1343,6 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
                     'chat_end_seen': a['chat_end_seen'],
                     'chat_end_risk': a['chat_end_risk'],
                     'handover': a['handover'],
-                    'evidence_thread_num': a['evidence_thread_num'],
-                }
-                for a in pd['agents']
-            ],
-            'open_owner_decisions': pd['registry']['open_owner_decisions'],
-            'outside_writes': pd['outside_writes'],
-            'timeline_source': pd['timeline_source'],
-            'is_benchmark': pd['is_benchmark'],
-            'benchmark_snapshot': pd['benchmark_snapshot'],
-            'built_at': pd['built_at'],
-        })
-
-    save_json(out_dir / 'projects.json', summary)
-    if not benchmark_dirs:
-        registered = {pd['registry'].get('repository') for pd in all_projects
-                      if isinstance(pd['registry'].get('repository'), str)}
-        issue_rows = build_owner_inputs(owner_source, owner_capture,
-                                        registered_repos=registered)
-        json_rows = owner_json.read_committed_inputs(root)
-        save_json(out_dir / 'owner-inputs.json', issue_rows + json_rows)
-
-    # Save full project detail files
-    for pd in all_projects:
-        pname = pd['project']
-        # Remove bulky evidence from the project file (use per-agent files instead)
-        pd_slim = {k: v for k, v in pd.items() if k != 'agents'}
-        pd_slim['agents'] = [
-            {k: v for k, v in a.items() if k != 'evidence'}
-            for a in pd['agents']
-        ]
-        save_json(out_dir / f'project-{pname}.json', pd_slim)
-
-    print(f"Done. Built {len(all_projects)} project(s).")
-    return all_projects, all_timelines
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Build site data JSON files")
-    parser.add_argument('--root', default='.', help='Repository root')
-    parser.add_argument('--out', default='site/data', help='Output directory')
-    parser.add_argument('--benchmark', action='append', dest='benchmarks',
-                        help='Benchmark directory (may be specified multiple times)')
-    parser.add_argument('--cache-dir', default=None,
-                        help='Directory written by fetch_live_data.py (live mode only)')
-    args = parser.parse_args()
-
-    root = Path(args.root).resolve()
-    out = Path(args.out)
-    if not out.is_absolute():
-        out = root / out
-
-    bm_dirs = None
-    if args.benchmarks:
-        bm_dirs = [Path(b) if Path(b).is_absolute() else root / b for b in args.benchmarks]
-
-    cache = Path(args.cache_dir) if args.cache_dir else None
-    if cache and not cache.is_absolute():
-        cache = root / cache
-
-    build_all(root, out, bm_dirs, cache_dir=cache)
-
-)
-
-
-def _wp10_link(url, allowed_repositories):
-    if not isinstance(url, str):
-        return None
-    match = _SAFE_GH_LINK.fullmatch(url)
-    return url if match and match.group(1) in allowed_repositories else None
-
-
-def _wp10_external_links(registry):
-    repository = registry.get('repository')
-    if not isinstance(repository, str) or repository == owner_json.REPO:
-        return []
-    allowed = {repository}
-    links = []
-    seen = set()
-    for kind, entries in (
-        ('Issue', [registry.get('parent_issue'), registry.get('status_issue')]),
-        ('Issue', registry.get('owning_issues', [])),
-        ('PR', registry.get('pull_requests', [])),
-        ('PR', registry.get('owning_prs', [])),
-    ):
-        for candidate in (entries if isinstance(entries, list) else []):
-            if isinstance(candidate, dict):
-                candidate = candidate.get('url')
-            url = _wp10_link(candidate, allowed)
-            if url and url not in seen and (
-                    (kind == 'Issue' and '/issues/' in url) or
-                    (kind == 'PR' and '/pull/' in url)):
-                links.append({'kind': kind, 'url': url, 'read_only': True})
-                seen.add(url)
-    return links
-
-
-def _wp10_auto_response(registry, now):
-    raw = registry.get('auto_response')
-    if not isinstance(raw, dict):
-        return None
-    allowed = raw.get('allowed')
-    until = raw.get('until')
-    deadline = _owner_time(until) if isinstance(until, str) else None
-    scoped = allowed in ('yes', 'no', 'critical')
-    state = ('UNKNOWN' if not scoped or not deadline else
-             'EXPIRED' if deadline <= now else
-             'NOT_ALLOWED' if allowed == 'no' else 'IN_SCOPE')
-    owner_words = raw.get('owner_words')
-    words = owner_words if isinstance(owner_words, str) else ''
-    scope = raw.get('scope')
-    return {
-        'scope': scope if isinstance(scope, str) else '',
-        'allowed': allowed if scoped else 'unknown',
-        'until': until if deadline else None,
-        'state': state,
-        'owner_words': words,
-        'critical_rules': ('Critical requests require the Owner to decide; '
-                           'a delegated answer is not Owner approval. ' + words),
-    }
-
-
-def _wp10_decision_label(record):
-    text = record.get('text', '') if isinstance(record, dict) else record
-    text = text if isinstance(text, str) else ''
-    words = record.get('owner_words') if isinstance(record, dict) else None
-    # Delegation takes precedence even when the same comment mentions Owner.
-    if '(delegated)' in text.lower():
-        return 'delegated (OwnerTeammember)'
-    if (isinstance(words, str) and words.strip()) or re.search(
-            r"Owner(?:'s)? words:\\s*[\\\"“]", text, re.I):
-        return 'Owner'
-    return 'unverified'
-
-
-def _wp10_agent_status(value):
-    text = str(value or '').lower()
-    for status in ('retired', 'standby', 'active', 'hold'):
-        if text.startswith(status):
-            return status
-    return text or 'unknown'
-
-
-def _wp10_meter(value):
-    if isinstance(value, bool):
-        return None
-    if isinstance(value, (int, float)) and 0 <= value <= 100:
-        return value
-    if isinstance(value, str):
-        match = re.fullmatch(r'\\s*(\\d+(?:\\.\\d+)?)%?\\s*', value)
-        if match and 0 <= float(match.group(1)) <= 100:
-            return float(match.group(1))
-    return None
-
-
-def build_project_data(root: Path, project_name: str, registry: dict,
-                        threads: dict, inbox: list, events_path: Path | list[Path] | None,
-                        source_meta: dict | None = None,
-                        status_thread: dict | None = None,
-                        now: datetime | None = None,
-                        registry_blob_sha: str | None = None) -> dict:
-    """Assemble the project data payload."""
-
-    now = now or datetime.now(timezone.utc)
-    if now.tzinfo is None:
-        raise ValueError('now must be timezone-aware')
-    now = now.astimezone(timezone.utc)
-    thread_owners = {}
-    for item in registry.get('agents', []):
-        number = _issue_number(item.get('evidence_thread', ''))
-        if number:
-            thread_owners[number] = thread_owners.get(number, 0) + 1
-
-    # Agents
-    agents = []
-    for a in registry.get('agents', []):
-        chat = a.get('chat_id8', '')
-        thread_url = a.get('evidence_thread', '')
-        # Extract thread number
-        thread_num = None
-        m = re.search(r'/issues/(\d+)', thread_url)
-        if m:
-            thread_num = int(m.group(1))
-
-        thread_data = threads.get(thread_num, {}) if thread_num else {}
-        evidence = build_agent_evidence(
-            thread_data, project_name, chat,
-            shared=thread_owners.get(thread_num, 0) > 1
-        )
-
-        agents.append({
-            'role': a.get('role', ''),
-            'alias': a.get('alias', ''),
-            'generation': a.get('generation', 1),
-            'chat_id8': chat,
-            'status': ('retired' if str(a.get('status', '')).lower().startswith('retired')
-                       else 'active' if str(a.get('status', '')).lower().startswith('active')
-                       else a.get('status', '')),
-            'status_raw': a.get('status', ''),
-            'retired': a.get('retired'),
-            'evidence_thread_num': thread_num,
-            'branch': a.get('branch', ''),
-            'started': a.get('started'),
-            'evidence': evidence,
-        })
-
-    # Leases
-    leases = [dict(item) for item in registry.get('leases', [])
-              if isinstance(item, dict)]
-    retired_chats = {a['chat_id8'] for a in agents if a['status'] == 'retired'}
-    for lease in leases:
-        holder = str(lease.get('holder') or lease.get('actor') or '')
-        match = re.search(r'(?<![0-9a-f])[0-9a-f]{8}(?![0-9a-f])',
-                          holder, re.IGNORECASE)
-        holder_id8 = match.group(0) if match else None
-        lease['holder_chat_id8'] = holder_id8
-        lease['valid_for_active_agent'] = (
-            None if holder_id8 is None else holder_id8 not in retired_chats
-        )
-        if holder_id8 in retired_chats:
-            lease['warning'] = 'RETIRED_HOLDER'
-        elif not holder_id8:
-            lease['warning'] = 'UNVERIFIED_HOLDER'
-    # Also parse leases from standing_owner_decisions
-    sod = registry.get('standing_owner_decisions', [])
-    lease_pattern = re.compile(r'AB-LEASE granted.*?(?:Agent\s+\w+\s+[0-9a-f]{8})', re.IGNORECASE | re.DOTALL)
-    for sd in sod:
-        sd_str = sd if isinstance(sd, str) else json.dumps(sd)
-        if 'lease' in sd_str.lower() and not leases:
-            leases.append({'description': sd})
-
-    # Facts / outside writes
-    facts = registry.get('facts', [])
-    outside_writes = [f for f in facts if OUTSIDE_WRITE_RE.search(f if isinstance(f, str) else json.dumps(f))]
-
-    # Status comment
-    status_issue_url = registry.get('status_comment') or registry.get('status_issue', '')
-
-    # Timeline
-    has_events = (any(p.exists() for p in events_path)
-                  if isinstance(events_path, list) else
-                  bool(events_path and events_path.exists()))
-    if has_events:
-        timeline = build_timeline_from_events(events_path, project_name)
-        timeline_source = 'events_jsonl'
-    else:
-        # Reconstruct from threads + inbox
-        allowed = {_issue_number(registry.get('status_comment') or
-                                 registry.get('status_issue') or '')}
-        allowed.update(_issue_number(a.get('evidence_thread'))
-                       for a in registry.get('agents', []))
-        thread_list = [t for n, t in threads.items() if n in allowed]
-        timeline = build_timeline_from_threads(
-            thread_list, inbox, project_name, {a['chat_id8'] for a in agents},
-            {n for n, count in thread_owners.items() if count > 1}
-        )
-        timeline_source = 'reconstructed'
-
-    capture = source_meta if isinstance(source_meta, dict) else None
-    status_pointer = registry.get('status_comment') or registry.get('status_issue') or ''
-    pinned = re.search(r'#issuecomment-(\d+)', status_pointer)
-    last_cycle = last_completed_cycle(
-        status_thread or {}, project_name, now,
-        registry.get('control', {}).get('epoch'), inbox=inbox,
-        pinned_comment_id=(pinned.group(1) if pinned else None),
-        epoch_since=registry.get('control', {}).get('since'),
-    )
-    freshness = ('BENCHMARK' if capture and capture.get('status') == 'benchmark'
-                 else derive_freshness(last_cycle, capture,
-                                       registry.get('control', {}).get('hold'), now))
-    health = {'status': capture.get('status', 'unknown') if capture else 'unknown',
-              'errors': capture.get('errors', []) if capture else ['capture_manifest_missing']}
-    source_commit = capture.get('source_commit') if capture else None
-    source_capture_at = capture.get('source_capture_at') if capture else None
-
-    return {
-        'project': project_name,
-        'schema_version': 'wp1a.1',
-        'source_commit': source_commit,
-        'registry_blob_sha': registry_blob_sha,
-        'source_capture_at': source_capture_at,
-        'source_health': health,
-        'source_refs': {
-            'inbox': 'https://github.com/reallakshman19/CoordinatorLandingpage/issues/1',
-            'status_issue': registry.get('status_comment') or registry.get('status_issue'),
-            'registry_blob_sha': registry_blob_sha,
-            'source_commit': source_commit,
-        },
-        'last_cycle_at': last_cycle,
-        'freshness_status': freshness,
-        'liveness_observation_limit': LIVENESS_OBSERVATION_LIMIT,
-        'published_at': None,
-        'stale_lease_count': sum(l.get('warning') == 'RETIRED_HOLDER' for l in leases),
-        'registry': {
-            'protocol': registry.get('protocol', ''),
-            'repository': registry.get('repository', ''),
-            'updated': registry.get('updated', ''),
-            'control': registry.get('control', {}),
-            'workflow': registry.get('workflow', {}),
-            'source': registry.get('source', {}),
-            'standing_owner_decisions': sod,
-            'open_owner_decisions': registry.get('open_owner_decisions', []),
-            'status_issue': status_issue_url,
-            'log_folder': registry.get('log_folder', ''),
-            'facts': facts,
-        },
-        'agents': agents,
-        'leases': leases,
-        'outside_writes': outside_writes,
-        'timeline_source': timeline_source,
-        'timeline_event_count': len(timeline),
-        'built_at': now.isoformat(),
-    }, timeline
-
-
-
-# G02/G05/G06: projection is reporting, NOT authorization.
-_OWNER_RECEIPT = re.compile(
-    r'^HANDLED:\s*owner-input\s*#(?P<n>\d+)\s+receipt:\s*'
-    r'(?P<url>https://github\.com/[\w.-]+/[\w.-]+/issues/\d+#issuecomment-\d+)\s*$',
-    re.I | re.M)
-_OWNER_ACK = re.compile(r'^ACK(?:NOWLEDGED)?:\s*(?:owner-input\s*)?#(\d+)\s*$',
-                        re.I | re.M)
-_OWNER_CLARIFY = re.compile(
-    r'^NEEDS CLARIFICATION:\s*(?:owner-input\s*)?#(\d+)\b', re.I | re.M)
-_OWNER_SUPERSEDES = re.compile(r'\bsupersedes\s+(?:owner-input\s*)?#(\d+)\b', re.I)
-_OWNER_FROZEN = re.compile(r'^Frozen-SHA:\s*([0-9a-f]{40})\s*$', re.I | re.M)
-_OWNER_REVIEW_SHA = re.compile(r'^Review-SHA:\s*([0-9a-f]{40})\s*$', re.I | re.M)
-_OWNER_REVIEW_ROLE = re.compile(r'^Review-Role:\s*(\S+)\s*$', re.M)
-_OWNER_REVIEW_TARGET = re.compile(r'^Review-Target:\s*#(\d+)\s*$', re.M)
-_OWNER_REVIEW_RESULT = re.compile(r'^Review-Result:\s*(PASS|HOLD)\s*$', re.I | re.M)
-_OWNER_PROTECTED = re.compile(
-    r'\b(?:merge|release|publish|deploy|new[\s-]+chat|start[\s-]+agent|'
-    r'writer[\s-]+grant|role[\s-]+change|acceptance|freeze|upload)\b', re.I)
-
-
-def _owner_time(value):
-    try:
-        dt = datetime.fromisoformat((value or '').replace('Z', '+00:00'))
-        return dt.astimezone(timezone.utc) if dt.tzinfo else None
-    except (TypeError, ValueError, AttributeError):
-        return None
-
-
-
-_FORM_SECTION = re.compile(r'^###\s+(.+?)\s*$', re.M)
-_OWNER_TITLE_PROJECT = re.compile(r'^\[Owner input\][^\n]*?\(([^()\n]+)\)\s*$', re.I)
-_OWNER_TITLE = re.compile(r'^\[Owner input\](?:\s|$)', re.I)
-_FORM_MAP = {
-    'Project': 'project', 'Target': 'target', 'Input type': 'type',
-    'Your instruction or message': 'text',
-}
-
-
-def owner_form_fields(body):
-    """Read GitHub Issue Form markdown sections, NOT the raw form as text."""
-    if not isinstance(body, str):
-        return {}
-    matches = list(_FORM_SECTION.finditer(body))
-    sections = {}
-    for i, marker in enumerate(matches):
-        key = _FORM_MAP.get(marker.group(1).strip())
-        if not key:
-            continue
-        end = matches[i + 1].start() if i + 1 < len(matches) else len(body)
-        value = body[marker.end():end].strip()
-        if value and value != '_No response_':
-            sections[key] = value
-    return sections
-
-
-def owner_issue_is_labelled(issue):
-    labels = issue.get('labels')
-    if not isinstance(labels, list):
-        return False
-    return any((x.get('name') if isinstance(x, dict) else x) == 'owner-input'
-               for x in labels)
-
-
-_ISSUE_ASSOCIATIONS = frozenset(('OWNER', 'MEMBER', 'COLLABORATOR'))
-
-
-# WP6: trace facts must be recorded links, not guessed status transitions.
-_TRACE_LINK = re.compile(
-    r'https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/'
-    r'(?:issues|pull)/\d+(?:#issuecomment-\d+)?'
-)
-_TRACE_HEADINGS = (
-    ('sent', re.compile(r'^(?:Sent to agent|FTC(?: relay)?):', re.I)),
-    ('evidence', re.compile(r'^(?:Agent evidence|TASK EVIDENCE(?: v\d+)?):', re.I)),
-    ('check', re.compile(r'^(?:Check|C1(?: verdict)?|B verdict):', re.I)),
-)
-
-
-def _owner_trace(issue, comments, number, repo, boundary, status, reason,
-                 title_project, body_project, association, allowed_repos):
-    """Report only links inside this issue's recorded, timestamped comments.
-
-    Handoff/evidence/check links require explicit headings AND a real GitHub
-    URL in an associated comment. Never infer them from a HANDLED claim.
-    """
-    issue_url = f'https://github.com/{repo}/issues/{number}'
-    steps = {'posted': {'url': issue_url, 'at': issue.get('created_at')},
-             'ack': None, 'sent': None, 'evidence': None, 'check': None,
-             'result': None}
-    for c in comments:
-        stamp = _owner_time(c.get('created_at'))
-        cid = c.get('id')
-        if stamp is None or not isinstance(cid, int):
-            continue
-        if boundary and stamp <= boundary:
-            continue
-        if c.get('author_association') not in _ISSUE_ASSOCIATIONS:
-            continue
-        comment_url = issue_url + f'#issuecomment-{cid}'
-        body = c.get('body') or ''
-        ack = _OWNER_ACK.search(body)
-        if ack and int(ack.group(1)) == number:
-            steps['ack'] = {'url': comment_url, 'at': c['created_at']}
-        handled = _OWNER_RECEIPT.search(body)
-        if (handled and int(handled.group('n')) == number
-                and handled.group('url').lower() == comment_url.lower()):
-            steps['result'] = {
-                'url': comment_url, 'at': c['created_at'],
-                'accepted': status == 'HANDLED',
-            }
-        for line in body.splitlines():
-            for key, pattern in _TRACE_HEADINGS:
-                if not pattern.search(line):
-                    continue
-                link = _TRACE_LINK.search(line)
-                if link and owner_json.linked_repo(link.group(0), allowed_repos):
-                    steps[key] = {
-                        'url': link.group(0), 'at': c['created_at'],
-                        'source_url': comment_url,
-                    }
-    if reason == 'project_mismatch':
-        why = (f'Form says {body_project or "not given"}, '
-               f'title says {title_project or "not given"}. '
-               'Waiting for Owner to clarify the project.')
-        waiting = 'Owner'
-    elif association not in _ISSUE_ASSOCIATIONS:
-        why = ('The post has not been confirmed as coming from a '
-               'repository-associated person; it is not an Owner instruction.')
-        waiting = 'TeamCoordinator'
-    elif reason == 'label_missing':
-        why = ('This request is missing the owner-input label. '
-               'Waiting for TeamCoordinator to check the label.')
-        waiting = 'TeamCoordinator'
-    elif status == 'HANDLED':
-        why = ('A linked handler note is recorded. This is not '
-               'proof of an agent review or Owner approval.')
-        waiting = None
-    elif status == 'ACKNOWLEDGED':
-        why = ('The team acknowledged this request, but a confirmed '
-               'result has not been recorded.')
-        waiting = 'TeamCoordinator'
-    elif status == 'NEEDS_CLARIFICATION':
-        why = 'The team needs more information before this can be marked handled.'
-        waiting = 'Owner'
-    elif status == 'SUPERSEDED':
-        why = 'A newer linked request replaces this one.'
-        waiting = None
-    else:
-        why = 'No linked team acknowledgment or result has been recorded yet.'
-        waiting = 'TeamCoordinator'
-    return {'steps': steps, 'why': why, 'waiting_for': waiting}
-
-
-def build_owner_inputs(issues, capture, repo='reallakshman19/CoordinatorLandingpage',
-                       registered_repos=None):
-    """Immutable, strictly linked versioned issue receipts; fail closed."""
-    allowed_repos = {repo} | set(registered_repos or [])
-    source_ok = (isinstance(capture, dict) and capture.get('status') == 'ok'
-                 and 1 in capture.get('issues_fetched', [])
-                 and capture.get('owner_inputs_complete') is True)
-    by_num = {}
-    for issue in sorted((i for i in (issues if isinstance(issues, list) else [])
-                         if isinstance(i, dict) and isinstance(i.get('number'), int)),
-                        key=lambda i: (i.get('updated_at') or '', i['number'])):
-        by_num[issue['number']] = issue
-    result = []
-    for number, issue in sorted(by_num.items()):
-        body = issue.get('body') or ''
-        cm = {}
-        for comment in issue.get('comments', []):
-            if isinstance(comment, dict) and isinstance(comment.get('id'), int):
-                cm[comment['id']] = comment
-        comments = sorted(cm.values(),
-                          key=lambda c: (c.get('created_at') or '', c['id']))
-        events = {}
-        for event in issue.get('events', []):
-            if isinstance(event, dict) and isinstance(event.get('id'), int):
-                events[event['id']] = event
-        revisions = [_owner_time(e.get('created_at')) for e in events.values()
-                     if e.get('event') in ('edited', 'reopened')]
-        revisions = [v for v in revisions if v]
-        created = _owner_time(issue.get('created_at'))
-        # A row's "updated" clock is GitHub source activity, not an
-        # invented ACK or Owner approval. A missing REST updated_at in test
-        # fixtures can still be reconstructed from timestamped comments.
-        activity = [created, _owner_time(issue.get('updated_at'))] + [
-            _owner_time(c.get('updated_at') or c.get('created_at'))
-            for c in comments
-        ] + revisions
-        activity = [v for v in activity if v is not None]
-        last_updated = max(activity).isoformat() if activity else None
-        boundary = max(revisions) if revisions else created
-        state, receipt, previous_handled = 'OPEN', None, False
-        for comment in comments:
-            stamp = _owner_time(comment.get('created_at'))
-            text = comment.get('body') or ''
-            m = _OWNER_RECEIPT.search(text)
-            expected_url = (f'https://github.com/{repo}/issues/{number}'
-                            f'#issuecomment-{comment["id"]}')
-            is_receipt = bool(m and int(m.group('n')) == number and
-                              m.group('url').lower() == expected_url.lower())
-            if stamp is None or (boundary and stamp <= boundary):
-                previous_handled |= is_receipt and comment.get('author_association') in _ISSUE_ASSOCIATIONS
-                continue
-            if is_receipt and comment.get('author_association') in _ISSUE_ASSOCIATIONS:
-                state, receipt = 'HANDLED', expected_url
-            elif (m := _OWNER_CLARIFY.search(text)) and int(m.group(1)) == number and comment.get('author_association') in _ISSUE_ASSOCIATIONS:
-                state, receipt = 'NEEDS_CLARIFICATION', None
-            elif (m := _OWNER_ACK.search(text)) and int(m.group(1)) == number and comment.get('author_association') in _ISSUE_ASSOCIATIONS:
-                if state != 'HANDLED':
-                    state, receipt = 'ACKNOWLEDGED', None
-        if previous_handled and revisions and state != 'HANDLED':
-            state = 'NEEDS_CLARIFICATION'
-        if state == 'HANDLED' and (not source_ok or
-                                   issue.get('events_complete') is not True):
-            state, receipt = 'NEEDS_CLARIFICATION', None
-        form = owner_form_fields(body)
-        title = issue.get('title') or ''
-        title_match = _OWNER_TITLE_PROJECT.match(title.strip())
-        title_project = title_match.group(1).strip() if title_match else ''
-        body_project = (form.get('project') or '').strip()
-        legacy_project = (issue.get('project') or '').strip()
-        if not body_project:
-            legacy = re.search(r'^Project:\s*(.+)$', body, re.M | re.I)
-            body_project = legacy.group(1).strip() if legacy else ''
-        mismatch = bool(title_project and body_project and
-                        title_project.casefold() != body_project.casefold())
-        # Conflicting Title/Form claims must NOT become a project assignment.
-        project = '' if mismatch else (body_project or legacy_project or title_project)
-        missing_label = bool(_OWNER_TITLE.match(title.strip())
-                             and not owner_issue_is_labelled(issue))
-        reason = None
-        if mismatch:
-            reason = 'project_mismatch'
-        elif missing_label:
-            reason = 'label_missing'
-        if reason:
-            state, receipt = 'NEEDS_CLARIFICATION', None
-        fsha = _OWNER_FROZEN.search(body)
-        frozen_sha = fsha.group(1).lower() if fsha else None
-        review = {'state': 'UNVERIFIED', 'reason': 'review_missing_or_unbound',
-                  'frozen_sha': frozen_sha, 'comment_id': None}
-        for comment in comments:
-            text = comment.get('body') or ''
-            target = _OWNER_REVIEW_TARGET.search(text)
-            sha = _OWNER_REVIEW_SHA.search(text)
-            role = _OWNER_REVIEW_ROLE.search(text)
-            verdict = _OWNER_REVIEW_RESULT.search(text)
-            if not (target and sha and role and verdict):
-                continue
-            review['comment_id'] = comment['id']
-            if int(target.group(1)) != number:
-                review['reason'] = 'target_mismatch'
-            elif not frozen_sha:
-                review['reason'] = 'frozen_sha_missing'
-            elif sha.group(1).lower() != frozen_sha:
-                review['reason'] = 'sha_mismatch'
-            elif role.group(1) != 'OwnerTeammember':
-                review['reason'] = 'role_mismatch'
-            elif verdict.group(1).upper() != 'PASS':
-                review['reason'] = 'review_hold'
-            else:
-                review.update(state='MATCHED',
-                              reason='sha_and_role_claim_match_not_owner_approval')
-        association = issue.get('author_association') or ''
-        outsider = association not in _ISSUE_ASSOCIATIONS
-        if outsider:
-            # Retain untrusted submissions for audit but never present them
-            # as Owner instructions or allow claims in their bodies to act.
-            review = {'state': 'UNVERIFIED', 'reason': 'outsider_author',
-                      'frozen_sha': frozen_sha, 'comment_id': None}
-        trace = _owner_trace(issue, comments, number, repo, boundary, state,
-                             reason, title_project, body_project, association,
-                             allowed_repos)
-        sup = _OWNER_SUPERSEDES.search(body)
-        result.append({
-            'schema_version': 'wp1b.1', 'number': number,
-            'issue_url': f'https://github.com/{repo}/issues/{number}',
-            'type': form.get('type') or issue.get('type') or 'OWNER_INPUT',
-            'target': form.get('target') or issue.get('target') or '',
-            'text': scrub_chat_url((form.get('text') or body)[:300]),
-            'project': project, 'ts': issue.get('created_at'),
-            'updated_at': last_updated,
-            'reason': reason,
-            'flags': (['project_mismatch'] if mismatch else []) +
-                     (['label_missing'] if missing_label else []),
-            'label_missing': missing_label,
-            'project_claims': {'title': title_project, 'form': body_project},
-            'trace': trace,
-            'author_association': association,
-            'is_outsider': outsider,
-            'author_classification': 'OUTSIDER' if outsider else 'ASSOCIATED_NOT_OWNER_PROOF',
-
-            'issue_state': issue.get('state'), 'status': state,
-            'state': state.lower(), 'needs_you': state != 'HANDLED' and not outsider,
-            'receipt': receipt,
-            'revision_time': boundary.isoformat() if boundary else None,
-            'fresh_receipt_required': bool(previous_handled and revisions and
-                                           state != 'HANDLED'),
-            'closed_without_receipt': issue.get('state') == 'closed' and
-                                      state != 'HANDLED',
-            'supersedes': int(sup.group(1)) if sup else None,
-            'superseded_by': None,
-            'protected_action': bool(_OWNER_PROTECTED.search(
-                (issue.get('title') or '') + '\n' + body)),
-            'authority': 'UNVERIFIED', 'review': review, 'effective': False,
-            'source_health': 'ok' if source_ok else 'UNVERIFIED',
-        })
-    index = {item['number']: item for item in result}
-    for row in result:
-        old = index.get(row['supersedes'])
-        if (old and old is not row and old['project'] == row['project']
-                and not row.get('is_outsider') and not old.get('is_outsider')):
-            old.update(state='superseded', status='SUPERSEDED',
-                       needs_you=False, superseded_by=row['number'],
-                       effective=False, receipt=None)
-            old['trace']['why'] = 'A newer linked request replaces this one.'
-            old['trace']['waiting_for'] = None
-    return result
-
-
-def load_benchmark(bm_dir: Path) -> tuple:
-    """Load data from a benchmark directory."""
-    manifest = load_json(bm_dir / 'MANIFEST.json') or {}
-    project_name = manifest.get('project', bm_dir.name)
-
-    registry = load_json(bm_dir / 'logs' / 'registry.json') or {}
-    inbox_data = load_json(bm_dir / 'inbox-1.json') or []
-
-    # Load threads
-    threads = {}
-    threads_dir = bm_dir / 'threads'
-    if threads_dir.exists():
-        for tf in threads_dir.glob('issue-*.json'):
-            t = load_json(tf)
-            if t:
-                threads[t['number']] = t
-
-    # Events log (grade9-pilot has one, imo-ab-test does not)
-    logs_dir = bm_dir / 'logs'
-    events_path = None
-    for child in logs_dir.iterdir() if logs_dir.exists() else []:
-        if child.is_dir():
-            ep = child / 'events.jsonl'
-            if ep.exists():
-                events_path = ep
-                break
-
-    return project_name, registry, threads, inbox_data, events_path
-
-
-def load_live_threads(cache_dir: Path) -> tuple[dict, list]:
-    """Load threads and inbox from _live_cache/ (written by fetch_live_data.py)."""
-    threads: dict = {}
-    threads_dir = cache_dir / 'threads'
-    if threads_dir.exists():
-        for tf in threads_dir.glob('issue-*.json'):
-            t = load_json(tf)
-            if t:
-                threads[t['number']] = t
-
-    inbox_path = cache_dir / 'inbox-1.json'
-    inbox = load_json(inbox_path) or []
-    return threads, inbox
-
-
-def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = None,
-              cache_dir: Path | None = None):
-    """Main build entry point."""
-    print(f"Building site data → {out_dir}")
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    # Determine sources
-    if benchmark_dirs:
-        sources = []
-        for bmd in benchmark_dirs:
-            sources.append(('benchmark', bmd))
-    else:
-        # Normal build from repo structure
-        sources = []
-        logs_root = root / 'logs'
-        if logs_root.exists():
-            for proj_dir in logs_root.iterdir():
-                if proj_dir.is_dir() and proj_dir.name != 'README.md':
-                    sources.append(('live', proj_dir))
-
-    all_projects = []
-    all_timelines = {}
-    evidence_names = {}
-    owner_source, owner_capture = [], None
-    if not benchmark_dirs:
-        _owner_cache = cache_dir if cache_dir else root / '_live_cache'
-        owner_source = load_json(_owner_cache / 'owner-inputs-source.json') or []
-        owner_capture = load_json(_owner_cache / 'capture-info.json')
-
-    for source_type, source_path in sources:
-        if source_type == 'benchmark':
-            project_name, registry, threads, inbox, events_path = load_benchmark(source_path)
-            is_benchmark = True
-            source_meta = {'status': 'benchmark', 'errors': []}
-            registry_sha = git_blob_sha(source_path / 'logs' / 'registry.json')
-        else:
-            project_name = source_path.name
-            registry_path = source_path / 'registry.json'
-            registry = load_json(registry_path) or {}
-            registry_sha = git_blob_sha(registry_path)
-            _cache = cache_dir if cache_dir else root / '_live_cache'
-            scoped = _cache / 'project-threads' / project_name
-            if scoped.is_dir():
-                threads, inbox = load_live_threads(_cache)
-                # The sole source of this project's evidence/status is its
-                # registry-keyed scope, not the global issue-number map.
-                threads = {}
-                for tf in scoped.glob('issue-*.json'):
-                    item = load_json(tf)
-                    if isinstance(item, dict) and isinstance(item.get('number'), int):
-                        threads[item['number']] = item
-            else:
-                threads, inbox = load_live_threads(_cache)
-            source_meta = load_json(_cache / 'capture-info.json')
-            events_path = sorted(source_path.rglob('events.jsonl'))
-            is_benchmark = False
-
-        status_num = _issue_number(
-            registry.get('status_comment') or registry.get('status_issue') or ''
-        )
-        status_thread = threads.get(status_num, {}) if status_num else {}
-        current_meta = dict(source_meta) if isinstance(source_meta, dict) else None
-        if not is_benchmark and current_meta and status_num and status_num not in threads:
-            current_meta['status'] = 'degraded'
-            current_meta['errors'] = list(current_meta.get('errors', [])) + [
-                f'status_missing:{project_name}'
-            ]
-        project_data, timeline = build_project_data(
-            root, project_name, registry, threads, inbox, events_path,
-            source_meta=current_meta, status_thread=status_thread,
-            registry_blob_sha=registry_sha
-        )
-        project_data['is_benchmark'] = is_benchmark
-        project_data['benchmark_snapshot'] = (
-            load_json(source_path / 'MANIFEST.json') or {}
-        ).get('snapshot') if is_benchmark else None
-
-        all_projects.append(project_data)
-        all_timelines[project_name] = timeline
-
-        # Save per-agent evidence
-        for agent in project_data['agents']:
-            aid = agent['chat_id8']
-            if aid:
-                payload = {'project': project_name, 'agent': agent,
-                           'built_at': project_data['built_at']}
-                save_json(out_dir / f'evidence-{project_name}-{aid}.json', payload)
-                if aid not in evidence_names:
-                    evidence_names[aid] = project_name
-                    save_json(out_dir / f'evidence-{aid}.json', payload)
-                elif evidence_names[aid] != project_name:
-                    save_json(out_dir / f'evidence-{aid}.json', {
-                        'collision': True, 'agent': None,
-                        'source_health': {'status': 'ambiguous_agent_id8'},
-                        'projects': [evidence_names[aid], project_name],
-                    })
-
-        # Save timeline
-        save_json(
-            out_dir / f'timeline-{project_name}.json',
-            {
-                'project': project_name,
-                'source': project_data['timeline_source'],
-                'events': timeline,
-                'built_at': project_data['built_at'],
-            }
-        )
-
-    # Save projects summary
-    summary = []
-    for pd in all_projects:
-        summary.append({
-            'project': pd['project'],
-            'repository': pd['registry']['repository'],
-            'schema_version': pd['schema_version'],
-            'source_commit': pd['source_commit'],
-            'registry_blob_sha': pd['registry_blob_sha'],
-            'source_capture_at': pd['source_capture_at'],
-            'source_health': pd['source_health'],
-            'source_refs': pd['source_refs'],
-            'last_cycle_at': pd['last_cycle_at'],
-            'freshness_status': pd['freshness_status'],
-            'liveness_observation_limit': pd['liveness_observation_limit'],
-            'published_at': pd['published_at'],
-            'stale_lease_count': pd['stale_lease_count'],
-            'control': pd['registry']['control'],
-            'workflow': pd['registry']['workflow'],
-            'agents': [
-                {
-                    'role': a['role'],
-                    'alias': a.get('alias', ''),
-                    'generation': a['generation'],
-                    'chat_id8': a['chat_id8'],
-                    'status': a['status'],
                     'evidence_thread_num': a['evidence_thread_num'],
                 }
                 for a in pd['agents']
