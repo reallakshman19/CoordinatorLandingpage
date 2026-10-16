@@ -169,7 +169,7 @@ function decisionProvenance(item) {
 function allowedExternalLink(url, repository) {
   if (typeof url !== 'string' || typeof repository !== 'string' ||
       !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repository)) return null;
-  return /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/(issues|pull)\/\d+$/.test(url) &&
+  return /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/(issues|pull)\/\d+(?:#issuecomment-\d+)?$/.test(url) &&
     url.startsWith('https://github.com/' + repository + '/') ? url : null;
 }
 function autoResponseStatus(entry) {
