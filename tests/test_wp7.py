@@ -198,5 +198,87 @@ class DetailedWP7(unittest.TestCase):
         self.assertEqual(row["status"],"ACKNOWLEDGED")
         self.assertIn("/blob/"+SHA+"/logs/",row["trace"]["steps"]["ack"]["url"])
 
+
+class WP8cInputSafety(unittest.TestCase):
+    """WP8c negative controls. Keep these independent of older WP7 assertions."""
+
+    def test_wp8c_self_replacement_is_invalid_not_open(self):
+        with tempfile.TemporaryDirectory() as td:
+            make_repo(td, raw=json.dumps(record(replaces=OLDER)))
+            row = projected(td)[0]
+        self.assertEqual(row["status"], "NEEDS_CLARIFICATION")
+        self.assertIn("replaces", row["flags"])
+        self.assertIsNone(row["superseded_by"])
+
+    def test_wp8c_unknown_replacement_is_invalid_not_open(self):
+        with tempfile.TemporaryDirectory() as td:
+            make_repo(td, raw=json.dumps(record(replaces=NEWER)))
+            row = projected(td)[0]
+        self.assertEqual(row["status"], "NEEDS_CLARIFICATION")
+        self.assertIn("replaces", row["flags"])
+
+    def test_wp8c_id_path_timestamp_and_length_limits_exact(self):
+        valid = record(target="t" * 160, type="T" * 64, text="x" * 1500)
+        self.assertEqual(owner_json.schema_errors(valid, OLDER, "landing-live",
+                          {"landing-live": REPO}), [])
+        cases = [
+            ("target_empty", record(target=""), "target"),
+            ("target_161", record(target="t" * 161), "target"),
+            ("type_empty", record(type=""), "type"),
+            ("type_65", record(type="T" * 65), "type"),
+            ("text_empty", record(text=""), "text"),
+            ("text_1501", record(text="x" * 1501), "text"),
+            ("bad_replaces", record(replaces="../"), "replaces"),
+            ("id_wrong_path", record(NEWER), "id_or_path_mismatch"),
+            ("time_wrong_id", record(created_at="2026-10-15T16:31:00Z"), "created_at"),
+            ("project_wrong_path", record(project="grade9-pilot"), "project_or_path_mismatch"),
+        ]
+        for name, obj, expected in cases:
+            with self.subTest(name=name):
+                self.assertIn(expected, owner_json.schema_errors(
+                    obj, OLDER, "landing-live", {"landing-live": REPO}))
+
+    def test_wp8c_non_json_and_non_object_fail_closed(self):
+        for raw in ("{", "[]", "null", '"not an object"'):
+            with self.subTest(raw=raw), tempfile.TemporaryDirectory() as td:
+                make_repo(td, raw=raw)
+                row = projected(td)[0]
+                self.assertEqual(row["status"], "NEEDS_CLARIFICATION")
+                self.assertIn("schema_keys", row["flags"])
+                self.assertFalse(row["trace"]["steps"]["result"])
+
+    def test_wp8c_foreign_handled_and_clarification_comments_cannot_count(self):
+        number = 813
+        base_issue = {
+            "number": number, "title": "[Owner input] INFO (landing-live)",
+            "body": "Project: landing-live", "labels": [{"name": "owner-input"}],
+            "author_association": "MEMBER", "events_complete": True,
+            "created_at": "2026-10-15T16:00:00Z", "comments": [],
+        }
+        capture = {"status": "ok", "issues_fetched": [1],
+                   "owner_inputs_complete": True}
+        receipt_url = (f"https://github.com/{REPO}/issues/{number}"
+                       "#issuecomment-81303")
+        comments = [
+            {"id": 81301, "body": f"ACK: owner-input #{number}",
+             "author_association": "MEMBER", "created_at": "2026-10-15T16:01:00Z"},
+            {"id": 81302, "body": f"NEEDS CLARIFICATION: owner-input #{number} more info",
+             "author_association": "CONTRIBUTOR", "created_at": "2026-10-15T16:02:00Z"},
+            {"id": 81303, "body": f"HANDLED: owner-input #{number} receipt: {receipt_url}",
+             "author_association": "NONE", "created_at": "2026-10-15T16:03:00Z"},
+        ]
+        issue = dict(base_issue, comments=comments)
+        row = build_data.build_owner_inputs([issue], capture)[0]
+        self.assertEqual(row["status"], "ACKNOWLEDGED")
+        self.assertIsNone(row["receipt"])
+        self.assertIsNone(row["trace"]["steps"]["result"])
+        for i in (1, 2):
+            alternative = [dict(c) for c in comments]
+            alternative[i]["author_association"] = "MEMBER"
+            issue = dict(base_issue, comments=alternative)
+            row = build_data.build_owner_inputs([issue], capture)[0]
+            self.assertEqual(row["status"],
+                             "HANDLED" if i == 2 else "ACKNOWLEDGED")
+
 if __name__=="__main__":
     unittest.main(verbosity=2)
