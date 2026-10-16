@@ -2,7 +2,7 @@
   "project": "grade9-pilot",
   "protocol": "Team protocol v2.1",
   "repository": "reallakshman19/Grade9v3.5",
-  "updated": "2026-10-16T15:20:11+04:00",
+  "updated": "2026-10-16T15:40:57+04:00",
   "updated_by": "Codex TC/OT: Owner-approved one execution-only runner; no V/M code release",
   "control": {
     "epoch": 3,
@@ -526,14 +526,24 @@
         "authority": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6214278065",
         "instance_sha256": "cb07605418cbdb310368cf7b750016445c301038a7ccfb56f1912d82f027790f",
         "adoption": "https://github.com/reallakshman19/Grade9v3.5/issues/288#issuecomment-6214348119",
-        "state": "ADOPTION_VERIFIED_EXECUTION_UNIT_DISPATCHED_ACTIVE",
+        "state": "BOUNDED_UNIT_COMPLETE_FACTUAL_RESULT_ONLY",
         "material_release": false,
         "product_paths": [],
         "local_scope": "Fresh isolated checkout/reports only; no product edits or acceptance",
-        "observed_at": "2026-10-16T11:20:11Z",
-        "observation_source": "Native Codex active execution-turn snapshot; no checkout/test result yet",
+        "observed_at": "2026-10-16T11:40:57Z",
+        "observation_source": "Native Codex completed/idle; GitHub factual result GET/hash verified",
         "adoption_body_sha256": "4b8c6a70ae5bf1533b390dd3eb9e2728db8e74222d446b50c38ffce409f4f883",
-        "execution_admission": "Owner approve runner; native dispatch gatePASS; fresh pinned checkout/environment/existing baselines only"
+        "execution_admission": "Owner approve runner; native dispatch gatePASS; fresh pinned checkout/environment/existing baselines only",
+        "result": "https://github.com/reallakshman19/Grade9v3.5/issues/288#issuecomment-6214480704",
+        "result_body_sha256": "cc70381a7589cc72a3e91aef300a2c6c8fc2429c6a20eb7445ae35cc95a066b3",
+        "execution_route_available": true,
+        "baseline": {
+          "existing_V_tests": "12/12 atV and same12/12 inresearchoverlay; not24distinct",
+          "corpus": "FAIL:6band/27score/1invalidvalue finding;1staleaudit",
+          "future_interfaces": "NOT_RUN",
+          "acceptance": false
+        },
+        "receipt_correction": "Local human-readable blob ID corrected by actual author; no test/result/product change"
       }
     }
   }
