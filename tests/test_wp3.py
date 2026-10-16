@@ -191,7 +191,7 @@ class WP3Additional(unittest.TestCase):
         import re
         workflows=sorted((ROOT/".github/workflows").glob("*.yml"))
         self.assertEqual({p.name for p in workflows},
-                         {"blank.yml","deploy.yml","landing-tests.yml"})
+                         {"blank.yml","deploy.yml","landing-tests.yml","ultra-economy-tests.yml"})
         for path in workflows:
             content=path.read_text()
             self.assertIsNone(

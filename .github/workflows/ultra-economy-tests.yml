@@ -1,4 +1,4 @@
-name: UltraEconomyMode draft and WP16 STATUS BAR qualification
+name: UltraEconomyMode WP16+WP17 source and guard qualification
 
 on:
   pull_request:
@@ -6,6 +6,11 @@ on:
       - "scripts/ultra_economy.py"
       - "scripts/build_data.py"
       - "scripts/status_bar.py"
+      - "skills/ultra-economy-mode/SKILL.md"
+      - "ULTRA_ECONOMY_MODE.md"
+      - "tests/test_wp3.py"
+      - "tests/test_wp17.py"
+      - "tests/wp17_red_verify.py"
       - "site/app.js"
       - "site/index.html"
       - "site/style.css"
@@ -40,7 +45,7 @@ jobs:
       - name: Require all UEM and inherited Next Move + WP16 Python tests
         run: |
           set -o pipefail
-          python -m unittest tests.test_ultra_economy tests.test_wp13 tests.test_wp15 tests.test_wp16 -v 2>&1 | tee wp16-head-python.log
+          python -m unittest tests.test_ultra_economy tests.test_wp3 tests.test_wp13 tests.test_wp15 tests.test_wp16 tests.test_wp17 -v 2>&1 | tee wp16-head-python.log
       - name: Install Playwright + Chromium
         run: |
           python -m pip install playwright
@@ -133,4 +138,37 @@ jobs:
         with:
           name: wp16-pr50-browser-red
           path: wp16-browser-red.log
+          if-no-files-found: error
+
+  wp17-pinned-source-red:
+    name: WP17 pinned WP16 UEM guard RED 4 behavioral FAIL zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only reviewed WP16 UEM parser at aac682e1
+        run: |
+          set -euo pipefail
+          git show aac682e129cb042b8e6fae4e06bb905cd7257aa1:scripts/ultra_economy.py > scripts/ultra_economy.py
+      - name: Demand four genuine pre-guard behavioral assertion fails
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp17.WP17PinnedBase -v > wp17-source-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp17-source-red.log
+          python tests/wp17_red_verify.py wp17-source-red.log "$rc"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wp17-pinned-wp16-source-red
+          path: wp17-source-red.log
           if-no-files-found: error

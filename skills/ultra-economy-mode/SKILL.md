@@ -17,14 +17,12 @@ this task X; stopping early is always permitted.
 
 1. Decide the next bounded unit from Owner aim and your grant. Describe in
    plain words: `Planned outcome`, `Expected next` and `Known blocker`.
-2. If a ChatGPT scheduled-task capability is available, **invoke it once** to
-   create an hourly fallback source check. Use a recurring hourly cadence
-   (one check per hour, not every 15 minutes). Bind the actual project, task X,
-   agent id8, evidence issue and coordinator inbox; ask it to notify only when
-   the task needs action and to avoid inventing send/approval. Save the real
-   task identifier/receipt. Do not claim ARMED before host confirmation.
-   If unavailable, state `NOT_ARMED:<reason>`. Do not create another timer
-   for each UEM cycle.
+2. **Timer is NOT_ARMED by default.** Do not create a ChatGPT timer/scheduled
+   task in this WP17 work or suggest that the GitHub page armed one. Timer
+   creation requires a separate explicit Owner authorization and a real
+   authenticated host receipt. Even a text field saying ARMED is only an
+   unverified agent claim and never changes the read-only NOT_ARMED state.
+   This procedure never schedules a wake or resets a timer on restart.
 3. Post a new comment in the registered evidence thread:
 
 ```text
@@ -33,11 +31,17 @@ Planned outcome: <observable result of this one unit>
 Expected next: <expected next task/review>
 Known blocker: NONE | <specific known blocker>
 Workplan: https://github.com/<owner>/<repo>/issues/<number>
-Fallback: ARMED <actual host task reference> | NOT_ARMED <reason>
+Fallback: NOT_ARMED no authorized host receipt
 ```
 
-4. Re-read your own comment URL and confirm it exists before making material
-   changes; do not treat composing a comment as publishing it.
+4. Re-read the actual START comment and its owning issue. Before any
+   `WORKING_CLAIM`, a coordinator-reviewed registry source pin must match
+   **START URL + comment id + updated_at + SHA-256 digest of entire body**;
+   any missing/edited/duplicate record invalidates the claim. Recheck project
+   HOLD, retired/unqualified successor, exclusive writer-lease conflicts, and
+   an unexpired verified execution grant scoped to this id8/project.
+   Monitoring grant is separate; it never authorizes execution. Do not treat
+   composing a comment or self-reported chat text as published authority.
 
 ## At END of the task
 
@@ -51,20 +55,22 @@ Fallback: ARMED <actual host task reference> | NOT_ARMED <reason>
    HOLD and undelivered/uncertain actions. An instruction published only
    on an issue is NOT automatically a message delivered to this chat.
 4. If a matching Next Move has already passed the existing authorization and
-   delivery gates, recheck your own grant and start the next cycle only when
-   n < limit. Otherwise record `WAITING_NEXT_MOVE` and stop your reply.
+   delivery gates, recheck **current** HOLD, source binding, writer lease, grant,
+   exact head, and persisted per-task UEM cycle ledger before any further
+   work. The next cycle is permitted only for n < limit and recorded
+   completed_cycles=n (so a restart/handover cannot reset to cycle one).
+   Next Move task counter and Owner delegation cycle never refill UEM credit.
+   Otherwise record `WAITING_NEXT_MOVE` and stop your reply.
    Never loop by assuming the draft is approval.
 5. On terminal COMPLETE/HOLD/STOP or limit exhaustion, mark the task stopped
-   and disable/cancel the hourly fallback if the host supports it; otherwise
-   report the outstanding timer clearly.
+   and report fallback as NOT_ARMED. No timer cancellation or creation is
+   performed without a separately verified real host receipt and authority.
 
-## On hourly wake
+## Future hourly wake (not enabled by WP17)
 
-Read only the scoped GitHub delta and the current task. Check whether the
-coordinator has replied or a linked Next Move changed; report an unresolved
-status, verified response or stale/missing source. Do not autonomously send
-to an old ChatGPT chat, create a new agent, edit authority, approve, merge,
-release, or claim acceptance. A scheduled wake does not grant execution power.
+No timer is armed. If a later Owner-approved, host-confirmed task exists,
+any wake must only read a scoped GitHub delta and cannot grant a send,
+execution, custody change, merge, release or automatic continuation.
 
 ## Economy and safety
 

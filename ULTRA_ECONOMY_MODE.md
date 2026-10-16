@@ -31,11 +31,10 @@ Existing projects remain unaffected.
 ## Agent operating contract
 
 1. Read project/Owner aim, assigned work item, permissions and HOLD before starting.
-2. Arm **one** recurring hourly ChatGPT scheduled task (when that capability is
-   available in the agent runtime), scoped to the current project, agent id8,
-   evidence issue and workplan task X. If task creation is unavailable, state
-   **NOT_ARMED** in the evidence rather than claiming success. Do not create a
-   new hourly task on every cycle.
+2. **Fallback is NOT_ARMED** under WP17: no timer, scheduler, auto-wake or
+   background send may be created. A written claim of ARMED is unverified.
+   A future explicit Owner authorization and actual host task receipt are
+   required before any separate timer change.
 3. Publish an append-only TASK START v1 comment to the registered evidence issue
    **before engineering begins**, with all required fields:
 
@@ -45,7 +44,7 @@ Planned outcome: Implement the next scoped unit with source evidence
 Expected next: Independent exact-HEAD review after tests
 Known blocker: NONE
 Workplan: https://github.com/reallakshman19/CoordinatorLandingpage/issues/21
-Fallback: ARMED <host task receipt> | NOT_ARMED <reason>
+Fallback: NOT_ARMED no authorized host timer
 ```
 
 4. Perform only the currently authorized work. End with the unchanged
@@ -144,3 +143,36 @@ invalid cycle count and cycle limit exhaustion.
 **Not provided by this draft:** a live ChatGPT task receipt, any automatic native
 ChatGPT conversation wake-up, public-site deployment, protected approval,
 coordinator-generated actual moves or a verified two-repository acceptance.
+
+
+## WP17 source and authority gate (before any working claim)
+
+The registry must explicitly opt in, then pin START **and** END GitHub comments
+using a reviewer-sourced, immutable \`ultra_economy.source_bindings\` keyed by
+decimal comment ID. Each entry is
+\`{url, comment_id, updated_at, body_sha256}\`, with URL
+\`https://github.com/<owning-repo>/issues/<n>#issuecomment-<id>\`.
+The SHA-256 is of the full UTF-8 body. A refetched edit (body or updated_at),
+missing anchor, unexpected owning repository, or duplicate START/END is
+**not** an authorized working claim or delivered Next Move. These values
+cannot be supplied just by the author of the comment.
+
+The registry also has distinct \`monitoring_grants\` and \`execution_grants\`
+per public id8, each with verified=true, holder_id8, project and finite
+expires_at. **Monitoring never grants write/execution.** Before any working
+claim the publisher checks an unexpired execution grant, live project HOLD,
+retired/STOP status, unqualified successor/adoption, and competing exclusive
+writer lease. A result is a read-only assertion, not a GitHub write grant.
+Missing or invalid fields remain blocked.
+
+The separately persisted \`cycle_ledger\` maps \`<id8>/<task>\` to
+\`{completed_cycles:n}\`. START cycle must equal n+1; no chat restart,
+handover, registry reload or changed Next Move task counter resets it.
+A delivered move is never permission unless *all* source and authority
+checks pass. This ledger must be updated only through separately authorized
+recording of a completed cycle; WP17 does not write it. Owner delegation
+cycles and Next Move task-evidence counters are distinct and do not refill
+the UEM task budget.
+
+**Timer remains NOT_ARMED.** No timer/scheduler, auto-send, new chat,
+GitHub-pull delivery or other project's pilot is activated by this branch.

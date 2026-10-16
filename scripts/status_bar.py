@@ -25,32 +25,32 @@ def _stamp(raw):
 def _sources(registry):
     """Enumerate before projection; never silently skip an invalid row."""
     for index, row in enumerate(registry.get("agents") or []):
-        yield ("main", "agent", index, row, f"agents[{index}]")
+        yield ("@root", "agent", index, row, f"agents[{index}]")
     for stream, data in sorted((registry.get("workstreams") or {}).items()):
         if not isinstance(data, dict):
-            yield (str(stream), "workstream_invalid", 0, data,
+            yield ("@ws:"+str(stream), "workstream_invalid", 0, data,
                    f"workstreams.{stream}")
             continue
         for index, row in enumerate(data.get("agents") or []):
-            yield (str(stream), "agent", index, row,
+            yield ("@ws:"+str(stream), "agent", index, row,
                    f"workstreams.{stream}.agents[{index}]")
         if "execution_runner" in data:
-            yield (str(stream), "execution_runner", 0,
+            yield ("@ws:"+str(stream), "execution_runner", 0,
                    data["execution_runner"], f"workstreams.{stream}.execution_runner")
         if "standby" in data:
-            yield (str(stream), "standby", 0, data["standby"],
+            yield ("@ws:"+str(stream), "standby", 0, data["standby"],
                    f"workstreams.{stream}.standby")
         standby = data.get("standbys") or []
         if isinstance(standby, dict):
             standby = [standby]
         for index, row in enumerate(standby):
-            yield (str(stream), "standby", index + 1, row,
+            yield ("@ws:"+str(stream), "standby", index + 1, row,
                    f"workstreams.{stream}.standbys[{index}]")
     standby = registry.get("standbys") or []
     if isinstance(standby, dict):
         standby = [standby]
     for index, row in enumerate(standby):
-        yield ("main", "standby", index, row, f"standbys[{index}]")
+        yield ("@root", "standby", index, row, f"standbys[{index}]")
 
 
 def normalize_roster(registry):
@@ -74,15 +74,16 @@ def normalize_roster(registry):
         retired = bool(entry.get("retired")) or state.lower().startswith("retired")
         standby = kind == "standby" or "standby" in state.lower()
         record = {
-            "key": key, "project": project, "workstream": stream,
+            "key": key, "project": project,
+            "workstream": stream[4:] if stream.startswith("@ws:") else "main",
             "kind": kind, "source_path": source, "source_index": index,
             "instance_id8": ident if valid else None,
             "generation": generation, "role": role,
             "alias": str(entry.get("alias") or role),
             "work_state": state, "retired": retired, "standby": standby,
-            "complete": ("COMPLETE" in state.upper() or
-                         "DONE" in state.upper() or
-                         "FROZEN" in state.upper()),
+            "complete": bool(re.match(r"^(DONE|COMPLETE|COMPLETED)(?:$|[ :])",
+                                      state.strip().upper())) or state.upper() in
+                         ("BOUNDED_UNIT_COMPLETE_FACTUAL_RESULT_ONLY",),
             "chat_link": None, "conflicts": [],
             "observation": entry.get("observation"),
             "monitoring": entry.get("monitoring"),
@@ -214,65 +215,80 @@ def derive_status(row, registry, project_view, now=None):
                            "execution_authority": authority}}
 
 
-def build_status_bar(registries, project_views, now=None):
-    """One projection feeds OT and TC. 100% selected-roster coverage is checked."""
-    now = now or datetime.now(timezone.utc)
-    if len(registries) != len(set(registries)):
+def build_status_bar(registries,project_views,now=None):
+    """Two-pass dependency rollup; no child's light overrides a dependent."""
+    now=now or datetime.now(timezone.utc)
+    if len(registries)!=len(set(registries)):
         raise ValueError("selected_registry_duplicate")
-    instances, projects = [], []
-    expected = []
+    instances,projects,expected=[],[],[]
     for project in sorted(registries):
-        registry = registries[project]
-        if registry.get("project") != project:
-            raise ValueError("registered_project_name_mismatch:" + project)
-        roster = normalize_roster(registry)
-        expected += [row["key"] for row in roster]
-        view = project_views.get(project) or {}
-        scoped = [derive_status(row, registry, view, now) for row in roster]
+        registry=registries[project]
+        if registry.get("project")!=project:
+            raise ValueError("registered_project_name_mismatch:"+project)
+        roster=normalize_roster(registry)
+        expected.extend(x["key"] for x in roster)
+        view=project_views.get(project) or {}
+        scoped=[derive_status(row,registry,view,now) for row in roster]
         instances.extend(scoped)
-        active = [row for row in scoped if not row["retired"] and not row["standby"]]
-        streams = registry.get("workstreams") or {}
-        dependency_blocks = [
-            name for name, ws in (streams.items() if isinstance(streams, dict) else [])
-            if isinstance(ws, dict) and (
-                "HOLD" in str(ws.get("state", "")).upper()
-                or ws.get("material_release") is False)]
-        explicit_deps = registry.get("dependencies") or []
-        unknown_deps = ([str(dep) for dep in explicit_deps if dep not in project_views]
-                        if isinstance(explicit_deps, list) else ["invalid_dependency_shape"])
-        selected_complete = len(roster) == len(scoped) and len({x["key"] for x in scoped}) == len(scoped)
+        active=[row for row in scoped if not row["retired"] and not row["standby"]]
+        streams=registry.get("workstreams") or {}
+        blocked=[name for name,ws in (streams.items() if isinstance(streams,dict) else [])
+                 if isinstance(ws,dict) and ("HOLD" in str(ws.get("state","")).upper()
+                                            or ws.get("material_release") is False)]
+        raw_deps=registry.get("dependencies") or []
+        references=(raw_deps if isinstance(raw_deps,list) else [raw_deps])
+        depnames=[x if isinstance(x,str) else None for x in references]
+        unknown=[str(d) for d in depnames if d is None or d not in registries]
+        complete=(len(roster)==len(scoped) and len({x["key"] for x in scoped})==len(scoped))
         if (registry.get("control") or {}).get("hold"):
-            light, reason = "grey", "project_HOLD"
-        elif dependency_blocks or any(a["light"] == "red" for a in active):
-            light, reason = "red", "blocked_dependency_or_active_instance"
-        elif (active and not unknown_deps and not dependency_blocks and
-              all(a["light"] == "green" for a in active) and selected_complete):
-            light, reason = "green", "all_active_instances_and_dependencies_green"
+            light,reason="grey","project_HOLD"
+        elif blocked or any(a["light"]=="red" for a in active):
+            light,reason="red","blocked_workstream_or_active_instance"
+        elif (active and not unknown and all(a["light"]=="green" for a in active) and complete):
+            light,reason="green","all_active_instances_and_dependencies_green"
         else:
-            light, reason = "yellow", "dependency_or_coverage_not_proven"
-        projects.append({"project": project, "light": light, "reason": reason,
-                         "complete": bool(active) and all(a["complete"] for a in active),
-                         "dependencies": {"blocked": dependency_blocks,
-                                          "unknown": unknown_deps},
-                         "instance_count": len(scoped),
-                         "active_count": len(active),
-                         "historical_retired_count": sum(a["retired"] for a in scoped),
-                         "selected_roster_coverage": {"expected": len(roster),
-                                                      "projected": len(scoped),
-                                                      "complete": selected_complete}})
-    actual = [r["key"] for r in instances]
-    missing = sorted(set(expected) - set(actual))
-    extra = sorted(set(actual) - set(expected))
-    coverage = {"expected": len(expected), "projected": len(actual),
-                "complete": not missing and not extra and len(expected) == len(actual)
-                            and len(actual) == len(set(actual)),
-                "percent": (100 if not expected else round(100 * (len(expected) - len(missing)) / len(expected), 2)),
-                "missing": missing, "extra": extra}
+            light,reason="yellow","work_or_coverage_not_proven"
+        projects.append({
+            "project":project,"light":light,"reason":reason,
+            "complete":bool(active) and all(a["complete"] for a in active),
+            "dependencies":{"blocked":blocked,"unknown":unknown,
+                            "projects":[d for d in depnames if d in registries]},
+            "instance_count":len(scoped),"active_count":len(active),
+            "historical_retired_count":sum(a["retired"] for a in scoped),
+            "selected_roster_coverage":{"expected":len(roster),"projected":len(scoped),
+                                        "complete":complete},
+        })
+    actual=[r["key"] for r in instances]
+    missing=sorted(set(expected)-set(actual))
+    extra=sorted(set(actual)-set(expected))
+    coverage={"expected":len(expected),"projected":len(actual),
+              "complete":not missing and not extra and len(expected)==len(actual)
+                         and len(actual)==len(set(actual)),
+              "percent":100 if not expected else
+                round(100*(len(expected)-len(missing))/len(expected),2),
+              "missing":missing,"extra":extra}
+    byname={p["project"]:p for p in projects}
+    # A dependent cannot be green/yellow if its referenced upstream is red.
+    # Iterate to fixed-point; cycles without independent proof stay yellow.
+    for iteration in range(len(projects)+1):
+        changed=False
+        for item in projects:
+            if item["light"]=="grey":continue  # own HOLD outranks upstream state
+            refs=item["dependencies"]["projects"]
+            if not refs:continue
+            dep_lights=[byname[dep]["light"] for dep in refs]
+            if "red" in dep_lights or "grey" in dep_lights:
+                choice="red"
+            elif "yellow" in dep_lights or item["dependencies"]["unknown"]:
+                choice="yellow"
+            else:choice=item["light"]
+            if ORDER[choice]>ORDER[item["light"]]:
+                item.update(light=choice,reason="dependency_project_"+choice)
+                changed=True
+        if not changed:break
     if not coverage["complete"]:
-        # Preserve all rows for diagnosis but never show a green project light.
         for p in projects:
-            if p["light"] == "green":
-                p.update(light="yellow", reason="selected_roster_incomplete")
-    return {"schema": "status_bar.v1", "source": "all_registered_logs_registry_json",
-            "as_of": now.isoformat(), "coverage": coverage,
-            "projects": projects, "instances": instances}
+            if p["light"]=="green":p.update(light="yellow",reason="selected_roster_incomplete")
+    return {"schema":"status_bar.v1","source":"all_registered_logs_registry_json",
+            "as_of":now.isoformat(),"coverage":coverage,"projects":projects,
+            "instances":instances}

@@ -58,184 +58,270 @@ def config(registry):
     return {"enabled": True, "max_cycles": limit, "error": None}
 
 
-def _comments(threads, issue):
-    thread = threads.get(issue)
-    if not isinstance(thread, dict):
+def _comments(threads, issue, repository):
+    thread=threads.get(issue)
+    if not isinstance(thread,dict) or thread.get("number")!=issue or thread.get("repository")!=repository:
         return None
-    rows = thread.get("comments")
-    return rows if isinstance(rows, list) else None
+    rows=thread.get("comments")
+    return rows if isinstance(rows,list) else None
 
 
 def _agent_source(agent):
-    url = agent.get("evidence_thread_url") or agent.get("evidence_thread") or ""
-    m = re.fullmatch(r"https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/issues/(\d+)", url)
-    return (m.group(1), int(m.group(2)), url) if m else None
+    url=agent.get("evidence_thread_url") or agent.get("evidence_thread") or ""
+    m=re.fullmatch(r"https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/issues/(\d+)",url)
+    return (m.group(1),int(m.group(2)),url) if m else None
 
 
-def _start_records(rows, project, id8, role, max_cycles):
-    starts, warnings, used = [], [], set()
-    for comment in sorted(rows, key=lambda c: (c.get("created_at", ""), c.get("id", 0))):
-        if not isinstance(comment, dict):
-            continue
-        body = comment.get("body") or ""
-        match = START.search(body)
-        if not match or match.group("project").strip() != project or match.group("id8") != id8 or match.group("role").strip() != role:
-            continue
-        task = match.group("task")
-        cycle, declared = int(match.group("cycle")), int(match.group("limit"))
-        timestamp = when(comment.get("created_at"))
-        planned = field(body, "Planned outcome")
-        expected = field(body, "Expected next")
-        blockers = field(body, "Known blocker")
-        workplan = field(body, "Workplan")
-        fallback = field(body, "Fallback")
-        fallback_claim = ("AGENT_REPORTED_ARMED_UNVERIFIED" if re.match(
-            r"^ARMED\s+\S+", fallback, re.I) else "AGENT_MUST_ARM")
-        key = (task, cycle)
-        if (not TASK_ID.fullmatch(task) or declared != max_cycles or
-                not 1 <= cycle <= max_cycles or not timestamp or
-                not all((planned, expected, blockers, workplan)) or
-                not re.fullmatch(r"https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/\d+", workplan)):
+def _binding(row,issue_url,bindings):
+    """Independent immutable registry anchor for a GitHub comment, fail closed."""
+    import hashlib
+    if not isinstance(row,dict) or type(row.get("id")) is not int or row["id"]<=0:
+        return None
+    body=row.get("body")
+    updated=when(row.get("updated_at"))
+    created=when(row.get("created_at"))
+    if not isinstance(body,str) or not updated or not created or updated<created:
+        return None
+    url=issue_url+"#issuecomment-"+str(row["id"])
+    expected=bindings.get(str(row["id"]))
+    digest=hashlib.sha256(body.encode("utf-8")).hexdigest()
+    if not isinstance(expected,dict) or expected.get("url")!=url or (
+            expected.get("comment_id")!=row["id"] or
+            expected.get("updated_at")!=row["updated_at"] or
+            expected.get("body_sha256")!=digest):
+        return None
+    return {"url":url,"comment_id":row["id"],"updated_at":row["updated_at"],
+            "body_sha256":digest}
+
+
+def _find_rows(rows,pattern,project,id8,role):
+    found=[]
+    for row in rows:
+        if not isinstance(row,dict):continue
+        body=row.get("body")
+        marker=pattern.search(body) if isinstance(body,str) else None
+        if marker and (marker.group("project").strip(),marker.group("id8"),
+                       marker.group("role").strip())==(project,id8,role):
+            found.append((row,body,marker))
+    return found
+
+
+def _start_records(rows,project,id8,role,max_cycles,issue_url,bindings):
+    starts,warnings=[],[]
+    counts={}
+    for row,body,match in _find_rows(rows,START,project,id8,role):
+        task=match.group("task");cycle=int(match.group("cycle"))
+        key=(task,cycle)
+        counts[key]=counts.get(key,0)+1
+        bind=_binding(row,issue_url,bindings)
+        stamped=when(row.get("created_at"))
+        planned=field(body,"Planned outcome")
+        expected=field(body,"Expected next")
+        blocker=field(body,"Known blocker")
+        workplan=field(body,"Workplan")
+        declared=int(match.group("limit"))
+        if not bind:
+            warnings.append("source_binding_invalid_or_missing")
+        if (not TASK_ID.fullmatch(task) or declared!=max_cycles or
+                not 1<=cycle<=max_cycles or not stamped or
+                not all((planned,expected,blocker,workplan)) or
+                not re.fullmatch(r"https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/\d+",workplan)):
             warnings.append("invalid_task_start")
             continue
-        if key in used:
-            warnings.append("duplicate_task_start")
-            continue
-        used.add(key)
-        starts.append({
-            "task": task, "cycle": cycle, "max_cycles": max_cycles,
-            "start_comment_id": comment.get("id"), "started_at": timestamp.isoformat(),
-            "planned_outcome": planned[:500], "expected_next": expected[:500],
-            "known_blocker": blockers[:500], "workplan": workplan,
-            "fallback": fallback_claim, "fallback_due_at": (
-                timestamp + timedelta(hours=1)).isoformat()})
-    return starts, warnings
+        starts.append({"task":task,"cycle":cycle,"max_cycles":max_cycles,
+            "start_comment_id":row["id"],"started_at":stamped.isoformat(),
+            "planned_outcome":planned[:500],"expected_next":expected[:500],
+            "known_blocker":blocker[:500],"workplan":workplan,
+            "timer_claim":field(body,"Fallback")[:200],"fallback":"NOT_ARMED",
+            "fallback_due_at":None,"start_binding":bind,
+            "start_binding_valid":bool(bind)})
+    if any(n>1 for n in counts.values()):warnings.append("duplicate_task_start")
+    # Chronology is source order, not iteration order or a restart-local counter.
+    starts.sort(key=lambda x:(x["started_at"],x["start_comment_id"]))
+    return starts,sorted(set(warnings)),counts
 
 
-def _end_for_start(rows, start, project, id8, role):
-    started = when(start["started_at"])
-    candidates = []
-    for comment in rows:
-        if not isinstance(comment, dict):
+def _end_for_start(rows,start,project,id8,role,issue_url,bindings):
+    stamped=when(start["started_at"])
+    candidates=[]
+    for row,body,marker in _find_rows(rows,END,project,id8,role):
+        at=when(row.get("created_at"))
+        if not at or at<stamped:continue
+        task=field(body,"Task").split(maxsplit=1)[0] if field(body,"Task") else ""
+        if task!=start["task"] or field(body,"UEM cycle")!=str(start["cycle"])+"/"+str(start["max_cycles"]):
             continue
-        body = comment.get("body") or ""
-        marker = END.search(body)
-        stamp = when(comment.get("created_at"))
-        if not marker or not stamp or stamp < started or (
-                marker.group("project").strip(), marker.group("id8"), marker.group("role").strip()) != (project, id8, role):
-            continue
-        task = field(body, "Task").split(maxsplit=1)[0] if field(body, "Task") else ""
-        if task != start["task"]:
-            continue
-        # END should explicitly tie to the START cycle. No guessing across cycles.
-        cycle = field(body, "UEM cycle")
-        if cycle != str(start["cycle"]) + "/" + str(start["max_cycles"]):
-            continue
-        candidates.append((stamp, comment, body))
-    if not candidates:
-        return None
-    stamp, row, body = sorted(candidates, key=lambda item: (item[0], item[1].get("id", 0)))[-1]
-    return {"end_comment_id": row.get("id"), "ended_at": stamp.isoformat(),
-            "claim_status": status(body), "not_done": field(body, "Not done / HOLD")[:500],
-            "next_claim": field(body, "Next")[:500]}
+        candidates.append((at,row,body))
+    if len(candidates)>1:return None,"duplicate_task_end"
+    if not candidates:return None,None
+    at,row,body=candidates[0]
+    bind=_binding(row,issue_url,bindings)
+    if not bind:return None,"source_binding_invalid_or_missing"
+    return {"end_comment_id":row["id"],"ended_at":at.isoformat(),
+            "end_binding":bind,"claim_status":status(body),
+            "not_done":field(body,"Not done / HOLD")[:500],
+            "next_claim":field(body,"Next")[:500]},None
 
 
-def _find_move(moves, evidence_url, current, id8):
-    """Exact task/cycle/end-comment correlation; delivery is independently gated."""
-    matches = []
+def _find_move(moves,evidence_url,current,id8,head=None):
+    matches=[]
     for move in moves or []:
-        if not isinstance(move, dict) or move.get("class") != "Dispatch":
-            continue
-        to = move.get("to") or {}
-        trigger = move.get("trigger") or {}
-        basis = move.get("basis") or {}
-        if (to.get("id8") != id8 or not isinstance(trigger, dict) or
-                trigger.get("type") != "uem_end" or trigger.get("task") != current["task"] or
-                trigger.get("cycle") != current["cycle"] or
-                trigger.get("end_comment_id") != current["end_comment_id"] or
-                basis.get("evidence") != evidence_url):
-            continue
-        matches.append(move)
-    if len(matches) != 1:
-        return None, "AMBIGUOUS_MOVE" if matches else "NO_MATCHING_MOVE"
-    move = matches[0]
-    if "stale basis" in (move.get("flags") or []):
-        return move, "STALE_MOVE"
-    if move.get("state") in ("SENT_TO_CHAT", "PICKED_UP", "ACKED"):
-        return move, "DELIVERED_MOVE"
-    if move.get("state") in ("HELD", "REJECTED", "CANCELLED", "SUPERSEDED", "EXPIRED"):
-        return move, "MOVE_HELD_OR_CLOSED"
-    return move, "AWAITING_DELIVERY"
+        if not isinstance(move,dict) or move.get("class")!="Dispatch":continue
+        trigger=move.get("trigger") or {}
+        basis=move.get("basis") or {}
+        if not isinstance(trigger,dict):continue
+        if ((move.get("to") or {}).get("id8")==id8
+                and trigger.get("type")=="uem_end"
+                and trigger.get("task")==current["task"]
+                and trigger.get("cycle")==current["cycle"]
+                and trigger.get("end_comment_id")==current["end_comment_id"]
+                and basis.get("evidence")==evidence_url):
+            matches.append(move)
+    if len(matches)!=1:return None,("AMBIGUOUS_MOVE" if matches else "NO_MATCHING_MOVE")
+    move=matches[0]
+    if "stale basis" in (move.get("flags") or []) or (head and (
+            (move.get("basis") or {}).get("head") or "").lower()!=head.lower()):
+        return move,"STALE_MOVE"
+    if move.get("state") in ("SEND_INTENT","DELIVERY_UNCERTAIN"):
+        return move,"DELIVERY_UNCERTAIN"
+    if move.get("state") in ("SENT_TO_CHAT","PICKED_UP","ACKED"):
+        return move,"DELIVERED_MOVE"
+    if move.get("state") in ("HELD","REJECTED","CANCELLED","SUPERSEDED","EXPIRED"):
+        return move,"MOVE_HELD_OR_CLOSED"
+    return move,"AWAITING_DELIVERY"
 
 
-def _followup(end_at, now):
-    age = (now - when(end_at)).total_seconds()
-    if age < 0:
-        return {"state": "UNKNOWN", "next_due_at": None}
-    for n in (15, 20, 30):
-        due = when(end_at) + timedelta(minutes=n)
-        if now < due:
-            return {"state": "WAITING", "next_due_at": due.isoformat()}
-    return {"state": "OVERDUE_30", "next_due_at": None}
+def _followup(end_at,now):
+    at=when(end_at)
+    if not at or now<at:return {"state":"UNKNOWN","next_due_at":None}
+    for minutes in (15,20,30):
+        due=at+timedelta(minutes=minutes)
+        if now<due:return {"state":"WAITING","next_due_at":due.isoformat()}
+    return {"state":"OVERDUE_30","next_due_at":None}
 
 
-def project(registry, agents, threads, next_view, now=None):
-    """Read-only projection. No default activation and no move construction."""
-    opts = config(registry)
-    result = {"enabled": opts["enabled"], "max_cycles": opts["max_cycles"],
-              "error": opts["error"], "agents": {}}
-    if not opts["enabled"]:
-        return result
-    now = now or datetime.now(timezone.utc)
-    if now.tzinfo is None:
-        raise ValueError("now must be timezone aware")
+def _grant(cfg,agent,id8,now):
+    """Monitoring entitlement NEVER confers execution; check both separately."""
+    monitoring=(cfg.get("monitoring_grants") or {}).get(id8)
+    execution=(cfg.get("execution_grants") or {}).get(id8)
+    def checked(value,purpose):
+        if not isinstance(value,dict) or value.get("verified") is not True:
+            return "UNVERIFIED_"+purpose
+        if value.get("holder_id8")!=id8 or value.get("project")!=cfg.get("_project"):
+            return "WRONG_HOLDER_"+purpose
+        expires=when(value.get("expires_at"))
+        if expires is None or expires<=now:return "EXPIRED_"+purpose
+        return "VALID"
+    return checked(monitoring,"MONITORING"),checked(execution,"EXECUTION")
+
+
+def _execution_guard(registry,agent,id8,now,cfg):
+    if (registry.get("control") or {}).get("hold"):return "HOLD"
+    state=str(agent.get("status") or "").lower()
+    if "retired" in state or "stop" in state or "hold" in state:return "RETIRED_OR_STOPPED"
+    if not state.startswith("active"):return "NOT_ACTIVE"
+    adoption=str(agent.get("adoption") or "").upper()
+    if adoption in ("PENDING","NOT_VERIFIED","UNQUALIFIED","REJECTED"):
+        return "UNQUALIFIED_SUCCESSOR"
+    if agent.get("qualified_successor") is False or agent.get("material_release") is False:
+        return "UNQUALIFIED_SUCCESSOR"
+    monitor,exec_state=_grant({**cfg,"_project":registry.get("project")},agent,id8,now)
+    if exec_state!="VALID":return exec_state
+    leases=(registry.get("writer_leases") or [])+(registry.get("leases") or [])
+    for lease in leases:
+        if not isinstance(lease,dict):continue
+        holder=str(lease.get("actor") or lease.get("holder") or "")
+        # Never infer a lease from string aliases: require registered id8
+        owner=lease.get("holder_id8")
+        if owner and owner!=id8 and lease.get("exclusive") is True and (
+                lease.get("active") is True or str(lease.get("state")).upper()=="ACTIVE"):
+            return "WRITER_LEASE_CONFLICT"
+    return None
+
+
+def project(registry,agents,threads,next_view,now=None):
+    """Read-only projection; no task is working before immutable source/grant check."""
+    opts=config(registry)
+    result={"enabled":opts["enabled"],"max_cycles":opts["max_cycles"],
+            "error":opts["error"],"agents":{},"timer":"NOT_ARMED"}
+    if not opts["enabled"]:return result
+    now=now or datetime.now(timezone.utc)
+    if now.tzinfo is None:raise ValueError("now must be timezone aware")
+    cfg=registry.get("ultra_economy") or {}
+    bindings=cfg.get("source_bindings") or {}
     for agent in agents:
-        id8 = agent.get("chat_id8")
-        if not isinstance(id8, str) or not ID8.fullmatch(id8):
+        id8=agent.get("chat_id8")
+        if not isinstance(id8,str) or not ID8.fullmatch(id8):continue
+        # Key the read-only projection by id8; duplicate roster identities
+        # must never silently approve competing working claims.
+        if id8 in result["agents"]:
+            result["agents"][id8]={"state":"AMBIGUOUS_ROSTER","may_proceed":False}
             continue
-        if not str(agent.get("status") or "").lower().startswith("active"):
-            result["agents"][id8] = {"state": "NOT_ACTIVE", "may_proceed": False}
+        guard=_execution_guard(registry,agent,id8,now,cfg)
+        monitor,execution=_grant({**cfg,"_project":registry.get("project")},agent,id8,now)
+        basis={"monitoring_grant":monitor,"execution_grant":execution,
+               "timer":"NOT_ARMED"}
+        if guard:
+            result["agents"][id8]={"state":guard,"may_proceed":False,**basis}
             continue
-        source = _agent_source(agent)
-        if not source or source[0] != registry.get("repository"):
+        source=_agent_source(agent)
+        if not source or source[0]!=registry.get("repository"):
+            result["agents"][id8]={"state":"UNTRUSTED_SOURCE","may_proceed":False,**basis}
             continue
-        rows = _comments(threads, source[1])
+        rows=_comments(threads,source[1],source[0])
         if rows is None:
-            result["agents"][id8] = {"state": "UNKNOWN_SOURCE", "may_proceed": False}
+            result["agents"][id8]={"state":"UNKNOWN_SOURCE","may_proceed":False,**basis}
             continue
-        starts, warnings = _start_records(rows, registry.get("project"), id8,
-                                           agent.get("role"), opts["max_cycles"])
+        starts,warnings,counts=_start_records(rows,registry.get("project"),id8,
+                                              agent.get("role"),opts["max_cycles"],
+                                              source[2],bindings)
         if not starts:
-            result["agents"][id8] = {"state": "NO_TASK_START", "may_proceed": False,
-                                      "warnings": warnings}
+            result["agents"][id8]={"state":"NO_TASK_START","may_proceed":False,
+                                    "warnings":warnings,**basis}
             continue
-        current = starts[-1]
-        end = _end_for_start(rows, current, registry.get("project"), id8,
-                             agent.get("role"))
-        item = {**current, "warnings": warnings, "may_proceed": False}
-        if end is None:
-            item["state"] = "WORKING_CLAIM"
-            item["fallback"] = current["fallback"]
+        current=starts[-1]
+        item={**current,"warnings":warnings,"may_proceed":False,
+              "monitoring_grant":monitor,"execution_grant":execution,
+              "fallback":"NOT_ARMED","timer":"NOT_ARMED"}
+        if "duplicate_task_start" in warnings:
+            item.update(state="AMBIGUOUS_START")
+            result["agents"][id8]=item;continue
+        if ("source_binding_invalid_or_missing" in warnings or
+                "invalid_task_start" in warnings or
+                not current["start_binding_valid"]):
+            item.update(state="SOURCE_BINDING_INVALID")
+            result["agents"][id8]=item;continue
+        ledger=(cfg.get("cycle_ledger") or {}).get(id8+"/"+current["task"]) or {}
+        completed=ledger.get("completed_cycles",0) if isinstance(ledger,dict) else 0
+        if type(completed) is not int or completed<0 or current["cycle"]!=completed+1:
+            item["state"]="UEM_CYCLE_RESTART_OR_GAP"
+            result["agents"][id8]=item;continue
+        item["cycle_balance"]={"uem_completed":completed,
+                               "uem_remaining":opts["max_cycles"]-completed,
+                               "next_move_task_count":(next_view.get("task_cycle") or {}).get("count"),
+                               "owner_delegation_cycle":"SEPARATE_UNVERIFIED"}
+        end,problem=_end_for_start(rows,current,registry.get("project"),id8,
+                                   agent.get("role"),source[2],bindings)
+        if problem:
+            item.update(state=("AMBIGUOUS_END" if problem=="duplicate_task_end"
+                               else "SOURCE_BINDING_INVALID"))
+        elif end is None:
+            item["state"]="WORKING_CLAIM"
         else:
             item.update(end)
-            item["fallback"] = "AGENT_MUST_CANCEL_OR_REFRESH"
-            move, condition = _find_move(next_view.get("moves"), source[2], item, id8)
-            item["move_state"] = condition
-            item["move_id"] = move.get("id") if move else None
-            item["followup"] = _followup(end["ended_at"], now)
-            held = bool((registry.get("control") or {}).get("hold"))
-            exhausted = current["cycle"] >= opts["max_cycles"]
-            if held:
-                item["state"] = "HOLD"
-            elif exhausted:
-                item["state"] = "MAX_CYCLES_REACHED"
-            elif condition == "DELIVERED_MOVE" and end["claim_status"] != "UNKNOWN":
-                item["state"] = "NEXT_MOVE_RECORDED_DELIVERED"
-                item["may_proceed"] = True  # still requires agent-side custody checks
-            else:
-                item["state"] = condition
-            if (held or exhausted or condition in (
-                    "DELIVERED_MOVE", "MOVE_HELD_OR_CLOSED")):
-                item["followup"] = {"state": "STOPPED", "next_due_at": None}
-        result["agents"][id8] = item
+            item["fallback"]="NOT_ARMED"
+            head=(agent.get("evidence_head_status") or {}).get("current_head")
+            move,condition=_find_move(next_view.get("moves"),source[2],item,id8,head)
+            item["move_state"]=condition
+            item["move_id"]=move.get("id") if move else None
+            item["followup"]=(_followup(end["ended_at"],now) if monitor=="VALID"
+                              else {"state":"MONITORING_UNGRANTED","next_due_at":None})
+            exhausted=current["cycle"]>=opts["max_cycles"]
+            if exhausted:item["state"]="MAX_CYCLES_REACHED"
+            elif condition=="DELIVERED_MOVE" and end["claim_status"]!="UNKNOWN":
+                item["state"]="NEXT_MOVE_RECORDED_DELIVERED"
+                item["may_proceed"]=True
+            else:item["state"]=condition
+            if exhausted or condition in ("DELIVERED_MOVE","MOVE_HELD_OR_CLOSED"):
+                item["followup"]={"state":"STOPPED","next_due_at":None}
+        result["agents"][id8]=item
     return result
