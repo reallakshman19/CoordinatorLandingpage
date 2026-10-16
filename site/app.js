@@ -501,12 +501,25 @@ function wp14MoveDraft(project, values, date = new Date(), bytes = null) {
   const kind=String(values.kind || '');
   if (!WP14_DISPATCH_KINDS.includes(kind)) throw new Error('Invalid dispatch kind.');
   const from=String(values.from || '').trim(),to=String(values.to || '').trim();
-  const text=String(values.text || '').trim(),trigger=String(values.trigger || '').trim();
+  const text=String(values.text || '').trim(),triggerInput=String(values.trigger || '').trim();
+  let trigger=triggerInput;
+  if (triggerInput.startsWith('{')) {
+    try {
+      const parsed=JSON.parse(triggerInput);
+      if (parsed?.type!=='uem_end' || !/^[A-Za-z0-9_.-]{1,80}$/.test(parsed.task) ||
+          !Number.isInteger(parsed.cycle) || parsed.cycle<1 || parsed.cycle>5 ||
+          !Number.isInteger(parsed.end_comment_id) || parsed.end_comment_id<1 ||
+          Object.keys(parsed).sort().join(',')!=='cycle,end_comment_id,task,type')
+        throw new Error('Invalid UEM trigger object');
+      trigger=parsed;
+    } catch { throw new Error('Invalid UEM JSON trigger. Select current evidence again.'); }
+  }
   const head=String(values.head || '').trim(),source=String(values.evidence || '').trim();
   const supersedes=String(values.supersedes || '').trim();
   if (!/^[0-9a-f]{8}$/.test(from) || !/^[0-9a-f]{8}$/.test(to) ||
       !/^[0-9a-f]{40}$/i.test(head) || !/^https:\/\/github\.com\/reallakshman19\/CoordinatorLandingpage\/issues\/\d+$/.test(source) ||
-      !text || text.length>600 || !trigger || trigger.length>100 ||
+      !text || text.length>600 || !triggerInput || triggerInput.length>240 ||
+      (typeof trigger==='string' && trigger.length>100) ||
       supersedes && !/^NM-\d{8}-\d{6}-[0-9a-f]{4}$/.test(supersedes)) {
     throw new Error('Supply valid id8s, source issue, assessed 40-hex head, trigger and task.');
   }
@@ -567,6 +580,45 @@ function wp14Controls(container, project) {
     if (name==='to' && project.agents?.length)field.value=project.agents.find(a=>a.status==='active')?.chat_id8||'';
     if (name==='text')field.maxLength=600;
     wrapper.appendChild(field);form.appendChild(wrapper);values[name]=field;
+  }
+  // The agent already supplied context at TASK START and END. Populate only a
+  // reviewable draft; no approval, GitHub write, or chat dispatch occurs here.
+  const uemRows=Object.entries(project.next_move.ultra_economy?.agents || {})
+    .filter(([id,task])=>Number.isInteger(task?.end_comment_id) &&
+      task?.task && Number.isInteger(task?.cycle) && task?.state!=='NOT_ACTIVE');
+  if (project.next_move.ultra_economy?.enabled && uemRows.length) {
+    const apply=el('button','btn btn-small wp14-uem-prefill','Use latest UEM task evidence');
+    apply.type='button';
+    apply.addEventListener('click',()=>{
+      const [id,task]=uemRows.slice().sort((a,b)=>
+        String(b[1].ended_at || '').localeCompare(String(a[1].ended_at || '')))[0];
+      const agent=(project.agents||[]).find(a=>a.chat_id8===id);
+      if (!agent || !/^https:\/\/github\.com\/reallakshman19\/CoordinatorLandingpage\/issues\/\d+$/.test(agent.evidence_thread_url || '')) {
+        result.textContent='Current registered evidence issue not available; cannot prefill.';
+        return;
+      }
+      values.to.value=id;
+      values.evidence.value=agent.evidence_thread_url;
+      const assessed=agent.evidence_head_status?.current_head || '';
+      values.head.value=/^[0-9a-f]{40}$/i.test(assessed) ? assessed : '';
+      const trigger={type:'uem_end',task:task.task,cycle:task.cycle,
+        end_comment_id:task.end_comment_id};
+      values.trigger.value=JSON.stringify(trigger);
+      const blocked=/BLOCKED|FAILED/i.test(task.claim_status || '') ||
+        /\bHOLD\b/i.test(task.not_done || '');
+      values.kind.value=blocked?'status_check':'next_step';
+      values.text.value=(
+        'Task '+task.task+' ('+String(task.claim_status || 'UNKNOWN')+
+        '). Expected: '+String(task.expected_next || 'UNKNOWN')+
+        '. Agent next: '+String(task.next_claim || 'UNKNOWN')+
+        '. Blocker: '+String(task.known_blocker || 'UNKNOWN')+
+        '. Remaining: '+String(task.not_done || 'UNKNOWN')
+      ).slice(0,600);
+      result.textContent=values.head.value
+        ? 'Review every prefilled claim, blocker, head and authority before opening a draft.'
+        : 'Current PR HEAD unavailable: verify and enter it before composing.';
+    });
+    form.appendChild(apply);
   }
   const submit=el('button','btn btn-small wp14-compose-submit','Open proposed move on GitHub');
   submit.type='submit';form.appendChild(submit);
