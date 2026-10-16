@@ -158,5 +158,40 @@ class WP12Source(unittest.TestCase):
             self.assertEqual(data["evidence_head_status"]["status"], "superseded")
 
 
+
+class WP12BaseCompatible(unittest.TestCase):
+    """Runs unchanged HEAD assertions with only the pinned-base call contract."""
+
+    def basic(self, reg):
+        return build_data.build_project_data(
+            ROOT, reg["project"], reg, {}, [], None,
+            source_meta={"status": "ok", "errors": []},
+            status_thread={}, now=NOW, registry_blob_sha="f" * 40)[0]
+
+    def test_wp12_hold_report_was_missing_on_main(self):
+        result = self.basic(registry())
+        self.assertTrue((result.get("hold_report") or {}).get("active"))
+
+    def test_wp12_reporting_lines_were_missing_on_main(self):
+        result = self.basic(registry())
+        rows = result.get("reporting_tree") or []
+        self.assertEqual(len(rows), 2)
+
+    def test_wp12_children_unknown_without_observation_on_main(self):
+        reg = registry()
+        reg["children"] = [O1]
+        result = self.basic(reg)
+        self.assertEqual((result.get("child_progress") or {}).get("status"),
+                         "unknown")
+
+    def test_wp12_evidence_head_unknown_without_pr_observation_on_main(self):
+        reg = registry()
+        reg["evidence_head"] = OLD
+        reg["evidence_pr"] = PR
+        result = self.basic(reg)
+        self.assertEqual((result.get("evidence_head_status") or {}).get("status"),
+                         "unknown")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
