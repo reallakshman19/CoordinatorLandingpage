@@ -1481,7 +1481,7 @@ jobs:
           import os,re,sys
           from pathlib import Path
           s=Path("wp8c-unit-red.log").read_text()
-          found=re.findall(r'^(test_wp8c_\\w+)\\s+\\([^\\n]+\\)\\s+\\.\\.\\.\\s+(FAIL|ERROR)$',s,re.M)
+          found=re.findall(r'^(test_wp8c_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',s,re.M)
           failures={name for name,kind in found if kind=="FAIL"}
           errors={name for name,kind in found if kind=="ERROR"}
           expected={
@@ -1490,7 +1490,7 @@ jobs:
           }
           good=(int(os.environ["RC"])!=0 and failures==expected and not errors
                 and re.search(r"^Ran 5 tests in ",s,re.M)
-                and re.search(r"^FAILED \\(failures=2\\)$",s,re.M)
+                and re.search(r"^FAILED \(failures=2\)$",s,re.M)
                 and not re.search(r"^ERROR:",s,re.M))
           print("WP8C BASE RED:",len(failures),"assertion FAIL;",
                 len(errors),"ERROR;","EXPECTED" if good else "INVALID")
