@@ -812,6 +812,22 @@ async function renderProject(app, projectName) {
     $('workflow-current').textContent = `Current: ${JSON.stringify(wf.current)}`;
   }
 
+  renderAutoResponseTable($('auto-response-project'), [proj]);
+  const external = $('external-project-links');
+  if (proj.repository !== REPO) {
+    external.appendChild(el('h2', '', 'Owning repository links (read-only)'));
+    const links = Array.isArray(proj.external_links) ? proj.external_links : [];
+    if (!links.length) external.appendChild(el('p','note','No verified owning issue or PR links.'));
+    for (const item of links) {
+      const url = allowedExternalLink(item.url, proj.repository);
+      if (!url) continue;
+      const link = el('a','btn btn-small external-project-link',
+                      String(item.kind) + ' · View on GitHub (read-only) →');
+      link.href = url; link.target = '_blank'; link.rel = 'noopener noreferrer';
+      external.appendChild(link);
+    }
+  }
+
   // Agents table
   const tbody = $('agents-tbody');
   const agents = proj.agents || [];
@@ -846,6 +862,19 @@ async function renderProject(app, projectName) {
     `;
     const stateCell = tr.querySelector(".agent-state");
     stateCell.appendChild(agentStateBadge(a.status));
+    if (a.chat_end_risk || a.chat_end_seen ||
+        (a.handover_meter != null && Number(a.handover_meter) >= 80)) {
+      const risk = el('span','badge badge-red chat-end-risk','chat-end risk');
+      risk.title = 'Handover needed: registry meter 80%+ or chat_end_seen.';
+      stateCell.appendChild(risk);
+    }
+    const takeover = allowedExternalLink(a.handover, proj.repository) ||
+      allowedExternalLink(a.handover, REPO);
+    if (takeover) {
+      const link = el('a','btn btn-small agent-takeover-link','Takeover handover →');
+      link.href = takeover; link.target = '_blank'; link.rel = 'noopener noreferrer';
+      tr.lastElementChild.appendChild(link);
+    }
     tbody.appendChild(tr);
   });
 
@@ -895,7 +924,7 @@ async function renderProject(app, projectName) {
         <div class="decision-card-header">
           <span class="decision-card-id">${escapeHtml(d.id)}</span>
           <span class="decision-card-ask">${escapeHtml(visibleAsk)}</span>
-          <span class="needs-plain">Waiting for Owner to answer</span>
+          <span class="needs-plain">No answer recorded yet. Owner action needed.</span>
           <span class="decision-asked">${escapeHtml(decisionAskedText(d))}</span>
         </div>
         <div class="decision-card-body">
@@ -924,11 +953,14 @@ async function renderProject(app, projectName) {
       d.style.cssText = 'padding:6px 10px;border-left:3px solid var(--border);margin-bottom:6px;font-size:0.85rem;word-break:break-word';
       const text = typeof entry === 'string' ? entry : JSON.stringify(entry);
       // Highlight superseded entries
+      d.appendChild(el('span', 'badge badge-grey decision-provenance',
+                       decisionProvenance(entry)));
       if (text.toLowerCase().includes('supersedes')) {
         d.style.borderColor = 'var(--warn)';
-        d.innerHTML = `<span class="badge badge-yellow" style="margin-right:6px">superseded</span>${escapeHtml(text)}`;
+        d.appendChild(el('span', 'badge badge-yellow', 'superseded'));
+        d.appendChild(document.createTextNode(text));
       } else {
-        d.textContent = text;
+        d.appendChild(document.createTextNode(text));
       }
       sodSection.appendChild(d);
     });
@@ -1227,7 +1259,7 @@ async function renderTimeline(app, projectFilter) {
           summary = `CONTROL EPOCH: ${(ev.text || '').slice(0, 80)}`;
           break;
         case 'OWNER_DECISION':
-          summary = `Owner decision: ${(ev.text || '').slice(0, 80)}`;
+          summary = `Decision record: ${(ev.text || '').slice(0, 80)}`;
           break;
         case 'OUTSIDE_WRITE':
           summary = `⚠ Outside write: ${(ev.text || '').slice(0, 80)}`;
@@ -1236,6 +1268,11 @@ async function renderTimeline(app, projectFilter) {
           summary = ev.type + (ev.text ? ': ' + String(ev.text).slice(0, 60) : '');
       }
       text.textContent = summary;
+      if (ev.type === 'OWNER_DECISION') {
+        const label = decisionProvenance(ev);
+        row.appendChild(el('span','badge badge-grey decision-provenance',
+          label === 'unverified' ? (ev.decision_label || 'unverified') : label));
+      }
 
       // Type badge
       const typeBadge = el('span', `badge badge-grey tl-badge`, ev.type?.replace(/_/g, ' '));
@@ -1297,7 +1334,7 @@ async function renderDecision(app, projectName, decisionId) {
   $('dc-id').textContent = d.id;
   $('dc-ask').textContent = await displayedDecisionAsk(d);
   $('dc-ask').appendChild(el('div', 'needs-plain',
-    'Waiting for Owner to answer this decision.'));
+    'No answer recorded yet. Owner action needed.'));
   $('dc-ask').appendChild(el('div', 'decision-asked', decisionAskedText(d)));
 
   if (d.link) {
