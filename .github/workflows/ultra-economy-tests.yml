@@ -1,0 +1,32 @@
+name: UltraEconomyMode draft qualification
+
+on:
+  pull_request:
+    paths:
+      - "scripts/ultra_economy.py"
+      - "scripts/build_data.py"
+      - "site/app.js"
+      - "tests/test_ultra_economy.py"
+      - ".github/workflows/ultra-economy-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  uem-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile UEM and existing builder
+        run: python -m py_compile scripts/ultra_economy.py scripts/build_data.py
+      - name: Run UEM positive and negative controls
+        run: python -m unittest tests.test_ultra_economy -v
+      - name: Check existing builder suite
+        run: python -m unittest tests.test_wp13 tests.test_wp15 -v
