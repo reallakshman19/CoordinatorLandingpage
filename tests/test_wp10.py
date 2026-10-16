@@ -44,7 +44,7 @@ class BaseCompatibleWP10(unittest.TestCase):
         registry = {"project": "product-a", "repository": PRODUCT, "agents": [
             {"role": "implementer", "chat_id8": "abcdef01", "generation": 2,
              "status": "standby", "handover_meter": 80,
-             "handover": "https://github.com/example/3D_Converters/issues/12"},
+             "handover": "https://github.com/example/3D_Converters/issues/12#issuecomment-1212"},
             {"role": "checker", "chat_id8": "abcdef02", "generation": 1,
              "status": "hold", "chat_end_seen": True},
         ]}
@@ -53,7 +53,7 @@ class BaseCompatibleWP10(unittest.TestCase):
         self.assertTrue(all(a.get("chat_end_risk", False) for a in projected["agents"]))
         self.assertEqual(projected["agents"][0]["handover_meter"], 80)
         self.assertEqual(projected["agents"][0]["handover"],
-                         "https://github.com/example/3D_Converters/issues/12")
+                         "https://github.com/example/3D_Converters/issues/12#issuecomment-1212")
 
     def test_wp10_owner_vs_delegated_labels_in_timeline(self):
         registry = {"project": "product-a", "repository": PRODUCT}
@@ -74,7 +74,7 @@ class BaseCompatibleWP10(unittest.TestCase):
 
     def test_wp10_external_project_read_only_issue_pr_links(self):
         registry = {"project": "product-a", "repository": PRODUCT,
-                    "parent_issue": "https://github.com/example/3D_Converters/issues/12",
+                    "parent_issue": "https://github.com/example/3D_Converters/issues/12#issuecomment-1212",
                     "pull_requests": [
                         "https://github.com/example/3D_Converters/pull/13",
                         "javascript:alert(1)",
@@ -83,7 +83,7 @@ class BaseCompatibleWP10(unittest.TestCase):
         projected, _ = project(registry)
         self.assertEqual(projected.get("repository"), PRODUCT)
         self.assertEqual([x["url"] for x in projected.get("external_links", [])], [
-            "https://github.com/example/3D_Converters/issues/12",
+            "https://github.com/example/3D_Converters/issues/12#issuecomment-1212",
             "https://github.com/example/3D_Converters/pull/13",
         ])
         self.assertTrue(all(x["read_only"] is True
