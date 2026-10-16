@@ -3,7 +3,7 @@
   "protocol": "Team protocol v2.3 FINAL CANDIDATE (protocol/TEAM_PROTOCOL.md)",
   "repository": "reallakshman19/CoordinatorLandingpage",
   "parent_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/21",
-  "updated": "2026-10-15T18:52:00+04:00",
+  "updated": "2026-10-16T07:50:00+04:00",
   "updated_by": "TeamCoordinator/OwnerTeammember (Claude session)",
   "control": {
     "epoch": 1,
@@ -29,14 +29,24 @@
       "role": "implementer",
       "generation": 1,
       "chat_id8": "6ad0adca",
-      "status": "active (pane tab-1), idle after WP3",
+      "status": "retired 2026-10-16 07:4x (chat fails to load; changeover on Owner 'you are authorized to answer this tab/task')",
       "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22",
       "onboarded": "2026-10-15T14:44+04:00 DELIVERED"
+    },
+    {
+      "alias": "Agent L1",
+      "role": "implementer",
+      "generation": 2,
+      "chat_id8": "6ad1a045",
+      "status": "active (pane tab-1)",
+      "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22",
+      "handover": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6207718018",
+      "onboarded": "2026-10-16T07:49+04:00 DELIVERED"
     }
   ],
   "leases": [
     {
-      "holder": "Agent L1 g1",
+      "holder": "Agent L1 g2",
       "branches": "l1/*",
       "paths": [
         "scripts/*",
@@ -46,7 +56,8 @@
         ".github/ISSUE_TEMPLATE/owner-input.yml"
       ],
       "granted": "2026-10-15T14:42+04:00",
-      "note": "WP0 is read-only; writes start only after GO in #22"
+      "note": "WP0 is read-only; writes start only after GO in #22",
+      "remapped": "2026-10-16 changeover (§19 rule 20)"
     }
   ],
   "decisions": [

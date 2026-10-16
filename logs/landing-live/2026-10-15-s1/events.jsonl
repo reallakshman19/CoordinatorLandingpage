@@ -12,3 +12,5 @@
 {"t":"2026-10-15T19:25:36+04:00","actor":"Checker C1d (sonnet, fresh)","type":"CHECK","what":"PR32 7f2d2eb4 PASS notes","tokens":69540}
 {"t":"2026-10-15T19:25:57+04:00","actor":"Checker C1d (sonnet, fresh)","type":"CHECK","what":"PR32 7f2d2eb4 PASS notes","tokens":69540}
 {"t":"2026-10-15T19:42:50+04:00","actor":"Checker C15 (sonnet, fresh)","type":"CHECK","what":"integrated #21 NOT-READY","tokens":65552}
+{"t":"2026-10-15T20:17:42+04:00","actor":"Checker C1e (sonnet, fresh)","type":"CHECK","what":"PR34 ae8a420a PASS","tokens":87939}
+{"t":"2026-10-15T20:46:38+04:00","actor":"Checker C1f (sonnet, fresh)","type":"CHECK","what":"PR35 f988c925 PASS","tokens":97765}
