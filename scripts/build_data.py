@@ -678,7 +678,7 @@ def _wp10_meter(value):
 
 # WP12 projections are reports of recorded claims, never new Owner authority.
 V36_TITLE = re.compile(
-    r'^\[V3\.6\]\[O(\d+)\]\[(PLANNED|IN_PROGRESS|DONE)\]', re.I)
+    r'^\[V3\.6\]\[O(\d+)\]\[(PLANNED|IN_PROGRESS|DONE)\]')
 
 
 def _wp12_hold(control, agents):
@@ -721,10 +721,10 @@ def _wp12_children(registry, observations):
     requested = registry.get('children', [])
     if not isinstance(requested, list) or not requested:
         return {'status': 'not_recorded', 'done': 0, 'total': 0, 'items': []}
-    if len(requested) > 12:
+    if len(requested) > 100:  # bound parse work even for repeated URLs
         return {'status': 'unknown', 'done': 0, 'total': len(requested),
                 'items': []}
-    valid = []
+    valid, seen = [], set()
     for entry in requested:
         url = entry.get('url') if isinstance(entry, dict) else entry
         match = re.fullmatch(
@@ -733,7 +733,11 @@ def _wp12_children(registry, observations):
         if not match or match.group(1) != product:
             return {'status': 'unknown', 'done': 0, 'total': len(requested),
                     'items': []}
-        valid.append(url)
+        if url not in seen:
+            seen.add(url)
+            valid.append(url)
+    if len(valid) > 12:
+        return {'status': 'unknown', 'done': 0, 'total': len(valid), 'items': []}
     entries = observations if isinstance(observations, list) else []
     keyed = {x.get('url'): x for x in entries if isinstance(x, dict)}
     items = []
@@ -753,28 +757,31 @@ def _wp12_children(registry, observations):
             'total': len(items), 'items': items}
 
 
-def _wp12_evidence_head(registry, observation):
-    expected = registry.get('evidence_head')
-    if not isinstance(expected, str) or not re.fullmatch(r'[0-9a-fA-F]{40}', expected):
+def _wp12_evidence_head(declaration, observations, repository):
+    """Exactly one evidence schema at project or agent scope: evidence{pr_url,head}."""
+    if declaration is None:
         return {'status': 'not_recorded'}
-    url = (registry.get('evidence_pr') or registry.get('evidence_pr_url')
-           or registry.get('pr_url') or registry.get('pr'))
-    if isinstance(url, dict):
-        url = url.get('url')
+    if not isinstance(declaration, dict):
+        return {'status': 'unknown'}
+    expected, url = declaration.get('head'), declaration.get('pr_url')
+    if not isinstance(expected, str) or not re.fullmatch(r'[0-9a-fA-F]{40}', expected):
+        return {'status': 'unknown'}
     mt = re.fullmatch(
         r'https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/pull/(\d+)',
         str(url or ''))
-    if not mt or mt.group(1) != registry.get('repository'):
+    if not mt or mt.group(1) != repository:
         return {'status': 'unknown', 'evidence_head': expected}
-    if (not isinstance(observation, dict) or observation.get('url') != url
-            or observation.get('repository') != mt.group(1)
-            or not re.fullmatch(r'[0-9a-fA-F]{40}',
-                                str(observation.get('head') or ''))):
+    entries = observations if isinstance(observations, list) else (
+        [observations] if isinstance(observations, dict) else [])
+    found = [x for x in entries if isinstance(x, dict) and
+             x.get('url') == url and x.get('repository') == repository]
+    if len(found) != 1 or not re.fullmatch(
+            r'[0-9a-fA-F]{40}', str(found[0].get('head') or '')):
         return {'status': 'unknown', 'evidence_head': expected}
-    current = observation['head']
+    current = found[0]['head']
     return {'status': 'superseded' if current.lower() != expected.lower()
-            else 'current', 'evidence_head': expected,
-            'current_head': current, 'pr_url': url}
+            else 'current', 'evidence_head': expected, 'current_head': current,
+            'pr_url': url}
 
 
 def build_project_data(root: Path, project_name: str, registry: dict,
@@ -834,6 +841,8 @@ def build_project_data(root: Path, project_name: str, registry: dict,
             'evidence_thread_url': _wp10_link(thread_url, {
                 registry.get('repository')}),
             'reports_to': a.get('reports_to', ''),
+            'evidence_head_status': _wp12_evidence_head(
+                a.get('evidence'), pr_observation, registry.get('repository')),
             'branch': a.get('branch', ''),
             'started': a.get('started'),
             'evidence': evidence,
@@ -896,7 +905,8 @@ def build_project_data(root: Path, project_name: str, registry: dict,
 
     hold_report = _wp12_hold(registry.get('control'), agents)
     child_progress = _wp12_children(registry, child_observations)
-    evidence_head_report = _wp12_evidence_head(registry, pr_observation)
+    evidence_head_report = _wp12_evidence_head(
+        registry.get('evidence'), pr_observation, registry.get('repository'))
     capture = source_meta if isinstance(source_meta, dict) else None
     status_pointer = registry.get('status_comment') or registry.get('status_issue') or ''
     pinned = re.search(r'#issuecomment-(\d+)', status_pointer)
@@ -1392,7 +1402,7 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
                  'project-extras' / project_name)
         children_snapshot = (load_json(extra / 'children.json') if not is_benchmark
                              else None)
-        pr_snapshot = (load_json(extra / 'pr-head.json') if not is_benchmark
+        pr_snapshot = (load_json(extra / 'pr-heads.json') if not is_benchmark
                        else None)
         status_num = _issue_number(
             registry.get('status_comment') or registry.get('status_issue') or ''
@@ -1486,6 +1496,7 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
                     'evidence_thread_num': a['evidence_thread_num'],
                     'evidence_thread_url': a['evidence_thread_url'],
                     'reports_to': a['reports_to'],
+                    'evidence_head_status': a['evidence_head_status'],
                 }
                 for a in pd['agents']
             ],

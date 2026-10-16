@@ -1641,6 +1641,1850 @@ jobs:
           path: wp10-browser-red.log
           if-no-files-found: error
 
+  wp12b-ui-base-red-control:
+    name: WP12b B1 pinned pre-WP12 seven UI controls RED · 7 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact HEAD WP12 UI assertions
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore pinned base 667bee78 builder and page only
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=667bee780b70f4c896a8d670ca92f886a947e8a4
+          for path in scripts/build_data.py site/app.js site/index.html site/style.css; do
+            git show "${BASE}:${path}" > "${path}"
+          done
+      - name: Make fixture-backed browser artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Require all seven real WP12_UI behaviours absent, zero errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp12_browser_test.py _artifact --wp12-ui-only > wp12b-seven-ui-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp12b-seven-ui-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path('wp12b-seven-ui-red.log').read_text()
+          fails=set(re.findall(r'^FAIL (WP12_UI_0[1-7]_\w+)
+    name: WP12 pinned main HOLD/tree/child/evidence RED · 4 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout HEAD new WP12 tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore pinned pre-WP12 main builder only
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=667bee780b70f4c896a8d670ca92f886a947e8a4
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+      - name: Require exactly four assertion failures, no errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp12.WP12BaseCompatible -v > wp12-unit-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp12-unit-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path("wp12-unit-red.log").read_text()
+          found=re.findall(r'^(test_wp12_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',log,re.M)
+          failures={a for a,b in found if b=="FAIL"}
+          errors={a for a,b in found if b=="ERROR"}
+          expected={
+            "test_wp12_hold_report_was_missing_on_main",
+            "test_wp12_reporting_lines_were_missing_on_main",
+            "test_wp12_children_unknown_without_observation_on_main",
+            "test_wp12_evidence_head_unknown_without_pr_observation_on_main",
+          }
+          good=(int(os.environ["RC"])!=0 and failures==expected and not errors
+            and re.search(r"^Ran 4 tests in ",log,re.M)
+            and "FAILED (failures=4)" in log)
+          print("WP12 UNIT RED:",len(failures),"FAIL;",len(errors),"ERROR;",
+                "PASS" if good else "INVALID")
+          if not good: sys.exit(1)
+          PY
+      - name: Upload WP12 pinned-main source control
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp12-unit-pinned-main-red
+          path: wp12-unit-red.log
+          if-no-files-found: error
+
+  wp12-readonly-browser-red-control:
+    name: WP12 N2 pre-WP11 app.js read-only RED · 4 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact HEAD WP12 Chromium tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore original pre-WP11 app.js only, keep HEAD builder/HTML
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=bc8f904873ab62f6d19bf9ef30d7b7653376065c
+          git show "${BASE}:site/app.js" > site/app.js
+      - name: Assemble benchmark artifact without remote API
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Expect four wrong read-only behaviours, zero runner errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp12_browser_test.py _artifact --readonly-only > wp12-n2-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp12-n2-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path("wp12-n2-red.log").read_text()
+          failures=set(re.findall(r'^FAIL (WP12_N2_0[1-4]_\w+)$',log,re.M))
+          expected={
+            "WP12_N2_01_external_project_no_post_action",
+            "WP12_N2_02_agent_link_matches_product_not_hub",
+            "WP12_N2_03_external_agent_no_ground_suggest",
+            "WP12_N2_04_external_projects_not_writable",
+          }
+          m=re.search(r'^WP12_READONLY_COUNTS pass=(\d+) fail=(\d+) error=(\d+)$',log,re.M)
+          good=(int(os.environ["RC"])!=0 and failures==expected and m
+                and m.groups()==("0","4","0") and "Traceback" not in log)
+          print("WP12 N2 RED:",len(failures),"FAIL;",
+                m.group(3) if m else "?", "ERROR;",
+                "PASS" if good else "INVALID")
+          if not good: sys.exit(1)
+          PY
+      - name: Upload WP12 N2 read-only negative control
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp12-readonly-browser-red
+          path: wp12-n2-red.log
+          if-no-files-found: error
+
+  wp11-real-two-repo-red-control:
+    name: WP11 real source/form links fail on pinned main · 3 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout HEAD tests and real registries
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only pinned WP11 base data builder
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=bc8f904873ab62f6d19bf9ef30d7b7653376065c
+          git cat-file -e "${BASE}^{commit}"
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+          git show "${BASE}:scripts/sync_owner_input_form.py" > scripts/sync_owner_input_form.py
+      - name: Demand three real link/form failures and no runner errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp11.WP11ActualRegistry -v > wp11-base-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp11-base-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path("wp11-base-red.log").read_text()
+          matches=re.findall(
+              r'^(test_wp11_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',
+              log,re.M)
+          failures={name for name,state in matches if state=="FAIL"}
+          errors={name for name,state in matches if state=="ERROR"}
+          expected={
+              "test_wp11_cii_real_registry_has_own_evidence_links",
+              "test_wp11_xml_real_registry_has_own_evidence_links",
+              "test_wp11_external_registries_are_not_writable_issue_form_options",
+          }
+          good=(int(os.environ["RC"])!=0 and failures==expected and not errors
+                and re.search(r"^Ran 5 tests in ",log,re.M)
+                and "FAILED (failures=3)" in log)
+          print("WP11 RED:",len(failures),"behavioural FAIL;",
+                len(errors),"ERROR;","PASS" if good else "INVALID")
+          if not good: sys.exit(1)
+          PY
+      - name: Upload WP11 old-source RED proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp11-pinned-main-red
+          path: wp11-base-red.log
+          if-no-files-found: error
+
+  wp10-unit-red-control:
+    name: WP10 pinned main behaviour RED · 4 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact HEAD with new tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore original builder from exact pre-WP10 main
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=3016be6bd94e2fa823ff6e104273eae404ba930a
+          git cat-file -e "${BASE}^{commit}"
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+      - name: Assert four behavioural failures and zero execution errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp10.BaseCompatibleWP10 -v > wp10-unit-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp10-unit-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os, re, sys
+          from pathlib import Path
+          output = Path("wp10-unit-red.log").read_text()
+          observed = re.findall(
+              r'^(test_wp10_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',
+              output, re.M)
+          fails = {name for name, state in observed if state == "FAIL"}
+          errors = {name for name, state in observed if state == "ERROR"}
+          expected = {
+              "test_wp10_expired_auto_response_and_critical_rules",
+              "test_wp10_agent_standby_hold_and_chat_end_risk",
+              "test_wp10_owner_vs_delegated_labels_in_timeline",
+              "test_wp10_external_project_read_only_issue_pr_links",
+          }
+          valid = (int(os.environ["RC"]) != 0 and fails == expected and
+                   not errors and re.search(r"^Ran 4 tests in ", output, re.M) and
+                   re.search(r"^FAILED \(failures=4\)$", output, re.M) and
+                   not re.search(r"^ERROR:", output, re.M))
+          print("WP10 RED:",len(fails),"expected FAIL,",len(errors),"ERROR;",
+                "PASS" if valid else "INVALID RED")
+          if not valid: sys.exit(1)
+          PY
+      - name: Upload WP10 base negative-control output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp10-base-red
+          path: wp10-unit-red.log
+          if-no-files-found: error
+
+  wp9-browser-red-control:
+    name: WP9 previous WP8b decision buttons behavioural red · 13 FAIL zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact WP9 PR HEAD tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only original merged WP8b JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=e23d7cc7d25d43c6df48f7bd4d34f6e9904d1cfc
+          git show "${BASE}:site/app.js" > site/app.js
+          echo "WP9 RED: restored old UI code from $BASE, keeping all HEAD tests"
+      - name: Build isolated browser artifact (no GitHub API write)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          python scripts/build_data.py --root . --out _artifact/data/benchmarks \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Demand thirteen wrong old-page behaviours and zero API or browser errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp9_browser_test.py _artifact > wp9-browser-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp9-browser-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path('wp9-browser-red.log').read_text()
+          names=set(re.findall(r'^FAIL (WP9_UI_(?:0[1-9]|1[0-3])_\w+)$',log,re.M))
+          m=re.search(r'^WP9_BROWSER_COUNTS pass=(\d+) fail=(\d+) error=(\d+)$',log,re.M)
+          ok=(int(os.environ['RC'])!=0 and len(names)==13 and m
+              and m.groups()==('0','13','0')
+              and 'Traceback (most recent call last)' not in log)
+          print('WP9 BROWSER RED: behavioural FAIL count',len(names))
+          print('WP9 BROWSER RED: runner ERROR count',m.group(3) if m else 'MISSING')
+          print('WP9 BROWSER RED VERDICT', 'EXPECTED BEHAVIOURAL RED' if ok else 'INVALID RED')
+          if not ok:sys.exit(1)
+          PY
+      - name: Upload WP9 old UI negative-control log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp9-base-browser-red
+          path: wp9-browser-red.log
+          if-no-files-found: error
+,log,re.M))
+          m=re.search(r'^WP12_UI_BASE_COUNTS pass=(\d+) fail=(\d+) error=(\d+)
+    name: WP12 pinned main HOLD/tree/child/evidence RED · 4 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout HEAD new WP12 tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore pinned pre-WP12 main builder only
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=667bee780b70f4c896a8d670ca92f886a947e8a4
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+      - name: Require exactly four assertion failures, no errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp12.WP12BaseCompatible -v > wp12-unit-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp12-unit-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path("wp12-unit-red.log").read_text()
+          found=re.findall(r'^(test_wp12_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',log,re.M)
+          failures={a for a,b in found if b=="FAIL"}
+          errors={a for a,b in found if b=="ERROR"}
+          expected={
+            "test_wp12_hold_report_was_missing_on_main",
+            "test_wp12_reporting_lines_were_missing_on_main",
+            "test_wp12_children_unknown_without_observation_on_main",
+            "test_wp12_evidence_head_unknown_without_pr_observation_on_main",
+          }
+          good=(int(os.environ["RC"])!=0 and failures==expected and not errors
+            and re.search(r"^Ran 4 tests in ",log,re.M)
+            and "FAILED (failures=4)" in log)
+          print("WP12 UNIT RED:",len(failures),"FAIL;",len(errors),"ERROR;",
+                "PASS" if good else "INVALID")
+          if not good: sys.exit(1)
+          PY
+      - name: Upload WP12 pinned-main source control
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp12-unit-pinned-main-red
+          path: wp12-unit-red.log
+          if-no-files-found: error
+
+  wp12-readonly-browser-red-control:
+    name: WP12 N2 pre-WP11 app.js read-only RED · 4 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact HEAD WP12 Chromium tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore original pre-WP11 app.js only, keep HEAD builder/HTML
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=bc8f904873ab62f6d19bf9ef30d7b7653376065c
+          git show "${BASE}:site/app.js" > site/app.js
+      - name: Assemble benchmark artifact without remote API
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Expect four wrong read-only behaviours, zero runner errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp12_browser_test.py _artifact --readonly-only > wp12-n2-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp12-n2-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path("wp12-n2-red.log").read_text()
+          failures=set(re.findall(r'^FAIL (WP12_N2_0[1-4]_\w+)$',log,re.M))
+          expected={
+            "WP12_N2_01_external_project_no_post_action",
+            "WP12_N2_02_agent_link_matches_product_not_hub",
+            "WP12_N2_03_external_agent_no_ground_suggest",
+            "WP12_N2_04_external_projects_not_writable",
+          }
+          m=re.search(r'^WP12_READONLY_COUNTS pass=(\d+) fail=(\d+) error=(\d+)$',log,re.M)
+          good=(int(os.environ["RC"])!=0 and failures==expected and m
+                and m.groups()==("0","4","0") and "Traceback" not in log)
+          print("WP12 N2 RED:",len(failures),"FAIL;",
+                m.group(3) if m else "?", "ERROR;",
+                "PASS" if good else "INVALID")
+          if not good: sys.exit(1)
+          PY
+      - name: Upload WP12 N2 read-only negative control
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp12-readonly-browser-red
+          path: wp12-n2-red.log
+          if-no-files-found: error
+
+  wp11-real-two-repo-red-control:
+    name: WP11 real source/form links fail on pinned main · 3 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout HEAD tests and real registries
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only pinned WP11 base data builder
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=bc8f904873ab62f6d19bf9ef30d7b7653376065c
+          git cat-file -e "${BASE}^{commit}"
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+          git show "${BASE}:scripts/sync_owner_input_form.py" > scripts/sync_owner_input_form.py
+      - name: Demand three real link/form failures and no runner errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp11.WP11ActualRegistry -v > wp11-base-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp11-base-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path("wp11-base-red.log").read_text()
+          matches=re.findall(
+              r'^(test_wp11_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',
+              log,re.M)
+          failures={name for name,state in matches if state=="FAIL"}
+          errors={name for name,state in matches if state=="ERROR"}
+          expected={
+              "test_wp11_cii_real_registry_has_own_evidence_links",
+              "test_wp11_xml_real_registry_has_own_evidence_links",
+              "test_wp11_external_registries_are_not_writable_issue_form_options",
+          }
+          good=(int(os.environ["RC"])!=0 and failures==expected and not errors
+                and re.search(r"^Ran 5 tests in ",log,re.M)
+                and "FAILED (failures=3)" in log)
+          print("WP11 RED:",len(failures),"behavioural FAIL;",
+                len(errors),"ERROR;","PASS" if good else "INVALID")
+          if not good: sys.exit(1)
+          PY
+      - name: Upload WP11 old-source RED proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp11-pinned-main-red
+          path: wp11-base-red.log
+          if-no-files-found: error
+
+  wp10-unit-red-control:
+    name: WP10 pinned main behaviour RED · 4 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact HEAD with new tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore original builder from exact pre-WP10 main
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=3016be6bd94e2fa823ff6e104273eae404ba930a
+          git cat-file -e "${BASE}^{commit}"
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+      - name: Assert four behavioural failures and zero execution errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp10.BaseCompatibleWP10 -v > wp10-unit-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp10-unit-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os, re, sys
+          from pathlib import Path
+          output = Path("wp10-unit-red.log").read_text()
+          observed = re.findall(
+              r'^(test_wp10_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',
+              output, re.M)
+          fails = {name for name, state in observed if state == "FAIL"}
+          errors = {name for name, state in observed if state == "ERROR"}
+          expected = {
+              "test_wp10_expired_auto_response_and_critical_rules",
+              "test_wp10_agent_standby_hold_and_chat_end_risk",
+              "test_wp10_owner_vs_delegated_labels_in_timeline",
+              "test_wp10_external_project_read_only_issue_pr_links",
+          }
+          valid = (int(os.environ["RC"]) != 0 and fails == expected and
+                   not errors and re.search(r"^Ran 4 tests in ", output, re.M) and
+                   re.search(r"^FAILED \(failures=4\)$", output, re.M) and
+                   not re.search(r"^ERROR:", output, re.M))
+          print("WP10 RED:",len(fails),"expected FAIL,",len(errors),"ERROR;",
+                "PASS" if valid else "INVALID RED")
+          if not valid: sys.exit(1)
+          PY
+      - name: Upload WP10 base negative-control output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp10-base-red
+          path: wp10-unit-red.log
+          if-no-files-found: error
+
+  wp9-browser-red-control:
+    name: WP9 previous WP8b decision buttons behavioural red · 13 FAIL zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact WP9 PR HEAD tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only original merged WP8b JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=e23d7cc7d25d43c6df48f7bd4d34f6e9904d1cfc
+          git show "${BASE}:site/app.js" > site/app.js
+          echo "WP9 RED: restored old UI code from $BASE, keeping all HEAD tests"
+      - name: Build isolated browser artifact (no GitHub API write)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          python scripts/build_data.py --root . --out _artifact/data/benchmarks \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Demand thirteen wrong old-page behaviours and zero API or browser errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp9_browser_test.py _artifact > wp9-browser-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp9-browser-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path('wp9-browser-red.log').read_text()
+          names=set(re.findall(r'^FAIL (WP9_UI_(?:0[1-9]|1[0-3])_\w+)$',log,re.M))
+          m=re.search(r'^WP9_BROWSER_COUNTS pass=(\d+) fail=(\d+) error=(\d+)$',log,re.M)
+          ok=(int(os.environ['RC'])!=0 and len(names)==13 and m
+              and m.groups()==('0','13','0')
+              and 'Traceback (most recent call last)' not in log)
+          print('WP9 BROWSER RED: behavioural FAIL count',len(names))
+          print('WP9 BROWSER RED: runner ERROR count',m.group(3) if m else 'MISSING')
+          print('WP9 BROWSER RED VERDICT', 'EXPECTED BEHAVIOURAL RED' if ok else 'INVALID RED')
+          if not ok:sys.exit(1)
+          PY
+      - name: Upload WP9 old UI negative-control log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp9-base-browser-red
+          path: wp9-browser-red.log
+          if-no-files-found: error
+,log,re.M)
+          expected={f'WP12_UI_0{i}_'+suffix for i,suffix in [
+            (1,'hold_words_and_exact_since'),(2,'reporting_lines_small_tree'),
+            (3,'child_progress_one_of_one_own_repo'),(4,'moved_pr_head_superseded'),
+            (5,'real_hold_no_invented_since'),(6,'agent_hold_banner'),
+            (7,'local_vs_hosted_ci_link')]}
+          ok=(int(os.environ['RC'])!=0 and fails==expected and m
+              and m.groups()==('0','7','0') and 'Traceback' not in log)
+          print('WP12b B1 RED:',len(fails),'FAIL;',m.group(3) if m else '?',
+                'ERROR;','PASS' if ok else 'INVALID')
+          if not ok:sys.exit(1)
+          PY
+      - name: Upload WP12b seven-UI pinned-base evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp12b-ui-seven-base-red
+          path: wp12b-seven-ui-red.log
+          if-no-files-found: error
+
+  wp12b-app-red-control:
+    name: WP12b B2/B3/B4 pinned WP12 app RED · 3 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact HEAD WP12b browser test
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore immediately previous WP12 site/app.js
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show 27df6c347fb995a3956552af75da6e82a372c945:site/app.js > site/app.js
+      - name: Build fixture site with new HEAD builder
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Chromium setup
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Demand three missing fixes on immediate predecessor
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp12_browser_test.py _artifact --wp12b-only > wp12b-app-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp12b-app-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path('wp12b-app-red.log').read_text()
+          fails=set(re.findall(r'^FAIL (WP12B_UI_0[1-3]_\w+)
+    name: WP12 pinned main HOLD/tree/child/evidence RED · 4 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout HEAD new WP12 tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore pinned pre-WP12 main builder only
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=667bee780b70f4c896a8d670ca92f886a947e8a4
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+      - name: Require exactly four assertion failures, no errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp12.WP12BaseCompatible -v > wp12-unit-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp12-unit-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path("wp12-unit-red.log").read_text()
+          found=re.findall(r'^(test_wp12_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',log,re.M)
+          failures={a for a,b in found if b=="FAIL"}
+          errors={a for a,b in found if b=="ERROR"}
+          expected={
+            "test_wp12_hold_report_was_missing_on_main",
+            "test_wp12_reporting_lines_were_missing_on_main",
+            "test_wp12_children_unknown_without_observation_on_main",
+            "test_wp12_evidence_head_unknown_without_pr_observation_on_main",
+          }
+          good=(int(os.environ["RC"])!=0 and failures==expected and not errors
+            and re.search(r"^Ran 4 tests in ",log,re.M)
+            and "FAILED (failures=4)" in log)
+          print("WP12 UNIT RED:",len(failures),"FAIL;",len(errors),"ERROR;",
+                "PASS" if good else "INVALID")
+          if not good: sys.exit(1)
+          PY
+      - name: Upload WP12 pinned-main source control
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp12-unit-pinned-main-red
+          path: wp12-unit-red.log
+          if-no-files-found: error
+
+  wp12-readonly-browser-red-control:
+    name: WP12 N2 pre-WP11 app.js read-only RED · 4 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact HEAD WP12 Chromium tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore original pre-WP11 app.js only, keep HEAD builder/HTML
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=bc8f904873ab62f6d19bf9ef30d7b7653376065c
+          git show "${BASE}:site/app.js" > site/app.js
+      - name: Assemble benchmark artifact without remote API
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Expect four wrong read-only behaviours, zero runner errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp12_browser_test.py _artifact --readonly-only > wp12-n2-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp12-n2-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path("wp12-n2-red.log").read_text()
+          failures=set(re.findall(r'^FAIL (WP12_N2_0[1-4]_\w+)$',log,re.M))
+          expected={
+            "WP12_N2_01_external_project_no_post_action",
+            "WP12_N2_02_agent_link_matches_product_not_hub",
+            "WP12_N2_03_external_agent_no_ground_suggest",
+            "WP12_N2_04_external_projects_not_writable",
+          }
+          m=re.search(r'^WP12_READONLY_COUNTS pass=(\d+) fail=(\d+) error=(\d+)$',log,re.M)
+          good=(int(os.environ["RC"])!=0 and failures==expected and m
+                and m.groups()==("0","4","0") and "Traceback" not in log)
+          print("WP12 N2 RED:",len(failures),"FAIL;",
+                m.group(3) if m else "?", "ERROR;",
+                "PASS" if good else "INVALID")
+          if not good: sys.exit(1)
+          PY
+      - name: Upload WP12 N2 read-only negative control
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp12-readonly-browser-red
+          path: wp12-n2-red.log
+          if-no-files-found: error
+
+  wp11-real-two-repo-red-control:
+    name: WP11 real source/form links fail on pinned main · 3 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout HEAD tests and real registries
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only pinned WP11 base data builder
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=bc8f904873ab62f6d19bf9ef30d7b7653376065c
+          git cat-file -e "${BASE}^{commit}"
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+          git show "${BASE}:scripts/sync_owner_input_form.py" > scripts/sync_owner_input_form.py
+      - name: Demand three real link/form failures and no runner errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp11.WP11ActualRegistry -v > wp11-base-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp11-base-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path("wp11-base-red.log").read_text()
+          matches=re.findall(
+              r'^(test_wp11_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',
+              log,re.M)
+          failures={name for name,state in matches if state=="FAIL"}
+          errors={name for name,state in matches if state=="ERROR"}
+          expected={
+              "test_wp11_cii_real_registry_has_own_evidence_links",
+              "test_wp11_xml_real_registry_has_own_evidence_links",
+              "test_wp11_external_registries_are_not_writable_issue_form_options",
+          }
+          good=(int(os.environ["RC"])!=0 and failures==expected and not errors
+                and re.search(r"^Ran 5 tests in ",log,re.M)
+                and "FAILED (failures=3)" in log)
+          print("WP11 RED:",len(failures),"behavioural FAIL;",
+                len(errors),"ERROR;","PASS" if good else "INVALID")
+          if not good: sys.exit(1)
+          PY
+      - name: Upload WP11 old-source RED proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp11-pinned-main-red
+          path: wp11-base-red.log
+          if-no-files-found: error
+
+  wp10-unit-red-control:
+    name: WP10 pinned main behaviour RED · 4 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact HEAD with new tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore original builder from exact pre-WP10 main
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=3016be6bd94e2fa823ff6e104273eae404ba930a
+          git cat-file -e "${BASE}^{commit}"
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+      - name: Assert four behavioural failures and zero execution errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp10.BaseCompatibleWP10 -v > wp10-unit-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp10-unit-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os, re, sys
+          from pathlib import Path
+          output = Path("wp10-unit-red.log").read_text()
+          observed = re.findall(
+              r'^(test_wp10_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',
+              output, re.M)
+          fails = {name for name, state in observed if state == "FAIL"}
+          errors = {name for name, state in observed if state == "ERROR"}
+          expected = {
+              "test_wp10_expired_auto_response_and_critical_rules",
+              "test_wp10_agent_standby_hold_and_chat_end_risk",
+              "test_wp10_owner_vs_delegated_labels_in_timeline",
+              "test_wp10_external_project_read_only_issue_pr_links",
+          }
+          valid = (int(os.environ["RC"]) != 0 and fails == expected and
+                   not errors and re.search(r"^Ran 4 tests in ", output, re.M) and
+                   re.search(r"^FAILED \(failures=4\)$", output, re.M) and
+                   not re.search(r"^ERROR:", output, re.M))
+          print("WP10 RED:",len(fails),"expected FAIL,",len(errors),"ERROR;",
+                "PASS" if valid else "INVALID RED")
+          if not valid: sys.exit(1)
+          PY
+      - name: Upload WP10 base negative-control output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp10-base-red
+          path: wp10-unit-red.log
+          if-no-files-found: error
+
+  wp9-browser-red-control:
+    name: WP9 previous WP8b decision buttons behavioural red · 13 FAIL zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact WP9 PR HEAD tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only original merged WP8b JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=e23d7cc7d25d43c6df48f7bd4d34f6e9904d1cfc
+          git show "${BASE}:site/app.js" > site/app.js
+          echo "WP9 RED: restored old UI code from $BASE, keeping all HEAD tests"
+      - name: Build isolated browser artifact (no GitHub API write)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          python scripts/build_data.py --root . --out _artifact/data/benchmarks \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Demand thirteen wrong old-page behaviours and zero API or browser errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp9_browser_test.py _artifact > wp9-browser-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp9-browser-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path('wp9-browser-red.log').read_text()
+          names=set(re.findall(r'^FAIL (WP9_UI_(?:0[1-9]|1[0-3])_\w+)$',log,re.M))
+          m=re.search(r'^WP9_BROWSER_COUNTS pass=(\d+) fail=(\d+) error=(\d+)$',log,re.M)
+          ok=(int(os.environ['RC'])!=0 and len(names)==13 and m
+              and m.groups()==('0','13','0')
+              and 'Traceback (most recent call last)' not in log)
+          print('WP9 BROWSER RED: behavioural FAIL count',len(names))
+          print('WP9 BROWSER RED: runner ERROR count',m.group(3) if m else 'MISSING')
+          print('WP9 BROWSER RED VERDICT', 'EXPECTED BEHAVIOURAL RED' if ok else 'INVALID RED')
+          if not ok:sys.exit(1)
+          PY
+      - name: Upload WP9 old UI negative-control log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp9-base-browser-red
+          path: wp9-browser-red.log
+          if-no-files-found: error
+,log,re.M))
+          m=re.search(r'^WP12B_ONLY_COUNTS pass=(\d+) fail=(\d+) error=(\d+)
+    name: WP12 pinned main HOLD/tree/child/evidence RED · 4 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout HEAD new WP12 tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore pinned pre-WP12 main builder only
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=667bee780b70f4c896a8d670ca92f886a947e8a4
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+      - name: Require exactly four assertion failures, no errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp12.WP12BaseCompatible -v > wp12-unit-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp12-unit-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path("wp12-unit-red.log").read_text()
+          found=re.findall(r'^(test_wp12_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',log,re.M)
+          failures={a for a,b in found if b=="FAIL"}
+          errors={a for a,b in found if b=="ERROR"}
+          expected={
+            "test_wp12_hold_report_was_missing_on_main",
+            "test_wp12_reporting_lines_were_missing_on_main",
+            "test_wp12_children_unknown_without_observation_on_main",
+            "test_wp12_evidence_head_unknown_without_pr_observation_on_main",
+          }
+          good=(int(os.environ["RC"])!=0 and failures==expected and not errors
+            and re.search(r"^Ran 4 tests in ",log,re.M)
+            and "FAILED (failures=4)" in log)
+          print("WP12 UNIT RED:",len(failures),"FAIL;",len(errors),"ERROR;",
+                "PASS" if good else "INVALID")
+          if not good: sys.exit(1)
+          PY
+      - name: Upload WP12 pinned-main source control
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp12-unit-pinned-main-red
+          path: wp12-unit-red.log
+          if-no-files-found: error
+
+  wp12-readonly-browser-red-control:
+    name: WP12 N2 pre-WP11 app.js read-only RED · 4 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact HEAD WP12 Chromium tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore original pre-WP11 app.js only, keep HEAD builder/HTML
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=bc8f904873ab62f6d19bf9ef30d7b7653376065c
+          git show "${BASE}:site/app.js" > site/app.js
+      - name: Assemble benchmark artifact without remote API
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Expect four wrong read-only behaviours, zero runner errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp12_browser_test.py _artifact --readonly-only > wp12-n2-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp12-n2-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path("wp12-n2-red.log").read_text()
+          failures=set(re.findall(r'^FAIL (WP12_N2_0[1-4]_\w+)$',log,re.M))
+          expected={
+            "WP12_N2_01_external_project_no_post_action",
+            "WP12_N2_02_agent_link_matches_product_not_hub",
+            "WP12_N2_03_external_agent_no_ground_suggest",
+            "WP12_N2_04_external_projects_not_writable",
+          }
+          m=re.search(r'^WP12_READONLY_COUNTS pass=(\d+) fail=(\d+) error=(\d+)$',log,re.M)
+          good=(int(os.environ["RC"])!=0 and failures==expected and m
+                and m.groups()==("0","4","0") and "Traceback" not in log)
+          print("WP12 N2 RED:",len(failures),"FAIL;",
+                m.group(3) if m else "?", "ERROR;",
+                "PASS" if good else "INVALID")
+          if not good: sys.exit(1)
+          PY
+      - name: Upload WP12 N2 read-only negative control
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp12-readonly-browser-red
+          path: wp12-n2-red.log
+          if-no-files-found: error
+
+  wp11-real-two-repo-red-control:
+    name: WP11 real source/form links fail on pinned main · 3 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout HEAD tests and real registries
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only pinned WP11 base data builder
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=bc8f904873ab62f6d19bf9ef30d7b7653376065c
+          git cat-file -e "${BASE}^{commit}"
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+          git show "${BASE}:scripts/sync_owner_input_form.py" > scripts/sync_owner_input_form.py
+      - name: Demand three real link/form failures and no runner errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp11.WP11ActualRegistry -v > wp11-base-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp11-base-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path("wp11-base-red.log").read_text()
+          matches=re.findall(
+              r'^(test_wp11_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',
+              log,re.M)
+          failures={name for name,state in matches if state=="FAIL"}
+          errors={name for name,state in matches if state=="ERROR"}
+          expected={
+              "test_wp11_cii_real_registry_has_own_evidence_links",
+              "test_wp11_xml_real_registry_has_own_evidence_links",
+              "test_wp11_external_registries_are_not_writable_issue_form_options",
+          }
+          good=(int(os.environ["RC"])!=0 and failures==expected and not errors
+                and re.search(r"^Ran 5 tests in ",log,re.M)
+                and "FAILED (failures=3)" in log)
+          print("WP11 RED:",len(failures),"behavioural FAIL;",
+                len(errors),"ERROR;","PASS" if good else "INVALID")
+          if not good: sys.exit(1)
+          PY
+      - name: Upload WP11 old-source RED proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp11-pinned-main-red
+          path: wp11-base-red.log
+          if-no-files-found: error
+
+  wp10-unit-red-control:
+    name: WP10 pinned main behaviour RED · 4 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact HEAD with new tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore original builder from exact pre-WP10 main
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=3016be6bd94e2fa823ff6e104273eae404ba930a
+          git cat-file -e "${BASE}^{commit}"
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+      - name: Assert four behavioural failures and zero execution errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp10.BaseCompatibleWP10 -v > wp10-unit-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp10-unit-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os, re, sys
+          from pathlib import Path
+          output = Path("wp10-unit-red.log").read_text()
+          observed = re.findall(
+              r'^(test_wp10_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',
+              output, re.M)
+          fails = {name for name, state in observed if state == "FAIL"}
+          errors = {name for name, state in observed if state == "ERROR"}
+          expected = {
+              "test_wp10_expired_auto_response_and_critical_rules",
+              "test_wp10_agent_standby_hold_and_chat_end_risk",
+              "test_wp10_owner_vs_delegated_labels_in_timeline",
+              "test_wp10_external_project_read_only_issue_pr_links",
+          }
+          valid = (int(os.environ["RC"]) != 0 and fails == expected and
+                   not errors and re.search(r"^Ran 4 tests in ", output, re.M) and
+                   re.search(r"^FAILED \(failures=4\)$", output, re.M) and
+                   not re.search(r"^ERROR:", output, re.M))
+          print("WP10 RED:",len(fails),"expected FAIL,",len(errors),"ERROR;",
+                "PASS" if valid else "INVALID RED")
+          if not valid: sys.exit(1)
+          PY
+      - name: Upload WP10 base negative-control output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp10-base-red
+          path: wp10-unit-red.log
+          if-no-files-found: error
+
+  wp9-browser-red-control:
+    name: WP9 previous WP8b decision buttons behavioural red · 13 FAIL zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact WP9 PR HEAD tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only original merged WP8b JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=e23d7cc7d25d43c6df48f7bd4d34f6e9904d1cfc
+          git show "${BASE}:site/app.js" > site/app.js
+          echo "WP9 RED: restored old UI code from $BASE, keeping all HEAD tests"
+      - name: Build isolated browser artifact (no GitHub API write)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          python scripts/build_data.py --root . --out _artifact/data/benchmarks \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Demand thirteen wrong old-page behaviours and zero API or browser errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp9_browser_test.py _artifact > wp9-browser-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp9-browser-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path('wp9-browser-red.log').read_text()
+          names=set(re.findall(r'^FAIL (WP9_UI_(?:0[1-9]|1[0-3])_\w+)$',log,re.M))
+          m=re.search(r'^WP9_BROWSER_COUNTS pass=(\d+) fail=(\d+) error=(\d+)$',log,re.M)
+          ok=(int(os.environ['RC'])!=0 and len(names)==13 and m
+              and m.groups()==('0','13','0')
+              and 'Traceback (most recent call last)' not in log)
+          print('WP9 BROWSER RED: behavioural FAIL count',len(names))
+          print('WP9 BROWSER RED: runner ERROR count',m.group(3) if m else 'MISSING')
+          print('WP9 BROWSER RED VERDICT', 'EXPECTED BEHAVIOURAL RED' if ok else 'INVALID RED')
+          if not ok:sys.exit(1)
+          PY
+      - name: Upload WP9 old UI negative-control log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp9-base-browser-red
+          path: wp9-browser-red.log
+          if-no-files-found: error
+,log,re.M)
+          ok=(int(os.environ['RC'])!=0 and len(fails)==3 and m
+              and m.groups()==('0','3','0') and 'Traceback' not in log)
+          print('WP12b APP RED:',len(fails),'FAIL;',m.group(3) if m else '?',
+                'ERROR;','PASS' if ok else 'INVALID')
+          if not ok:sys.exit(1)
+          PY
+      - name: Upload WP12b predecessor app control
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp12b-app-base-red
+          path: wp12b-app-red.log
+          if-no-files-found: error
+
+  wp12b-source-red-control:
+    name: WP12b evidence schema and child dedup predecessor RED · 2 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact HEAD WP12b source tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore predecessor WP12 projection
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show 27df6c347fb995a3956552af75da6e82a372c945:scripts/build_data.py > scripts/build_data.py
+      - name: Assert two source errors are behavioural FAIL only
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp12.WP12bBaseCompatible -v > wp12b-source-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp12b-source-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path('wp12b-source-red.log').read_text()
+          matches=re.findall(r'^(test_wp12b_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)
+    name: WP12 pinned main HOLD/tree/child/evidence RED · 4 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout HEAD new WP12 tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore pinned pre-WP12 main builder only
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=667bee780b70f4c896a8d670ca92f886a947e8a4
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+      - name: Require exactly four assertion failures, no errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp12.WP12BaseCompatible -v > wp12-unit-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp12-unit-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path("wp12-unit-red.log").read_text()
+          found=re.findall(r'^(test_wp12_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',log,re.M)
+          failures={a for a,b in found if b=="FAIL"}
+          errors={a for a,b in found if b=="ERROR"}
+          expected={
+            "test_wp12_hold_report_was_missing_on_main",
+            "test_wp12_reporting_lines_were_missing_on_main",
+            "test_wp12_children_unknown_without_observation_on_main",
+            "test_wp12_evidence_head_unknown_without_pr_observation_on_main",
+          }
+          good=(int(os.environ["RC"])!=0 and failures==expected and not errors
+            and re.search(r"^Ran 4 tests in ",log,re.M)
+            and "FAILED (failures=4)" in log)
+          print("WP12 UNIT RED:",len(failures),"FAIL;",len(errors),"ERROR;",
+                "PASS" if good else "INVALID")
+          if not good: sys.exit(1)
+          PY
+      - name: Upload WP12 pinned-main source control
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp12-unit-pinned-main-red
+          path: wp12-unit-red.log
+          if-no-files-found: error
+
+  wp12-readonly-browser-red-control:
+    name: WP12 N2 pre-WP11 app.js read-only RED · 4 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact HEAD WP12 Chromium tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore original pre-WP11 app.js only, keep HEAD builder/HTML
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=bc8f904873ab62f6d19bf9ef30d7b7653376065c
+          git show "${BASE}:site/app.js" > site/app.js
+      - name: Assemble benchmark artifact without remote API
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Expect four wrong read-only behaviours, zero runner errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp12_browser_test.py _artifact --readonly-only > wp12-n2-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp12-n2-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path("wp12-n2-red.log").read_text()
+          failures=set(re.findall(r'^FAIL (WP12_N2_0[1-4]_\w+)$',log,re.M))
+          expected={
+            "WP12_N2_01_external_project_no_post_action",
+            "WP12_N2_02_agent_link_matches_product_not_hub",
+            "WP12_N2_03_external_agent_no_ground_suggest",
+            "WP12_N2_04_external_projects_not_writable",
+          }
+          m=re.search(r'^WP12_READONLY_COUNTS pass=(\d+) fail=(\d+) error=(\d+)$',log,re.M)
+          good=(int(os.environ["RC"])!=0 and failures==expected and m
+                and m.groups()==("0","4","0") and "Traceback" not in log)
+          print("WP12 N2 RED:",len(failures),"FAIL;",
+                m.group(3) if m else "?", "ERROR;",
+                "PASS" if good else "INVALID")
+          if not good: sys.exit(1)
+          PY
+      - name: Upload WP12 N2 read-only negative control
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp12-readonly-browser-red
+          path: wp12-n2-red.log
+          if-no-files-found: error
+
+  wp11-real-two-repo-red-control:
+    name: WP11 real source/form links fail on pinned main · 3 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout HEAD tests and real registries
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only pinned WP11 base data builder
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=bc8f904873ab62f6d19bf9ef30d7b7653376065c
+          git cat-file -e "${BASE}^{commit}"
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+          git show "${BASE}:scripts/sync_owner_input_form.py" > scripts/sync_owner_input_form.py
+      - name: Demand three real link/form failures and no runner errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp11.WP11ActualRegistry -v > wp11-base-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp11-base-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path("wp11-base-red.log").read_text()
+          matches=re.findall(
+              r'^(test_wp11_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',
+              log,re.M)
+          failures={name for name,state in matches if state=="FAIL"}
+          errors={name for name,state in matches if state=="ERROR"}
+          expected={
+              "test_wp11_cii_real_registry_has_own_evidence_links",
+              "test_wp11_xml_real_registry_has_own_evidence_links",
+              "test_wp11_external_registries_are_not_writable_issue_form_options",
+          }
+          good=(int(os.environ["RC"])!=0 and failures==expected and not errors
+                and re.search(r"^Ran 5 tests in ",log,re.M)
+                and "FAILED (failures=3)" in log)
+          print("WP11 RED:",len(failures),"behavioural FAIL;",
+                len(errors),"ERROR;","PASS" if good else "INVALID")
+          if not good: sys.exit(1)
+          PY
+      - name: Upload WP11 old-source RED proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp11-pinned-main-red
+          path: wp11-base-red.log
+          if-no-files-found: error
+
+  wp10-unit-red-control:
+    name: WP10 pinned main behaviour RED · 4 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact HEAD with new tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore original builder from exact pre-WP10 main
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=3016be6bd94e2fa823ff6e104273eae404ba930a
+          git cat-file -e "${BASE}^{commit}"
+          git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
+      - name: Assert four behavioural failures and zero execution errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp10.BaseCompatibleWP10 -v > wp10-unit-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp10-unit-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os, re, sys
+          from pathlib import Path
+          output = Path("wp10-unit-red.log").read_text()
+          observed = re.findall(
+              r'^(test_wp10_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',
+              output, re.M)
+          fails = {name for name, state in observed if state == "FAIL"}
+          errors = {name for name, state in observed if state == "ERROR"}
+          expected = {
+              "test_wp10_expired_auto_response_and_critical_rules",
+              "test_wp10_agent_standby_hold_and_chat_end_risk",
+              "test_wp10_owner_vs_delegated_labels_in_timeline",
+              "test_wp10_external_project_read_only_issue_pr_links",
+          }
+          valid = (int(os.environ["RC"]) != 0 and fails == expected and
+                   not errors and re.search(r"^Ran 4 tests in ", output, re.M) and
+                   re.search(r"^FAILED \(failures=4\)$", output, re.M) and
+                   not re.search(r"^ERROR:", output, re.M))
+          print("WP10 RED:",len(fails),"expected FAIL,",len(errors),"ERROR;",
+                "PASS" if valid else "INVALID RED")
+          if not valid: sys.exit(1)
+          PY
+      - name: Upload WP10 base negative-control output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp10-base-red
+          path: wp10-unit-red.log
+          if-no-files-found: error
+
+  wp9-browser-red-control:
+    name: WP9 previous WP8b decision buttons behavioural red · 13 FAIL zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact WP9 PR HEAD tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only original merged WP8b JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=e23d7cc7d25d43c6df48f7bd4d34f6e9904d1cfc
+          git show "${BASE}:site/app.js" > site/app.js
+          echo "WP9 RED: restored old UI code from $BASE, keeping all HEAD tests"
+      - name: Build isolated browser artifact (no GitHub API write)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          python scripts/build_data.py --root . --out _artifact/data/benchmarks \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Demand thirteen wrong old-page behaviours and zero API or browser errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp9_browser_test.py _artifact > wp9-browser-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp9-browser-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          log=Path('wp9-browser-red.log').read_text()
+          names=set(re.findall(r'^FAIL (WP9_UI_(?:0[1-9]|1[0-3])_\w+)$',log,re.M))
+          m=re.search(r'^WP9_BROWSER_COUNTS pass=(\d+) fail=(\d+) error=(\d+)$',log,re.M)
+          ok=(int(os.environ['RC'])!=0 and len(names)==13 and m
+              and m.groups()==('0','13','0')
+              and 'Traceback (most recent call last)' not in log)
+          print('WP9 BROWSER RED: behavioural FAIL count',len(names))
+          print('WP9 BROWSER RED: runner ERROR count',m.group(3) if m else 'MISSING')
+          print('WP9 BROWSER RED VERDICT', 'EXPECTED BEHAVIOURAL RED' if ok else 'INVALID RED')
+          if not ok:sys.exit(1)
+          PY
+      - name: Upload WP9 old UI negative-control log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp9-base-browser-red
+          path: wp9-browser-red.log
+          if-no-files-found: error
+,log,re.M)
+          fails={a for a,b in matches if b=='FAIL'}
+          errors={a for a,b in matches if b=='ERROR'}
+          expected={'test_wp12b_project_evidence_single_key_vs_guessed_aliases',
+                    'test_wp12b_duplicate_children_count_once'}
+          ok=(int(os.environ['RC'])!=0 and fails==expected and not errors
+              and re.search(r'^Ran 2 tests in ',log,re.M)
+              and 'FAILED (failures=2)' in log)
+          print('WP12b SOURCE RED:',len(fails),'FAIL;',len(errors),'ERROR;',
+                'PASS' if ok else 'INVALID')
+          if not ok:sys.exit(1)
+          PY
+      - name: Upload WP12b predecessor projection proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp12b-source-predecessor-red
+          path: wp12b-source-red.log
+          if-no-files-found: error
+
   wp12-source-red-control:
     name: WP12 pinned main HOLD/tree/child/evidence RED · 4 FAIL, zero ERROR
     runs-on: ubuntu-latest
