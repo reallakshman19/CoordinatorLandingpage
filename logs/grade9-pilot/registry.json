@@ -332,16 +332,26 @@
         "TEST/imo-qrt-validator/question-findings.v1.schema.json"
       ],
       "scope": "Exact Owner-approved QRT-VM path boundaries only",
-      "state": "OWNER_APPROVED_BOUNDARY_EXECUTION_HOLD",
+      "state": "V_FIRST_UNIT_ADMITTED_NOT_DELIVERED",
       "exclusive": true,
       "authority": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6213310885",
       "proposed_branch": "codex/qrt-vm-v01-findings",
       "proposed_base": "b9dd05e3d89b8bbd4bcf1c9904ffabffbc75a7b8",
-      "branch_base_qualified": false,
-      "material_release": false,
+      "branch_base_qualified": true,
+      "material_release": true,
       "independent_checker": "6ad1a384",
       "incumbent_stop": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/38#issuecomment-6199371271",
-      "exclusions": "G4 semantic triage files; other agent paths; content/Core/HTML; protected scores; no merge/release/acceptance"
+      "exclusions": "G4 semantic triage files; other agent paths; content/Core/HTML; protected scores; no merge/release/acceptance",
+      "branch": "codex/qrt-vm-v01-findings",
+      "base": "b9dd05e3d89b8bbd4bcf1c9904ffabffbc75a7b8",
+      "pr_target": "agent/issue249-qrt-validator-v1",
+      "branch_created": false,
+      "prerequisite_refs": [
+        "https://github.com/reallakshman19/Grade9v3.5/issues/284#issuecomment-6213831312",
+        "https://github.com/reallakshman19/Grade9v3.5/issues/284#issuecomment-6216390534",
+        "https://github.com/reallakshman19/Grade9v3.5/issues/288#issuecomment-6214480704"
+      ],
+      "limits": "Smallest source-binding/findingsv1/directcontrols unit only. No product/academic acceptance, merge, release, scoring/content/G4/M edits; M remains independent reviewer."
     },
     {
       "actor": "6ad1a384",
@@ -487,8 +497,8 @@
       "protocol_commit": "b92b6096c656c0c7f8f51b896ec4ea1da3c5a22e",
       "plan": "V36-249-PLAN-01",
       "label_sha": "17be272",
-      "state": "PATH_CUSTODY_APPROVED_EXECUTION_PREREQUISITES_HOLD",
-      "material_release": false,
+      "state": "V_FIRST_UNIT_ADMITTED_M_WAITS_FROZEN_INTERFACE",
+      "material_release": "V_FIRST_UNIT_ONLY",
       "source_sha": "40f9267bb81db20c55a98c40650fc3b7ac054b5c",
       "proposed_base": "b9dd05e3d89b8bbd4bcf1c9904ffabffbc75a7b8",
       "agents": [
@@ -544,6 +554,19 @@
           "acceptance": false
         },
         "receipt_correction": "Local human-readable blob ID corrected by actual author; no test/result/product change"
+      },
+      "branch_base_selection": {
+        "V_branch": "codex/qrt-vm-v01-findings",
+        "base": "b9dd05e3d89b8bbd4bcf1c9904ffabffbc75a7b8",
+        "source": "40f9267bb81db20c55a98c40650fc3b7ac054b5c",
+        "draft_target": "agent/issue249-qrt-validator-v1",
+        "branch_created": false,
+        "readiness": "https://github.com/reallakshman19/Grade9v3.5/issues/284#issuecomment-6213831312",
+        "authoring_capability": "https://github.com/reallakshman19/Grade9v3.5/issues/284#issuecomment-6216390534",
+        "runner_proof": "https://github.com/reallakshman19/Grade9v3.5/issues/288#issuecomment-6214480704",
+        "admission": "Existing Owner conditional bounded tranche + exact custody6213310885; lifecycle release_codePASS for smallestVunit, not acceptance",
+        "fresh_guards": "Recheck exact refs/base and branch absence before first write. Abort on existing branch, stale parent, deniedwrite or out-of-scope diff.",
+        "delivery": "NOT_SENT; registry publication is not chat pickup"
       }
     }
   }
