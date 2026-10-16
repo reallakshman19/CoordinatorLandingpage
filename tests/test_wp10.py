@@ -35,9 +35,10 @@ class BaseCompatibleWP10(unittest.TestCase):
                         "owner_words": "Critical questions require an explicit Owner decision.",
                     }}
         projected, _ = project(registry)
-        self.assertEqual(projected["auto_response"]["state"], "EXPIRED")
-        self.assertEqual(projected["auto_response"]["allowed"], "critical")
-        self.assertIn("Critical questions", projected["auto_response"]["critical_rules"])
+        response = projected.get("auto_response") or {}
+        self.assertEqual(response.get("state"), "EXPIRED")
+        self.assertEqual(response.get("allowed"), "critical")
+        self.assertIn("Critical questions", response.get("critical_rules", ""))
 
     def test_wp10_agent_standby_hold_and_chat_end_risk(self):
         registry = {"project": "product-a", "repository": PRODUCT, "agents": [
@@ -49,7 +50,7 @@ class BaseCompatibleWP10(unittest.TestCase):
         ]}
         projected, _ = project(registry)
         self.assertEqual([a["status"] for a in projected["agents"]], ["standby", "hold"])
-        self.assertTrue(all(a["chat_end_risk"] for a in projected["agents"]))
+        self.assertTrue(all(a.get("chat_end_risk", False) for a in projected["agents"]))
         self.assertEqual(projected["agents"][0]["handover_meter"], 80)
         self.assertEqual(projected["agents"][0]["handover"],
                          "https://github.com/example/3D_Converters/issues/12")
@@ -68,7 +69,7 @@ class BaseCompatibleWP10(unittest.TestCase):
             ]
             path.write_text("\n".join(json.dumps(e) for e in events))
             _, timeline = project(registry, path)
-        self.assertEqual([x["decision_label"] for x in timeline],
+        self.assertEqual([x.get("decision_label") for x in timeline],
                          ["Owner", "delegated (OwnerTeammember)", "unverified"])
 
     def test_wp10_external_project_read_only_issue_pr_links(self):
@@ -81,7 +82,7 @@ class BaseCompatibleWP10(unittest.TestCase):
                     ]}
         projected, _ = project(registry)
         self.assertEqual(projected["repository"], PRODUCT)
-        self.assertEqual([x["url"] for x in projected["external_links"]], [
+        self.assertEqual([x["url"] for x in projected.get("external_links", [])], [
             "https://github.com/example/3D_Converters/issues/12",
             "https://github.com/example/3D_Converters/pull/13",
         ])
