@@ -707,3 +707,12 @@ tr:hover td { background: var(--bg-2); }
 .wp13-board-project { margin:12px 0;padding:12px; }
 .wp13-board-phases { padding:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px; }
 .wp13-board-phase,.wp13-rejected { overflow-wrap:anywhere; }
+
+/* WP14 limited pilot: GitHub new-file request preparation, not live sends. */
+.wp14-board-controls,#wp14-project-controls { padding:12px;margin:12px 0; }
+.wp14-compose-form { display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;padding:8px 0; }
+.wp14-field {display:flex;flex-direction:column;gap:3px;font-size:.85rem;min-width:0;}
+.wp14-field input,.wp14-field textarea,.wp14-field select,.wp14-approver-id8,.wp14-approver-role {
+ background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:5px;padding:7px;max-width:100%; }
+.wp14-approval-row {display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:9px 0;border-top:1px solid var(--border);}
+.wp14-compose-result {grid-column:1/-1;overflow-wrap:anywhere;}

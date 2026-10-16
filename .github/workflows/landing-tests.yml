@@ -145,6 +145,14 @@ jobs:
           set -o pipefail
           python -m unittest tests.test_wp13 -v 2>&1 | tee wp13-unit-head.log
 
+      - name: WP14 Owner-input authority and claim CAS regression suite
+        id: wp14_unit
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m unittest tests.test_wp14 -v 2>&1 | tee wp14-unit-head.log
+
       - name: Assemble benchmark-backed browser artifact (no live API)
         id: artifact
         continue-on-error: true
@@ -296,6 +304,15 @@ jobs:
           set -o pipefail
           python tests/wp13_browser_test.py _artifact 2>&1 | tee wp13-browser-head.log
 
+      - name: WP14 compose/approve GitHub draft UX and no-send Chromium
+        id: wp14_browser
+        if: steps.artifact.outcome == 'success' && steps.chromium.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python tests/wp14_browser_test.py _artifact 2>&1 | tee wp14-browser-head.log
+
       - name: Upload qualification output
         if: always()
         uses: actions/upload-artifact@v4
@@ -331,6 +348,8 @@ jobs:
             wp12-browser-head.log
             wp13-unit-head.log
             wp13-browser-head.log
+            wp14-unit-head.log
+            wp14-browser-head.log
           if-no-files-found: ignore
 
       - name: Prove injected failure rejected and enforce all HEAD gates
@@ -388,7 +407,9 @@ jobs:
           require_success "WP12-browser-HOLD-child-evidence-and-N2" "${{ steps.wp12_browser.outcome }}"
           require_success "WP13-next-move-validator-task-cycle" "${{ steps.wp13_unit.outcome }}"
           require_success "WP13-next-move-readonly-board-and-agent" "${{ steps.wp13_browser.outcome }}"
-          echo "FINAL GATE: 31/31 actual head outcomes success"
+          require_success "WP14-source-authority-claim-CAS-and-WP13-notes" "${{ steps.wp14_unit.outcome }}"
+          require_success "WP14-browser-github-draft-compose-approve" "${{ steps.wp14_browser.outcome }}"
+          echo "FINAL GATE: 33/33 actual head outcomes success"
 
   red-control:
     name: red-control · require seven behavioural FAIL and zero ERROR
@@ -1660,6 +1681,89 @@ jobs:
         with:
           name: wp10-base-browser-red
           path: wp10-browser-red.log
+          if-no-files-found: error
+
+  wp14-source-red:
+    name: WP14 pinned WP13 expired CLAIMED and missing-heartbeat RED · 2 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore prior Next Move v1 validator only
+        run: |
+          set -euo pipefail
+          git show 836c383c10c9de5cc59c29635bdec0af73290289:scripts/next_move.py > scripts/next_move.py
+      - name: Demand two behavior assertion FAIL and zero ERROR
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp14.WP14BaseCompatible -v > wp14-source-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp14-source-red.log
+          python tests/wp12b_red_verify.py wp14_source wp14-source-red.log "$rc"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wp14-source-pinned-red
+          path: wp14-source-red.log
+          if-no-files-found: error
+
+  wp14-browser-red:
+    name: WP14 pinned WP13 missing compose and approve UX · 7 FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore pre-WP14 site/app.js and index.html only
+        run: |
+          set -euo pipefail
+          BASE=836c383c10c9de5cc59c29635bdec0af73290289
+          for path in site/app.js site/index.html; do
+            git show "${BASE}:${path}" > "${path}"
+          done
+      - name: Build offline benchmark artifact
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install Chromium
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Demand seven absent WP14 UI behaviors with zero test errors
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp14_browser_test.py _artifact > wp14-browser-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp14-browser-red.log
+          python tests/wp12b_red_verify.py wp14_ui wp14-browser-red.log "$rc"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wp14-browser-pinned-red
+          path: wp14-browser-red.log
           if-no-files-found: error
 
   wp13-validator-red:

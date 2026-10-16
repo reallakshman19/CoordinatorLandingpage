@@ -22,6 +22,7 @@ import os
 import re
 import sys
 import owner_json
+from next_move import load_project_moves
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -1368,6 +1369,18 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
         owner_source = load_json(_owner_cache / 'owner-inputs-source.json') or []
         owner_capture = load_json(_owner_cache / 'capture-info.json')
 
+    # Reuse WP7's GitHub-provenance check; no typed role or unverified JSON
+    # becomes an effective Next Move approval.
+    verified_inputs = owner_json.read_committed_inputs(root) if not benchmark_dirs else []
+    request_inputs = []
+    for row in verified_inputs:
+        if (row.get('source_kind') != 'json_file' or row.get('flags')
+                or row.get('type') not in ('NEXT_MOVE_COMPOSE','NEXT_MOVE_APPROVAL')):
+            continue
+        candidate = root / 'logs' / row['project'] / 'inputs' / (row['id'] + '.json')
+        raw = load_json(candidate)
+        if isinstance(raw, dict):
+            request_inputs.append({**row, 'text': raw.get('text')})
     for source_type, source_path in sources:
         if source_type == 'benchmark':
             project_name, registry, threads, inbox, events_path = load_benchmark(source_path)
@@ -1423,11 +1436,16 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
         )
         # WP13 publisher validates read-only Next Move source records. Nothing
         # is created or altered under logs/; invalid records are quarantined.
-        from next_move import load_project_moves
+        agent_heads = {
+            a['chat_id8']: a['evidence_head_status']['current_head']
+            for a in project_data['agents']
+            if (a.get('evidence_head_status') or {}).get('current_head')
+        }
         next_view = load_project_moves(
             source_path if not is_benchmark else source_path / 'logs',
             registry, project_data['agents'], threads, now=datetime.now(timezone.utc),
-            registry_sha=registry_sha)
+            registry_sha=registry_sha, evidence_heads=agent_heads,
+            owner_inputs=request_inputs if not is_benchmark else [])
         project_data['next_move'] = next_view
         project_data['is_benchmark'] = is_benchmark
         project_data['benchmark_snapshot'] = (
@@ -1523,8 +1541,7 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
                       if isinstance(pd['registry'].get('repository'), str)}
         issue_rows = build_owner_inputs(owner_source, owner_capture,
                                         registered_repos=registered)
-        json_rows = owner_json.read_committed_inputs(root)
-        save_json(out_dir / 'owner-inputs.json', issue_rows + json_rows)
+        save_json(out_dir / 'owner-inputs.json', issue_rows + verified_inputs)
 
     # Save full project detail files
     for pd in all_projects:

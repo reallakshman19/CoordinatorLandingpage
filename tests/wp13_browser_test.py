@@ -114,7 +114,7 @@ def main():
                 check("WP13_UI_01_board_readonly_navigation",
                       lambda: page.locator("#view-next-moves").count()==1
                         and page.locator("#wp13-board").count()==1
-                        and page.locator("#view-next-moves button").count()==0)
+                        and page.locator("#view-next-moves button:not(.wp14-compose-submit):not(.wp14-approval-submit)").count()==0)
                 check("WP13_UI_02_board_states_and_criticality",
                       lambda: page.locator("#wp13-board").count()==1
                         and "Criticality: normal" in page.locator(
