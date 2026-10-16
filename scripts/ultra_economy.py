@@ -190,6 +190,9 @@ def project(registry, agents, threads, next_view, now=None):
         id8 = agent.get("chat_id8")
         if not isinstance(id8, str) or not ID8.fullmatch(id8):
             continue
+        if not str(agent.get("status") or "").lower().startswith("active"):
+            result["agents"][id8] = {"state": "NOT_ACTIVE", "may_proceed": False}
+            continue
         source = _agent_source(agent)
         if not source or source[0] != registry.get("repository"):
             continue
