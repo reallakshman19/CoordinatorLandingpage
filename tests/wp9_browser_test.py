@@ -131,8 +131,19 @@ def main():
                           ID+": Other: Please attach checker evidence\nQuestion: \"") and
                         page.locator("#oi-json-type").input_value()=="DECISION")
                 page.goto(base+"#project/grade9-pilot",wait_until="networkidle")
+                # Async project rendering can lag page.goto(networkidle).
+                # The original >=3 button and no-answered-state assertions
+                # remain intact; absence stays FAIL, never a runner ERROR.
+                def decisions_rendered():
+                    try:
+                        page.locator(
+                            '#open-decisions-list .decision-card .decision-answer-btn'
+                        ).first.wait_for(state="attached", timeout=5000)
+                        return True
+                    except Exception:
+                        return False
                 check("WP9_UI_08_prepared_but_uncommitted_draft_never_marks_answered",
-                      lambda: page.locator(
+                      lambda: decisions_rendered() and page.locator(
                           f'#open-decisions-list .decision-card .decision-answer-btn'
                         ).count()>=3 and
                         "answered, waiting for receipt" not in

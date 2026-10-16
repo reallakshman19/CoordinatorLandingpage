@@ -219,6 +219,15 @@ jobs:
           set -o pipefail
           python tests/wp9_browser_test.py _artifact 2>&1 | tee wp9-browser-head.log
 
+      - name: Run WP8c browser security, route and fallback-UX checks
+        id: wp8c_browser
+        if: steps.artifact.outcome == 'success' && steps.chromium.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python tests/wp8c_browser_test.py _artifact 2>&1 | tee wp8c-browser-head.log
+
       - name: Upload qualification output
         if: always()
         uses: actions/upload-artifact@v4
@@ -245,6 +254,7 @@ jobs:
             wp8b-unit-head.log
             wp8b-browser-head.log
             wp9-browser-head.log
+            wp8c-browser-head.log
           if-no-files-found: ignore
 
       - name: Prove injected failure rejected and enforce all HEAD gates
@@ -293,7 +303,8 @@ jobs:
           require_success "WP8b-source-activity-clocks" "${{ steps.wp8b_unit.outcome }}"
           require_success "WP8b-times-protocol-and-home-shortcut-browser" "${{ steps.wp8b_browser.outcome }}"
           require_success "WP9-decision-buttons-prefill-and-verified-receipt-browser" "${{ steps.wp9_browser.outcome }}"
-          echo "FINAL GATE: 22/22 actual head outcomes success"
+          require_success "WP8c-XSS-project-id8-fence-and-backup-UX" "${{ steps.wp8c_browser.outcome }}"
+          echo "FINAL GATE: 23/23 actual head outcomes success"
 
   red-control:
     name: red-control · require seven behavioural FAIL and zero ERROR
@@ -1431,6 +1442,66 @@ jobs:
         with:
           name: wp8b-base-browser-red
           path: wp8b-browser-red.log
+          if-no-files-found: error
+
+  wp8c-unit-red-control:
+    name: WP8c base replacement semantics red · 2 FAIL, 0 ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact head WP8c tests
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore only owner JSON projection from exact pre-WP8c main
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=129d70471476e47f2ee55fe261eb760d9579a0a4
+          git cat-file -e "${BASE}^{commit}"
+          git show "${BASE}:scripts/owner_json.py" > scripts/owner_json.py
+          echo "WP8c RED base=${BASE}, HEAD test assertions retained"
+      - name: Demand two replacement assertion failures, zero runner errors
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp7.WP8cInputSafety -v > wp8c-unit-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp8c-unit-red.log
+          export RC="$rc"
+          python - <<'PY'
+          import os,re,sys
+          from pathlib import Path
+          s=Path("wp8c-unit-red.log").read_text()
+          found=re.findall(r'^(test_wp8c_\w+)\s+\([^\n]+\)\s+\.\.\.\s+(FAIL|ERROR)$',s,re.M)
+          failures={name for name,kind in found if kind=="FAIL"}
+          errors={name for name,kind in found if kind=="ERROR"}
+          expected={
+            "test_wp8c_self_replacement_is_invalid_not_open",
+            "test_wp8c_unknown_replacement_is_invalid_not_open",
+          }
+          good=(int(os.environ["RC"])!=0 and failures==expected and not errors
+                and re.search(r"^Ran 5 tests in ",s,re.M)
+                and re.search(r"^FAILED \(failures=2\)$",s,re.M)
+                and not re.search(r"^ERROR:",s,re.M))
+          print("WP8C BASE RED:",len(failures),"assertion FAIL;",
+                len(errors),"ERROR;","EXPECTED" if good else "INVALID")
+          if not good:sys.exit(1)
+          PY
+      - name: Upload pinned base red proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp8c-main-base-red
+          path: wp8c-unit-red.log
           if-no-files-found: error
 
   wp9-browser-red-control:
