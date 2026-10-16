@@ -76,6 +76,9 @@ def main():
                         "grade":"CI"}]},
         ]
         evidence.write_text(json.dumps(content))
+        # Existing agent route still reads the legacy unscoped evidence-id8 file;
+        # verify both published forms carry the same project-checked fixture.
+        (site / "data" / "evidence-6ad1ce42.json").write_text(json.dumps(content))
         server = start_server(str(site), find_free_port())
         try:
             with sync_playwright() as pw:
@@ -90,7 +93,8 @@ def main():
                 check("WP12_N2_01_external_project_no_post_action",
                       lambda: not page.locator("#post-btn").is_visible())
                 check("WP12_N2_02_agent_link_matches_product_not_hub",
-                      lambda: page.locator(".agent-evidence-thread").first.get_attribute(
+                      lambda: page.locator(".agent-evidence-thread").count() == 2
+                      and page.locator(".agent-evidence-thread").first.get_attribute(
                           "href") == f"https://github.com/{PRODUCT}/issues/106")
                 visit("#agent/cii-method-c/6ad1ce42", "#agent-action-buttons")
                 check("WP12_N2_03_external_agent_no_ground_suggest",
