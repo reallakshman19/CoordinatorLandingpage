@@ -27,13 +27,20 @@ A **Next Move** is an auditable record of **who should do what next, why, on wha
 | **task cycle** | one evidence block posted by the working agent for the current work item, counted on GitHub (§6.1) |
 | **coordinator cycle** | one run of the coordinator's timer (15 min) |
 | **delegation allowance** | the Owner's "N cycles" for auto-response, converted to a clock time when given |
-| **criticality** | registry `criticality: critical \| normal`, **set only by the Owner's words**. It is separate from `auto_response`. A project with no value is treated as **critical**. |
+| **criticality** | registry `criticality: critical \| normal`, **set only by the Owner's words** (quoted in `criticality_owner_words`). It is separate from `auto_response`. A project with no value is treated as **critical**. Approvers are **derived from criticality only** (§5), never listed in a registry. |
+| **Owner / OTM / TC** | the Owner; OwnerTeammember; TeamCoordinator. One actor may hold OTM and TC together (a combined role = one actor) |
+| **G1 / G2** | the outgoing / incoming agent in a BuddyRunner v1.7 handover |
+| **GO** | the dispatch that starts a work item; task cycles count from it |
+| **OI** | an Owner input file `logs/<project>/inputs/OI-*.json` |
+| **warning level** | the handover-meter value the agent itself reports as its warning threshold; with no self-report, there is no warning level ("meter unknown") |
 
 ## 3. Classes
 | Class | Effect | Approval in the pilot |
 |---|---|---|
 | **Dispatch** | asks someone to act | **required** (§5) |
-| **Notice** | records a fact (agent_added, agent_retired, EVALUATED heartbeat) | none; **authorises nothing** |
+| **Notice** | records a fact (agent_added, agent_retired) | none; **authorises nothing** |
+
+The EVALUATED heartbeat is not a move. It is a `moves.jsonl` row `{state:"EVALUATED", at, by}` with no move id.
 
 ## 4. Files and states
 - `logs/<project>/moves/NM-YYYYMMDD-HHMMSS-xxxx.json`: one immutable file per move. Fields: `id, project, class, kind, from{role,id8}, to{role,id8}, text, basis{evidence, head, registry_sha}, trigger, supersedes, evidence_format, created_at`.
@@ -43,7 +50,7 @@ A **Next Move** is an auditable record of **who should do what next, why, on wha
 
 ### 4.1 Lifecycle
 ```
-PUBLISHED → APPROVED → CLAIMED → SENT_TO_CHAT(proof) | PUBLISHED_TO_THREAD(link) | DELIVERY_UNCERTAIN | NOT_SENT
+PUBLISHED → APPROVED → CLAIMED → SEND_INTENT → SENT_TO_CHAT(proof) | PUBLISHED_TO_THREAD(link) | DELIVERY_UNCERTAIN | NOT_SENT
           → PICKED_UP (a real recipient response) → ACKED (own words, link) → DONE_CLAIMED(link) → VERIFIED(by a non-doer)
 side states: REJECTED · HELD · SUPERSEDED(by id) · CANCELLED · EXPIRED
 ```
@@ -58,11 +65,17 @@ side states: REJECTED · HELD · SUPERSEDED(by id) · CANCELLED · EXPIRED
 ### 4.2 Claims (conflict-safe)
 - **Create** the claim file `moves/claims/<id>.json` through the GitHub Contents API with no `sha`. If the file already exists, the create fails, so only one claimer can win.
 - **Renewing or taking over an expired claim** is an update with the current `sha`, a compare-and-swap. It is allowed only if the move is not DELIVERY_UNCERTAIN.
+- **Claim TTL** = one coordinator cycle (15 min) unless the claim file says less.
+- **SEND_INTENT** is appended right before typing or posting. An expired claim whose move has a SEND_INTENT and no outcome is **DELIVERY_UNCERTAIN** automatically. It is never re-claimed until it is reconciled.
+- **REJECTED** = an approver refuses, with a reason. **CANCELLED** = the author or the Owner withdraws the move before SENT. **EXPIRED** = the trigger condition no longer holds, or the move waited 24 h with no claim; it needs a new move.
 - **Immediately before sending**, the claimer re-checks authority, basis (has the head or registry moved?) and HOLD. Any change → release the claim and record why.
 - Only one dispatch per recipient may be between CLAIMED and VERIFIED. Others wait in the queue, and replacing one needs an explicit `supersedes`.
 
 ## 5. Approval and grants
-- In the pilot, **every dispatch needs APPROVED before CLAIMED.** Approval can become optional per project, only on the Owner's words. After that a valid `grant_ref` is needed: an Owner decision record with exact words, an in-date `auto_response` row, or a CRITICAL standing rule. The publisher checks it.
+- In the pilot, **every dispatch needs APPROVED before CLAIMED.** Approval can become optional per project, only on the Owner's words. After that a valid `grant_ref` is needed: an Owner decision record with exact words, an in-date `auto_response` row, or one of the **three CRITICAL standing rules** (Owner, 16 Oct ~11:3x). The publisher checks it, and each rule covers **only** its matching kind:
+  - **(i)** "nudge as usual" → `next_step` whose text is the recipient's **own** stated Next;
+  - **(ii)** "approve takeover via buddy v1.7" → `buddy_1a`, `buddy_1b`, `buddy_2` and the activation notice (§6.3);
+  - **(iii)** "clarify non critical thing within scope of that issue, where no assumptions are required" → `status_check` / clarification inside the owning issue's scope.
 - **Approvers** (Owner, 16 Oct ~19:1x):
   - `criticality: normal` → the **Owner or OwnerTeammember**;
   - `critical` → the **Owner only**, except for the handover grant below.
@@ -72,9 +85,12 @@ side states: REJECTED · HELD · SUPERSEDED(by id) · CANCELLED · EXPIRED
   - Independence is supplied at VERIFIED, which is always done by a non-doer.
 - **Critical handover grant (ruled; Owner may revoke with one word):** the Owner's standing words of 16 Oct ~11:3x, "approve takeover via buddy v1.7", are recorded as **standing pre-approval for H1–H3 only** (§6.3).
   - OwnerTeammember checks eligibility; it gets no general approval authority on critical projects.
-  - Eligibility: a real trigger (§6.3), no HOLD, and the successor named in the registry.
+  - Eligibility: a real trigger (`chat_end_seen`, a self-reported meter at its warning level, or the Owner's words; §6.2), no HOLD, and the successor named in the registry.
+  - Opening the standby chat itself rests on the Owner's separate standby rule (16 Oct: "we should always have an agent based on our handover meter …"), not on this grant.
+  - **Activation** on a critical project is covered by this grant only when OTM records all four conditions of §6.3. Otherwise it needs the Owner.
+  - When the coordinator acts as G1, it is not independent. VERIFIED for H1 and H3 must then come from an independent checker (a fresh instance) or the Owner.
   - Everything else on a critical project needs the Owner.
-- **During the pilot, the existing cycle is unchanged.** Routine nudges and the three CRITICAL standing actions keep running as today, outside Next Move.
+- **During the pilot, the existing cycle is unchanged.** Routine nudges and the three CRITICAL standing actions (i)–(iii) above keep running as today, outside Next Move.
 
 ## 6. Triggers
 **The publisher is not a scheduler.** It validates and displays.
@@ -152,7 +168,7 @@ Owner inputs, receipts, registries, evidence threads and protocol pins stay as t
 ## 9. Delivery plan
 | WP | Phase | Scope | Pass |
 |---|---|---|---|
-| **NM0** | P0 | this spec committed as `protocol/NEXT_MOVE_v1.md`; registry `criticality` (landing-live normal; cii-method-c and xml229-output critical; others unset = critical); landing-live `next_move: {pilot: true, approval_required: true}` | merged, by OTM |
+| **NM0** | P0 | this spec committed as `protocol/NEXT_MOVE_v1.md`; registry `criticality` (cii-method-c and xml229-output critical from the Owner's words; landing-live and others unset = critical until the Owner says); landing-live `next_move: {pilot: true, approval_required: true}` | merged, by OTM |
 | **WP13** | P1 | validator: schema, transitions, approver tier, self-approval label, critical rules, claim rules, supersedes. Read-only view, board, flags, task-cycle counter (mod 20). Seed moves hand-written by OTM | red control (invalid moves accepted on base / rejected on head; counter absent on base); independent check |
 | **WP14** | P2 | page approve/compose (JSON new-file); claim file create/CAS helper for coordinators (documented script; no secrets) | one real move PUBLISHED → VERIFIED on landing-live; a concurrent claim is refused |
 | **WP15** | P3 | coordinator evaluator (skill) + EVALUATED heartbeat; page cross-check | each trigger condition caught on a fixture; a skipped cycle shows "not acted on" |
@@ -185,5 +201,6 @@ Owner inputs, receipts, registries, evidence threads and protocol pins stay as t
 | Activation conditions | adopted (§6.3) |
 | Separate criticality from auto-response | adopted: Owner-set field; unset = critical (§2) |
 | Reset after 19 gives a 19-block period | adopted: mod 20 (§6.1) |
-| Combined TC/OT is one actor | adopted: self-approval is labelled; normal projects only (§5) |
+| Combined TC/OTM is one actor | adopted: self-approval is labelled; normal projects only (§5) |
+| Checker notes on NM0 (OTM self-authored, independent check) | adopted: approvers derived, not listed; standing rules scoped; claim TTL, SEND_INTENT, REJECTED/CANCELLED/EXPIRED defined; glossary; EVALUATED is a row; activation and independence for H1/H3 (§5); landing-live criticality left unset until the Owner says |
 | Critical H1–H3 approval | **ruled:** the Owner's standing words "approve takeover via buddy v1.7" are the explicit standing pre-approval for H1–H3 only; OTM checks eligibility; revocable by the Owner with one word (§5) |
