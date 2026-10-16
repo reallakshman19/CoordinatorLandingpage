@@ -28,6 +28,7 @@
   <div id="nav-tabs" role="tablist">
     <button class="nav-tab active" data-view="home" role="tab">Home</button>
     <button class="nav-tab" data-view="timeline" role="tab">Timeline</button>
+    <button class="nav-tab" data-view="next-moves" role="tab">Next Move board</button>
     <button class="nav-tab" data-view="owner-inputs" role="tab">Owner inputs</button>
     <button class="nav-tab" data-view="protocol" role="tab">Protocol</button>
     <button class="nav-tab" data-view="benchmarks" role="tab">Benchmarks</button>
@@ -118,6 +119,7 @@
       <div class="note" id="workflow-current"></div>
     </div>
 
+    <div id="wp13-project-moves" class="card"></div>
     <div id="wp12-project-hold"></div>
     <div class="card">
       <div class="card-header"><span class="card-title">Agent reporting lines (read-only)</span></div>
@@ -195,6 +197,7 @@
     </div>
 
     <div id="wp12-agent-hold"></div>
+    <div id="wp13-agent-moves" class="card"></div>
     <!-- Grounding / agent action buttons -->
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap" id="agent-action-buttons">
       <a id="btn-ground" class="btn btn-danger btn-small" target="_blank" rel="noopener">
@@ -222,6 +225,14 @@
       </div>
     </div>
   </div>
+</template>
+
+<template id="tpl-next-moves">
+  <section id="view-next-moves">
+    <h1>Next Move · read-only board</h1>
+    <p class="note">Recorded dispatches and evaluator observations only. This page creates no moves, approvals, claims or messages. VERIFIED does not mean Owner acceptance.</p>
+    <div id="wp13-board"></div>
+  </section>
 </template>
 
 <template id="tpl-timeline">

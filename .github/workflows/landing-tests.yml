@@ -137,6 +137,14 @@ jobs:
           set -o pipefail
           python -m unittest tests.test_wp12 -v 2>&1 | tee wp12-unit-head.log
 
+      - name: Validate WP13 Next Move source and task-cycle publisher
+        id: wp13_unit
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m unittest tests.test_wp13 -v 2>&1 | tee wp13-unit-head.log
+
       - name: Assemble benchmark-backed browser artifact (no live API)
         id: artifact
         continue-on-error: true
@@ -279,6 +287,15 @@ jobs:
           set -o pipefail
           python tests/wp12_browser_test.py _artifact 2>&1 | tee wp12-browser-head.log
 
+      - name: Verify WP13 read-only Next Move board, agent and counter in Chromium
+        id: wp13_browser
+        if: steps.artifact.outcome == 'success' && steps.chromium.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python tests/wp13_browser_test.py _artifact 2>&1 | tee wp13-browser-head.log
+
       - name: Upload qualification output
         if: always()
         uses: actions/upload-artifact@v4
@@ -312,6 +329,8 @@ jobs:
             wp11-browser-head.log
             wp12-unit-head.log
             wp12-browser-head.log
+            wp13-unit-head.log
+            wp13-browser-head.log
           if-no-files-found: ignore
 
       - name: Prove injected failure rejected and enforce all HEAD gates
@@ -367,7 +386,9 @@ jobs:
           require_success "WP11-real-two-repo-readonly-Chromium" "${{ steps.wp11_browser.outcome }}"
           require_success "WP12-source-HOLD-tree-child-PR-and-local" "${{ steps.wp12_unit.outcome }}"
           require_success "WP12-browser-HOLD-child-evidence-and-N2" "${{ steps.wp12_browser.outcome }}"
-          echo "FINAL GATE: 29/29 actual head outcomes success"
+          require_success "WP13-next-move-validator-task-cycle" "${{ steps.wp13_unit.outcome }}"
+          require_success "WP13-next-move-readonly-board-and-agent" "${{ steps.wp13_browser.outcome }}"
+          echo "FINAL GATE: 31/31 actual head outcomes success"
 
   red-control:
     name: red-control · require seven behavioural FAIL and zero ERROR
@@ -1639,6 +1660,89 @@ jobs:
         with:
           name: wp10-base-browser-red
           path: wp10-browser-red.log
+          if-no-files-found: error
+
+  wp13-validator-red:
+    name: WP13 pinned main rejects invalid move and counts cycles · 2 FAIL 0 ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore exact pre-WP13 publisher builder
+        run: |
+          set -euo pipefail
+          git show df0ba0cb205d853bbe67eece1c851e6ba88f948b:scripts/build_data.py > scripts/build_data.py
+      - name: Demand two exact behavioral FAIL, no runner ERROR
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp13.WP13PinnedBase -v > wp13-source-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp13-source-red.log
+          python tests/wp12b_red_verify.py wp13_source wp13-source-red.log "$rc"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wp13-pinned-base-source-red
+          path: wp13-source-red.log
+          if-no-files-found: error
+
+  wp13-browser-red:
+    name: WP13 pinned main seven missing board and cycle UX controls · 7 FAIL 0 ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore pinned pre-WP13 builder and UI only
+        run: |
+          set -euo pipefail
+          BASE=df0ba0cb205d853bbe67eece1c851e6ba88f948b
+          for path in scripts/build_data.py site/app.js site/index.html site/style.css; do
+            git show "${BASE}:${path}" > "${path}"
+          done
+      - name: Build local browser artifact
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install headless Chromium
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Demand seven old-page behavioral FAIL, no runner ERROR
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp13_browser_test.py _artifact > wp13-browser-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp13-browser-red.log
+          python tests/wp12b_red_verify.py wp13_ui wp13-browser-red.log "$rc"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wp13-pinned-base-browser-red
+          path: wp13-browser-red.log
           if-no-files-found: error
 
   wp12b-seven-ui-red:

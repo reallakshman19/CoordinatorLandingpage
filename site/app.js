@@ -340,6 +340,97 @@ function wp12HasHostedRun(item, repository) {
   });
 }
 
+
+// WP13 P1: visualization only; every text field comes from validated publisher
+// projection. No composer, approver button, scheduler or write interaction.
+function wp13MoveTitle(m) {
+  return String(m.id || 'unknown') + ' · ' + String(m.kind || 'unknown') +
+    ' · ' + String(m.state || 'unknown');
+}
+function wp13MoveItem(m) {
+  const li = el('li', 'wp13-move-row');
+  li.appendChild(el('span', '', wp13MoveTitle(m)));
+  if (m.self_approved) li.appendChild(el('span','badge badge-grey','self-approved'));
+  for (const flag of m.flags || []) {
+    if (flag === 'self-approved' && m.self_approved) continue;
+    li.appendChild(el('span','badge badge-grey',String(flag)));
+  }
+  return li;
+}
+function wp13ReadOnly(container, view, agentId = null) {
+  if (!container) return;
+  container.replaceChildren();
+  container.appendChild(el('h2', '', agentId ?
+    'Next Move for agent (read-only)' : 'Next Move (read-only)'));
+  if (!view) {
+    container.appendChild(el('p','note','No Next Move projection available.'));
+    return;
+  }
+  const criticality = el('p', 'wp13-criticality');
+  criticality.appendChild(el('span', 'badge badge-grey wp13-criticality-badge',
+    'Criticality: ' + String(view.criticality || 'critical')));
+  criticality.appendChild(el('span', '',
+    ' · Approver: ' + String(view.approver_tier || 'Owner only')));
+  container.appendChild(criticality);
+  if (!view.pilot) {
+    container.appendChild(el('p','note','Next Move pilot not enabled for this project.'));
+    return;
+  }
+  const own = agentId ? view.agents?.[agentId] : view;
+  const counter = own?.task_cycle || view.task_cycle;
+  container.appendChild(el('p','wp13-task-cycle',
+    counter?.label || 'task cycle unknown — no GO recorded'));
+  const names = ['active','queue'];
+  for (const name of names) {
+    const section = el('div','wp13-move-group');
+    section.appendChild(el('h3','',name === 'active' ? 'Active dispatch' : 'Queue'));
+    const list = el('ul');
+    const items = Array.isArray(own?.[name]) ? own[name] : [];
+    for (const item of items) list.appendChild(wp13MoveItem(item));
+    if (!items.length) list.appendChild(el('li','note','None recorded'));
+    section.appendChild(list);
+    container.appendChild(section);
+  }
+  const flags = Array.isArray(view.flags) ? view.flags : [];
+  const flagBox = el('div','wp13-flags');
+  flagBox.appendChild(el('strong','','Flags: '));
+  flagBox.appendChild(el('span','',flags.length ? flags.join(' · ') : 'none'));
+  container.appendChild(flagBox);
+  if (!agentId) {
+    const bad = Array.isArray(view.rejected) ? view.rejected : [];
+    const rejected = el('div','wp13-rejected');
+    rejected.appendChild(el('strong','','Rejected records: ' + bad.length));
+    for (const item of bad) rejected.appendChild(el('p','note',
+      String(item.id) + ' — ' + (item.reasons || []).join(', ')));
+    container.appendChild(rejected);
+  }
+}
+async function renderNextMoves(app) {
+  const frag = cloneTemplate('tpl-next-moves');
+  app.replaceChildren(frag);
+  const board = $('wp13-board');
+  for (const p of state.projects) {
+    const v = p.next_move;
+    const section = el('section','card wp13-board-project');
+    section.appendChild(el('h2','',String(p.project)));
+    const body = el('div','card-body');
+    wp13ReadOnly(body,v);
+    section.appendChild(body);
+    if (v?.pilot) {
+      const phases = el('div','wp13-board-phases');
+      for (const [phase, ids] of Object.entries(v.board || {})) {
+        const part = el('p','wp13-board-phase');
+        part.appendChild(el('strong','',phase + ': '));
+        part.appendChild(el('span','',Array.isArray(ids) && ids.length ?
+          ids.join(', ') : '—'));
+        phases.appendChild(part);
+      }
+      section.appendChild(phases);
+    }
+    board.appendChild(section);
+  }
+}
+
 // ── URL helpers ────────────────────────────────────────────
 function ownerInputURL(opts = {}) {
   const params = new URLSearchParams({
@@ -760,6 +851,7 @@ async function render() {
     case 'project': await renderProject(app, arg1); break;
     case 'agent': await renderAgent(app, arg1, arg2); break;
     case 'timeline': await renderTimeline(app, arg1); break;
+    case 'next-moves': await renderNextMoves(app); break;
     case 'decision': await renderDecision(app, arg1, arg2); break;
     case 'owner-inputs': await renderOwnerInputs(app); break;
     case 'trace': await renderTrace(app, arg1); break;
@@ -921,6 +1013,7 @@ async function renderProject(app, projectName) {
   $('project-title').textContent = projectName;
 
   const ctrl = proj.control || detail?.registry?.control || {};
+  wp13ReadOnly($('wp13-project-moves'), proj.next_move || detail?.next_move);
   wp12HoldBanner($('wp12-project-hold'),proj.hold_report || detail?.hold_report);
   wp12ReportingTree($('wp12-reporting-tree'),proj.reporting_tree || detail?.reporting_tree);
   wp12ChildProgress($('wp12-child-progress'),proj.child_progress || detail?.child_progress,
@@ -1153,6 +1246,8 @@ async function renderAgent(app, projectName, id8) {
   }
 
   $('agent-title').textContent = `${agent.role} · ${id8}`;
+  const nextOwner = state.projects.find(p => p.project === projectName);
+  wp13ReadOnly($('wp13-agent-moves'), nextOwner?.next_move, id8);
   if (agent.status === 'hold') {
     const owning = state.projects.find(p => p.project === projectName);
     wp12HoldBanner($('wp12-agent-hold'), owning?.hold_report ||

@@ -1421,6 +1421,14 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             child_observations=children_snapshot,
             pr_observation=pr_snapshot
         )
+        # WP13 publisher validates read-only Next Move source records. Nothing
+        # is created or altered under logs/; invalid records are quarantined.
+        from next_move import load_project_moves
+        next_view = load_project_moves(
+            source_path if not is_benchmark else source_path / 'logs',
+            registry, project_data['agents'], threads, now=datetime.now(timezone.utc),
+            registry_sha=registry_sha)
+        project_data['next_move'] = next_view
         project_data['is_benchmark'] = is_benchmark
         project_data['benchmark_snapshot'] = (
             load_json(source_path / 'MANIFEST.json') or {}
@@ -1480,6 +1488,7 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             'reporting_tree': pd['reporting_tree'],
             'child_progress': pd['child_progress'],
             'evidence_head_status': pd['evidence_head_status'],
+            'next_move': pd['next_move'],
             'control': pd['registry']['control'],
             'workflow': pd['registry']['workflow'],
             'agents': [
