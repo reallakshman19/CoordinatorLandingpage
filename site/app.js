@@ -458,7 +458,7 @@ function ownerStatusBadge(status) {
 
 function ownerJSONCommitURL(values, date = new Date(), randomBytes = null) {
   const project = String(values.project || '');
-  if (!state.projects.some(p => p.project === project && p.repository === REPO) ||
+  if (!state.projects.some(p => p.project === project && (p.repository === REPO || p.is_benchmark === true)) ||
       !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(project))
     throw new Error('Choose a listed hub project; external projects are read-only.');
   const target = String(values.target || '').trim();
@@ -577,7 +577,7 @@ function renderDecisionAnswers(container, project, decision, visibleAsk, inputs)
 function setupJSONInputForm() {
   const form = $('oi-json-form'), projects = $('oi-json-project');
   if (!form || !projects) return;
-  for (const p of state.projects.filter(p => p.repository === REPO)) {
+  for (const p of state.projects.filter(p => p.repository === REPO || p.is_benchmark === true)) {
     const opt = el('option', '', p.project);
     opt.value = p.project;
     projects.appendChild(opt);
