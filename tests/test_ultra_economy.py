@@ -151,8 +151,11 @@ class UltraEconomyTests(unittest.TestCase):
 
     def test_15_future_due_window(self):
         task = current(move=False)
-        self.assertEqual(task["followup"]["state"], "OVERDUE_30")
-        self.assertIsNone(task["followup"]["next_due_at"])
+        self.assertEqual(task["followup"]["state"], "WAITING")
+        self.assertEqual(task["followup"]["next_due_at"], "2026-10-16T14:50:00+00:00")
+        self.assertEqual(uem._followup("2026-10-16T14:20:00Z",
+                         datetime(2026,10,16,14,51,tzinfo=timezone.utc))["state"],
+                         "OVERDUE_30")
         self.assertEqual(uem._followup("2026-10-16T14:20:00Z",
                                      datetime(2026,10,16,14,22,tzinfo=timezone.utc)),
                          {"state": "WAITING", "next_due_at": "2026-10-16T14:35:00+00:00"})
