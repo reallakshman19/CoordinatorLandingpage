@@ -95,13 +95,15 @@ def main():
                 base = f"http://127.0.0.1:{server.server_address[1]}/index.html"
                 page.goto(base + "#home", wait_until="networkidle")
                 check("WP10_UI_01_expired_auto_response_is_not_valid",
-                      lambda: "EXPIRED — no current delegation" in
+                      lambda: page.locator("#auto-response-home").count() == 1
+                      and "EXPIRED — no current delegation" in
                       page.locator("#auto-response-home").inner_text()
                       and "Critical requests need Owner approval." in
                       page.locator("#auto-response-home").inner_text())
                 page.goto(base + "#project/3d-test", wait_until="networkidle")
                 check("WP10_UI_02_critical_scope_and_expiry_visible",
-                      lambda: "routine only; critical to Owner" in
+                      lambda: page.locator("#auto-response-project").count() == 1
+                      and "routine only; critical to Owner" in
                       page.locator("#auto-response-project").inner_text()
                       and "2099-01-01" in page.locator("#auto-response-project").inner_text())
                 check("WP10_UI_03_generations_standby_hold_chat_end_risk",
@@ -128,8 +130,17 @@ def main():
                           "(a)=>a.map(x=>x.href)")) == {ISSUE, PR}
                       and page.locator(".external-project-link").count() == 2)
                 page.goto(base + "#timeline/3d-test", wait_until="networkidle")
+                # Hash navigation renders timelines asynchronously after several fetches.
+                # Missing badges stay a behavioural FAIL (not a browser exception).
+                def timeline_ready():
+                    try:
+                        page.locator("#timeline-events .decision-provenance").first.wait_for(
+                            state="attached", timeout=8000)
+                        return True
+                    except Exception:
+                        return False
                 check("WP10_UI_08_timeline_owner_vs_delegated_labels",
-                      lambda: (lambda texts: "Owner" in texts and
+                      lambda: timeline_ready() and (lambda texts: "Owner" in texts and
                           "delegated (OwnerTeammember)" in texts and "unverified" in texts)(
                           page.locator("#timeline-events .decision-provenance").all_inner_texts()))
                 page.goto(base + "#owner-inputs", wait_until="networkidle")
