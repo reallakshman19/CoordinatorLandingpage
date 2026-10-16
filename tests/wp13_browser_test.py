@@ -107,6 +107,7 @@ def main():
                           and M1 in page.locator("#wp13-board").inner_text()
                           and M2 in page.locator("#wp13-board").inner_text())
                 visit("#project/landing-live")
+                print("WP13_DIAG_PROJECT", repr(page.locator("#wp13-project-moves").all_inner_texts()))
                 check("WP13_UI_03_active_queue_and_approver",
                       lambda: page.locator("#wp13-project-moves").count()==1
                         and M1 in page.locator("#wp13-project-moves").inner_text()
