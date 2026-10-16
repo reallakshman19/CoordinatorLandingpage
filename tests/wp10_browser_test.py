@@ -11,7 +11,7 @@ from browser_smoke_test import find_free_port, start_server
 
 REPO = "reallakshman19/CoordinatorLandingpage"
 PRODUCT = "example/3D_Converters"
-ISSUE = f"https://github.com/{PRODUCT}/issues/12"
+ISSUE = f"https://github.com/{PRODUCT}/issues/12#issuecomment-1212"
 PR = f"https://github.com/{PRODUCT}/pull/13"
 
 
