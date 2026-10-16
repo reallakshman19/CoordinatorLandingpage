@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import build_data
 import fetch_live_data
+import sync_owner_input_form
 
 CII = "cii-method-c"
 XML = "xml229-output"
@@ -80,6 +81,17 @@ class WP11ActualRegistry(unittest.TestCase):
         self.assertIsNone(data["agents"][0].get("evidence_thread_url"))
         self.assertTrue(all(x["url"].startswith(f"https://github.com/{CII_REPO}/")
                             for x in data["external_links"]))
+
+    def test_wp11_external_registries_are_not_writable_issue_form_options(self):
+        choices = sync_owner_input_form.registry_projects(ROOT)
+        self.assertIn("landing-live", choices)
+        self.assertIn("grade9-pilot", choices)
+        self.assertIn("imo-ab-test", choices)
+        self.assertNotIn(CII, choices)
+        self.assertNotIn(XML, choices)
+        form = ROOT / ".github/ISSUE_TEMPLATE/owner-input.yml"
+        self.assertEqual(sync_owner_input_form.generated_content(ROOT, form),
+                         form.read_text(encoding="utf-8"))
 
     def test_wp11_live_data_same_issue_number_is_scoped_by_repository(self):
         with tempfile.TemporaryDirectory() as tmp:

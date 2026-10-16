@@ -1621,7 +1621,7 @@ jobs:
           if-no-files-found: error
 
   wp11-real-two-repo-red-control:
-    name: WP11 real source links fail on pinned main · 2 FAIL, zero ERROR
+    name: WP11 real source/form links fail on pinned main · 3 FAIL, zero ERROR
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -1642,7 +1642,8 @@ jobs:
           BASE=bc8f904873ab62f6d19bf9ef30d7b7653376065c
           git cat-file -e "${BASE}^{commit}"
           git show "${BASE}:scripts/build_data.py" > scripts/build_data.py
-      - name: Demand two real link failures and no runner errors
+          git show "${BASE}:scripts/sync_owner_input_form.py" > scripts/sync_owner_input_form.py
+      - name: Demand three real link/form failures and no runner errors
         shell: bash
         run: |
           set -uo pipefail
@@ -1664,10 +1665,11 @@ jobs:
           expected={
               "test_wp11_cii_real_registry_has_own_evidence_links",
               "test_wp11_xml_real_registry_has_own_evidence_links",
+              "test_wp11_external_registries_are_not_writable_issue_form_options",
           }
           good=(int(os.environ["RC"])!=0 and failures==expected and not errors
-                and re.search(r"^Ran 4 tests in ",log,re.M)
-                and "FAILED (failures=2)" in log)
+                and re.search(r"^Ran 5 tests in ",log,re.M)
+                and "FAILED (failures=3)" in log)
           print("WP11 RED:",len(failures),"behavioural FAIL;",
                 len(errors),"ERROR;","PASS" if good else "INVALID")
           if not good: sys.exit(1)
