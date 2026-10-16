@@ -1,7 +1,7 @@
 # UltraEconomyMode v1 — agent-led bounded workplan loop
 
-**Status:** Draft implementation, opt-in only. Preserves \`protocol/TEAM_PROTOCOL.md\`,
-\`protocol/NEXT_MOVE_v1.md\`, Owner approval, BuddyRunner and existing Pages publisher.
+**Status:** Draft implementation, opt-in only. Preserves `protocol/TEAM_PROTOCOL.md`,
+`protocol/NEXT_MOVE_v1.md`, Owner approval, BuddyRunner and existing Pages publisher.
 **Parent:** [CoordinatorLandingpage #21](https://github.com/reallakshman19/CoordinatorLandingpage/issues/21).
 
 ## Purpose
@@ -20,9 +20,9 @@ mechanism is introduced. A TASK START is an **agent claim**, not Owner approval.
 
 Add this field only to a project registry under an authorized change:
 
-\`\`\`json
+```json
 "ultra_economy": {"enabled": true, "max_cycles": 3}
-\`\`\`
+```
 
 Valid max_cycles: integer 1 through 5. Missing config, invalid values (including
 boolean or string) or disabled config result in no UEM task execution projection.
@@ -39,25 +39,25 @@ Existing projects remain unaffected.
 3. Publish an append-only TASK START v1 comment to the registered evidence issue
    **before engineering begins**, with all required fields:
 
-\`\`\`text
+```text
 TASK START v1 · landing-live · implementer · chat 11111111 · task WP16 · cycle 1/3
 Planned outcome: Implement the next scoped unit with source evidence
 Expected next: Independent exact-HEAD review after tests
 Known blocker: NONE
 Workplan: https://github.com/reallakshman19/CoordinatorLandingpage/issues/21
 Fallback: ARMED <host task receipt> | NOT_ARMED <reason>
-\`\`\`
+```
 
 4. Perform only the currently authorized work. End with the unchanged
    TASK EVIDENCE v2 body and the additional non-authoritative correlation line
-   \`UEM cycle: 1/3\`. The first token after \`Task:\` must be \`WP16\`.
-   The existing \`Did\`, \`Not done / HOLD\`, \`Needs Owner\`, \`Next\`
-   and \`Proof\` fields still apply.
+   `UEM cycle: 1/3`. The first token after `Task:` must be `WP16`.
+   The existing `Did`, `Not done / HOLD`, `Needs Owner`, `Next`
+   and `Proof` fields still apply.
 5. **Immediately after publishing the END record**, read GitHub's newest
    validated Next Move, the actual registry, HOLD and current PR HEAD. A matching
    move uses the existing fields and a strictly correlated trigger:
 
-\`\`\`json
+```json
 {
   "class": "Dispatch",
   "kind": "next_step",
@@ -72,14 +72,14 @@ Fallback: ARMED <host task receipt> | NOT_ARMED <reason>
     "registry_sha": "<actual 40-hex registry blob SHA>"
   }
 }
-\`\`\`
+```
 
    The example is a **partial specification**. Full Next Move schema, transitions,
    actor checks and approvals remain governed by NEXT_MOVE v1. UEM never creates,
    approves, claims or sends the move.
 6. Only a validated, recipient-matched, source-fresh **SENT_TO_CHAT** (or
    subsequently PICKED_UP/ACKED) move can be surfaced as
-   \`NEXT_MOVE_RECORDED_DELIVERED\`. A proposed move, approval request, APPROVED
+   `NEXT_MOVE_RECORDED_DELIVERED`. A proposed move, approval request, APPROVED
    transition, GitHub issue publication or PUBLISHED_TO_THREAD does **not**
    establish chat delivery. Even on delivered status, the agent rechecks
    custody, grant and HOLD before starting the next scoped cycle.
@@ -93,7 +93,7 @@ Fallback: ARMED <host task receipt> | NOT_ARMED <reason>
 
 ## Hourly fallback instruction (agent uses native ChatGPT scheduling)
 
-\`\`\`text
+```text
 Every hour, check the registered GitHub evidence issue for TASK START v1 and
 TASK EVIDENCE v2 on workplan task WP16, chat 11111111, and the corresponding
 CoordinatorLandingpage Next Move. Only report a missing/changed answer,
@@ -101,7 +101,7 @@ stale source, HOLD, delivery uncertainty, or an actionable and independently
 authorized transition. Do not create/approve moves, send to chats, change agents,
 merge, deploy or advance the workplan by yourself. Stop this recurring task
 after verified terminal completion or cancellation; otherwise retain it.
-\`\`\`
+```
 
 The host ChatGPT agent must actually invoke its native scheduled-task capability;
 this repository cannot create ChatGPT Tasks from a static GitHub Pages site.
@@ -123,13 +123,13 @@ remain read-only sources of observations, not senders.
 
 ## Source paths
 
-- \`scripts/ultra_economy.py\` — derive task lifecycle, cycle cap, exact-match move,
+- `scripts/ultra_economy.py` — derive task lifecycle, cycle cap, exact-match move,
   source status and follow-up due times.
-- \`scripts/build_data.py\` — attach UEM to existing \`next_move\` projection
+- `scripts/build_data.py` — attach UEM to existing `next_move` projection
   only for opt-in projects.
-- \`site/app.js\` — render UEM facts in existing Next Move views, with no button
+- `site/app.js` — render UEM facts in existing Next Move views, with no button
   to auto-approve or send.
-- \`tests/test_ultra_economy.py\` — positive and negative source/authority fixtures.
+- `tests/test_ultra_economy.py` — positive and negative source/authority fixtures.
 
 ## Qualification boundaries
 
