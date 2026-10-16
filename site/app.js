@@ -710,8 +710,13 @@ async function renderHome(app) {
 // ── Project view ───────────────────────────────────────────
 async function renderProject(app, projectName) {
   if (!projectName) { navigate('#home'); return; }
-  const proj = state.projects.find(p => p.project === projectName);
-  if (!proj) { app.innerHTML = `<div class="empty-state">Project "${escapeHtml(projectName)}" not found.</div>`; return; }
+  // Even a tampered published registry must not turn a hash into a data path.
+  const safeProject = /^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(projectName);
+  const proj = safeProject ? state.projects.find(p => p.project === projectName) : null;
+  if (!proj) {
+    app.replaceChildren(el('div', 'empty-state', `Project "${projectName}" not found.`));
+    return;
+  }
 
   const detail = await loadProjectDetail(projectName);
   const frag = cloneTemplate('tpl-project');
@@ -879,6 +884,17 @@ async function renderProject(app, projectName) {
 // ── Agent view ─────────────────────────────────────────────
 async function renderAgent(app, projectName, id8) {
   if (!projectName || !id8) { navigate('#home'); return; }
+  // Hash arguments must be trusted identities before they reach a fetch URL.
+  // Invalid values are displayed as text, never interpreted as markup.
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(projectName) ||
+      !state.projects.some(p => p.project === projectName) ||
+      !/^[0-9a-f]{8}$/.test(id8)) {
+    let shown = id8;
+    try { shown = decodeURIComponent(id8); } catch { /* literal input */ }
+    app.replaceChildren(el('div', 'empty-state',
+      'Invalid agent reference: ' + String(shown)));
+    return;
+  }
 
   const frag = cloneTemplate('tpl-agent');
   app.innerHTML = '';
@@ -889,7 +905,7 @@ async function renderAgent(app, projectName, id8) {
   const evData = await loadEvidence(id8);
   const agent = evData?.agent;
 
-  if (!agent) {
+  if (!agent || evData.project !== projectName || agent.chat_id8 !== id8) {
     app.innerHTML = `<div class="empty-state">No evidence data found for agent ${escapeHtml(id8)}.</div>`;
     return;
   }
