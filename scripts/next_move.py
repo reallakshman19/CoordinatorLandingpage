@@ -125,11 +125,16 @@ def schema(item, project, filename):
     return faults
 
 
+def normal_role(value):
+    """Shared conservative normalization for identity-role labels only."""
+    return (str(value or "").lower().replace(" ", "").replace("_", ""))
+
+
 def _approval(record, row, crit, registry):
     who, sender, role = row.get("by"), record.get("from"), None
     if not actor(who):
         return "approval_actor_invalid", False
-    role = who["role"].lower().replace(" ", "").replace("_", "")
+    role = normal_role(who["role"])
     self_approved = who["id8"] == sender.get("id8") if isinstance(sender, dict) else False
     if role == "owner":
         return None, self_approved
@@ -490,7 +495,7 @@ def validate_input_request(registry, record, moves, provenance):
     # Owner tier is independently anchored by the GitHub author association.
     # No public registry maps OTM to a specific GitHub login, so even a
     # collaborator's valid tier claim remains a REQUEST pending ledger proof.
-    if by["role"].strip().lower() == "owner" and (
+    if normal_role(by["role"]) == "owner" and (
             provenance.get("author_association") != "OWNER"):
         return {"valid": False, "reason": "owner_identity_not_verified"}
     return {"valid": True, "reason": "approval_request_only",

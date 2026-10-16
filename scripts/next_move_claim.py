@@ -42,8 +42,17 @@ class GHTransport:
         cmd = ["gh", "api", "-X", "PUT", path]
         for key, value in fields.items():
             cmd.extend(["-f", key + "=" + str(value)])
-        result = subprocess.run(cmd, text=True, capture_output=True, check=True)
-        return json.loads(result.stdout)
+        try:
+            result = subprocess.run(cmd, text=True, capture_output=True, check=True)
+        except subprocess.CalledProcessError as exc:
+            message = exc.stderr or ""
+            if re.search(r"(HTTP\s+409|409\s+Conflict|HTTP\s+422|422\s+Unprocessable)", message, re.I):
+                raise ClaimRefused("claim_contents_conflict_409_or_422") from exc
+            raise ClaimRefused("remote_api_write_failed") from exc
+        try:
+            return json.loads(result.stdout)
+        except ValueError as exc:
+            raise ClaimRefused("remote_api_write_response_invalid") from exc
 
 
 def _contents(api, path, branch):

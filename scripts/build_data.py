@@ -1446,6 +1446,16 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             registry, project_data['agents'], threads, now=datetime.now(timezone.utc),
             registry_sha=registry_sha, evidence_heads=agent_heads,
             owner_inputs=request_inputs if not is_benchmark else [])
+        # Optional manually committed evaluator report: never substitute
+        # its proposed heartbeat for a moves.jsonl EVALUATED row.
+        if not is_benchmark and project_name == 'landing-live':
+            from next_move_evaluator import cross_check
+            published_eval = load_json(source_path / 'next-move-evaluation.json')
+            next_view['evaluator_cross_check'] = cross_check(
+                next_view, published_eval, registry_sha, datetime.now(timezone.utc))
+        else:
+            next_view['evaluator_cross_check'] = {
+                'status': 'not_recorded', 'mismatches': [], 'observed_at': None}
         project_data['next_move'] = next_view
         project_data['is_benchmark'] = is_benchmark
         project_data['benchmark_snapshot'] = (
