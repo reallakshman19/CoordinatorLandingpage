@@ -677,6 +677,16 @@ tr:hover td { background: var(--bg-2); }
 #needs-you .decision-answers { margin-top:7px; }
 #needs-you .decision-commit-hint { font-weight:400; }
 
+/* WP12 source-only HOLD, reporting and progress: no authority mutations. */
+.hold-visibility-banner { border-left:4px solid var(--warn); margin:12px 0; padding:10px 14px;
+  background:var(--surface-2);display:flex;flex-direction:column;gap:4px;overflow-wrap:anywhere; }
+.wp12-reporting-list, .wp12-reporting-list ul { margin:6px 0 6px 16px;padding-left:16px; }
+.wp12-reporting-agent { padding:3px 0;overflow-wrap:anywhere; }
+.wp12-child-link { display:block;padding:6px 0;overflow-wrap:anywhere; }
+.wp12-child-total { display:block;margin-bottom:6px; }
+.wp12-head-status { display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0; }
+.wp12-evidence-hosting { margin-right:5px; }
+
 /* WP10: source-backed scopes, generations and read-only external links. */
 .auto-response-note { padding:10px 16px; line-height:1.5; }
 .auto-response-table { min-width:680px; }

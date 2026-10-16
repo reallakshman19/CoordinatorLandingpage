@@ -226,6 +226,100 @@ function renderAutoResponseTable(container, projects) {
   table.appendChild(body); wrap.appendChild(table); container.appendChild(wrap);
 }
 
+
+function wp12HoldBanner(where, hold) {
+  if (!where || !hold?.active) return;
+  const div = el('div', 'hold-visibility-banner');
+  div.appendChild(el('strong', '', 'HOLD — work paused'));
+  div.appendChild(el('span', '', 'Since: ' + (hold.since || 'not recorded')));
+  if (hold.owner_words) div.appendChild(
+    el('span', '', 'Recorded Owner words: ' + hold.owner_words));
+  if (hold.recorded) div.appendChild(
+    el('span', '', 'Registry HOLD note: ' + hold.recorded));
+  where.appendChild(div);
+}
+
+function wp12ReportingTree(where, agents) {
+  if (!where) return;
+  const rows = Array.isArray(agents) ? agents : [];
+  if (!rows.length) {
+    where.appendChild(el('p', 'note', 'No agent reporting lines recorded.'));
+    return;
+  }
+  const byId = new Map(rows.filter(a => /^[0-9a-f]{8}$/.test(a.chat_id8))
+    .map(a => [a.chat_id8, a]));
+  const list = el('ul', 'wp12-reporting-list');
+  const write = (a, visited) => {
+    const li = el('li', 'wp12-reporting-agent');
+    li.appendChild(el('span','', String(a.alias || a.chat_id8) +
+      ' · ' + String(a.status || 'unknown') + ' · ' + String(a.chat_id8)));
+    const children = rows.filter(x => x.reports_to === a.chat_id8 &&
+      x.chat_id8 !== a.chat_id8 && !visited.has(x.chat_id8));
+    if (children.length) {
+      const sub = el('ul');
+      for (const child of children) {
+        const next = new Set(visited); next.add(child.chat_id8);
+        sub.appendChild(write(child, next));
+      }
+      li.appendChild(sub);
+    }
+    return li;
+  };
+  // A missing/cyclic parent must not create an infinite tree.
+  for (const agent of rows) {
+    if (!agent.reports_to || !byId.has(agent.reports_to) ||
+        agent.reports_to === agent.chat_id8)
+      list.appendChild(write(agent, new Set([agent.chat_id8])));
+  }
+  if (!list.children.length) where.appendChild(
+    el('p', 'note', 'Reporting lines unverified (cycle or missing root).'));
+  else where.appendChild(list);
+}
+
+function wp12ChildProgress(where, progress, repository) {
+  if (!where) return;
+  if (!progress || progress.status === 'not_recorded') {
+    where.appendChild(el('p','note','No v3.6 child issues registered.'));
+    return;
+  }
+  if (progress.status !== 'known') {
+    where.appendChild(el('p', 'note', 'v3.6 child progress UNKNOWN — not all titles verified.'));
+    return;
+  }
+  where.appendChild(el('strong','wp12-child-total',
+    'v3.6 child progress: ' + progress.done + '/' + progress.total + ' DONE'));
+  for (const item of progress.items || []) {
+    const safe = allowedExternalLink(item.url, repository);
+    if (!safe || !safe.includes('/issues/')) continue;
+    const a = el('a','wp12-child-link',String(item.state) + ' · ' + String(item.title));
+    a.href = safe; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    where.appendChild(a);
+  }
+}
+
+function wp12HeadStatus(where, info, repository) {
+  if (!where || !info || info.status === 'not_recorded') return;
+  const wording = info.status === 'superseded'
+    ? 'evidence superseded (head moved)'
+    : info.status === 'current' ? 'Evidence head matches current PR head'
+    : 'Evidence head UNKNOWN (no verified current PR head)';
+  where.appendChild(el('span',info.status === 'superseded'
+    ? 'badge badge-yellow wp12-evidence-superseded'
+    : 'badge badge-grey wp12-evidence-status', wording));
+  const link = allowedExternalLink(info.pr_url, repository);
+  if (link && link.includes('/pull/')) {
+    const a = el('a', 'btn btn-small wp12-head-pr-link', 'Source PR (read-only) →');
+    a.href = link; a.rel = 'noopener noreferrer'; a.target = '_blank';
+    where.appendChild(a);
+  }
+}
+function wp12HasHostedRun(item) {
+  // An unverified grade [CI] is not an actual hosted run.
+  return Array.isArray(item?.proofs) && item.proofs.some(p =>
+    /https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/actions\/runs\/\d+\b/
+    .test(String(p?.line || '')));
+}
+
 // ── URL helpers ────────────────────────────────────────────
 function ownerInputURL(opts = {}) {
   const params = new URLSearchParams({
@@ -807,6 +901,12 @@ async function renderProject(app, projectName) {
   $('project-title').textContent = projectName;
 
   const ctrl = proj.control || detail?.registry?.control || {};
+  wp12HoldBanner($('wp12-project-hold'),proj.hold_report || detail?.hold_report);
+  wp12ReportingTree($('wp12-reporting-tree'),proj.reporting_tree || detail?.reporting_tree);
+  wp12ChildProgress($('wp12-child-progress'),proj.child_progress || detail?.child_progress,
+                    proj.repository);
+  wp12HeadStatus($('wp12-head-status'),proj.evidence_head_status ||
+                 detail?.evidence_head_status, proj.repository);
   const hold = ctrl.hold;
   if (hold) {
     const hb = $('project-hold-badge');
@@ -1033,6 +1133,11 @@ async function renderAgent(app, projectName, id8) {
   }
 
   $('agent-title').textContent = `${agent.role} · ${id8}`;
+  if (agent.status === 'hold') {
+    const owning = state.projects.find(p => p.project === projectName);
+    wp12HoldBanner($('wp12-agent-hold'), owning?.hold_report ||
+      {active: true, since: '', owner_words: '', recorded: ''});
+  }
   const badges = $('agent-badges');
   badges.appendChild(agentStateBadge(agent.status));
   if (agent.generation) {
@@ -1084,6 +1189,8 @@ async function renderAgent(app, projectName, id8) {
       header.appendChild(seq);
       header.appendChild(task);
       header.appendChild(statusBadge);
+      header.appendChild(el('span', 'badge badge-grey wp12-evidence-hosting',
+        wp12HasHostedRun(item) ? 'hosted CI link claimed' : 'local only'));
       header.appendChild(ts);
       header.appendChild(icon);
 

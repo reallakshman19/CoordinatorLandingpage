@@ -211,6 +211,72 @@ def discover_project_refs(root: Path, control_repo: str):
 
 
 
+
+WP12_CHILD_LIMIT = 12
+
+
+def capture_project_extras(root, cache, projects, errors):
+    """Bounded read-only child-title and PR-head observations per project."""
+    extras = cache / "project-extras"
+    if extras.exists():
+        shutil.rmtree(extras)
+    extras.mkdir(parents=True)
+    for project, config in sorted(projects.items()):
+        reg = json.loads((root / "logs" / project / "registry.json")
+                         .read_text(encoding="utf-8"))
+        repo = config['repository']
+        dest = extras / project
+        dest.mkdir()
+        children = reg.get('children', [])
+        if children:
+            if not isinstance(children, list) or len(children) > WP12_CHILD_LIMIT:
+                errors.append(f"children_limit_or_shape_invalid:{project}")
+            else:
+                results, seen = [], set()
+                for entry in children:
+                    url = entry.get('url') if isinstance(entry, dict) else entry
+                    mt = re.fullmatch(
+                        r'https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/issues/(\d+)',
+                        str(url or ''))
+                    if not mt or mt.group(1) != repo or url in seen:
+                        errors.append(f"child_reference_invalid:{project}")
+                        continue
+                    seen.add(url)
+                    num = int(mt.group(2))
+                    # A single resource endpoint, not a paginated search.
+                    value = gh_api(f"/repos/{repo}/issues/{num}")
+                    if (not isinstance(value, dict)
+                            or value.get('number') != num
+                            or value.get('pull_request')
+                            or value.get('html_url', url) != url):
+                        errors.append(f"child_fetch_invalid:{project}:{num}")
+                        continue
+                    results.append({'url': url, 'repository': repo,
+                                    'title': value.get('title', '')})
+                save_json(dest / "children.json", results)
+        if reg.get('evidence_head'):
+            pr = (reg.get('evidence_pr') or reg.get('evidence_pr_url')
+                  or reg.get('pr_url') or reg.get('pr'))
+            if isinstance(pr, dict):
+                pr = pr.get('url')
+            mt = re.fullmatch(
+                r'https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/pull/(\d+)',
+                str(pr or ''))
+            if not mt or mt.group(1) != repo:
+                errors.append(f"evidence_pr_reference_invalid:{project}")
+                continue
+            value = gh_api(f"/repos/{repo}/pulls/{mt.group(2)}")
+            current = value.get('head') if isinstance(value, dict) else None
+            sha = current.get('sha') if isinstance(current, dict) else None
+            if (not isinstance(sha, str) or
+                    not re.fullmatch(r'[0-9a-fA-F]{40}', sha)
+                    or value.get('number') != int(mt.group(2))):
+                errors.append(f"evidence_pr_head_unavailable:{project}")
+                continue
+            save_json(dest / "pr-head.json", {
+                'url': pr, 'repository': repo, 'head': sha})
+
+
 OWNER_INDEX_PAGE_LIMIT = 5
 
 
@@ -270,6 +336,7 @@ def main():
 
     project_refs, all_refs, errors = discover_project_refs(root, args.repo)
     captured_at = datetime.now(timezone.utc).isoformat()
+    capture_project_extras(root, cache, project_refs, errors)
     fetched = {}
     # A (repo, number) pair is the immutable identity. 12@product-A is not
     # 12@product-B and neither may be substituted for 12@control-hub.
