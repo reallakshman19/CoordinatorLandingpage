@@ -101,8 +101,16 @@ def main():
                       and "Critical requests need Owner approval." in
                       page.locator("#auto-response-home").inner_text())
                 page.goto(base + "#project/3d-test", wait_until="networkidle")
+                def delegation_ready():
+                    try:
+                        page.locator("#auto-response-project table").wait_for(
+                            state="attached", timeout=8000)
+                        return True
+                    except Exception:
+                        return False
                 check("WP10_UI_02_critical_scope_and_expiry_visible",
-                      lambda: page.locator("#auto-response-project").count() == 1
+                      lambda: delegation_ready()
+                      and page.locator("#auto-response-project").count() == 1
                       and "routine only; critical to Owner" in
                       page.locator("#auto-response-project").inner_text()
                       and "2099-01-01" in page.locator("#auto-response-project").inner_text())
