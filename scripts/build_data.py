@@ -675,12 +675,115 @@ def _wp10_meter(value):
     return None
 
 
+
+# WP12 projections are reports of recorded claims, never new Owner authority.
+V36_TITLE = re.compile(
+    r'^\[V3\.6\]\[O(\d+)\]\[(PLANNED|IN_PROGRESS|DONE)\]', re.I)
+
+
+def _wp12_hold(control, agents):
+    control = control if isinstance(control, dict) else {}
+    raw = control.get('hold')
+    if not raw and not any(a.get('status') == 'hold' for a in agents):
+        return None
+    # A plain string like "Owner HOLD 16 Oct 18:0x" is not a timestamp.
+    # Expose it as the source claim without inventing precise Owner words/time.
+    detail = raw if isinstance(raw, dict) else {}
+    words = (detail.get('owner_words') or control.get('hold_owner_words')
+             or control.get('owner_words') or '')
+    since = detail.get('since') or control.get('hold_since') or control.get('since')
+    if not isinstance(words, str):
+        words = ''
+    if not isinstance(since, str):
+        since = ''
+    return {'active': True,
+            'recorded': raw if isinstance(raw, str) else '',
+            'owner_words': words,
+            'since': since}
+
+
+def _wp12_tree(agents):
+    ids = {a.get('chat_id8') for a in agents}
+    return [
+        {'chat_id8': a.get('chat_id8'),
+         'alias': a.get('alias') or a.get('role') or 'agent',
+         'status': a.get('status'),
+         # Only same-project ID8 edges; never infer from a shared issue number.
+         'reports_to': a.get('reports_to') if a.get('reports_to') in ids
+                       and a.get('reports_to') != a.get('chat_id8') else None}
+        for a in agents
+    ]
+
+
+def _wp12_children(registry, observations):
+    """A fraction is known only if every registered title was captured."""
+    product = registry.get('repository')
+    requested = registry.get('children', [])
+    if not isinstance(requested, list) or not requested:
+        return {'status': 'not_recorded', 'done': 0, 'total': 0, 'items': []}
+    if len(requested) > 12:
+        return {'status': 'unknown', 'done': 0, 'total': len(requested),
+                'items': []}
+    valid = []
+    for entry in requested:
+        url = entry.get('url') if isinstance(entry, dict) else entry
+        match = re.fullmatch(
+            r'https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/issues/(\d+)',
+            str(url or ''))
+        if not match or match.group(1) != product:
+            return {'status': 'unknown', 'done': 0, 'total': len(requested),
+                    'items': []}
+        valid.append(url)
+    entries = observations if isinstance(observations, list) else []
+    keyed = {x.get('url'): x for x in entries if isinstance(x, dict)}
+    items = []
+    for url in valid:
+        record = keyed.get(url, {})
+        title = record.get('title')
+        if record.get('repository') != product or not isinstance(title, str):
+            return {'status': 'unknown', 'done': 0, 'total': len(valid),
+                    'items': []}
+        mt = V36_TITLE.match(title)
+        if not mt:
+            return {'status': 'unknown', 'done': 0, 'total': len(valid),
+                    'items': []}
+        items.append({'url': url, 'title': title, 'order': int(mt.group(1)),
+                      'state': mt.group(2).upper(), 'read_only': True})
+    return {'status': 'known', 'done': sum(x['state'] == 'DONE' for x in items),
+            'total': len(items), 'items': items}
+
+
+def _wp12_evidence_head(registry, observation):
+    expected = registry.get('evidence_head')
+    if not isinstance(expected, str) or not re.fullmatch(r'[0-9a-fA-F]{40}', expected):
+        return {'status': 'not_recorded'}
+    url = (registry.get('evidence_pr') or registry.get('evidence_pr_url')
+           or registry.get('pr_url') or registry.get('pr'))
+    if isinstance(url, dict):
+        url = url.get('url')
+    mt = re.fullmatch(
+        r'https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/pull/(\d+)',
+        str(url or ''))
+    if not mt or mt.group(1) != registry.get('repository'):
+        return {'status': 'unknown', 'evidence_head': expected}
+    if (not isinstance(observation, dict) or observation.get('url') != url
+            or observation.get('repository') != mt.group(1)
+            or not re.fullmatch(r'[0-9a-fA-F]{40}',
+                                str(observation.get('head') or ''))):
+        return {'status': 'unknown', 'evidence_head': expected}
+    current = observation['head']
+    return {'status': 'superseded' if current.lower() != expected.lower()
+            else 'current', 'evidence_head': expected,
+            'current_head': current, 'pr_url': url}
+
+
 def build_project_data(root: Path, project_name: str, registry: dict,
                         threads: dict, inbox: list, events_path: Path | list[Path] | None,
                         source_meta: dict | None = None,
                         status_thread: dict | None = None,
                         now: datetime | None = None,
-                        registry_blob_sha: str | None = None) -> dict:
+                        registry_blob_sha: str | None = None,
+                        child_observations=None, pr_observation=None) -> dict:
     """Assemble the project data payload."""
 
     now = now or datetime.now(timezone.utc)
@@ -730,6 +833,7 @@ def build_project_data(root: Path, project_name: str, registry: dict,
             'evidence_thread_num': thread_num,
             'evidence_thread_url': _wp10_link(thread_url, {
                 registry.get('repository')}),
+            'reports_to': a.get('reports_to', ''),
             'branch': a.get('branch', ''),
             'started': a.get('started'),
             'evidence': evidence,
@@ -790,6 +894,9 @@ def build_project_data(root: Path, project_name: str, registry: dict,
         if event.get('type') == 'OWNER_DECISION':
             event['decision_label'] = _wp10_decision_label(event)
 
+    hold_report = _wp12_hold(registry.get('control'), agents)
+    child_progress = _wp12_children(registry, child_observations)
+    evidence_head_report = _wp12_evidence_head(registry, pr_observation)
     capture = source_meta if isinstance(source_meta, dict) else None
     status_pointer = registry.get('status_comment') or registry.get('status_issue') or ''
     pinned = re.search(r'#issuecomment-(\d+)', status_pointer)
@@ -815,6 +922,10 @@ def build_project_data(root: Path, project_name: str, registry: dict,
         'repository': registry.get('repository', ''),
         'auto_response': _wp10_auto_response(registry, now),
         'external_links': _wp10_external_links(registry),
+        'hold_report': hold_report,
+        'reporting_tree': _wp12_tree(agents),
+        'child_progress': child_progress,
+        'evidence_head_status': evidence_head_report,
         'source_capture_at': source_capture_at,
         'source_health': health,
         'source_refs': {
@@ -1275,6 +1386,14 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             events_path = sorted(source_path.rglob('events.jsonl'))
             is_benchmark = False
 
+        # Per-project external title/head observations are read-only GitHub
+        # capture outputs. Missing observations never count as DONE/current.
+        extra = ((cache_dir if cache_dir else root / '_live_cache') /
+                 'project-extras' / project_name)
+        children_snapshot = (load_json(extra / 'children.json') if not is_benchmark
+                             else None)
+        pr_snapshot = (load_json(extra / 'pr-head.json') if not is_benchmark
+                       else None)
         status_num = _issue_number(
             registry.get('status_comment') or registry.get('status_issue') or ''
         )
@@ -1288,7 +1407,9 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
         project_data, timeline = build_project_data(
             root, project_name, registry, threads, inbox, events_path,
             source_meta=current_meta, status_thread=status_thread,
-            registry_blob_sha=registry_sha
+            registry_blob_sha=registry_sha,
+            child_observations=children_snapshot,
+            pr_observation=pr_snapshot
         )
         project_data['is_benchmark'] = is_benchmark
         project_data['benchmark_snapshot'] = (
@@ -1345,6 +1466,10 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             'stale_lease_count': pd['stale_lease_count'],
             'auto_response': pd['auto_response'],
             'external_links': pd['external_links'],
+            'hold_report': pd['hold_report'],
+            'reporting_tree': pd['reporting_tree'],
+            'child_progress': pd['child_progress'],
+            'evidence_head_status': pd['evidence_head_status'],
             'control': pd['registry']['control'],
             'workflow': pd['registry']['workflow'],
             'agents': [
@@ -1360,6 +1485,7 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
                     'handover': a['handover'],
                     'evidence_thread_num': a['evidence_thread_num'],
                     'evidence_thread_url': a['evidence_thread_url'],
+                    'reports_to': a['reports_to'],
                 }
                 for a in pd['agents']
             ],
