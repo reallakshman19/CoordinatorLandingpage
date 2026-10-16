@@ -100,7 +100,8 @@ def main():
                         and page.locator("#wp13-board").count()==1
                         and page.locator("#view-next-moves button").count()==0)
                 check("WP13_UI_02_board_states_and_criticality",
-                      lambda: "Criticality: normal" in page.locator(
+                      lambda: page.locator("#wp13-board").count()==1
+                        and "Criticality: normal" in page.locator(
                           "#wp13-board").inner_text()
                           and "Criticality: critical" in page.locator(
                               "#wp13-board").inner_text()
@@ -115,7 +116,8 @@ def main():
                         and "Owner / OwnerTeammember" in page.locator(
                             "#wp13-project-moves").inner_text())
                 check("WP13_UI_04_flags_and_rejected_reason",
-                      lambda: "evaluator stale" in page.locator(
+                      lambda: page.locator("#wp13-project-moves").count()==1
+                        and "evaluator stale" in page.locator(
                           "#wp13-project-moves").inner_text()
                           and "self-approved" in page.locator(
                               "#wp13-project-moves").inner_text()
@@ -123,7 +125,8 @@ def main():
                               "#wp13-project-moves").inner_text()
                           and BAD in page.locator("#wp13-project-moves").inner_text())
                 check("WP13_UI_05_mod20_counter_from_go",
-                      lambda: "task 19 · next ground at 25" in page.locator(
+                      lambda: page.locator("#wp13-project-moves").count()==1
+                        and "task 19 · next ground at 25" in page.locator(
                           "#wp13-project-moves").inner_text())
                 visit("#agent/landing-live/6ad1a045")
                 check("WP13_UI_06_agent_own_dispatch_queue",
@@ -131,7 +134,8 @@ def main():
                         and M1 in page.locator("#wp13-agent-moves").inner_text()
                         and M2 in page.locator("#wp13-agent-moves").inner_text())
                 check("WP13_UI_07_no_next_move_actions",
-                      lambda: page.locator("#wp13-agent-moves button").count()==0
+                      lambda: page.locator("#wp13-agent-moves").count()==1
+                        and page.locator("#wp13-agent-moves button").count()==0
                         and page.locator("#wp13-agent-moves textarea").count()==0
                         and page.locator("#wp13-agent-moves form").count()==0
                         and "task 19" in page.locator(
