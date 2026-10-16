@@ -1641,6 +1641,136 @@ jobs:
           path: wp10-browser-red.log
           if-no-files-found: error
 
+  wp12b-seven-ui-red:
+    name: WP12b pre-WP12 pinned UI · seven FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore pre-WP12 pinned builder and UI only
+        run: |
+          set -euo pipefail
+          BASE=667bee780b70f4c896a8d670ca92f886a947e8a4
+          for file in scripts/build_data.py site/app.js site/index.html site/style.css; do
+            git show "${BASE}:${file}" > "${file}"
+          done
+      - name: Build offline benchmark artifact
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install Chromium
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Demand all 7 legacy WP12 UI behaviors fail on old source
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp12_browser_test.py _artifact --wp12-ui-only > wp12b-seven-ui-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp12b-seven-ui-red.log
+          python tests/wp12b_red_verify.py ui wp12b-seven-ui-red.log "$rc"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wp12b-seven-ui-pinned-red
+          path: wp12b-seven-ui-red.log
+          if-no-files-found: error
+
+  wp12b-app-red:
+    name: WP12b previous app behavior · three FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore pre-WP12b app, retain new builder and test
+        run: |
+          set -euo pipefail
+          git show 27df6c347fb995a3956552af75da6e82a372c945:site/app.js > site/app.js
+      - name: Build offline benchmark artifact
+        run: |
+          set -euo pipefail
+          mkdir -p _artifact
+          cp -r site/. _artifact/
+          python scripts/build_data.py --root . --out _artifact/data \
+            --benchmark benchmarks/grade9-pilot-2026-10-15 \
+            --benchmark benchmarks/imo-ab-test-2026-10-15
+          cp -r protocol/. _artifact/protocol/
+      - name: Install Chromium
+        run: |
+          set -euo pipefail
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Demand cycle, agent PR and foreign CI behavior RED
+        run: |
+          set -uo pipefail
+          set +e
+          python tests/wp12_browser_test.py _artifact --wp12b-only > wp12b-app-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp12b-app-red.log
+          python tests/wp12b_red_verify.py app wp12b-app-red.log "$rc"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wp12b-app-predecessor-red
+          path: wp12b-app-red.log
+          if-no-files-found: error
+
+  wp12b-source-red:
+    name: WP12b previous evidence schema and child dedup · two FAIL, zero ERROR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore pre-WP12b builder only
+        run: |
+          set -euo pipefail
+          git show 27df6c347fb995a3956552af75da6e82a372c945:scripts/build_data.py > scripts/build_data.py
+      - name: Demand two assertion FAIL, zero ERROR
+        run: |
+          set -uo pipefail
+          set +e
+          python -m unittest tests.test_wp12.WP12bBaseCompatible -v > wp12b-source-red.log 2>&1
+          rc=$?
+          set -e
+          cat wp12b-source-red.log
+          python tests/wp12b_red_verify.py source wp12b-source-red.log "$rc"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wp12b-source-predecessor-red
+          path: wp12b-source-red.log
+          if-no-files-found: error
+
   wp12-source-red-control:
     name: WP12 pinned main HOLD/tree/child/evidence RED · 4 FAIL, zero ERROR
     runs-on: ubuntu-latest

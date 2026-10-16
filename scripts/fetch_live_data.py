@@ -229,7 +229,7 @@ def capture_project_extras(root, cache, projects, errors):
         dest.mkdir()
         children = reg.get('children', [])
         if children:
-            if not isinstance(children, list) or len(children) > WP12_CHILD_LIMIT:
+            if not isinstance(children, list) or len(children) > 100:
                 errors.append(f"children_limit_or_shape_invalid:{project}")
             else:
                 results, seen = [], set()
@@ -238,10 +238,15 @@ def capture_project_extras(root, cache, projects, errors):
                     mt = re.fullmatch(
                         r'https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/issues/(\d+)',
                         str(url or ''))
-                    if not mt or mt.group(1) != repo or url in seen:
+                    if not mt or mt.group(1) != repo:
                         errors.append(f"child_reference_invalid:{project}")
                         continue
+                    if url in seen:
+                        continue  # duplicate registry pointer is one child
                     seen.add(url)
+                    if len(seen) > WP12_CHILD_LIMIT:
+                        errors.append(f"children_limit_or_shape_invalid:{project}")
+                        break
                     num = int(mt.group(2))
                     # A single resource endpoint, not a paginated search.
                     value = gh_api(f"/repos/{repo}/issues/{num}")
@@ -254,27 +259,45 @@ def capture_project_extras(root, cache, projects, errors):
                     results.append({'url': url, 'repository': repo,
                                     'title': value.get('title', '')})
                 save_json(dest / "children.json", results)
-        if reg.get('evidence_head'):
-            pr = (reg.get('evidence_pr') or reg.get('evidence_pr_url')
-                  or reg.get('pr_url') or reg.get('pr'))
-            if isinstance(pr, dict):
-                pr = pr.get('url')
+        # One declared schema, at root and/or agents[i].evidence.
+        # At most 12 unique, own-repository PR HEAD GETs per project.
+        declarations = [reg.get('evidence')]
+        declarations.extend(a.get('evidence') for a in reg.get('agents', [])
+                            if isinstance(a, dict))
+        pr_urls = []
+        for record in declarations:
+            if record is None:
+                continue
+            if not isinstance(record, dict):
+                errors.append(f"evidence_declaration_invalid:{project}")
+                continue
+            url, sha = record.get('pr_url'), record.get('head')
             mt = re.fullmatch(
                 r'https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/pull/(\d+)',
-                str(pr or ''))
-            if not mt or mt.group(1) != repo:
-                errors.append(f"evidence_pr_reference_invalid:{project}")
+                str(url or ''))
+            if (not mt or mt.group(1) != repo or not isinstance(sha, str)
+                    or not re.fullmatch(r'[0-9a-fA-F]{40}', sha)):
+                errors.append(f"evidence_declaration_invalid:{project}")
                 continue
-            value = gh_api(f"/repos/{repo}/pulls/{mt.group(2)}")
+            if url not in pr_urls:
+                pr_urls.append(url)
+        if len(pr_urls) > WP12_CHILD_LIMIT:
+            errors.append(f"evidence_pr_limit:{project}")
+            continue
+        snapshots = []
+        for url in pr_urls:
+            number = int(url.rsplit('/', 1)[-1])
+            value = gh_api(f"/repos/{repo}/pulls/{number}")
             current = value.get('head') if isinstance(value, dict) else None
             sha = current.get('sha') if isinstance(current, dict) else None
             if (not isinstance(sha, str) or
                     not re.fullmatch(r'[0-9a-fA-F]{40}', sha)
-                    or value.get('number') != int(mt.group(2))):
+                    or value.get('number') != number):
                 errors.append(f"evidence_pr_head_unavailable:{project}")
                 continue
-            save_json(dest / "pr-head.json", {
-                'url': pr, 'repository': repo, 'head': sha})
+            snapshots.append({'url': url, 'repository': repo, 'head': sha})
+        if pr_urls:
+            save_json(dest / "pr-heads.json", snapshots)
 
 
 OWNER_INDEX_PAGE_LIMIT = 5

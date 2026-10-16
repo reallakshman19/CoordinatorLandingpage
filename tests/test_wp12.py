@@ -104,8 +104,7 @@ class WP12Source(unittest.TestCase):
 
     def test_wp12_evidence_head_moved_current_and_unknown(self):
         src = registry()
-        src["evidence_head"] = OLD
-        src["evidence_pr"] = PR
+        src["evidence"] = {"pr_url": PR, "head": OLD}
         stale = projected(src, pr_observation={
             "url": PR, "repository": REPO, "head": NEW})
         self.assertEqual(stale.get("evidence_head_status", {}).get("status"),
@@ -115,7 +114,7 @@ class WP12Source(unittest.TestCase):
             "url": PR, "repository": REPO, "head": OLD
         })["evidence_head_status"]["status"], "current")
         self.assertEqual(projected(src)["evidence_head_status"]["status"], "unknown")
-        src["evidence_pr"] = f"https://github.com/{OTHER}/pull/106"
+        src["evidence"]["pr_url"] = f"https://github.com/{OTHER}/pull/106"
         self.assertEqual(projected(src, {"unused":True})["evidence_head_status"]["status"],
                          "unknown")
 
@@ -124,8 +123,7 @@ class WP12Source(unittest.TestCase):
             root = Path(tmp)
             src = registry()
             src["children"] = [O1, O2]
-            src["evidence_head"] = OLD
-            src["evidence_pr"] = PR
+            src["evidence"] = {"pr_url": PR, "head": OLD}
             path = root / "logs" / CII / "registry.json"
             path.parent.mkdir(parents=True)
             path.write_text(json.dumps(src), encoding="utf-8")
@@ -158,6 +156,82 @@ class WP12Source(unittest.TestCase):
             self.assertEqual(data["evidence_head_status"]["status"], "superseded")
 
 
+    def test_wp12b_declared_agent_and_project_evidence_same_schema(self):
+        src = registry()
+        src["evidence"] = {"pr_url": PR, "head": OLD}
+        src["agents"][0]["evidence"] = {"pr_url": PR, "head": OLD}
+        src["agents"][1]["evidence"] = {
+            "pr_url": f"https://github.com/{REPO}/pull/107", "head": NEW}
+        observations = [
+            {"url": PR, "repository": REPO, "head": NEW},
+            {"url": f"https://github.com/{REPO}/pull/107",
+             "repository": REPO, "head": NEW},
+        ]
+        result = projected(src, pr_observation=observations)
+        self.assertEqual(result["evidence_head_status"]["status"], "superseded")
+        self.assertEqual([a["evidence_head_status"]["status"]
+                          for a in result["agents"]], ["superseded", "current"])
+        src.pop("evidence")
+        src["evidence_head"] = OLD
+        src["evidence_pr"] = PR
+        self.assertEqual(projected(src)["evidence_head_status"]["status"],
+                         "not_recorded")
+        src["agents"][1]["evidence"]["pr_url"] = f"https://github.com/{OTHER}/pull/107"
+        self.assertEqual(projected(src, pr_observation=observations)["agents"][1][
+            "evidence_head_status"]["status"], "unknown")
+
+    def test_wp12b_deduplicate_children_and_uppercase_marker(self):
+        src = registry()
+        src["children"] = [O1, O1, {"url": O1}, O2]
+        obs = [{"url": O1, "repository": REPO,
+                "title": "[V3.6][O1][DONE] Source"},
+               {"url": O2, "repository": REPO,
+                "title": "[V3.6][O2][PLANNED] Remaining"}]
+        p = projected(src, obs)["child_progress"]
+        self.assertEqual((p["status"], p["done"], p["total"]), ("known", 1, 2))
+        self.assertEqual(len(p["items"]), 2)
+        bad = [{**obs[0], "title": "[v3.6][O1][DONE] Wrong case"}, obs[1]]
+        self.assertEqual(projected(src, bad)["child_progress"]["status"],
+                         "unknown")
+
+    def test_wp12b_fetch_dedup_and_multiple_agents_bounded(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = registry()
+            src["children"] = [O1, O1, {"url": O1}]
+            src["evidence"] = {"pr_url": PR, "head": OLD}
+            src["agents"][0]["evidence"] = {"pr_url": PR, "head": OLD}
+            src["agents"][1]["evidence"] = {
+                "pr_url": f"https://github.com/{REPO}/pull/107", "head": NEW}
+            target = root / "logs" / CII / "registry.json"
+            target.parent.mkdir(parents=True)
+            target.write_text(json.dumps(src))
+            seen = []
+            def api(url):
+                seen.append(url)
+                if url.endswith("/issues/201"):
+                    return {"number": 201, "html_url": O1,
+                            "title": "[V3.6][O1][DONE] Child"}
+                if url.endswith("/pulls/106"):
+                    return {"number": 106, "head": {"sha": NEW}}
+                if url.endswith("/pulls/107"):
+                    return {"number": 107, "head": {"sha": NEW}}
+                return None
+            with mock.patch.object(fetch_live_data, "gh_api", side_effect=api):
+                errors = []
+                fetch_live_data.capture_project_extras(
+                    root, root / "cache", {CII: {"repository": REPO}}, errors)
+            self.assertEqual(errors, [])
+            self.assertEqual(len(seen), 3)
+            self.assertEqual(len(set(seen)), 3)
+            build_data.build_all(root, root / "out", cache_dir=root / "cache")
+            result = json.loads((root / "out" / f"project-{CII}.json").read_text())
+            self.assertEqual(result["child_progress"]["total"], 1)
+            self.assertEqual(result["evidence_head_status"]["status"], "superseded")
+            self.assertEqual([a["evidence_head_status"]["status"]
+                              for a in result["agents"]], ["superseded", "current"])
+
+
 
 class WP12BaseCompatible(unittest.TestCase):
     """Runs unchanged HEAD assertions with only the pinned-base call contract."""
@@ -186,11 +260,30 @@ class WP12BaseCompatible(unittest.TestCase):
 
     def test_wp12_evidence_head_unknown_without_pr_observation_on_main(self):
         reg = registry()
-        reg["evidence_head"] = OLD
-        reg["evidence_pr"] = PR
+        reg["evidence"] = {"pr_url": PR, "head": OLD}
         result = self.basic(reg)
         self.assertEqual((result.get("evidence_head_status") or {}).get("status"),
                          "unknown")
+
+
+class WP12bBaseCompatible(unittest.TestCase):
+    """Two assertions must FAIL, never ERROR, on pinned WP12 source."""
+
+    def test_wp12b_project_evidence_single_key_vs_guessed_aliases(self):
+        src = registry()
+        src["evidence"] = {"pr_url": PR, "head": OLD}
+        result = projected(src, pr_observation={
+            "url": PR, "repository": REPO, "head": NEW})
+        self.assertEqual(result["evidence_head_status"]["status"], "superseded")
+
+    def test_wp12b_duplicate_children_count_once(self):
+        src = registry()
+        src["children"] = [O1, O1]
+        rows = [{"url": O1, "repository": REPO,
+                 "title": "[V3.6][O1][DONE] First"}]
+        result = projected(src, rows)
+        self.assertEqual(result["child_progress"]["total"], 1)
+
 
 
 if __name__ == "__main__":

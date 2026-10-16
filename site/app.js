@@ -249,12 +249,15 @@ function wp12ReportingTree(where, agents) {
   const byId = new Map(rows.filter(a => /^[0-9a-f]{8}$/.test(a.chat_id8))
     .map(a => [a.chat_id8, a]));
   const list = el('ul', 'wp12-reporting-list');
+  const rendered = new Set();
   const write = (a, visited) => {
     const li = el('li', 'wp12-reporting-agent');
-    li.appendChild(el('span','', String(a.alias || a.chat_id8) +
+    li.appendChild(el('span', '', String(a.alias || a.chat_id8) +
       ' · ' + String(a.status || 'unknown') + ' · ' + String(a.chat_id8)));
+    rendered.add(a.chat_id8);
     const children = rows.filter(x => x.reports_to === a.chat_id8 &&
-      x.chat_id8 !== a.chat_id8 && !visited.has(x.chat_id8));
+      x.chat_id8 !== a.chat_id8 && !visited.has(x.chat_id8) &&
+      !rendered.has(x.chat_id8));
     if (children.length) {
       const sub = el('ul');
       for (const child of children) {
@@ -265,15 +268,25 @@ function wp12ReportingTree(where, agents) {
     }
     return li;
   };
-  // A missing/cyclic parent must not create an infinite tree.
   for (const agent of rows) {
-    if (!agent.reports_to || !byId.has(agent.reports_to) ||
-        agent.reports_to === agent.chat_id8)
+    if ((!agent.reports_to || !byId.has(agent.reports_to) ||
+         agent.reports_to === agent.chat_id8) && !rendered.has(agent.chat_id8))
       list.appendChild(write(agent, new Set([agent.chat_id8])));
   }
-  if (!list.children.length) where.appendChild(
-    el('p', 'note', 'Reporting lines unverified (cycle or missing root).'));
-  else where.appendChild(list);
+  // Cycles have no root. Do not drop their agents: display every unrendered
+  // node with an explicit warning, without attempting cyclic recursion.
+  const unrendered = rows.filter(a => !rendered.has(a.chat_id8));
+  if (unrendered.length) {
+    where.appendChild(el('p', 'note wp12-reporting-cycle',
+      'reporting cycle — recorded agents shown without inferred hierarchy'));
+    for (const agent of unrendered) {
+      const li = el('li', 'wp12-reporting-agent');
+      li.appendChild(el('span', '', String(agent.alias || agent.chat_id8) +
+        ' · ' + String(agent.status || 'unknown') + ' · ' + String(agent.chat_id8)));
+      list.appendChild(li);
+    }
+  }
+  where.appendChild(list);
 }
 
 function wp12ChildProgress(where, progress, repository) {
@@ -313,11 +326,18 @@ function wp12HeadStatus(where, info, repository) {
     where.appendChild(a);
   }
 }
-function wp12HasHostedRun(item) {
-  // An unverified grade [CI] is not an actual hosted run.
-  return Array.isArray(item?.proofs) && item.proofs.some(p =>
-    /https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/actions\/runs\/\d+\b/
-    .test(String(p?.line || '')));
+function wp12HasHostedRun(item, repository) {
+  // A self-labelled [CI] is not proof. Even a linked run must belong to
+  // the registry's owning repository, not a different project's workflow.
+  if (typeof repository !== 'string') return false;
+  return Array.isArray(item?.proofs) && item.proofs.some(p => {
+    const text = String(p?.line || '');
+    const links = text.matchAll(/https:\/\/github\.com\/([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)\/actions\/runs\/\d+\b/g);
+    for (const link of links) {
+      if (link[1].toLowerCase() === repository.toLowerCase()) return true;
+    }
+    return false;
+  });
 }
 
 // ── URL helpers ────────────────────────────────────────────
@@ -1140,6 +1160,8 @@ async function renderAgent(app, projectName, id8) {
   }
   const badges = $('agent-badges');
   badges.appendChild(agentStateBadge(agent.status));
+  const owningRepo = state.projects.find(p => p.project === projectName)?.repository;
+  wp12HeadStatus(badges, agent.evidence_head_status, owningRepo);
   if (agent.generation) {
     badges.appendChild(el('span', 'badge badge-grey', `gen ${agent.generation}`));
   }
@@ -1190,7 +1212,7 @@ async function renderAgent(app, projectName, id8) {
       header.appendChild(task);
       header.appendChild(statusBadge);
       header.appendChild(el('span', 'badge badge-grey wp12-evidence-hosting',
-        wp12HasHostedRun(item) ? 'hosted CI link claimed' : 'local only'));
+        wp12HasHostedRun(item, owningRepo) ? 'hosted CI link claimed' : 'local only'));
       header.appendChild(ts);
       header.appendChild(icon);
 
