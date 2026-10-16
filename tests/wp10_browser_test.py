@@ -174,7 +174,7 @@ def main():
                 page.evaluate("""() => {
                   window.__wp10URL = null;
                   window.open = u => { window.__wp10URL = u; return null; };
-                  document.querySelector('#oi-json-project').value = '3d-test';
+                  document.querySelector('#oi-json-project').value = 'grade9-pilot';
                   document.querySelector('#oi-json-target').value = 'TeamCoordinator';
                   document.querySelector('#oi-json-text').value = 'Routine project question';
                 }""")
@@ -186,7 +186,7 @@ def main():
                     return (q.get("message") == [
                         "Owner input " + value["id"] + " via landing page"] and
                         q.get("filename") == [
-                        f"logs/3d-test/inputs/{value['id']}.json"] and
+                        f"logs/grade9-pilot/inputs/{value['id']}.json"] and
                         url.startswith(f"https://github.com/{REPO}/new/main?"))
                 check("WP10_UI_09_fixed_commit_message_prefilled", fixed_commit)
                 browser.close()
