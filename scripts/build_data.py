@@ -23,6 +23,7 @@ import re
 import sys
 import owner_json
 from next_move import load_project_moves
+from ultra_economy import project as project_ultra_economy
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -1456,6 +1457,10 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
         else:
             next_view['evaluator_cross_check'] = {
                 'status': 'not_recorded', 'mismatches': [], 'observed_at': None}
+        # UEM is an opt-in, read-only overlay. It never creates moves or timers.
+        next_view['ultra_economy'] = project_ultra_economy(
+            registry, project_data['agents'], threads, next_view,
+            now=datetime.now(timezone.utc))
         project_data['next_move'] = next_view
         project_data['is_benchmark'] = is_benchmark
         project_data['benchmark_snapshot'] = (
