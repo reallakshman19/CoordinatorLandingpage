@@ -72,14 +72,14 @@ def _agent_source(agent):
     return (m.group(1), int(m.group(2)), url) if m else None
 
 
-def _start_records(rows, project, id8, max_cycles):
+def _start_records(rows, project, id8, role, max_cycles):
     starts, warnings, used = [], [], set()
     for comment in sorted(rows, key=lambda c: (c.get("created_at", ""), c.get("id", 0))):
         if not isinstance(comment, dict):
             continue
         body = comment.get("body") or ""
         match = START.search(body)
-        if not match or match.group("project").strip() != project or match.group("id8") != id8:
+        if not match or match.group("project").strip() != project or match.group("id8") != id8 or match.group("role").strip() != role:
             continue
         task = match.group("task")
         cycle, declared = int(match.group("cycle")), int(match.group("limit"))
@@ -88,6 +88,9 @@ def _start_records(rows, project, id8, max_cycles):
         expected = field(body, "Expected next")
         blockers = field(body, "Known blocker")
         workplan = field(body, "Workplan")
+        fallback = field(body, "Fallback")
+        fallback_claim = ("AGENT_REPORTED_ARMED_UNVERIFIED" if re.match(
+            r"^ARMED\s+\S+", fallback, re.I) else "AGENT_MUST_ARM")
         key = (task, cycle)
         if (not TASK_ID.fullmatch(task) or declared != max_cycles or
                 not 1 <= cycle <= max_cycles or not timestamp or
@@ -104,12 +107,12 @@ def _start_records(rows, project, id8, max_cycles):
             "start_comment_id": comment.get("id"), "started_at": timestamp.isoformat(),
             "planned_outcome": planned[:500], "expected_next": expected[:500],
             "known_blocker": blockers[:500], "workplan": workplan,
-            "fallback": "AGENT_MUST_ARM", "fallback_due_at": (
+            "fallback": fallback_claim, "fallback_due_at": (
                 timestamp + timedelta(hours=1)).isoformat()})
     return starts, warnings
 
 
-def _end_for_start(rows, start, project, id8):
+def _end_for_start(rows, start, project, id8, role):
     started = when(start["started_at"])
     candidates = []
     for comment in rows:
@@ -119,7 +122,7 @@ def _end_for_start(rows, start, project, id8):
         marker = END.search(body)
         stamp = when(comment.get("created_at"))
         if not marker or not stamp or stamp < started or (
-                marker.group("project").strip(), marker.group("id8")) != (project, id8):
+                marker.group("project").strip(), marker.group("id8"), marker.group("role").strip()) != (project, id8, role):
             continue
         task = field(body, "Task").split(maxsplit=1)[0] if field(body, "Task") else ""
         if task != start["task"]:
@@ -201,17 +204,18 @@ def project(registry, agents, threads, next_view, now=None):
             result["agents"][id8] = {"state": "UNKNOWN_SOURCE", "may_proceed": False}
             continue
         starts, warnings = _start_records(rows, registry.get("project"), id8,
-                                           opts["max_cycles"])
+                                           agent.get("role"), opts["max_cycles"])
         if not starts:
             result["agents"][id8] = {"state": "NO_TASK_START", "may_proceed": False,
                                       "warnings": warnings}
             continue
         current = starts[-1]
-        end = _end_for_start(rows, current, registry.get("project"), id8)
+        end = _end_for_start(rows, current, registry.get("project"), id8,
+                             agent.get("role"))
         item = {**current, "warnings": warnings, "may_proceed": False}
         if end is None:
             item["state"] = "WORKING_CLAIM"
-            item["fallback"] = "AGENT_MUST_ARM"
+            item["fallback"] = current["fallback"]
         else:
             item.update(end)
             item["fallback"] = "AGENT_MUST_CANCEL_OR_REFRESH"
@@ -230,5 +234,8 @@ def project(registry, agents, threads, next_view, now=None):
                 item["may_proceed"] = True  # still requires agent-side custody checks
             else:
                 item["state"] = condition
+            if (held or exhausted or condition in (
+                    "DELIVERED_MOVE", "MOVE_HELD_OR_CLOSED")):
+                item["followup"] = {"state": "STOPPED", "next_due_at": None}
         result["agents"][id8] = item
     return result
