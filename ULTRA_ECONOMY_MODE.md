@@ -123,6 +123,8 @@ remain read-only sources of observations, not senders.
 
 ## Source paths
 
+- `skills/ultra-economy-mode/SKILL.md` — an opt-in agent operating contract for publishing START/END, invoking one native hourly fallback and performing immediate GitHub readback; it is not a scheduler.
+
 - `scripts/ultra_economy.py` — derive task lifecycle, cycle cap, exact-match move,
   source status and follow-up due times.
 - `scripts/build_data.py` — attach UEM to existing `next_move` projection
