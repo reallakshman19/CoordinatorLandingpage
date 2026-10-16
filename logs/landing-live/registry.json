@@ -3,7 +3,7 @@
   "protocol": "Team protocol v2.3 FINAL CANDIDATE (protocol/TEAM_PROTOCOL.md)",
   "repository": "reallakshman19/CoordinatorLandingpage",
   "parent_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/21",
-  "updated": "2026-10-16T07:50:00+04:00",
+  "updated": "2026-10-16T14:14:00+04:00",
   "updated_by": "TeamCoordinator/OwnerTeammember (Claude session)",
   "control": {
     "epoch": 1,
@@ -69,5 +69,13 @@
     }
   ],
   "status_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/30",
-  "status_comment": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/30#issuecomment-6194870889"
+  "status_comment": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/30#issuecomment-6194870889",
+  "auto_response": [
+    {
+      "scope": "landing-live (all routine gates)",
+      "allowed": "yes",
+      "until": "forever",
+      "owner_words": "authorised for auto response for ever"
+    }
+  ]
 }
