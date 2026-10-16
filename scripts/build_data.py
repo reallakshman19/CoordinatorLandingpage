@@ -610,26 +610,37 @@ def _wp10_external_links(registry):
 
 
 def _wp10_auto_response(registry, now):
-    data = registry.get('auto_response')
-    if not isinstance(data, dict):
-        return None
-    allowed = data.get('allowed')
-    until = data.get('until')
-    deadline = _owner_time(until) if isinstance(until, str) else None
-    state = ('UNKNOWN' if allowed not in ('yes', 'no', 'critical') or not deadline
-             else 'EXPIRED' if deadline <= now
-             else 'NOT_ALLOWED' if allowed == 'no' else 'IN_SCOPE')
-    words = data.get('owner_words')
-    words = words if isinstance(words, str) else ''
-    scope = data.get('scope')
-    return {
-        'scope': scope if isinstance(scope, str) else '',
-        'allowed': allowed if allowed in ('yes', 'no', 'critical') else 'unknown',
-        'until': until if deadline else None, 'state': state,
-        'owner_words': words,
-        'critical_rules': ('Critical requests require an Owner decision; '
-                           'a delegated response is not Owner approval. ' + words),
-    }
+    """Project each recorded scope; retain the legacy single-dict projection."""
+    source = registry.get('auto_response')
+
+    def project_scope(data):
+        allowed = data.get('allowed')
+        until = data.get('until')
+        forever = isinstance(until, str) and until.strip().lower() == 'forever'
+        deadline = (_owner_time(until) if isinstance(until, str) and not forever
+                    else None)
+        state = ('UNKNOWN' if allowed not in ('yes', 'no', 'critical') or
+                 (not forever and deadline is None)
+                 else 'EXPIRED' if deadline is not None and deadline <= now
+                 else 'NOT_ALLOWED' if allowed == 'no' else 'IN_SCOPE')
+        words = data.get('owner_words')
+        words = words if isinstance(words, str) else ''
+        scope = data.get('scope')
+        return {
+            'scope': scope if isinstance(scope, str) else '',
+            'allowed': allowed if allowed in ('yes', 'no', 'critical') else 'unknown',
+            'until': 'forever' if forever else until if deadline else None,
+            'state': state,
+            'owner_words': words,
+            'critical_rules': ('Critical requests require an Owner decision; '
+                               'a delegated response is not Owner approval. ' + words),
+        }
+
+    if isinstance(source, list):
+        return [project_scope(entry) for entry in source if isinstance(entry, dict)]
+    if isinstance(source, dict):
+        return project_scope(source)
+    return None
 
 
 def _wp10_decision_label(item):

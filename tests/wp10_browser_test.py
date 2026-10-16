@@ -37,9 +37,19 @@ def main():
         projects_file = data / "projects.json"
         projects = json.loads(projects_file.read_text(encoding="utf-8"))
         sample = next(p for p in projects if p["project"] == "grade9-pilot")
-        sample["auto_response"] = {
-            "allowed": "yes", "scope": "Old authority", "until": "2020-01-01T00:00:00Z",
-            "state": "EXPIRED", "critical_rules": "Critical requests need Owner approval."}
+        # Exercise the real landing-live list shape, including "forever", plus
+        # one expired synthetic scope. The second project's dict stays as-is.
+        real = json.loads((Path(__file__).resolve().parent /
+                           "fixtures/wp10_landing_live_auto_response.json")
+                          .read_text(encoding="utf-8"))
+        sample["auto_response"] = [
+            {**real[0], "state": "IN_SCOPE",
+             "critical_rules": ("Critical requests require an Owner decision. " +
+                                real[0]["owner_words"])},
+            {"allowed": "yes", "scope": "Expired routine questions",
+             "until": "2020-01-01T00:00:00Z", "state": "EXPIRED",
+             "critical_rules": "Critical requests need Owner approval."},
+        ]
         product = dict(sample)
         product.update({
             "project": "3d-test", "repository": PRODUCT,
@@ -96,6 +106,13 @@ def main():
                 page.goto(base + "#home", wait_until="networkidle")
                 check("WP10_UI_01_expired_auto_response_is_not_valid",
                       lambda: page.locator("#auto-response-home").count() == 1
+                      and page.locator("#auto-response-home tbody tr").filter(
+                          has_text="grade9-pilot").count() == 2
+                      and "landing-live (all routine gates)" in
+                      page.locator("#auto-response-home").inner_text()
+                      and "authorised for auto response for ever" in
+                      page.locator("#auto-response-home").inner_text()
+                      and "forever" in page.locator("#auto-response-home").inner_text()
                       and "EXPIRED — no current delegation" in
                       page.locator("#auto-response-home").inner_text()
                       and "Critical requests need Owner approval." in
@@ -111,6 +128,7 @@ def main():
                 check("WP10_UI_02_critical_scope_and_expiry_visible",
                       lambda: delegation_ready()
                       and page.locator("#auto-response-project").count() == 1
+                      and page.locator("#auto-response-project tbody tr").count() == 1
                       and "routine only; critical to Owner" in
                       page.locator("#auto-response-project").inner_text()
                       and "2099-01-01" in page.locator("#auto-response-project").inner_text())

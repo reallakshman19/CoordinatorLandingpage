@@ -90,5 +90,62 @@ class BaseCompatibleWP10(unittest.TestCase):
                             for x in projected["external_links"]))
 
 
+
+class WP10CheckerFix(unittest.TestCase):
+    """Snapshot is the REAL landing-live auto_response list from registry commit 3b117100.
+
+    This lives under tests/ because WP10's parent branch predates that registry
+    change. It is a read-only copy of the exact source list, not a fabricated grant.
+    """
+
+    def test_wp10_landing_live_actual_list_forever_plus_expired_scope(self):
+        raw = json.loads((ROOT / "tests/fixtures/wp10_landing_live_auto_response.json")
+                         .read_text(encoding="utf-8"))
+        self.assertEqual(raw, [{
+            "scope": "landing-live (all routine gates)",
+            "allowed": "yes",
+            "until": "forever",
+            "owner_words": "authorised for auto response for ever",
+        }])
+        expired = {
+            "scope": "legacy routine gate", "allowed": "critical",
+            "until": "2026-10-15T00:00:00Z",
+            "owner_words": "Critical requests need explicit Owner approval.",
+        }
+        registry = {"project": "landing-live", "repository": REPO,
+                    "auto_response": raw + [expired]}
+        result, _ = build_data.build_project_data(
+            ROOT, "landing-live", registry, {}, [], None,
+            source_meta={"status": "ok", "errors": []},
+            status_thread={}, now=NOW, registry_blob_sha="f" * 40)
+        rows = result["auto_response"]
+        self.assertIsInstance(rows, list)
+        self.assertEqual(len(rows), 2)
+        self.assertEqual([r["scope"] for r in rows],
+                         ["landing-live (all routine gates)", "legacy routine gate"])
+        self.assertEqual([r["state"] for r in rows], ["IN_SCOPE", "EXPIRED"])
+        self.assertEqual([r["until"] for r in rows],
+                         ["forever", "2026-10-15T00:00:00Z"])
+        self.assertEqual([r["allowed"] for r in rows], ["yes", "critical"])
+        self.assertIn(raw[0]["owner_words"], rows[0]["critical_rules"])
+        self.assertIn(expired["owner_words"], rows[1]["critical_rules"])
+
+    def test_wp10_dict_stays_one_scope_and_bad_deadlines_fail_closed(self):
+        single = {"scope": "backwards compatible", "allowed": "yes",
+                  "until": "2027-12-31T00:00:00Z", "owner_words": "Owner quote"}
+        projected, _ = project({"project": "product-a", "repository": PRODUCT,
+                                "auto_response": single})
+        self.assertIsInstance(projected["auto_response"], dict)
+        self.assertEqual(projected["auto_response"]["state"], "IN_SCOPE")
+        mixed = [single, {"scope": "denied", "allowed": "no",
+                          "until": "forever", "owner_words": "No delegation"},
+                 {"scope": "unknown", "allowed": "yes",
+                  "until": "not-a-date", "owner_words": ""}]
+        projected, _ = project({"project": "product-a", "repository": PRODUCT,
+                                "auto_response": mixed})
+        self.assertEqual([row["state"] for row in projected["auto_response"]],
+                         ["IN_SCOPE", "NOT_ALLOWED", "UNKNOWN"])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

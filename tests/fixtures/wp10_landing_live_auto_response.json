@@ -1,0 +1,8 @@
+[
+  {
+    "scope": "landing-live (all routine gates)",
+    "allowed": "yes",
+    "until": "forever",
+    "owner_words": "authorised for auto response for ever"
+  }
+]

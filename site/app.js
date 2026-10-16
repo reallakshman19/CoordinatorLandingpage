@@ -173,10 +173,13 @@ function allowedExternalLink(url, repository) {
     url.startsWith('https://github.com/' + repository + '/') ? url : null;
 }
 function autoResponseStatus(entry) {
-  if (!entry || !['yes','no','critical'].includes(entry.allowed)) return 'UNKNOWN';
-  if (typeof entry.until !== 'string' ||
-      !Number.isFinite(new Date(entry.until).getTime())) return 'UNKNOWN';
-  if (new Date(entry.until).getTime() <= Date.now()) return 'EXPIRED';
+  if (!entry || !['yes','no','critical'].includes(entry.allowed) ||
+      typeof entry.until !== 'string') return 'UNKNOWN';
+  // "forever" is an explicit recorded end date, not an invalid timestamp.
+  const deadline = entry.until.trim().toLowerCase() === 'forever'
+    ? Infinity : Date.parse(entry.until);
+  if (Number.isNaN(deadline)) return 'UNKNOWN';
+  if (deadline <= Date.now()) return 'EXPIRED';
   return entry.allowed === 'no' ? 'NOT_ALLOWED' : 'IN_SCOPE';
 }
 function renderAutoResponseTable(container, projects) {
@@ -187,24 +190,31 @@ function renderAutoResponseTable(container, projects) {
   head.appendChild(headings); table.appendChild(head);
   const body = el('tbody');
   for (const p of projects) {
-    const tr = el('tr'), response = p.auto_response;
-    const current = autoResponseStatus(response);
-    const rules = response?.critical_rules ||
-      'Critical requests require an Owner decision. No delegation recorded.';
-    const who = current === 'EXPIRED' ? 'EXPIRED — no current delegation' :
-      current !== 'IN_SCOPE' ? 'No confirmed routine delegation' :
-      response.allowed === 'critical'
-        ? 'Delegated team — routine only; critical to Owner'
-        : 'Delegated team — within recorded scope';
-    tr.appendChild(el('td','',String(p.project)));
-    const whoCell = el('td','auto-response-who');
-    whoCell.appendChild(el('span','',who));
-    if (current === 'EXPIRED') whoCell.appendChild(el('span','badge badge-red','EXPIRED'));
-    tr.appendChild(whoCell);
-    tr.appendChild(el('td','',String(response?.scope || 'Not recorded')));
-    tr.appendChild(el('td','',String(response?.until || 'Not recorded')));
-    tr.appendChild(el('td','',String(rules)));
-    body.appendChild(tr);
+    // Each list entry is an independent delegation scope. Old dicts remain
+    // one scope; missing declarations still display an UNKNOWN row.
+    const scopes = Array.isArray(p.auto_response)
+      ? p.auto_response : [p.auto_response];
+    for (const response of scopes) {
+      if (response != null && (typeof response !== 'object' ||
+          Array.isArray(response))) continue;
+      const tr = el('tr'), current = autoResponseStatus(response);
+      const rules = response?.critical_rules ||
+        'Critical requests require an Owner decision. No delegation recorded.';
+      const who = current === 'EXPIRED' ? 'EXPIRED — no current delegation' :
+        current !== 'IN_SCOPE' ? 'No confirmed routine delegation' :
+        response.allowed === 'critical'
+          ? 'Delegated team — routine only; critical to Owner'
+          : 'Delegated team — within recorded scope';
+      tr.appendChild(el('td','',String(p.project)));
+      const whoCell = el('td','auto-response-who');
+      whoCell.appendChild(el('span','',who));
+      if (current === 'EXPIRED') whoCell.appendChild(el('span','badge badge-red','EXPIRED'));
+      tr.appendChild(whoCell);
+      tr.appendChild(el('td','',String(response?.scope || 'Not recorded')));
+      tr.appendChild(el('td','',String(response?.until || 'Not recorded')));
+      tr.appendChild(el('td','',String(rules)));
+      body.appendChild(tr);
+    }
   }
   table.appendChild(body); wrap.appendChild(table); container.appendChild(wrap);
 }
