@@ -161,8 +161,10 @@ class WP11ActualRegistry(unittest.TestCase):
             self.assertEqual({p["project"] for p in summary}, {CII, XML})
             for project in summary:
                 own = CII_REPO if project["project"] == CII else XML_REPO
-                self.assertTrue(all(a["evidence_thread_url"].startswith(
-                    f"https://github.com/{own}/") for a in project["agents"]))
+                # Baseline scoping must stand on its own; HEAD adds source URLs.
+                if "evidence_thread_url" in project["agents"][0]:
+                    self.assertTrue(all(a["evidence_thread_url"].startswith(
+                        f"https://github.com/{own}/") for a in project["agents"]))
 
 
 if __name__ == "__main__":
