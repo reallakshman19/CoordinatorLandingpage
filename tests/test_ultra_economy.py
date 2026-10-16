@@ -62,6 +62,9 @@ def fixture(*, end=True, limit=3, cycle=1, state="SENT_TO_CHAT", hold=None,
             "trigger": {"type": "uem_end", "task": "WP16", "cycle": cycle,
                         "end_comment_id": 102},
             "basis": {"evidence": URL}, "flags": []})
+    # The authoritative project registry, not just the UI projection, must
+    # explicitly select the active instance before a UEM working claim.
+    reg["agents"]=[dict(agent) for agent in agents]
     return reg, agents, {22: {"number": 22, "repository": REPO, "comments": rows}}, {"moves": moves}
 
 
@@ -186,8 +189,7 @@ class UltraEconomyTests(unittest.TestCase):
     def test_17_cross_project_source_fenced(self):
         reg, agents, threads, view = fixture()
         reg["repository"] = "reallakshman19/Other"
-        self.assertNotEqual(uem.project(reg, agents, threads, view, now=NOW)["agents"]["11111111"]["state"],
-                            "WORKING_CLAIM")
+        self.assertEqual(uem.project(reg, agents, threads, view, now=NOW)["agents"], {})
 
     def test_19_recorded_delivery_stops_followup_reminders(self):
         item = current()

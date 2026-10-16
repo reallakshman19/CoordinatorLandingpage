@@ -18,7 +18,7 @@ this task X; stopping early is always permitted.
 1. Decide the next bounded unit from Owner aim and your grant. Describe in
    plain words: `Planned outcome`, `Expected next` and `Known blocker`.
 2. **Timer is NOT_ARMED by default.** Do not create a ChatGPT timer/scheduled
-   task in this WP17 work or suggest that the GitHub page armed one. Timer
+   task in this WP18 pilot prep or suggest that the GitHub page armed one. Timer
    creation requires a separate explicit Owner authorization and a real
    authenticated host receipt. Even a text field saying ARMED is only an
    unverified agent claim and never changes the read-only NOT_ARMED state.
@@ -66,11 +66,14 @@ Fallback: NOT_ARMED no authorized host receipt
    and report fallback as NOT_ARMED. No timer cancellation or creation is
    performed without a separately verified real host receipt and authority.
 
-## Future hourly wake (not enabled by WP17)
+## Future one-shot wake (not enabled by WP18)
 
-No timer is armed. If a later Owner-approved, host-confirmed task exists,
-any wake must only read a scoped GitHub delta and cannot grant a send,
-execution, custody change, merge, release or automatic continuation.
+No timer is armed. Future arming requires **specific Owner words** for
+scope and runtime, plus host-confirmed **creation proof** with a real task ID.
+It may run for **one fire** only, with independent **cancellation**/completion
+proof immediately afterward. No recurring hourly polling, second fire or
+restart reset is permitted. Any later verified wake is read-only and cannot
+grant execution, approve or send a chat, alter custody, merge or deploy.
 
 ## Economy and safety
 

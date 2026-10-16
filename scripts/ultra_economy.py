@@ -258,16 +258,36 @@ def project(registry,agents,threads,next_view,now=None):
         if id8 in result["agents"]:
             result["agents"][id8]={"state":"AMBIGUOUS_ROSTER","may_proceed":False}
             continue
-        guard=_execution_guard(registry,agent,id8,now,cfg)
+        # Source-fenced before any claim: an agent in a projected UI list is
+        # not an authorized roster row. The owning registry must explicitly
+        # register this instance, without duplicate id8 or stale role/status.
+        source=_agent_source(agent)
+        if not source or source[0]!=registry.get("repository"):
+            # No foreign-project ghost agent may appear as a work candidate.
+            continue
+        roster=registry.get("agents")
+        if not isinstance(roster,list):
+            result["agents"][id8]={"state":"MISSING_ROSTER_ROW","may_proceed":False}
+            continue
+        matches=[x for x in roster if isinstance(x,dict) and
+                 x.get("chat_id8")==id8]
+        if len(matches)>1:
+            result["agents"][id8]={"state":"AMBIGUOUS_ROSTER","may_proceed":False}
+            continue
+        if not matches or matches[0].get("role")!=agent.get("role"):
+            result["agents"][id8]={"state":"MISSING_ROSTER_ROW","may_proceed":False}
+            continue
+        if (str(matches[0].get("status") or "")!=str(agent.get("status") or "")
+                or matches[0].get("adoption")!=agent.get("adoption")
+                or matches[0].get("qualified_successor")!=agent.get("qualified_successor")):
+            result["agents"][id8]={"state":"STALE_ROSTER_PROJECTION","may_proceed":False}
+            continue
+        guard=_execution_guard(registry,matches[0],id8,now,cfg)
         monitor,execution=_grant({**cfg,"_project":registry.get("project")},agent,id8,now)
         basis={"monitoring_grant":monitor,"execution_grant":execution,
                "timer":"NOT_ARMED"}
         if guard:
             result["agents"][id8]={"state":guard,"may_proceed":False,**basis}
-            continue
-        source=_agent_source(agent)
-        if not source or source[0]!=registry.get("repository"):
-            result["agents"][id8]={"state":"UNTRUSTED_SOURCE","may_proceed":False,**basis}
             continue
         rows=_comments(threads,source[1],source[0])
         if rows is None:
@@ -327,7 +347,13 @@ def project(registry,agents,threads,next_view,now=None):
             item["followup"]=(_followup(end["ended_at"],now) if monitor=="VALID"
                               else {"state":"MONITORING_UNGRANTED","next_due_at":None})
             exhausted=current["cycle"]>=opts["max_cycles"]
-            if exhausted:item["state"]="MAX_CYCLES_REACHED"
+            # At the final pilot cycle, source hazards remain visible.
+            # A one-cycle limit denies continuation; it must not conceal an
+            # unresolved SEND_INTENT or stale/ambiguous delivered move.
+            if condition in ("DELIVERY_UNCERTAIN","STALE_MOVE","AMBIGUOUS_MOVE",
+                             "MOVE_HELD_OR_CLOSED"):
+                item["state"]=condition
+            elif exhausted:item["state"]="MAX_CYCLES_REACHED"
             elif condition=="DELIVERED_MOVE" and end["claim_status"]!="UNKNOWN":
                 item["state"]="NEXT_MOVE_RECORDED_DELIVERED"
                 item["may_proceed"]=True

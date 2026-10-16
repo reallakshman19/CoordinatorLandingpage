@@ -82,11 +82,13 @@ class WP17Guards(unittest.TestCase):
     def test_10_retirement_after_start_invalidates(self):
         reg,agents,threads,view=fixture(end=False)
         agents[0]["status"]="retired 16 Oct"
+        reg["agents"][0]["status"]=agents[0]["status"]
         self.assertEqual(examine(reg,agents,threads,view)["state"],"RETIRED_OR_STOPPED")
 
     def test_11_unqualified_successor_is_not_exec_holder(self):
         reg,agents,threads,view=fixture(end=False)
         agents[0]["adoption"]="PENDING"
+        reg["agents"][0]["adoption"]="PENDING"
         self.assertEqual(examine(reg,agents,threads,view)["state"],"UNQUALIFIED_SUCCESSOR")
 
     def test_12_other_writer_conflict_blocks_claim(self):
@@ -142,7 +144,7 @@ class WP17Guards(unittest.TestCase):
     def test_18_wrong_thread_repository_denies_provenance(self):
         reg,agents,threads,view=fixture(end=False)
         threads[22]["repository"]="acme/other"
-        self.assertEqual(examine(reg,agents,threads,view)["state"],"UNKNOWN_SOURCE")
+        self.assertEqual(uem.project(reg,agents,threads,view,now=NOW)["agents"],{})
 
     def test_19_source_pin_wrong_comment_url(self):
         reg,agents,threads,view=fixture(end=False)
@@ -218,6 +220,7 @@ class WP17Guards(unittest.TestCase):
         reg["ultra_economy"]["execution_grants"]={new_id:grant}
         reg["ultra_economy"]["monitoring_grants"]={new_id:dict(grant)}
         agents[0]["chat_id8"]=new_id
+        reg["agents"][0]["chat_id8"]=new_id
         body=threads[22]["comments"][0]["body"].replace(
             "chat 11111111","chat 22222222").replace("cycle 1/3","cycle 2/3")
         threads[22]["comments"][0]["body"]=body
