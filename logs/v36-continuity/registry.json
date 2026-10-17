@@ -1,0 +1,56 @@
+{
+  "project": "v36-continuity",
+  "protocol": "Team protocol v3.0 (protocol/TEAM_PROTOCOL.md), alongside reallakshman19/Common AGENTS.md and the native v3.6 contract",
+  "repository": "reallakshman19/Common",
+  "criticality": "normal",
+  "criticality_owner_words": "P3: OTM writer, OTM merges after independent PASS (Owner, 17 Oct 2026) — scoped to this workpack; see control.grants",
+  "parent_issue": "https://github.com/reallakshman19/Common/issues/409",
+  "updated": "2026-10-17T09:57+04:00",
+  "updated_by": "OwnerTeammember",
+  "control": {
+    "epoch": 1,
+    "coordinator": "Claude session (combined OwnerTeammember + TeamCoordinator)",
+    "owner_words": "add A13 + A14 to P3 and team protocol, then start P3",
+    "control_post": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6230407705",
+    "hold": null,
+    "grants": [
+      {
+        "actor": "OwnerTeammember (Claude session)",
+        "action": "sole writer for #409; merge each PR only after an independent exact-head PASS by a non-doer checker",
+        "paths": [
+          "skills/engineering-pr-delivery-v3.6/**"
+        ],
+        "branches": "otm/v36-*",
+        "excluded": "canonical 8-line evidence formatter/parser and mandatory LOG unchanged unless a separately reviewed versioned change; other skills; live GitHub metadata writes (ECO-05 needs its own consent); activation; acceptance; release",
+        "owner_words": "P3: OTM writer, OTM merges after independent PASS",
+        "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6230427090",
+        "since": "2026-10-17T09:57+04:00",
+        "until": "end of #409 scope or Owner revocation"
+      }
+    ]
+  },
+  "agents": [],
+  "leases": [
+    {
+      "holder": "OwnerTeammember (Claude session)",
+      "branches": "otm/v36-*",
+      "paths": [
+        "skills/engineering-pr-delivery-v3.6/**"
+      ],
+      "granted": "2026-10-17T09:57+04:00",
+      "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6230427090"
+    }
+  ],
+  "workflow": {
+    "loop": [
+      "ECO-00 admission (#409 6230412765)",
+      "OTM implements one workpack per draft PR (A13 size ratchet, A14 SELF-CHECK)",
+      "Codex design review where useful",
+      "fresh independent checker at exact head",
+      "OTM merges on PASS",
+      "TASK EVIDENCE v2 + SELF-CHECK v1 on #409"
+    ],
+    "current": "ECO-00 admitted; A13/A14 wording in Codex review (Q12); release 1 = ECO-01..04 read-only"
+  },
+  "status_issue": "https://github.com/reallakshman19/Common/issues/409"
+}
