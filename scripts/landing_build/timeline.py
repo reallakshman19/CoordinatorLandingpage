@@ -5,11 +5,10 @@ from pathlib import Path
 import re
 
 
-# Shared parsers stay in build_data (also used outside the timeline).
-# build_data binds them here right after importing this module, which
-# avoids a circular import; the function bodies below are unchanged.
-scrub_chat_url = parse_task_evidence = parse_verdict = None
-OUTSIDE_WRITE_RE = None
+# Shared helpers are imported from the read-only evidence parser module.
+from landing_build.evidence_parse import (
+    scrub_chat_url, parse_task_evidence, parse_verdict, OUTSIDE_WRITE_RE,
+)
 
 
 COORD_EVIDENCE_RE = re.compile(
