@@ -77,7 +77,7 @@ def main():
                   ",".join(registry_projects(args.root)))
             return 0
         if original != expected:
-            path.write_text(expected, encoding="utf-8")
+            path.write_text(expected, encoding="utf-8", newline="\n")
         print("ISSUE_FORM_PROJECT_OPTIONS_SYNCED " +
               ",".join(registry_projects(args.root)))
         return 0
