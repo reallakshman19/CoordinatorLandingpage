@@ -2,8 +2,6 @@
   "project": "handover-master",
   "protocol": "Team protocol v3.0 (protocol/TEAM_PROTOCOL.md), alongside reallakshman19/Common AGENTS.md and the native contracts",
   "repository": "reallakshman19/Common",
-  "criticality": "normal",
-  "criticality_owner_words": "P2: OTM writer, OTM merges after independent PASS (Owner, 17 Oct 2026) — scoped to this workpack; see control.grants",
   "parent_issue": "https://github.com/reallakshman19/Common/issues/408",
   "updated": "2026-10-17T09:3x+04:00",
   "updated_by": "OwnerTeammember",
@@ -17,7 +15,9 @@
       {
         "actor": "OwnerTeammember (Claude session)",
         "action": "sole writer for #408 HM-03/HM-04 and the HM-02 guide; merge each PR only after an independent exact-head PASS by a non-doer checker",
-        "paths": ["skills/Handover Master/**"],
+        "paths": [
+          "skills/Handover Master/**"
+        ],
         "branches": "otm/hm-*",
         "excluded": "native module edits, other skills, workflows, downstream activation, acceptance, release",
         "owner_words": "P2: OTM writer, OTM merges after independent PASS",
@@ -29,11 +29,34 @@
   },
   "agents": [],
   "leases": [
-    {"holder": "OwnerTeammember (Claude session)", "branches": "otm/hm-*", "paths": ["skills/Handover Master/**"], "granted": "2026-10-17T09:3x+04:00", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6230198803"}
+    {
+      "holder": "OwnerTeammember (Claude session)",
+      "branches": "otm/hm-*",
+      "paths": [
+        "skills/Handover Master/**"
+      ],
+      "granted": "2026-10-17T09:3x+04:00",
+      "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6230198803"
+    }
   ],
   "workflow": {
-    "loop": ["HM-01 contract (frozen v2, Common #408 6230181135)", "OTM implements on a draft PR", "fresh independent checker at the exact head", "OTM merges on PASS", "TASK EVIDENCE v2 on #408"],
-    "current": "HM-01/03/04 merged (Common PR #410 -> b7880895); HM-02 guide merged (PR #411 -> f2d4b6fa); HM-05 live recovery NOT_RUN (needs a real authorised successor); HM-06 closure note next", "previous": "HM-01 contract v2 frozen; HM-03/HM-04 starting"
+    "loop": [
+      "HM-01 contract (frozen v2, Common #408 6230181135)",
+      "OTM implements on a draft PR",
+      "fresh independent checker at the exact head",
+      "OTM merges on PASS",
+      "TASK EVIDENCE v2 on #408"
+    ],
+    "current": "HM-01/03/04 merged (Common PR #410 -> b7880895); HM-02 guide merged (PR #411 -> f2d4b6fa); HM-05 live recovery NOT_RUN (needs a real authorised successor); HM-06 closure note next",
+    "previous": "HM-01 contract v2 frozen; HM-03/HM-04 starting"
   },
-  "status_issue": "https://github.com/reallakshman19/Common/issues/408"
+  "status_issue": "https://github.com/reallakshman19/Common/issues/408",
+  "criticality_note": "unset (treated as critical). The earlier 'normal' was inferred from writer/merge grant words, which grant actions, not a classification (Codex Q12 §8, 17 Oct). The explicit scoped grants in control.grants stand.",
+  "criticality_history": [
+    {
+      "value": "normal",
+      "basis": "P2: OTM writer, OTM merges after independent PASS (Owner, 17 Oct 2026) — scoped to this workpack; see control.grants",
+      "withdrawn": "2026-10-17 (Q12 §8)"
+    }
+  ]
 }

@@ -2,8 +2,6 @@
   "project": "v36-continuity",
   "protocol": "Team protocol v3.0 (protocol/TEAM_PROTOCOL.md), alongside reallakshman19/Common AGENTS.md and the native v3.6 contract",
   "repository": "reallakshman19/Common",
-  "criticality": "normal",
-  "criticality_owner_words": "P3: OTM writer, OTM merges after independent PASS (Owner, 17 Oct 2026) — scoped to this workpack; see control.grants",
   "parent_issue": "https://github.com/reallakshman19/Common/issues/409",
   "updated": "2026-10-17T09:57+04:00",
   "updated_by": "OwnerTeammember",
@@ -52,5 +50,13 @@
     ],
     "current": "ECO-00 admitted; A13/A14 wording in Codex review (Q12); release 1 = ECO-01..04 read-only"
   },
-  "status_issue": "https://github.com/reallakshman19/Common/issues/409"
+  "status_issue": "https://github.com/reallakshman19/Common/issues/409",
+  "criticality_note": "unset (treated as critical). The earlier 'normal' was inferred from writer/merge grant words, which grant actions, not a classification (Codex Q12 §8, 17 Oct). The explicit scoped grants in control.grants stand.",
+  "criticality_history": [
+    {
+      "value": "normal",
+      "basis": "P3: OTM writer, OTM merges after independent PASS (Owner, 17 Oct 2026) — scoped to this workpack; see control.grants",
+      "withdrawn": "2026-10-17 (Q12 §8)"
+    }
+  ]
 }
