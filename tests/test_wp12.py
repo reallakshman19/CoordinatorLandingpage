@@ -144,9 +144,9 @@ class WP12Source(unittest.TestCase):
                 fetch_live_data.capture_project_extras(
                     root, root / "cache", {CII: {"repository": REPO}}, errors)
             self.assertEqual(errors, [])
-            self.assertEqual(len(calls), 3)
+            self.assertEqual(len(calls), 4)
             self.assertEqual(set(calls), {
-                f"/repos/{REPO}/issues/201", f"/repos/{REPO}/issues/202",
+                f"/repos/{REPO}/issues/108", f"/repos/{REPO}/issues/201", f"/repos/{REPO}/issues/202",
                 f"/repos/{REPO}/pulls/106",
             })
             build_data.build_all(root, root / "out", cache_dir=root / "cache")
@@ -222,8 +222,8 @@ class WP12Source(unittest.TestCase):
                 fetch_live_data.capture_project_extras(
                     root, root / "cache", {CII: {"repository": REPO}}, errors)
             self.assertEqual(errors, [])
-            self.assertEqual(len(seen), 3)
-            self.assertEqual(len(set(seen)), 3)
+            self.assertEqual(len(seen), 4)
+            self.assertEqual(len(set(seen)), 4)
             build_data.build_all(root, root / "out", cache_dir=root / "cache")
             result = json.loads((root / "out" / f"project-{CII}.json").read_text())
             self.assertEqual(result["child_progress"]["total"], 1)
