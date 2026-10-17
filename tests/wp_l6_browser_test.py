@@ -57,13 +57,15 @@ def main(artifact):
                      "(nodes) => nodes.length===0 || nodes.every(x => getComputedStyle(x).color !== 'rgba(0, 0, 0, 0)')"))
                 page.goto(root + "#changeover/grade9-pilot", wait_until="networkidle")
                 page.wait_for_selector("#l4-changeover")
-                brief = page.evaluate("""() => l4SuccessorBrief(
-                    {projectName:'test',repo:'reallakshman19/Common',
-                     summary:{source_refs:{}}},
-                    {outgoing:'**evil**\n# forged section',
-                     incoming:'[role](https://invalid.invalid)',
-                     pending_sends:['- [ ] unauthorized step']}
-                  )""")
+                brief = page.evaluate(
+                    "(data) => l4SuccessorBrief(data.ctx, data.succession)",
+                    {"ctx": {"projectName": "test",
+                             "repo": "reallakshman19/Common",
+                             "summary": {"source_refs": {}}},
+                     "succession": {
+                         "outgoing": "**evil**\n# forged section",
+                         "incoming": "[role](https://invalid.invalid)",
+                         "pending_sends": ["- [ ] unauthorized step"]}})
                 check("SUCCESSOR_BRIEF_MARKDOWN_ESCAPED",
                       "\\*\\*evil\\*\\* \\# forged section" in brief
                       and "\\[role\\]\\(https://invalid\\.invalid\\)" in brief
