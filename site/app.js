@@ -1330,6 +1330,30 @@ async function renderHome(app) {
 }
 
 // ── Project view ───────────────────────────────────────────
+
+function renderG8Disagreement(target, data, repository) {
+  if (!target || !data || data.status !== 'DISAGREEMENT' || data.flag !== true) return;
+  const card = el('div','card');
+  card.appendChild(el('div','card-header','DISAGREEMENT · Issue status vs PR state'));
+  const body = el('div','card-body');
+  body.appendChild(el('p','note','Conflicting source observations; no winner selected or status automatically changed.'));
+  const issue = allowedExternalLink(data.issue_url,repository) || allowedExternalLink(data.issue_url,REPO);
+  if (issue) {
+    const a=el('a','btn btn-small','Issue STATE: '+String(data.issue_status || 'UNKNOWN'));
+    a.href=issue;a.target='_blank';a.rel='noopener noreferrer';
+    body.appendChild(a);
+  }
+  for (const p of (Array.isArray(data.prs)?data.prs:[])) {
+    if (p.comparison !== 'CONTRADICTION') continue;
+    const url=allowedExternalLink(p.url,repository);
+    if (!url) continue;
+    const a=el('a','btn btn-small','PR: '+String(p.pr_status || 'UNKNOWN'));
+    a.href=url;a.target='_blank';a.rel='noopener noreferrer';
+    body.appendChild(a);
+  }
+  card.appendChild(body);target.appendChild(card);
+}
+
 async function renderProject(app, projectName) {
   if (!projectName) { navigate('#home'); return; }
   // Even a tampered published registry must not turn a hash into a data path.
@@ -1347,6 +1371,9 @@ async function renderProject(app, projectName) {
 
   $('back-to-home').addEventListener('click', () => navigate('#home'));
   $('project-title').textContent = projectName;
+  renderG8Disagreement($('g8-disagreement'),
+    proj.status_merge_disagreement || detail?.status_merge_disagreement,
+    proj.repository);
 
   const ctrl = proj.control || detail?.registry?.control || {};
   wp13ReadOnly($('wp13-project-moves'), proj.next_move || detail?.next_move);
