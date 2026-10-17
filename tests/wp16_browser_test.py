@@ -9,6 +9,7 @@ import tempfile
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
 import build_data
+import status_bar as sb
 from browser_smoke_test import start_server,find_free_port
 PROJECTS=("cii-method-c","grade9-pilot","imo-ab-test","landing-live","xml229-output")
 
@@ -25,6 +26,7 @@ def main():
         print(("PASS " if ok else "FAIL ")+name)
     with tempfile.TemporaryDirectory() as tmp:
         root=Path(tmp);site=root/"site"
+        expected_from_registry=0
         shutil.copytree(Path(sys.argv[1]).resolve(),site)
         for name in PROJECTS:
             folder=root/"logs"/name
@@ -34,8 +36,10 @@ def main():
                 # Conflicting identities MUST both appear and be marked.
                 source["agents"][1]["chat_id8"]=source["agents"][0]["chat_id8"]
             (folder/"registry.json").write_text(json.dumps(source))
+            expected_from_registry+=len(sb.normalize_roster(source))
         build_data.build_all(root,site/"data",cache_dir=root/"cache")
         projection=json.loads((site/"data"/"status-bar.json").read_text())
+        assert len(projection["instances"])==expected_from_registry
         assert len(projection["instances"])==21
         server=start_server(str(site),find_free_port())
         try:
