@@ -66,12 +66,12 @@ def scrub_chat_url(text: str) -> str:
 
 
 EVIDENCE_RE = re.compile(
-    r'TASK EVIDENCE v2\s*·\s*(?P<project>[^·]+?)\s*·\s*(?P<role>[^·]+?)\s*·\s*chat\s+(?P<chat>[0-9a-f]{8})\s*·\s*#(?P<seq>\d+)\s*·\s*(?P<ts>[^\n]+)',
+    r'TASK EVIDENCE v2\s*·\s*(?P<project>[^·]+?)\s*·\s*(?P<role>[^·]+?)\s*·\s*chat\s+(?:(?P<chat>[0-9a-f]{8})|n/a(?:\s+\([^)\n]*\))?)\s*·\s*#(?P<seq>\d+)\s*·\s*(?P<ts>[^\n]+)',
     re.MULTILINE
 )
 
 STATUS_RE = re.compile(
-    r'STATUS v2\s*·\s*(?P<role>[^·]+?)\s*·\s*chat\s+(?P<chat>[0-9a-f]{8})\s*·\s*working on\s+(?P<task>[^·]+?)\s*·\s*next\s+(?P<next>[^·]+?)\s*·\s*blocker\s+(?P<blocker>[^\n·]+)',
+    r'STATUS v2\s*·\s*(?P<role>[^·]+?)\s*·\s*chat\s+(?:(?P<chat>[0-9a-f]{8})|n/a(?:\s+\([^)\n]*\))?)\s*·\s*working on\s+(?P<task>[^·]+?)\s*·\s*next\s+(?P<next>[^·]+?)\s*·\s*blocker\s+(?P<blocker>[^\n·]+)',
     re.MULTILINE
 )
 
