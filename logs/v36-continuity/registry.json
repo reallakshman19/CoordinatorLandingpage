@@ -3,7 +3,7 @@
   "protocol": "Team protocol v3.0 (protocol/TEAM_PROTOCOL.md), alongside reallakshman19/Common AGENTS.md and the native v3.6 contract",
   "repository": "reallakshman19/Common",
   "parent_issue": "https://github.com/reallakshman19/Common/issues/409",
-  "updated": "2026-10-17T09:57+04:00",
+  "updated": "2026-10-17T13:41+04:00",
   "updated_by": "OwnerTeammember",
   "control": {
     "epoch": 1,
@@ -48,8 +48,11 @@
       "OTM merges on PASS",
       "TASK EVIDENCE v2 + SELF-CHECK v1 on #409"
     ],
-    "current": "ECO-01 addendum A01-A14 merged (Common PR #412 -> a609a40c; independent PASS); next ECO-02 read model",
-    "previous": "ECO-00 admitted; A13/A14 wording in Codex review (Q12); release 1 = ECO-01..04 read-only"
+    "current": "ECO-02 slice 1 (self-check + provenance read model) merged (Common PR #413 -> ea38a5d0; independent PASS on check 10 after 9 DO-NOT-MERGE rounds); ECO-02 PARTIAL (3 MET / 3 NOT_MET / 2 NOT_RUN, #409 6232387378, evidence 6232389320); next: Codex Q13 on #401 chain admission, then ECO-03 read-only scoreboard, then ECO-02b",
+    "previous": "ECO-01 addendum A01-A14 merged (Common PR #412 -> a609a40c; independent PASS)",
+    "design_decisions": [
+      "ECO-02: claim_qualified is STRUCTURAL (A14 'qualified'): only the author's declared fields are machine-read; prose is not interpreted and the coordinator still reads the companion. Word-list screening was tried and rejected by independent checks as an unbounded blacklist."
+    ]
   },
   "status_issue": "https://github.com/reallakshman19/Common/issues/409",
   "criticality_note": "unset (treated as critical). The earlier 'normal' was inferred from writer/merge grant words, which grant actions, not a classification (Codex Q12 §8, 17 Oct). The explicit scoped grants in control.grants stand.",
