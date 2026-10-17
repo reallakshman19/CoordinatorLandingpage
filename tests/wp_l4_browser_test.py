@@ -86,16 +86,25 @@ def run(artifact):
                 page = browser.new_page()
                 page_errors = []
                 page.on("pageerror", lambda exc: page_errors.append(str(exc)))
+                expected_filled = {
+                    "understanding": "Design the coordination relay",
+                    "people": "TeamCoordinator Agent",
+                    "engineering-history": "OwnerTeammember",
+                    "sources": "Missing master",
+                    "improvements": "Evidence intake",
+                    "changeover": "BuddyRunner",
+                }
                 for view in ROUTES:
                     for name, filled in (("probe", True), ("blank", False)):
                         page.goto(f"http://127.0.0.1:{server.server_address[1]}/"
                                   f"index.html#{view}/{name}", wait_until="networkidle")
+                        page.wait_for_selector(f'#l4-{view}', timeout=10000)
                         page.wait_for_timeout(100)
                         card = page.locator(f'#l4-{view}')
                         text = card.inner_text() if card.count() else ""
                         check(f"{view.upper()}_{'FILLED' if filled else 'UNKNOWN'}",
                               bool(card.count()) and
-                              (("UNKNOWN" not in text and len(text)>25)
+                              ((expected_filled[view] in text)
                                if filled else "UNKNOWN" in text))
                         check(f"{view.upper()}_NO_UNSAFE_LINK_{name}", all(
                             h.startswith("https://github.com/" + PRODUCT + "/")
@@ -106,10 +115,12 @@ def run(artifact):
                         ) if card.count() else False)
                 page.goto(f"http://127.0.0.1:{server.server_address[1]}/"
                           "index.html#sources/probe", wait_until="networkidle")
+                page.wait_for_selector("#l4-sources .badge-red", timeout=10000)
                 check("MISSING_VISIBLE_RED", bool(page.locator(
                       "#l4-sources .badge-red").filter(has_text="MISSING").count()))
                 page.goto(f"http://127.0.0.1:{server.server_address[1]}/"
                           "index.html#understanding/probe", wait_until="networkidle")
+                page.wait_for_selector("#l4-understanding s a[href]", timeout=10000)
                 check("SUPERSEDED_STRUCK_WITH_SOURCE", bool(
                     page.locator("#l4-understanding s a[href]").count()))
                 page.goto(f"http://127.0.0.1:{server.server_address[1]}/"
