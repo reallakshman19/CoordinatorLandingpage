@@ -440,7 +440,7 @@ jobs:
           require_success "WP15-evaluator-trigger-heartbeat-review" "${{ steps.wp15_unit.outcome }}"
           require_success "WP-L1-extraction-seams-and-frozen-fixtures" "${{ steps.extract_seams.outcome }}"
           require_success "WP15-board-evaluator-cross-check" "${{ steps.wp15_browser.outcome }}"
-          echo "FINAL GATE: 35/35 actual head outcomes success"
+          echo "FINAL GATE: 36/36 actual head outcomes success"
 
   red-control:
     name: red-control · require seven behavioural FAIL and zero ERROR

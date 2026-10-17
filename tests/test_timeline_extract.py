@@ -16,7 +16,7 @@ import build_data
 # Baseline updated after #69 (7f5a6797) intentionally added coordinator/timer/browser
 # projection keys. OTM independently verified this current-main frozen-fixture SHA-256.
 PRE_REFACTOR_SHA256 = (
-    "0000000000000000000000000000000000000000000000000000000000000000")
+    "fcc158a0f05dc5b16288cc90728b1cd65902a3dd1530b4f9f7abf0bb9ac22095")
 
 
 class FixedDatetime(datetime):
