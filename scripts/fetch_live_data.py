@@ -64,7 +64,7 @@ def gh_api(path: str, errors=None):
     except (subprocess.CalledProcessError, OSError, ValueError, TypeError) as exc:
         # Never echo stderr: it might contain credentials or response bodies.
         stderr = exc.stderr if isinstance(exc, subprocess.CalledProcessError) else ""
-        match = re.search(r"(?i)\\bHTTP(?:\\s+error)?[\\s:=-]*([45]\\d{2})\\b",
+        match = re.search(r"(?i)\bHTTP(?:\s+error)?[\s:=-]*([45]\d{2})\b",
                           stderr if isinstance(stderr, str) else "")
         reason = ("HTTP_" + match.group(1) if match else
                   "TRANSPORT_ERROR" if isinstance(exc, OSError) else
