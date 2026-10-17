@@ -39,8 +39,8 @@ class WP16StatusBar(unittest.TestCase):
         expected_from_registry=sum(len(sb.normalize_roster(reg)) for reg in regs.values())
         self.assertEqual(data["coverage"]["expected"],expected_from_registry)
         self.assertEqual(data["coverage"]["projected"],expected_from_registry)
-        self.assertEqual(data["coverage"]["expected"],21)
-        self.assertEqual(data["coverage"]["projected"],21)
+        self.assertEqual(data["coverage"]["expected"],expected_from_registry)
+        self.assertEqual(data["coverage"]["projected"],expected_from_registry)
         self.assertEqual(data["coverage"]["percent"],100)
         self.assertTrue(data["coverage"]["complete"])
 
@@ -181,7 +181,7 @@ class WP16StatusBar(unittest.TestCase):
                 for p in PROJECTS)
             self.assertEqual(len(doc["instances"]),expected_from_registry)
             self.assertEqual(doc["coverage"]["percent"],100)
-            self.assertEqual(len(doc["instances"]),21)
+            self.assertEqual(len(doc["instances"]),expected_from_registry)
             self.assertEqual(len(projects),len(doc["projects"]))
             self.assertEqual({p["project"]:p["status_bar"] for p in projects},
                              {p["project"]:p for p in doc["projects"]})

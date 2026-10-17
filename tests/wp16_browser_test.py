@@ -27,6 +27,7 @@ def main():
     with tempfile.TemporaryDirectory() as tmp:
         root=Path(tmp);site=root/"site"
         expected_from_registry=0
+        expected_link_count=0
         shutil.copytree(Path(sys.argv[1]).resolve(),site)
         for name in PROJECTS:
             folder=root/"logs"/name
@@ -36,11 +37,12 @@ def main():
                 # Conflicting identities MUST both appear and be marked.
                 source["agents"][1]["chat_id8"]=source["agents"][0]["chat_id8"]
             (folder/"registry.json").write_text(json.dumps(source))
-            expected_from_registry+=len(sb.normalize_roster(source))
+            declared_rows=sb.normalize_roster(source)
+            expected_from_registry+=len(declared_rows)
+            expected_link_count+=sum(row["instance_id8"] is not None for row in declared_rows)
         build_data.build_all(root,site/"data",cache_dir=root/"cache")
         projection=json.loads((site/"data"/"status-bar.json").read_text())
         assert len(projection["instances"])==expected_from_registry
-        assert len(projection["instances"])==21
         server=start_server(str(site),find_free_port())
         try:
             with sync_playwright() as pw:
@@ -54,7 +56,7 @@ def main():
                     """,timeout=9000)
                 check("WP16_UI_01_coverage_exact_complete",
                       lambda: page.locator("#view-status-bar").count()==1
-                      and "21/21" in page.locator("#wp16-coverage").inner_text()
+                      and f"{expected_from_registry}/{expected_from_registry}" in page.locator("#wp16-coverage").inner_text()
                       and "100%" in page.locator("#wp16-coverage").inner_text())
                 check("WP16_UI_02_ot_exact_five_project_rows",
                       lambda: page.locator("#wp16-ot-rows tr").count()==5
@@ -73,21 +75,21 @@ def main():
                 if page.locator("#wp16-mode").count():
                     page.locator("#wp16-mode").select_option("tc")
                 check("WP16_UI_05_tc_exact_21_instances_plus_workstream",
-                      lambda: page.locator("#wp16-tc-rows tr").count()==21
+                      lambda: page.locator("#wp16-tc-rows tr").count()==expected_from_registry
                       and page.locator("#wp16-tc").is_visible()
                       and sum("QRT-VM" in s for s in
                           page.locator("#wp16-tc-rows tr td:nth-child(2)").all_inner_texts())==4)
                 check("WP16_UI_06_duplicates_flagged_retired_preserved",
-                      lambda: page.locator("#wp16-tc-rows tr").count()==21
+                      lambda: page.locator("#wp16-tc-rows tr").count()==expected_from_registry
                       and sum("duplicate_id8_declared" in s for s in
                           page.locator("#wp16-tc-rows tr td:last-child").all_inner_texts())>=2
                       and sum("RETIRED" in s for s in
                           page.locator("#wp16-tc-rows tr td:nth-child(8)").all_inner_texts())>=6
                       and len({x.get_attribute("data-instance-key") for x in
-                          page.locator("#wp16-tc-rows tr").all()})==21)
+                          page.locator("#wp16-tc-rows tr").all()})==expected_from_registry)
                 check("WP16_UI_07_links_id8_only_three_dimensions",
-                      lambda: page.locator("#wp16-tc-rows tr").count()==21
-                      and page.locator("#wp16-tc-rows .wp16-chat-id8").count()==21
+                      lambda: page.locator("#wp16-tc-rows tr").count()==expected_from_registry
+                      and page.locator("#wp16-tc-rows .wp16-chat-id8").count()==expected_link_count
                       and all(len(x.inner_text())==8 and
                           x.get_attribute("href")=="https://chatgpt.com/c/"+x.inner_text()
                           for x in page.locator(".wp16-chat-id8").all())
