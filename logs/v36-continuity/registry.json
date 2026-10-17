@@ -48,7 +48,8 @@
       "OTM merges on PASS",
       "TASK EVIDENCE v2 + SELF-CHECK v1 on #409"
     ],
-    "current": "ECO-00 admitted; A13/A14 wording in Codex review (Q12); release 1 = ECO-01..04 read-only"
+    "current": "ECO-01 addendum A01-A14 merged (Common PR #412 -> a609a40c; independent PASS); next ECO-02 read model",
+    "previous": "ECO-00 admitted; A13/A14 wording in Codex review (Q12); release 1 = ECO-01..04 read-only"
   },
   "status_issue": "https://github.com/reallakshman19/Common/issues/409",
   "criticality_note": "unset (treated as critical). The earlier 'normal' was inferred from writer/merge grant words, which grant actions, not a classification (Codex Q12 §8, 17 Oct). The explicit scoped grants in control.grants stand.",
