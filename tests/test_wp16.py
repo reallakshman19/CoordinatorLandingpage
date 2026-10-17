@@ -36,8 +36,11 @@ class WP16StatusBar(unittest.TestCase):
         data=sb.build_status_bar(regs,{},NOW)
         self.assertEqual(set(p["project"] for p in data["projects"]),set(PROJECTS))
         self.assertEqual(len(data["projects"]),5)
-        self.assertEqual(data["coverage"]["expected"],21)
-        self.assertEqual(data["coverage"]["projected"],21)
+        expected_from_registry=sum(len(sb.normalize_roster(reg)) for reg in regs.values())
+        self.assertEqual(data["coverage"]["expected"],expected_from_registry)
+        self.assertEqual(data["coverage"]["projected"],expected_from_registry)
+        self.assertEqual(data["coverage"]["expected"],expected_from_registry)
+        self.assertEqual(data["coverage"]["projected"],expected_from_registry)
         self.assertEqual(data["coverage"]["percent"],100)
         self.assertTrue(data["coverage"]["complete"])
 
@@ -173,8 +176,12 @@ class WP16StatusBar(unittest.TestCase):
             build_data.build_all(root,root/"out",cache_dir=root/"cache")
             doc=json.loads((root/"out"/"status-bar.json").read_text())
             projects=json.loads((root/"out"/"projects.json").read_text())
+            expected_from_registry=sum(
+                len(sb.normalize_roster(json.loads((ROOT/"logs"/p/"registry.json").read_text())))
+                for p in PROJECTS)
+            self.assertEqual(len(doc["instances"]),expected_from_registry)
             self.assertEqual(doc["coverage"]["percent"],100)
-            self.assertEqual(len(doc["instances"]),21)
+            self.assertEqual(len(doc["instances"]),expected_from_registry)
             self.assertEqual(len(projects),len(doc["projects"]))
             self.assertEqual({p["project"]:p["status_bar"] for p in projects},
                              {p["project"]:p for p in doc["projects"]})
