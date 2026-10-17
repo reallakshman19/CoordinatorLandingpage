@@ -151,7 +151,6 @@ def _issue_number(url):
     return int(match.group(1)) if match else None
 
 
-
 # WP10: registry projections report scoped claims, never confer authority.
 _SAFE_GH_LINK = re.compile(
     r'^https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/(issues|pull)/(\d+)(?:#issuecomment-\d+)?$'
@@ -544,7 +543,6 @@ def build_project_data(root: Path, project_name: str, registry: dict,
         **({'unparsed_evidence': unparsed} if unparsed else {}),
         'built_at': now.isoformat(),
     }, timeline
-
 
 
 # G02/G05/G06: projection is reporting, NOT authorization.
