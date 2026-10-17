@@ -18,7 +18,7 @@
     "known_gap": "no independent checker inside the team; C15 needs an Owner-named checker",
     "history": [{"epoch": 1, "coordinator": "Claude session (dual role with OwnerTeammember)", "owner_words": "read this issue .../issues/21 . improvise, lauch a new agent in your tab. you will be teamcoodinator and ownerteammember", "since": "2026-10-15T14:42+04:00", "control_post": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6190161629", "ended": "2026-10-17T15:08+04:00"}]
   },
-  "roles": {"owner_teammember": "Claude session (role only; no sends to agent chats)", "team_coordinator": "Codex (CL#16); observes first, acknowledges in #1; skill update to Team protocol v3.1 + Oracle rule pending in #16", "oracle": "Claude, acting Oracle (Owner: \"for now you step in shoes of oracle, authorized. oracle will review later\"); advice tagged [ORACLE · acting] to the TeamCoordinator only; source https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233265443", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187495"},
+  "roles": {"owner_teammember": "Claude session (role only; no sends to agent chats)", "team_coordinator": "Codex (TeamCoordinator epoch2); graded coordinator-protocol3.40.0 installed; landing-live-only operations resumed under #1 6233547571", "oracle": "Claude, acting Oracle (Owner: \"for now you step in shoes of oracle, authorized. oracle will review later\"); advice tagged [ORACLE · acting] to the TeamCoordinator only; source https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233265443", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187495"},
   "workflow": {
     "loop": [
       "L1 posts TASK EVIDENCE v2 in #22",
@@ -26,7 +26,7 @@
       "GO / FIX / HOLD",
       "next slice"
     ],
-    "current": "WP0-WP18 + NM0 merged (last: #50 -> main 885d95b4, 17 Oct); UEM PARKED (Owner 17 Oct); no active writer (L1 g2 retired 03:39); operational HOLD (Owner 17 Oct 04:1x); next: only Owner-named work; start at docs/LANDING_LIVE_BRIEF.md", "previous": "WP0-WP4 merged (#24-#28); next WP5 + F7 Owner round trip"
+    "current": "P1 #62: L1 g3 01a149bf launched; read-only native BuddyRunner1.7 investigation1b on #64. Product implementation/adoption/custody not yet qualified; g2 lease remains released. Common408/409 remain held; UEM parked.", "previous": "WP0-WP4 merged (#24-#28); next WP5 + F7 Owner round trip"
   },
   "agents": [
     {
@@ -47,6 +47,30 @@
       "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22",
       "handover": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6207718018",
       "onboarded": "2026-10-16T07:49+04:00 DELIVERED"
+    },
+    {
+      "alias": "Agent L1",
+      "role": "implementer",
+      "generation": 3,
+      "chat_id8": "01a149bf",
+      "status": "INVESTIGATING BuddyRunner1.7 1b; native dispatch/pickup observed; adoption UNVERIFIED; product implementation held pending qualified1b/final2/custody",
+      "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64",
+      "native_route": "codex-local",
+      "instance_sha256": "22730a77de353748ba751af60370f964764abc0f3cb359d33e11e0d8d913ea0c",
+      "assignment_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64",
+      "authority_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233547571",
+      "handover": {
+        "method": "BuddyRunner1.7",
+        "key": "landing-live-L1-g2-to-g3",
+        "phase": "1b_IN_PROGRESS",
+        "predecessor": "6ad1a045",
+        "phase1a": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6226735852",
+        "correction": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6229302006"
+      },
+      "execution_mode": "read_only",
+      "onboarded": "PENDING actual own-words source-bound1b; no writer lease",
+      "branch": null,
+      "timer": "NOT_ARMED"
     }
   ],
   "leases": [
