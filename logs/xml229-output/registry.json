@@ -3,7 +3,7 @@
   "protocol": "Team protocol v2.3 FINAL CANDIDATE",
   "repository": "reallakshman19/3D_Converters",
   "project_status": "SUPERSEDED",
-  "superseded": {"at": "2026-10-17T04:4x+04:00", "owner_words": "Lets reset (consider superseded) all project expect LandingPage (Owner, 17 Oct 04:4x)", "recorded_by": "OwnerTeammember", "note": "kept for history, not deleted; no agent sends; reopen only on Owner words"},
+  "superseded": {"at": "2026-10-17T05:1x+04:00", "owner_words": "Lets reset (consider superseded) all project expect LandingPage (Owner, 17 Oct 05:1x)", "recorded_by": "OwnerTeammember", "note": "kept for history, not deleted; no agent sends; reopen only on Owner words"},
   "criticality": "critical",
   "criticality_owner_words": "Not authorised for auto response ... Above are rules for CRITICAL projects (16 Oct ~11:3x)",
   "parent_issue": "https://github.com/reallakshman19/3D_Converters/issues/274",
