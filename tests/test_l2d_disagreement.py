@@ -158,5 +158,62 @@ class G8DisagreementTests(unittest.TestCase):
             self.assertTrue(any("HTTP_403" in err for err in errors))
 
 
+    def test_11_registered_status_comment_beats_newer_unrelated_quote(self):
+        registry = {"repository": PRODUCT, "status_issue": STATUS_URL,
+                    "status_comment": STATUS_URL + "#issuecomment-12"}
+        issue = {"number": 80, "repository": PRODUCT,
+                 "body": "STATE: IN PROGRESS",
+                 "comments": [
+                     {"id": 12, "created_at": "2026-10-17T09:00:00Z",
+                      "body": "STATE: HOLD"},
+                     {"id": 13, "created_at": "2026-10-17T11:00:00Z",
+                      "body": "Quotation from another actor:\nSTATE: DONE"}]}
+        result = disagreement.latest_issue_status(registry, issue, REPO)
+        self.assertEqual(result["word"], "HOLD")
+        self.assertEqual(result["url"], STATUS_URL + "#issuecomment-12")
+
+    def test_12_last_state_line_wins_within_registered_comment(self):
+        registry = {"repository": PRODUCT,
+                    "status_comment": STATUS_URL + "#issuecomment-12"}
+        issue = {"number": 80, "repository": PRODUCT,
+                 "comments": [{"id": 12, "created_at": "2026-10-17T09:00:00Z",
+                               "body": "Earlier:\nSTATE: HOLD\nReconciled:\nSTATE: DONE"}]}
+        result = disagreement.latest_issue_status(registry, issue, REPO)
+        self.assertEqual(result["word"], "DONE")
+        self.assertEqual(result["url"], STATUS_URL + "#issuecomment-12")
+
+    def test_13_registered_issue_body_beats_unrelated_comment(self):
+        registry = {"repository": PRODUCT, "status_issue": STATUS_URL}
+        issue = {"number": 80, "repository": PRODUCT,
+                 "body": "Recorded source:\nSTATE: BLOCKED",
+                 "comments": [{"id": 13, "created_at": "2026-10-17T11:00:00Z",
+                               "body": "Quoted old text:\nSTATE: DONE"}]}
+        result = disagreement.latest_issue_status(registry, issue, REPO)
+        self.assertEqual(result["word"], "BLOCKED")
+        self.assertEqual(result["url"], STATUS_URL)
+
+    def test_14_fallback_newest_only_when_no_registered_source(self):
+        registry = {"repository": PRODUCT}
+        issue = {"number": 80, "repository": PRODUCT, "html_url": STATUS_URL,
+                 "body": "No status here",
+                 "comments": [
+                     {"id": 12, "created_at": "2026-10-17T09:00:00Z",
+                      "body": "STATE: DONE"},
+                     {"id": 13, "created_at": "2026-10-17T11:00:00Z",
+                      "body": "STATE: HOLD\nSTATE: IN PROGRESS"}]}
+        result = disagreement.latest_issue_status(registry, issue, REPO)
+        self.assertEqual(result["word"], "IN PROGRESS")
+        self.assertEqual(result["url"], STATUS_URL + "#issuecomment-13")
+
+    def test_15_missing_registered_comment_not_replaced_by_quote(self):
+        registry = {"repository": PRODUCT,
+                    "status_comment": STATUS_URL + "#issuecomment-999"}
+        issue = {"number": 80, "repository": PRODUCT,
+                 "body": "STATE: HOLD",
+                 "comments": [{"id": 13, "created_at": "2026-10-17T11:00:00Z",
+                               "body": "STATE: DONE"}]}
+        self.assertIsNone(disagreement.latest_issue_status(registry, issue, REPO))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
