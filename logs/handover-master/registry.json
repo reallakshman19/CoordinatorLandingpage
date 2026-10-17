@@ -1,0 +1,39 @@
+{
+  "project": "handover-master",
+  "protocol": "Team protocol v3.0 (protocol/TEAM_PROTOCOL.md), alongside reallakshman19/Common AGENTS.md and the native contracts",
+  "repository": "reallakshman19/Common",
+  "criticality": "normal",
+  "criticality_owner_words": "P2: OTM writer, OTM merges after independent PASS (Owner, 17 Oct 2026) — scoped to this workpack; see control.grants",
+  "parent_issue": "https://github.com/reallakshman19/Common/issues/408",
+  "updated": "2026-10-17T09:3x+04:00",
+  "updated_by": "OwnerTeammember",
+  "control": {
+    "epoch": 1,
+    "coordinator": "Claude session (combined OwnerTeammember + TeamCoordinator)",
+    "owner_words": "start P2 (#408 Handover Master)",
+    "control_post": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6230122085",
+    "hold": null,
+    "grants": [
+      {
+        "actor": "OwnerTeammember (Claude session)",
+        "action": "sole writer for #408 HM-03/HM-04 and the HM-02 guide; merge each PR only after an independent exact-head PASS by a non-doer checker",
+        "paths": ["skills/Handover Master/**"],
+        "branches": "otm/hm-*",
+        "excluded": "native module edits, other skills, workflows, downstream activation, acceptance, release",
+        "owner_words": "P2: OTM writer, OTM merges after independent PASS",
+        "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6230198803",
+        "since": "2026-10-17T09:3x+04:00",
+        "until": "end of #408 scope or Owner revocation"
+      }
+    ]
+  },
+  "agents": [],
+  "leases": [
+    {"holder": "OwnerTeammember (Claude session)", "branches": "otm/hm-*", "paths": ["skills/Handover Master/**"], "granted": "2026-10-17T09:3x+04:00", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6230198803"}
+  ],
+  "workflow": {
+    "loop": ["HM-01 contract (frozen v2, Common #408 6230181135)", "OTM implements on a draft PR", "fresh independent checker at the exact head", "OTM merges on PASS", "TASK EVIDENCE v2 on #408"],
+    "current": "HM-01 contract v2 frozen; HM-03/HM-04 starting"
+  },
+  "status_issue": "https://github.com/reallakshman19/Common/issues/408"
+}
