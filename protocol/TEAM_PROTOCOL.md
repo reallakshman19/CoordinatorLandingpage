@@ -1,6 +1,8 @@
 # Team protocol v3.2 — CoordinatorLandingpage
 
-Status: **v3.2 DRAFT for Owner approval** (17 Oct 2026; v3.1 plus the relay amendment recorded in Part F. Owner "ok" to adopting the amendment in #62 section C, [#1 6233547571](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233547571); wording revised by an independent check, Part F). It becomes ADOPTED only when the Owner approves this text.
+Status: **v3.2 ADOPTED** (17 Oct 2026; Owner: "Approve PR #63 as Team protocol v3.2, including the D2 audit move to the TeamCoordinator. Merge it after CI passes.", [#1 6233626616](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233626616)).
+
+> (v3.2 draft) Status: **v3.2 DRAFT for Owner approval** (17 Oct 2026; v3.1 plus the relay amendment recorded in Part F. Owner "ok" to adopting the amendment in #62 section C, [#1 6233547571](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233547571); wording revised by an independent check, Part F). It becomes ADOPTED only when the Owner approves this text.
 
 > (v3.1) Status: **v3.1 ADOPTED** (17 Oct 2026; v3.0 + the A13/A14 amendment: Owner "add A13 + A14 to P3 and team protocol", [#1 6230407705](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6230407705); wording = Codex Q12 [Common #409 6230450337](https://github.com/reallakshman19/Common/issues/409#issuecomment-6230450337)).
 
@@ -218,7 +220,7 @@ Keep known issues with source, owner, status and remaining proof. Distinguish a 
 ~~Audit approvals relevant to the current request and changed scoped authority evidence. A broader recurring audit requires its own explicit scope; a growing queue does not authorize Codex timers. Queue-age/status display is a proposed projection until implemented and source/readback verified, not a service already guaranteed by this rule.~~ (v3.1; struck by v3.2)
 
 
-**OTM reconciliation D2:** for **pilot/test** projects, each Codex desk run includes an audit of OTM approvals since the last audit (Owner, "For Pilot/Test , think of more cycle", [#1 6229973054](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6229973054)). Other projects: audits only as requested. **v3.2:** the Codex desk is retired, so this duty moves to the TeamCoordinator: for pilot/test projects it lists the OwnerTeammember's approvals since the last list at each reconcile checkpoint (n mod 20 = 19). **OWNER DECISION:** confirm or drop this move.
+**OTM reconciliation D2:** for **pilot/test** projects, each Codex desk run includes an audit of OTM approvals since the last audit (Owner, "For Pilot/Test , think of more cycle", [#1 6229973054](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6229973054)). Other projects: audits only as requested. **v3.2:** the Codex desk is retired, so this duty moves to the TeamCoordinator: for pilot/test projects it lists the OwnerTeammember's approvals since the last list at each reconcile checkpoint (n mod 20 = 19). ~~**OWNER DECISION:** confirm or drop this move.~~ Confirmed by the Owner ([#1 6233626616](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233626616)).
 
 **v3.2.** The TeamCoordinator named in the current CONTROL epoch is the only sender to agent chats, when otherwise authorized (A2, A4, no HOLD), and records delivery proof or NOT_SENT / DELIVERY_UNCERTAIN; pickup is a further fact, and uncertainty is reconciled, never resent (A5). The OwnerTeammember and the Oracle send nothing to agent chats.
 
@@ -353,7 +355,7 @@ No product work, chat send, browser use, new agent, timer, own counter, new HOLD
 | 9 Acting roles | A1 "v3.2 acting Oracle" | narrowed to the acting Oracle only |
 | 10 Oracle unavailable | A10 | due event recorded with the request; material changes still escalate |
 
-Also changed for consistency: A2 non-substitutes; A4 deliverer; Part B §6b, §19.19, §19.22; Part C. **OWNER DECISION:** the D2 audit duty moves from the retired Codex desk to the TeamCoordinator (A10).
+Also changed for consistency: A2 non-substitutes; A4 deliverer; Part B §6b, §19.19, §19.22; Part C. The D2 audit duty moves from the retired Codex desk to the TeamCoordinator (A10), confirmed by the Owner ([#1 6233626616](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233626616)).
 
 **Not changed:** native TASK EVIDENCE v2 / STATUS v2; the Engineering v3.6 receipt and LOG; BuddyRunner phases; Next Move kinds; the three counters.
 
