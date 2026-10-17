@@ -10,7 +10,7 @@
 ## 1. Current state (17 Oct 2026)
 
 - **Aim:** keep the existing landing page and make evidence-backed, two-way, multi-project coordination live. Owner words on #21: no Dash V2, no revamp, no core protocol change. The page is a view. It never sends to chats, approves or grants anything.
-- **Code:** everything through WP18 + NM0 is merged. The last integration was [#50](https://github.com/reallakshman19/CoordinatorLandingpage/pull/50) → main `885d95b4c115b2eb5f0b47bdd80f8ae5d70bda12`, and there are no open PRs. Later main commits change records only: registries, the reset, and these docs.
+- **Code:** everything through WP18 + NM0 is merged. The last integration was [#50](https://github.com/reallakshman19/CoordinatorLandingpage/pull/50) → main `885d95b4c115b2eb5f0b47bdd80f8ae5d70bda12`, and no PR was open at the S1 read (this page itself arrives via PR #54). Later main commits change records only: registries, the reset, and these docs.
 - **People and authority:**
   - The Claude session is TeamCoordinator + OwnerTeammember: one actor, and the only one who sends to chats.
   - Codex is planner + reviewer: GitHub outputs only, no chats, no browser.
@@ -118,10 +118,10 @@ The #47 merged tree differs from its reviewed tree **only** in inherited `logs/g
 | WP16 broad regression | Feature-only check attributed identical WP3 allowlist failure at pinned #50 base; WP17 repaired it. [#51 verdict](https://github.com/reallakshman19/CoordinatorLandingpage/pull/51#issuecomment-6222780724), [#52](https://github.com/reallakshman19/CoordinatorLandingpage/pull/52#issuecomment-6223256152) | Do not report old red as current or old green as current proof. |
 | Foreign-source omission | Rejected sources fail closed but lack visible reason. [#53](https://github.com/reallakshman19/CoordinatorLandingpage/pull/53#issuecomment-6223804279), [#50](https://github.com/reallakshman19/CoordinatorLandingpage/pull/50#issuecomment-6226955608) | OPEN; propose visible rejection reason, retain denial. |
 | Abbreviated END / unavailable-timer control | #53 notes not explicitly closed in #50. | OTM disposes of both; native full evidence remains required. |
-| Timer prose conflict | Agent skill/runbook say NOT_ARMED, explicit one-shot exception only; ULTRA_ECONOMY_MODE.md still retains an older hourly instruction/terminal cancellation paragraph. | Document drift, not live timer permission. Correct in a separately scoped documentation change; don't arm anything. |
+| Timer prose conflict — **RESOLVED 17 Oct, see 3a** | Agent skill/runbook say NOT_ARMED, explicit one-shot exception only; ULTRA_ECONOMY_MODE.md still retains an older hourly instruction/terminal cancellation paragraph. | Document drift, not live timer permission. Correct in a separately scoped documentation change; don't arm anything. |
 | Counter terminology drift | NEXT_MOVE spec describes delegation allowance converted to clock time; latest direct Owner requires no Codex counters and registry authority. | Preserve source distinction; don't calculate/reset/transfer allowances privately. |
 | Missing real NM/evaluator ledger | Tree has no landing `moves.jsonl` or move directory; deployed evaluator missing, task-cycle no GO. | UNKNOWN/NOT_RECORDED, not zero completed work or permission to seed records. |
-| Status authority stale | Live source fresh while last TC cycle 16 Oct19:53:37+04 and registry g2 “active” are old; lease holder projects UNVERIFIED_HOLDER. | Data freshness ≠ work freshness. OTM owns authorized source repair; Codex does not fabricate it. |
+| Status authority stale — **registry part RESOLVED 17 Oct, see 3a** | Live source fresh while last TC cycle 16 Oct19:53:37+04 and registry g2 “active” are old; lease holder projects UNVERIFIED_HOLDER. | Data freshness ≠ work freshness. OTM owns authorized source repair; Codex does not fabricate it. |
 
 ### 2.6 Improvement/decision register
 
@@ -162,7 +162,7 @@ The #47 merged tree differs from its reviewed tree **only** in inherited `logs/g
 | Monitoring / work permission | Distinct current registry grants and actual watcher/host evidence | Owner grants; named watcher acts | Watch permission is not work permission; no agent timers by default |
 | Future programme P1–P3 | #1 6228221349 attributed Owner quote; later OTM reading separately labelled | Owner; OTM named for three projects | Reviews of #408/#409 now; implementation after protocol ready; no general self-granted scope |
 
-## 2.7 Dispositions made with this page (17 Oct 2026, OwnerTeammember)
+## 3a. Dispositions made with this page (17 Oct 2026, OwnerTeammember)
 
 | Finding | Disposition |
 |---|---|
@@ -172,7 +172,7 @@ The #47 merged tree differs from its reviewed tree **only** in inherited `logs/g
 | Abbreviated END / unavailable-timer notes | Dispositioned in ULTRA_ECONOMY_MODE.md "Review-note dispositions" |
 | Foreign-source rejection not visible | OPEN; scheduled into the P1 landing-page revision (owner: OwnerTeammember) |
 
-## 4. Source identities and explicit gaps
+## 4. Source identities and explicit gaps (4.1, the snapshot read log, is omitted here)
 
 ### 4.2 File source identities
 
@@ -209,13 +209,12 @@ The amendment table and WP table are the linked comment manifest. Additional ind
 
 ### 4.4 Explicit gaps / UNKNOWNs
 
-### 4.4 Explicit gaps / UNKNOWNs / not performed
 
 1. Actual g2 live browser state, exact chat-end observation, full conversation provenance and any selected g3/1b/2 beyond the source record were **NOT_OBSERVED**. No chat sends or browser were used.
 2. Fresh distinct checker runtime identities are **not authenticated** by shared GitHub authorship. Test totals remain attributed reported evidence, not reruns by Codex.
 3. Complete original fixture payload/golden byte identity, all historical CI logs and current main independent full regression/Owner acceptance are **not established** by this read. Don't turn manifest accounting into proof.
 4. Actual Next Move live round trip and committed evaluator EVALUATED heartbeat not found; phase/P4 readiness should not be declared complete from fixture tests.
-5. Registry workflow, g2 liveness, human lease-holder string and latest handover contain stale/ambiguous fields. Their authorized correction is not performed by this document.
+5. **(Registry part RESOLVED 17 Oct, see 3a.)** Registry workflow, g2 liveness, human lease-holder string and latest handover contain stale/ambiguous fields. Their authorized correction is not performed by this document.
 6. Earlier delegated acceptance on #21 is source-backed but limited to its named scope; later added UEM/status/counter features do not inherit it.
 7. Current deployed HTTP payload is attributable to main, but full visual, interactive, authentication, redaction and updated foreign-source presentation were not retested.
 8. Q5 says UEM PARKED; actual source registry independently establishes disabled. No later Owner activation evidence was found.
