@@ -13,8 +13,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import build_data
 
-# Historical baseline from test_timeline_extract.py test_04; never recompute it here.
-PRE_REFACTOR_SHA256 = "ffc6efd54d895d76bc7eb0baa6c55cdfb3b16798eb0bca82fe2e3f1dd6cc1057"
+# Current-main oracle: #69 (7f5a6797) intentionally added coordinator/timer/browser\n# projection keys; OTM independently verified the new frozen-fixture SHA-256.
+PRE_REFACTOR_SHA256 = "fcc158a0f05dc5b16288cc90728b1cd65902a3dd1530b4f9f7abf0bb9ac22095"
 
 
 class FixedDatetime(datetime):
