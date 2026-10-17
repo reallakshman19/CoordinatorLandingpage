@@ -48,10 +48,10 @@ class LFWriterGuard(unittest.TestCase):
                 checked += 1
                 newline = kwargs.get("newline")
                 if not (isinstance(newline, ast.Constant)
-                        and newline.value == "\\n"):
+                        and newline.value == "\n"):
                     missing.append(f"{path.relative_to(ROOT)}:{node.lineno}: "
                                    f"{'write_text' if is_write_text else 'text open'} "
-                                   'must specify newline="\\n"')
+                                   'must specify newline="\n"')
         self.assertGreater(checked, 0, "No text writers were inspected")
         self.assertFalse(missing, "Text writers without explicit LF policy:\n" +
                          "\n".join(missing))
