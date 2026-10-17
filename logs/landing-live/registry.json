@@ -10,6 +10,7 @@
   "updated_by": "TC01a142d0; actual bounded workpack closure after provider merges, no roadmap closure or next-slice release",
   "control": {
     "epoch": 2,
+    "current_coordinator": {"holder": "OwnerTeammember (Claude, acting TeamCoordinator; Codex TC 01a142d0 stood down)", "mode": "ACTING", "epoch": 2, "control_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6236724626", "effective_at": "2026-10-17T16:30:00Z", "verified": true},
     "coordinator": "Codex (TeamCoordinator; onboarded in CL#16)",
     "owner_words": "You will be Ownerteammember ... | Another Codex agent who is already on board in the landing page | (selected) Same Codex.",
     "since": "2026-10-17T15:08+04:00",
@@ -32,7 +33,7 @@
     {
       "alias": "L1 g4 Coder",
       "role": "coder",
-      "chat_id8": "6ad36e4d",
+      "chat_id8": "6ad36e4d", "browser_observation": {"result": "UP", "checked_at": "2026-10-17T18:19:32Z", "source_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6238460824", "verified": true},
       "status": "WP-L2(a) and WP16 bounded workpacks DELIVERED/MERGED; no active product task or writer lease. Native live chat UNKNOWN; broader #62 roadmap remains open.",
       "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64",
       "native_route": "chatgpt-browser",
