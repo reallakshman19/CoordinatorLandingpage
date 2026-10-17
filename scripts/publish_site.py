@@ -111,11 +111,17 @@ def stamp_asset_urls(artifact, source_commit):
     version = assert_sha(source_commit)[:8]
     path = Path(artifact) / "index.html"
     html = path.read_text(encoding="utf-8")
-    changes = (
+    assets = sorted((Path(artifact) / "js").glob("*.js"))
+    if not assets:
+        raise ValueError("cannot version published index.html: missing site/js assets")
+    changes = [
         ('href="style.css"', f'href="style.css?v={version}"'),
-        ('src="app.js"', f'src="app.js?v={version}"'),
         ('</head>', f'  <meta name="site-version" content="{version}">\n</head>'),
-    )
+    ]
+    changes.extend((f'src="js/{asset.name}"',
+                    f'src="js/{asset.name}?v={version}"') for asset in assets)
+    if 'src="app.js"' in html:
+        raise ValueError("cannot version published index.html: legacy app.js")
     for original, replacement in changes:
         if html.count(original) != 1:
             raise ValueError("cannot version published index.html: " + original)
