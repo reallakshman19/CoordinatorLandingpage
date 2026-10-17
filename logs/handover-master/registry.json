@@ -3,14 +3,14 @@
   "protocol": "Team protocol v3.0 (protocol/TEAM_PROTOCOL.md), alongside reallakshman19/Common AGENTS.md and the native contracts",
   "repository": "reallakshman19/Common",
   "parent_issue": "https://github.com/reallakshman19/Common/issues/408",
-  "updated": "2026-10-17T15:08+04:00",
+  "updated": "2026-10-17T15:18+04:00",
   "updated_by": "OwnerTeammember",
   "control": {
     "epoch": 2,
     "coordinator": "Codex (TeamCoordinator; onboarded in CL#16)",
     "owner_words": "You will be Ownerteammember ... | Another Codex agent who is already on board in the landing page | (selected) Same Codex.",
     "control_post": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187632",
-    "hold": null,
+    "hold": {"since": "2026-10-17 (Owner chat, Claude session bd6b17ad)", "owner_words": "Hold. Stay read-in, do nothing until I say.", "scope": "all projects", "lifted_for": ["phase 0 role-change records (\"proceed\")", "P1 may start with the plan (\"go\" -> \"ok\")"], "still_held": "agent-chat sends, operational cycles, watcher, new agents, product work outside the lifts", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187495", "lifts_on": "Owner words"},
     "grants": [
       {
         "actor": "OwnerTeammember (Claude session)",
@@ -29,7 +29,7 @@
     "since": "2026-10-17T15:08+04:00",
     "history": [{"epoch": 1, "coordinator": "Claude session (combined OwnerTeammember + TeamCoordinator)", "owner_words": "start P2 (#408 Handover Master)", "control_post": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6230122085", "ended": "2026-10-17T15:08+04:00"}]
   },
-  "roles": {"owner_teammember": "Claude session (role only; no sends to agent chats)", "team_coordinator": "Codex (CL#16); observes first, acknowledges in #1; skill update to Team protocol v3.1 + Oracle rule pending in #16", "oracle": "not yet named (Owner nominates per project; advisory to the TeamCoordinator only; may be none)", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187495"},
+  "roles": {"owner_teammember": "Claude session (role only; no sends to agent chats)", "team_coordinator": "Codex (CL#16); observes first, acknowledges in #1; skill update to Team protocol v3.1 + Oracle rule pending in #16", "oracle": "Claude, acting Oracle (Owner: \"for now you step in shoes of oracle, authorized. oracle will review later\"); advice tagged [ORACLE · acting] to the TeamCoordinator only; source https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233265443", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187495"},
   "agents": [],
   "leases": [
     {
