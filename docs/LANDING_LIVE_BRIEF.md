@@ -25,6 +25,22 @@
 - **Next action:** nothing runs until the Owner names new landing work and lifts the HOLD. Then the native route: a successor from the corrected 1a, its own-words 1b, then a fresh writer-lease remap.
 
 
+
+## 1b. Operations: who may do what (17 Oct 2026)
+
+Each step has its own actor and proof. **A doer never verifies its own work, and nobody accepts their own work.**
+
+| Step | Who | Authority source | Stops it | Proof that it happened |
+|---|---|---|---|---|
+| **Approve** a landing-live next step | Owner, or OwnerTeammember ("OTM-approved", logged in #1) | Owner 17 Oct 03:5x (only critical projects need the Owner): [#1](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1); registry `criticality: normal` | an Owner HOLD (registry `control.hold`), Owner revocation | an #1 line naming the step and its basis |
+| **Act / implement** | the current writer-lease holder only. **There is none now** (L1 g2 retired; `leases[0].released`) | a registry lease + a GO on #22 | HOLD, lease release, scope beyond the GO | TASK EVIDENCE v2 on #22 at an exact head |
+| **Deliver** to an agent chat | TeamCoordinator/OwnerTeammember only (the single deliverer). Codex never delivers | #1 control (epoch 1) + Owner 17 Oct (Codex = planner/reviewer) | HOLD (no sends now) | Next Move states: SENT_TO_CHAT, then PICKED_UP. Publishing on GitHub is not delivery |
+| **Independently verify** | a fresh checker that is not the doer (Sonnet checker per PR), or Codex as reviewer | [#1 6190309680](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6190309680) (fresh checker) | — | a verdict comment at the exact head; CI at that head |
+| **Merge** | OwnerTeammember, after an independent PASS at the exact head | [#1 6193950778](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6193950778) ("merge approved further", landing-only, revocable) | HOLD on merges, revocation, a failed check | the merge SHA on main |
+| **Accept** (product, academic, release, rights) | **Owner only**, or a delegate the Owner names for an exact scope | an explicit acceptance record (e.g. [#21 6208531667](https://github.com/reallakshman19/CoordinatorLandingpage/issues/21#issuecomment-6208531667), WP0–WP9 only) | — | the acceptance record and its scope. Later work does not inherit it |
+
+**Done ≠ verified ≠ accepted.** An action that happened but whose check failed is **"done, not verified"**, not "didn't happen". Example: deploy run 39000177607 deployed successfully, then its readback check failed. The served state for that run is UNKNOWN; later runs succeeded. Report the effect and the failed verification separately.
+
 ## 2. History index — preserve causality, not just PR totals
 
 ### 2.1 Owner amendments and decisions

@@ -14,7 +14,7 @@
     "owner_words": "read this issue .../issues/21 . improvise, lauch a new agent in your tab. you will be teamcoodinator and ownerteammember",
     "since": "2026-10-15T14:42+04:00",
     "control_post": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6190161629",
-    "hold": null,
+    "hold": {"since": "2026-10-17T04:1x+04:00", "owner_words": "HOLD", "scope": "operational: no chat sends or coordinator cycles; read-only work and Owner-requested record/doc fixes allowed", "lifts_on": "Owner words (e.g. resume)", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6229575580", "previous": null},
     "known_gap": "no independent checker inside the team; C15 needs an Owner-named checker"
   },
   "workflow": {
