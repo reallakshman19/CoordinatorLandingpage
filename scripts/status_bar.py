@@ -6,6 +6,7 @@ records, including retirement history and conflicting identity declarations.
 """
 from datetime import datetime, timedelta, timezone
 import re
+from landing_build.continuity import derive_continuity
 
 PROJECT_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$")
 ID8 = re.compile(r"^[0-9a-f]{8}$")
@@ -284,7 +285,7 @@ def derive_status(row, registry, project_view, now=None):
             "timer": timer, "browser": browser}
 
 
-def build_status_bar(registries,project_views,now=None):
+def build_status_bar(registries,project_views,now=None,include_continuity=True):
     """Two-pass dependency rollup; no child's light overrides a dependent."""
     now=now or datetime.now(timezone.utc)
     if len(registries)!=len(set(registries)):
@@ -321,6 +322,8 @@ def build_status_bar(registries,project_views,now=None):
         coordinator = _control_record(registry, now)
         projects.append({
             "project":project,"light":light,"reason":reason,
+            **({"continuity": derive_continuity(registry, view)}
+               if include_continuity else {}),
             "coordinator":coordinator,
             "complete":bool(active) and all(a["complete"] for a in active),
             "dependencies":{"blocked":blocked,"unknown":unknown,

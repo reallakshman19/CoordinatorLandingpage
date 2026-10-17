@@ -15,6 +15,39 @@ function wp16Row(body,cells,key) {
   }
   body.appendChild(tr);
 }
+function wp16ContinuityCell(report, repository) {
+  const target = el('div', 'wp16-continuity');
+  const keys = ['intent_linked','originals_declared','owner_input_captured',
+                'lineage_verified','head_fresh'];
+  const valid = report && typeof report === 'object' &&
+    ['green','red','grey'].includes(report.light);
+  const badge = wp16Light(valid ? report.light : 'grey');
+  badge.classList.add('wp16-continuity-light');
+  target.appendChild(badge);
+  const inputs = valid && report.inputs && typeof report.inputs === 'object'
+    ? report.inputs : {};
+  for (const key of keys) {
+    const input = inputs[key] || {state:'UNKNOWN'};
+    const row = el('div', 'wp16-continuity-input');
+    const st = ['OK','PROBLEM','UNKNOWN'].includes(input.state)
+      ? input.state : 'UNKNOWN';
+    row.appendChild(el('strong', '', key.replaceAll('_',' ') + ': '));
+    row.appendChild(el('span', st === 'PROBLEM' ? 'wp16-red' : 'wp16-grey', st));
+    const missing = Array.isArray(input.missing) ? input.missing : [];
+    if (missing.length) row.appendChild(el('span', 'wp16-red',
+      ' · MISSING: ' + missing.join(', ')));
+    const source = allowedExternalLink(input.source, repository) ||
+      allowedExternalLink(input.source, REPO);
+    if (source) {
+      const link = el('a', 'wp16-continuity-source', ' · source');
+      link.href = source; link.target = '_blank'; link.rel = 'noopener noreferrer';
+      row.appendChild(link);
+    }
+    target.appendChild(row);
+  }
+  return target;
+}
+
 function wp16CoordinatorCell(record){
   const info=record && typeof record==='object'?record:{};
   const valid=['NORMAL','ACTING'].includes(info.mode) &&
@@ -62,7 +95,9 @@ async function renderStatusBar(app){
       String(cv.projected??0)+'/'+String(cv.expected??'?'),
       p.active_count??0,
       (p.dependencies?.blocked||[]).concat(p.dependencies?.unknown||[]).join(', ')||'none verified',
-      p.reason||'unknown',wp16CoordinatorCell(p.coordinator)]);
+      p.reason||'unknown',wp16CoordinatorCell(p.coordinator),
+      wp16ContinuityCell(p.continuity,
+        state.projects.find(record => record.project === p.project)?.repository)]);
   }
   for(const r of source.instances){
     let link=el('span','note','no registered id8');

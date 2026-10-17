@@ -731,3 +731,9 @@ tr:hover td { background: var(--bg-2); }
 .wp16-yellow {color:var(--warning, #854d0e);}
 .wp16-red {color:var(--danger, #b91c1c);}
 .wp16-grey {color:var(--text-3, #64748b);}
+
+/* WP-L6: missing L4 evidence stays neutral, never styled as success. */
+.l4-unknown { color: var(--text-3); border-left: 3px solid var(--border); padding-left: 7px; }
+.wp16-continuity { min-width: 215px; display: grid; gap: 5px; }
+.wp16-continuity-input { font-size: .76rem; overflow-wrap: anywhere; }
+.wp16-continuity-source { padding-left: 3px; }
