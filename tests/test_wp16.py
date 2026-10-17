@@ -186,6 +186,92 @@ class WP16StatusBar(unittest.TestCase):
             self.assertEqual({p["project"]:p["status_bar"] for p in projects},
                              {p["project"]:p for p in doc["projects"]})
 
+
+    def test_17_control_record_normal_and_acting(self):
+        reg=registry(); reg["control"]["epoch"]=4
+        ref="https://github.com/acme/demo/issues/1#issuecomment-123"
+        for mode,holder in (("NORMAL","Codex"),("ACTING","OwnerTeammember")):
+            with self.subTest(mode=mode):
+                reg["control"]["current_coordinator"]={
+                    "holder":holder,"mode":mode,"epoch":4,"control_ref":ref,
+                    "effective_at":"2026-10-16T17:30:00Z"}
+                out=sb.build_status_bar({"demo":reg},{},NOW)
+                self.assertEqual(out["projects"][0]["coordinator"]["holder"],holder)
+                self.assertEqual(out["projects"][0]["coordinator"]["mode"],mode)
+                self.assertEqual(out["projects"][0]["coordinator"]["control_ref"],ref)
+
+    def test_18_missing_invalid_or_unverified_coordinator_is_unknown(self):
+        reg=registry(); reg["control"]["epoch"]=4
+        self.assertEqual(sb.build_status_bar({"demo":reg},{},NOW)
+                         ["projects"][0]["coordinator"]["mode"],"UNKNOWN")
+        record={"holder":"OwnerTeammember","mode":"ACTING","epoch":4,
+                "control_ref":"https://github.com/acme/demo/issues/1#issuecomment-123",
+                "effective_at":"2026-10-16T17:30:00Z"}
+        for patch in ({"verified":False},{"epoch":3},
+                      {"control_ref":"not a CONTROL link"},
+                      {"effective_at":"2026-10-17T12:00:00Z"}):
+            with self.subTest(patch=patch):
+                reg["control"]["current_coordinator"]={**record,**patch}
+                self.assertEqual(sb.build_status_bar({"demo":reg},{},NOW)
+                                 ["projects"][0]["coordinator"]["mode"],"UNKNOWN")
+
+    def test_19_verified_timer_browser_additive_without_light_changes(self):
+        reg=registry(); agent=reg["agents"][0]
+        base=sb.build_status_bar({"demo":reg},{"demo":view()},NOW)
+        ref="https://github.com/acme/demo/issues/1#issuecomment-123"
+        agent["timer_observation"]={"state":"ACTIVE","last_tick":"2026-10-16T17:50:00Z",
+            "next_due":"2026-10-16T18:20:00Z","checked_at":"2026-10-16T17:55:00Z",
+            "source_ref":ref,"verified":True}
+        agent["browser_observation"]={"result":"UP","checked_at":"2026-10-16T17:56:00Z",
+                                     "source_ref":ref,"verified":True}
+        out=sb.build_status_bar({"demo":reg},{"demo":view()},NOW)
+        self.assertEqual(out["instances"][0]["timer"]["state"],"ACTIVE")
+        self.assertEqual(out["instances"][0]["timer"]["next_due"],"2026-10-16T18:20:00+00:00")
+        self.assertEqual(out["instances"][0]["browser"]["result"],"UP")
+        self.assertEqual(out["instances"][0]["browser"]["checked_at"],"2026-10-16T17:56:00+00:00")
+        self.assertEqual(out["instances"][0]["light"],base["instances"][0]["light"])
+        self.assertEqual(out["coverage"],base["coverage"])
+
+    def test_20_missing_stale_unverified_never_claims_active_or_up(self):
+        reg=registry(); agent=reg["agents"][0]
+        ref="https://github.com/acme/demo/issues/1#issuecomment-123"
+        def instance():
+            return sb.build_status_bar({"demo":reg},{},NOW)["instances"][0]
+        self.assertEqual(instance()["timer"]["state"],"UNKNOWN")
+        self.assertEqual(instance()["browser"]["result"],"UNKNOWN")
+        for checked,verified,source in (
+            ("2026-10-16T16:50:00Z",True,ref),
+            ("2026-10-16T17:55:00Z",False,ref),
+            ("2026-10-16T17:55:00Z",True,"untrusted")):
+            agent["timer_observation"]={"state":"ACTIVE","checked_at":checked,
+                "verified":verified,"source_ref":source}
+            agent["browser_observation"]={"result":"UP","checked_at":checked,
+                "verified":verified,"source_ref":source}
+            self.assertEqual(instance()["timer"]["state"],"UNKNOWN")
+            self.assertEqual(instance()["browser"]["result"],"UNKNOWN")
+        agent["timer_observation"]["state"]="PAUSED"
+        agent["timer_observation"].update(checked_at="2026-10-16T17:55:00Z",
+                                           verified=True,source_ref=ref)
+        self.assertEqual(instance()["timer"]["state"],"PAUSED")
+
+    def test_21_builder_passes_registry_control_and_observations(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            for project in PROJECTS:
+                target=root/"logs"/project; target.mkdir(parents=True)
+                reg=json.loads((ROOT/"logs"/project/"registry.json").read_text())
+                if project=="landing-live":
+                    reg["control"]["current_coordinator"]={
+                        "holder":"OwnerTeammember","mode":"ACTING",
+                        "epoch":reg["control"]["epoch"],
+                        "control_ref":"https://github.com/acme/demo/issues/1#issuecomment-123",
+                        "effective_at":"2026-10-16T17:00:00Z"}
+                (target/"registry.json").write_text(json.dumps(reg))
+            build_data.build_all(root,root/"out",cache_dir=root/"cache")
+            projected=json.loads((root/"out"/"status-bar.json").read_text())
+            target=next(p for p in projected["projects"] if p["project"]=="landing-live")
+            self.assertEqual(target["coordinator"]["mode"],"ACTING")
+
 class WP16PinnedBase(unittest.TestCase):
     """Old PR #50 publisher fails these exact two assertions (0 ERROR)."""
     def test_wp16_pinned_registry_projection_absent(self):
