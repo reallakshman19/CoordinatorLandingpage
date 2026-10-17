@@ -6,8 +6,8 @@
   "criticality_owner_words": "landing normal, proceed implementation (Owner, 16 Oct ~19:4x)",
   "next_move": {"pilot": true, "approval_required": true, "spec": "protocol/NEXT_MOVE_v1.md", "owner_words": "review cycle is over. start planning and implement."},
   "parent_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/21",
-  "updated": "2026-10-17T15:51+04:00",
-  "updated_by": "OwnerTeammember",
+  "updated": "2026-10-17T16:18+04:00",
+  "updated_by": "TeamCoordinator (source-bound g3 1b publication state; authority unchanged)",
   "control": {
     "epoch": 2,
     "coordinator": "Codex (TeamCoordinator; onboarded in CL#16)",
@@ -26,7 +26,7 @@
       "GO / FIX / HOLD",
       "next slice"
     ],
-    "current": "P1 #62: L1 g3 01a149bf launched; read-only native BuddyRunner1.7 investigation1b on #64. Product implementation/adoption/custody not yet qualified; g2 lease remains released. Common408/409 remain held; UEM parked.", "previous": "WP0-WP4 merged (#24-#28); next WP5 + F7 Owner round trip"
+    "current": "P1 #62: L1 g3 01a149bf launched; native BuddyRunner1.7 1b #64/6233766025 hash/readback verified; OTM qualification/final2 pending. Product implementation/custody not yet released; g2 lease remains released. Common408/409 remain held; UEM parked.", "previous": "WP0-WP4 merged (#24-#28); next WP5 + F7 Owner round trip"
   },
   "agents": [
     {
@@ -53,7 +53,7 @@
       "role": "implementer",
       "generation": 3,
       "chat_id8": "01a149bf",
-      "status": "INVESTIGATING BuddyRunner1.7 1b; native dispatch/pickup observed; adoption UNVERIFIED; product implementation held pending qualified1b/final2/custody",
+      "status": "1b PUBLISHED/hash-readback verified; native initial turn COMPLETE/idle; OTM qualification and G1 final2/custody pending; product implementation not released",
       "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64",
       "native_route": "codex-local",
       "instance_sha256": "22730a77de353748ba751af60370f964764abc0f3cb359d33e11e0d8d913ea0c",
@@ -62,13 +62,16 @@
       "handover": {
         "method": "BuddyRunner1.7",
         "key": "landing-live-L1-g2-to-g3",
-        "phase": "1b_IN_PROGRESS",
+        "phase": "1b_SUBMITTED_QUALIFICATION_PENDING",
+        "phase1b": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233766025",
+        "phase1b_sha256": "89d8945b06958a3079f3cdcfadce34d736e0bd86b91758d8154cca315e398de9",
+        "qualification_request": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233774751",
         "predecessor": "6ad1a045",
         "phase1a": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6226735852",
         "correction": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6229302006"
       },
       "execution_mode": "read_only",
-      "onboarded": "PENDING actual own-words source-bound1b; no writer lease",
+      "onboarded": "Own-source/role adoption PUBLISHED and provider/hash verified; OTM qualification PENDING; no writer lease",
       "branch": null,
       "timer": "NOT_ARMED"
     }
