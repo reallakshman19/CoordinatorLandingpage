@@ -3,13 +3,13 @@
   "protocol": "Team protocol v3.0 (protocol/TEAM_PROTOCOL.md), alongside reallakshman19/Common AGENTS.md and the native contracts",
   "repository": "reallakshman19/Common",
   "parent_issue": "https://github.com/reallakshman19/Common/issues/408",
-  "updated": "2026-10-17T09:3x+04:00",
+  "updated": "2026-10-17T15:08+04:00",
   "updated_by": "OwnerTeammember",
   "control": {
-    "epoch": 1,
-    "coordinator": "Claude session (combined OwnerTeammember + TeamCoordinator)",
-    "owner_words": "start P2 (#408 Handover Master)",
-    "control_post": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6230122085",
+    "epoch": 2,
+    "coordinator": "Codex (TeamCoordinator; onboarded in CL#16)",
+    "owner_words": "You will be Ownerteammember ... | Another Codex agent who is already on board in the landing page | (selected) Same Codex.",
+    "control_post": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187632",
     "hold": null,
     "grants": [
       {
@@ -25,8 +25,11 @@
         "since": "2026-10-17T09:3x+04:00",
         "until": "end of #408 scope or Owner revocation"
       }
-    ]
+    ],
+    "since": "2026-10-17T15:08+04:00",
+    "history": [{"epoch": 1, "coordinator": "Claude session (combined OwnerTeammember + TeamCoordinator)", "owner_words": "start P2 (#408 Handover Master)", "control_post": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6230122085", "ended": "2026-10-17T15:08+04:00"}]
   },
+  "roles": {"owner_teammember": "Claude session (role only; no sends to agent chats)", "team_coordinator": "Codex (CL#16); observes first, acknowledges in #1; skill update to Team protocol v3.1 + Oracle rule pending in #16", "oracle": "not yet named (Owner nominates per project; advisory to the TeamCoordinator only; may be none)", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187495"},
   "agents": [],
   "leases": [
     {

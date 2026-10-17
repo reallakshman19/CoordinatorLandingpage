@@ -6,17 +6,19 @@
   "criticality_owner_words": "landing normal, proceed implementation (Owner, 16 Oct ~19:4x)",
   "next_move": {"pilot": true, "approval_required": true, "spec": "protocol/NEXT_MOVE_v1.md", "owner_words": "review cycle is over. start planning and implement."},
   "parent_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/21",
-  "updated": "2026-10-16T14:14:00+04:00",
-  "updated_by": "TeamCoordinator/OwnerTeammember (Claude session)",
+  "updated": "2026-10-17T15:08+04:00",
+  "updated_by": "OwnerTeammember",
   "control": {
-    "epoch": 1,
-    "coordinator": "Claude session (dual role with OwnerTeammember)",
-    "owner_words": "read this issue .../issues/21 . improvise, lauch a new agent in your tab. you will be teamcoodinator and ownerteammember",
-    "since": "2026-10-15T14:42+04:00",
-    "control_post": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6190161629",
+    "epoch": 2,
+    "coordinator": "Codex (TeamCoordinator; onboarded in CL#16)",
+    "owner_words": "You will be Ownerteammember ... | Another Codex agent who is already on board in the landing page | (selected) Same Codex.",
+    "since": "2026-10-17T15:08+04:00",
+    "control_post": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187632",
     "hold": null, "hold_history": [{"since": "2026-10-17T04:1x+04:00", "owner_words": "HOLD", "scope": "operational: no chat sends or coordinator cycles; read-only work and Owner-requested record/doc fixes allowed", "lifts_on": "Owner words (e.g. resume)", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6229575580", "previous": null, "lifted": "2026-10-17T09:09+04:00", "lifted_words": "No HOLD, continue"}],
-    "known_gap": "no independent checker inside the team; C15 needs an Owner-named checker"
+    "known_gap": "no independent checker inside the team; C15 needs an Owner-named checker",
+    "history": [{"epoch": 1, "coordinator": "Claude session (dual role with OwnerTeammember)", "owner_words": "read this issue .../issues/21 . improvise, lauch a new agent in your tab. you will be teamcoodinator and ownerteammember", "since": "2026-10-15T14:42+04:00", "control_post": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6190161629", "ended": "2026-10-17T15:08+04:00"}]
   },
+  "roles": {"owner_teammember": "Claude session (role only; no sends to agent chats)", "team_coordinator": "Codex (CL#16); observes first, acknowledges in #1; skill update to Team protocol v3.1 + Oracle rule pending in #16", "oracle": "not yet named (Owner nominates per project; advisory to the TeamCoordinator only; may be none)", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187495"},
   "workflow": {
     "loop": [
       "L1 posts TASK EVIDENCE v2 in #22",
