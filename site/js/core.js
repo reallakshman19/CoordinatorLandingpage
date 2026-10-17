@@ -233,6 +233,12 @@ async function render() {
   switch (view) {
     case 'home': await renderHome(app); break;
     case 'project': await renderProject(app, arg1); break;
+    case 'understanding': await renderL4Understanding(app, arg1); break;
+    case 'people': await renderL4People(app, arg1); break;
+    case 'engineering-history': await renderL4EngineeringHistory(app, arg1); break;
+    case 'sources': await renderL4Sources(app, arg1); break;
+    case 'improvements': await renderL4Improvements(app, arg1); break;
+    case 'changeover': await renderL4Changeover(app, arg1); break;
     case 'agent': await renderAgent(app, arg1, arg2); break;
     case 'timeline': await renderTimeline(app, arg1); break;
     case 'next-moves': await renderNextMoves(app); break;
