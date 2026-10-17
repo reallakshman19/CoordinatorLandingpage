@@ -10,7 +10,7 @@
     "coordinator": "Codex (TeamCoordinator; onboarded in CL#16)",
     "owner_words": "You will be Ownerteammember ... | Another Codex agent who is already on board in the landing page | (selected) Same Codex.",
     "control_post": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187632",
-    "hold": {"since": "2026-10-17 (Owner chat, Claude session bd6b17ad)", "owner_words": "Hold. Stay read-in, do nothing until I say.", "scope": "all projects", "lifted_for": ["phase 0 role-change records (\"proceed\")", "P1 may start with the plan (\"go\" -> \"ok\")"], "still_held": "agent-chat sends, operational cycles, watcher, new agents, product work outside the lifts", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187495", "lifts_on": "Owner words"},
+    "hold": null, "hold_history": [{"since": "2026-10-17 (Owner chat, Claude session bd6b17ad)", "owner_words": "Hold. Stay read-in, do nothing until I say.", "scope": "all projects", "lifted_for": ["phase 0 role-change records (\"proceed\")", "P1 may start with the plan (\"go\" -> \"ok\")"], "still_held": "agent-chat sends, operational cycles, watcher, new agents, product work outside the lifts", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187495", "lifts_on": "Owner words", "lifted": "2026-10-17T21:16+04:00", "lifted_words": "in progress", "lifted_source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6237405204", "noncritical_delegation": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6238268372"}],
     "grants": [
       {
         "actor": "OwnerTeammember (Claude session)",
