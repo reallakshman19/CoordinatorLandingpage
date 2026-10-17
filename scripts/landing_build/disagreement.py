@@ -10,34 +10,71 @@ _WORDS = {"HOLD": "HOLD", "BLOCKED": "BLOCKED", "IN PROGRESS": "IN PROGRESS",
 
 
 def latest_issue_status(registry, issue, control_repo):
-    ref = validated_issue_ref(registry.get("status_comment") or
-                              registry.get("status_issue"), registry, control_repo)
-    if not ref or not isinstance(issue, dict):
+    """Use registered source first; never let an unrelated quote override it."""
+    if not isinstance(issue, dict):
         return None
+    source = registry.get("status_comment") or registry.get("status_issue")
+    ref = validated_issue_ref(source, registry, control_repo) if source else None
+    if source and not ref:
+        return None
+    if ref is None:
+        # Fallback only when no status source was registered; retain the
+        # provider-verified repository/issue identity, not a number alone.
+        repo = issue.get("repository")
+        if not isinstance(repo, str):
+            return None
+        ref = validated_issue_ref(issue.get("html_url"),
+                                  {"repository": registry.get("repository")},
+                                  control_repo)
+        if not ref:
+            return None
+    repo, number = ref
     if (issue.get("repository") and
-            issue["repository"].lower() != ref[0].lower()):
+            str(issue["repository"]).lower() != repo.lower()):
         return None
-    url = f"https://github.com/{ref[0]}/issues/{ref[1]}"
-    candidates = []
-    body = issue.get("body")
-    if isinstance(body, str):
-        for match in _STATUS.finditer(body):
-            candidates.append(("", 0, match.group(1).strip(), url))
-    for entry in issue.get("comments", []):
-        if not isinstance(entry, dict) or not isinstance(entry.get("body"), str):
-            continue
-        stamp = entry.get("created_at") or ""
-        cid = entry.get("id")
-        for match in _STATUS.finditer(entry["body"]):
-            candidates.append((stamp, cid if isinstance(cid, int) else 0,
-                               match.group(1).strip(),
-                               url + (f"#issuecomment-{cid}" if isinstance(cid, int) else "")))
-    if not candidates:
+    if issue.get("number") not in (None, number):
         return None
-    _, _, raw, link = max(candidates, key=lambda row: (row[0], row[1]))
-    return {"word": _WORDS.get(" ".join(raw.upper().split())), "raw": raw,
-            "url": link}
+    url = f"https://github.com/{repo}/issues/{number}"
 
+    def from_text(body, permalink):
+        if not isinstance(body, str):
+            return None
+        matches = list(_STATUS.finditer(body))
+        if not matches:
+            return None
+        raw = matches[-1].group(1).strip()  # Last STATE in this source wins.
+        return {"word": _WORDS.get(" ".join(raw.upper().split())),
+                "raw": raw, "url": permalink}
+
+    pinned = re.search(r"#issuecomment-(\d+)$", str(source or ""))
+    if pinned:
+        for entry in issue.get("comments", []):
+            if isinstance(entry, dict) and str(entry.get("id")) == pinned.group(1):
+                return from_text(entry.get("body"),
+                                 url + "#issuecomment-" + pinned.group(1))
+        return None  # Missing registered comment is not replaced by a quote.
+
+    # The registered status-issue body is authoritative when it exists.
+    body = issue.get("body")
+    if source and isinstance(body, str) and body.strip():
+        return from_text(body, url)
+
+    # No registered status text: newest STATE observation is a fallback only.
+    candidates = []
+    if isinstance(body, str):
+        result = from_text(body, url)
+        if result:
+            candidates.append(("", 0, result))
+    for entry in issue.get("comments", []):
+        if not isinstance(entry, dict):
+            continue
+        cid = entry.get("id")
+        link = url + (f"#issuecomment-{cid}" if isinstance(cid, int) else "")
+        result = from_text(entry.get("body"), link)
+        if result:
+            candidates.append((entry.get("created_at") or "",
+                               cid if isinstance(cid, int) else 0, result))
+    return max(candidates, key=lambda x: (x[0], x[1]))[2] if candidates else None
 
 def project_disagreement(registry, status_issue, pr_snapshots, control_repo):
     """Compare only verified registered PR snapshots against explicit issue text."""
