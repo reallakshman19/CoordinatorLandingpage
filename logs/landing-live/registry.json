@@ -59,7 +59,8 @@
       "instance_sha256": "22730a77de353748ba751af60370f964764abc0f3cb359d33e11e0d8d913ea0c",
       "assignment_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64",
       "authority_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233547571",
-      "handover": {
+      "handover": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233766025",
+      "handover_detail": {
         "method": "BuddyRunner1.7",
         "key": "landing-live-L1-g2-to-g3",
         "phase": "1b_SUBMITTED_QUALIFICATION_PENDING",
