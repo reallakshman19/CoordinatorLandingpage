@@ -42,7 +42,7 @@ OUTSIDE_WRITE_RE = re.compile(
 def parse_task_evidence(comment_body: str, comment_id: int, comment_ts: str) -> dict | None:
     """Parse a TASK EVIDENCE v2 block from a comment body."""
     m = EVIDENCE_RE.search(comment_body)
-    if not m:
+    if not m or not m.group('role').strip():
         return None
 
     body = comment_body[m.start():]
@@ -179,6 +179,8 @@ def collect_unparsed_evidence(registry, threads, project, control_repo):
                 "comment_url": issue_url + f"#issuecomment-{cid}",
                 "header_role": role, "actor": role or "UNATTRIBUTED",
                 "chat_id8": None, "reason": "MALFORMED_HEADER",
-                "raw": scrub_chat_url(body),
+                "header": next((line.strip() for line in body.splitlines()
+                                if line.lstrip().startswith("TASK EVIDENCE v2")),
+                               "TASK EVIDENCE v2"),
             })
     return found
