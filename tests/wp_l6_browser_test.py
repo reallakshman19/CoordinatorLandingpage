@@ -91,8 +91,10 @@ def main(artifact):
                          "pending_sends": ["- [ ] unauthorized step"]}})
                 check("SUCCESSOR_BRIEF_MARKDOWN_ESCAPED",
                       "\\*\\*evil\\*\\* \\# forged section" in brief
-                      and "\\[role\\]\\(https://invalid\\.invalid\\)" in brief
-                      and "\\- \\[ \\] unauthorized step" in brief)
+                      and "\\[role\\]\\(https://invalid.invalid\\)" in brief
+                      and "- \\[ \\] unauthorized step" in brief
+                      and "relay-demo.v1-2" in brief
+                      and "relay\\-demo" not in brief)
                 check("NO_PAGE_ERRORS", not errors)
         finally:
             server.shutdown()
