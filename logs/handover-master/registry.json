@@ -33,7 +33,7 @@
   ],
   "workflow": {
     "loop": ["HM-01 contract (frozen v2, Common #408 6230181135)", "OTM implements on a draft PR", "fresh independent checker at the exact head", "OTM merges on PASS", "TASK EVIDENCE v2 on #408"],
-    "current": "HM-01 contract v2 frozen; HM-03/HM-04 starting"
+    "current": "HM-01/03/04 merged (Common PR #410 -> b7880895); HM-02 guide merged (PR #411 -> f2d4b6fa); HM-05 live recovery NOT_RUN (needs a real authorised successor); HM-06 closure note next", "previous": "HM-01 contract v2 frozen; HM-03/HM-04 starting"
   },
   "status_issue": "https://github.com/reallakshman19/Common/issues/408"
 }
