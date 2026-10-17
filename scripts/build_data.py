@@ -468,6 +468,8 @@ def build_project_data(root: Path, project_name: str, registry: dict,
     child_progress = _wp12_children(registry, child_observations)
     evidence_head_report = _wp12_evidence_head(
         registry.get('evidence'), pr_observation, registry.get('repository'))
+    disagreement = project_disagreement(registry, status_thread or {},
+                                        pr_observation, owner_json.REPO)
     capture = source_meta if isinstance(source_meta, dict) else None
     status_pointer = registry.get('status_comment') or registry.get('status_issue') or ''
     pinned = re.search(r'#issuecomment-(\d+)', status_pointer)
@@ -497,6 +499,7 @@ def build_project_data(root: Path, project_name: str, registry: dict,
         'reporting_tree': _wp12_tree(agents),
         'child_progress': child_progress,
         'evidence_head_status': evidence_head_report,
+        **({'status_merge_disagreement': disagreement} if disagreement is not None else {}),
         'source_capture_at': source_capture_at,
         'source_health': health,
         'source_refs': {
@@ -1000,10 +1003,6 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
         )
         if isinstance(lineage_snapshot, list) and lineage_snapshot:
             project_data['lineage'] = lineage_snapshot
-        disagreement = project_disagreement(registry, status_thread,
-                                            pr_snapshot, owner_json.REPO)
-        if disagreement is not None:
-            project_data['status_merge_disagreement'] = disagreement
         # WP13 publisher validates read-only Next Move source records. Nothing
         # is created or altered under logs/; invalid records are quarantined.
         agent_heads = {
