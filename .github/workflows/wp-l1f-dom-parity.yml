@@ -97,7 +97,7 @@ jobs:
                       browser=pw.chromium.launch(headless=True)
                       pages=[browser.new_page(viewport={'width':1300,'height':850})
                              for _ in range(2)]
-                      pageerrors=${{],[]]
+                      pageerrors=[[],[]]
                       for k,p in enumerate(pages):
                           p.on('pageerror',lambda error,k=k:pageerrors[k].append(str(error)))
                       for route in routes:
