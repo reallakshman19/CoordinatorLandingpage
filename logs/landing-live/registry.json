@@ -6,8 +6,8 @@
   "criticality_owner_words": "landing normal, proceed implementation (Owner, 16 Oct ~19:4x)",
   "next_move": {"pilot": true, "approval_required": true, "spec": "protocol/NEXT_MOVE_v1.md", "owner_words": "review cycle is over. start planning and implement."},
   "parent_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/21",
-  "updated": "2026-10-17T16:39:48.000+04:00",
-  "updated_by": "TeamCoordinator; actual Owner first-workpack release, qualification/final2 and fresh bounded lease",
+  "updated": "2026-10-17T16:55:29.000+04:00",
+  "updated_by": "TeamCoordinator; Owner FTC-066/067 Coder remap/evidence-route takeover, no scope expansion",
   "control": {
     "epoch": 2,
     "coordinator": "Codex (TeamCoordinator; onboarded in CL#16)",
@@ -21,14 +21,40 @@
   "roles": {"owner_teammember": "Claude session (role only; no sends to agent chats)", "team_coordinator": "Codex (TeamCoordinator epoch2); graded coordinator-protocol3.40.0 installed; landing-live-only operations resumed under #1 6233547571", "oracle": "Claude, acting Oracle (Owner: \"for now you step in shoes of oracle, authorized. oracle will review later\"); advice tagged [ORACLE · acting] to the TeamCoordinator only; source https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233265443", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187495"},
   "workflow": {
     "loop": [
-      "L1 g3 posts TASK EVIDENCE v2 in #64; predecessor evidence remains #22",
+      "Coder6ad36e4d native evidence to #64, or TC unchanged NOT_POSTED relay; 01a149bf read-only history retained; predecessor #22",
       "coordinator checks against GitHub",
       "GO / FIX / HOLD",
       "next slice"
     ],
-    "current": "P1 #62 G1/WP-L2(a) only: qualified g3 01a149bf, final2 #64/6233973647 CLOSED; fresh exact-path lease. CAPABILITY no product writes, then conditional CHAT_NA parser fix only. Actual native pickup confirmed; stopped before clone/tests for explicit Owner Coder designation; no broad split. Common408/409 remain held, UEM parked.", "previous": "WP0-WP4 merged (#24-#28); next WP5 + F7 Owner round trip"
+    "current": "P1 #62 WP-L2(a) Coder remapped to Owner-selected6ad36e4d under FTC-066/067; same staged CAPABILITY then conditional CHAT_NA, exact two paths and new reserved branch. First package OTM SENT_TO_CHAT reported, pickup/StageA/results UNVERIFIED. 01a149bf read-only, no writer lease. TC owns all further delivery; no resend. Common408/409 held; UEM parked.", "previous": "WP0-WP4 merged (#24-#28); next WP5 + F7 Owner round trip"
   },
   "agents": [
+    {
+      "alias": "P1 Coder (Owner-selected)",
+      "role": "coder",
+      "chat_id8": "6ad36e4d",
+      "status": "waiting — first package SENT_TO_CHAT by authorized OTM stand-in16:51; content pickup, own-instance grounding, StageA and test results UNVERIFIED; no inferred green",
+      "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64",
+      "native_route": "chatgpt-browser",
+      "instance_sha256": null,
+      "instance_identity_state": "Owner-designated id8 only; full private canonical URL/provider tab identity NOT_CAPTURED by TC; not derived from truncated id8",
+      "assignment_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6234121974",
+      "authority_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6234070001",
+      "direction_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233973647",
+      "execution_mode": "write",
+      "branch": "codex/landing-p1-chat-na-6ad36e4d",
+      "branch_state": "RESERVED; actual creation UNVERIFIED, StageB only after required actual StageA PASS/current custody/own grounding",
+      "workpack_gate": "Same CAPABILITY→conditional CHAT_NA only. StageB conditional on actual no-product-write StageA PASS, matching own role/source/task report and current exclusive lease; no inherited01a149bf adoption/test claims.",
+      "onboarded": "Owner Coder designation and reported chat delivery recorded; actual own-instance source-bound adoption/report UNVERIFIED, not copied from01a149bf",
+      "delivery_owner": "Codex TeamCoordinator CONTROLepoch2 for all further messages. OTM one first-package send only under Owner6234077939, now exhausted.",
+      "delivery_receipt": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6234094738",
+      "delivery_state": "SENT_TO_CHAT — OTM reported; recipient content pickup UNVERIFIED; NEVER resend first package",
+      "delivery_capability": "TC guarded ChatGPT-browser route NOT_RUN/UNVERIFIED; private full route/identity and native safety checks needed before any later send, no automatic fallback",
+      "publication_scope": "Own source-bound TASK EVIDENCEv2/STATUSv2 and A14 on #64; shared issue filters by actualid8/task/provider evidence identity",
+      "publication_capability": "UNVERIFIED; if unavailable NOT_POSTED in unchanged canonical chat block, TC attributed unchanged relay to#64, never fake own publication",
+      "independent_reviewer": "Claude/OTM non-author review-routing owner; fresh exact-head engineering verdict still required, not Oracle advice",
+      "timer": "NOT_ARMED"
+    },
     {
       "alias": "Agent L1",
       "role": "implementer",
@@ -53,12 +79,12 @@
       "role": "implementer",
       "generation": 3,
       "chat_id8": "01a149bf",
-      "status": "blocked — workpack native pickup verified; explicit Owner Coder designation required by session policy before clone/tests/code; final2 CLOSED and bounded lease retained",
+      "status": "read-only — FTC-066; not the Owner-designated Coder, no first-workpack writer lease or product execution. Qualified1b/final2 history retained; prior Coder question superseded by Owner-selected6ad36e4d",
       "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64",
       "native_route": "codex-local",
       "instance_sha256": "22730a77de353748ba751af60370f964764abc0f3cb359d33e11e0d8d913ea0c",
       "assignment_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64",
-      "authority_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233960298",
+      "authority_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6234070001",
       "handover": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233973647",
       "handover_detail": {
         "method": "BuddyRunner1.7",
@@ -74,17 +100,39 @@
         "phase1a": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6226735852",
         "correction": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6229302006"
       },
-      "execution_mode": "write",
-      "workpack_gate": "BLOCKED before CAPABILITY: actual native response requests explicit Owner Coder designation for this named session/workpack. No clone/tests/code performed per agent. After real role authority: CAPABILITY no product/tracked write, then conditional CHAT_NA only; no expansion",
+      "execution_mode": "read_only",
+      "workpack_gate": "No clone/tests/code or product writes; former first-workpack Coder assignment withdrawn by FTC-066. Only read-only/reference role; new Coder is6ad36e4d",
       "workpack_pickup_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6234004873",
       "independent_reviewer": "Claude/OwnerTeammember, non-author review-routing owner; actual fresh exact-head engineering verdict pending, not the Oracle advice",
-      "onboarded": "QUALIFIED #64/6233814152; final2 CLOSED #64/6233973647; fresh first-workpack lease and actual native pickup verified; separate Coder role gate outstanding",
+      "onboarded": "Native1b QUALIFIED and final2 CLOSED as history; current role READ_ONLY, Coder assignment superseded, no lease",
       "branch": "codex/landing-p1-chat-na-01a149bf",
-      "branch_state": "RESERVED_NOT_CREATED; implementer creates only after no-write capability stage PASS",
+      "branch_state": "WITHDRAWN_NOT_CREATED; reserved01a149bf branch has no current writer grant",
       "timer": "NOT_ARMED"
     }
   ],
   "leases": [
+    {
+      "holder": "Coder6ad36e4d",
+      "branches": "codex/landing-p1-chat-na-6ad36e4d",
+      "paths": [
+        "scripts/build_data.py",
+        "tests/test_chat_na.py"
+      ],
+      "granted": "2026-10-17T16:55:29.000+04:00",
+      "authority_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6234070001",
+      "handover_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233973647",
+      "incumbent_stop_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6234004873",
+      "source_sha": "10970e956e7f7256676a33519f672507b774b905",
+      "source_parser_blob": "1bb4dd3cb7e10f036d65c633ecc8c567af3b0401",
+      "workpack": "#62 G1/WP-L2(a): CAPABILITY → conditional CHAT_NA",
+      "conditions": "Exclusive. First clean clone/current exact head and unchanged suites, NO product/tracked edits. If PASS, only EVIDENCE_RE/STATUS_RE two regexes no net growth plus new test. Any wider production edit or failed capability stops affected work; report precise gap. No broad split or Common work. New Coder actual own-instance source/task grounding and StageA PASS required before StageB; no inherited native01a149bf qualification. Owner's first package already delivered, not resent.",
+      "independent_reviewer": "Claude/OTM non-author review-routing owner; fresh exact-head verdict required before merge",
+      "ends_on": "First workpack candidate/report or Owner revocation/HOLD; no automatic next slice or lifetime expansion",
+      "remap_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6234121974",
+      "delivery_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6234094738",
+      "inherited_product_basis": "1a982c5a9a68df56f182ce3ce2e1e54da794c549",
+      "remapped_from": "AgentL1g3 01a149bf exact first-workpack lease only, prior grant retained as released history"
+    },
     {
       "holder": "Agent L1 g3 01a149bf",
       "branches": "codex/landing-p1-chat-na-01a149bf",
@@ -101,7 +149,10 @@
       "workpack": "#62 G1/WP-L2(a): CAPABILITY → conditional CHAT_NA",
       "conditions": "Exclusive. First clean clone/current exact head and unchanged suites, NO product/tracked edits. If PASS, only EVIDENCE_RE/STATUS_RE two regexes no net growth plus new test. Any wider production edit or failed capability stops affected work; report precise gap. No broad split or Common work.",
       "independent_reviewer": "Claude/OTM non-author review-routing owner; fresh exact-head verdict required before merge",
-      "ends_on": "First workpack candidate/report or Owner revocation/HOLD; no automatic next slice or lifetime expansion"
+      "ends_on": "First workpack candidate/report or Owner revocation/HOLD; no automatic next slice or lifetime expansion",
+      "released": "2026-10-17T16:55:29.000+04:00",
+      "release_reason": "Owner FTC-066/067 remaps Coder to6ad36e4d; native01a149bf remains read-only, no product work performed per native report",
+      "superseded_by": "Coder6ad36e4d / codex/landing-p1-chat-na-6ad36e4d"
     },
     {
       "holder": "Agent L1 g2",
@@ -119,6 +170,16 @@
     }
   ],
   "decisions": [
+    {
+      "id": "OWNER-CODER-6ad36e4d-WP-L2a",
+      "owner_words": "coder: ChatGPT chat6ad36e4d (Owner designation recorded by OTM); paste it now (first package stand-in only)",
+      "source_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6234070001",
+      "delivery_exception_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6234077939",
+      "delivery_receipt": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6234094738",
+      "direct_instruction": "Owner explicitly instructed TC in current session to implement FTC-066/067, same two paths/stages/new branch and all further delivery",
+      "recorded_at": "2026-10-17T16:55:29.000+04:00",
+      "scope": "#62 WP-L2(a) only;01a149bf read-only; no counter/lifetime/scope reset; Common408/409 HOLD"
+    },
     {
       "id": "OWNER-P1-CHAT-NA-FIRST-WORKPACK",
       "owner_words": "As G1, publish final phase 2 on #64 once, then release only the first workpack to L1 g3 under its fresh lease: a no-write clone-and-test capability check, then the \"chat n/a\" parser fix. Record in #1.",
