@@ -1,6 +1,10 @@
-# Team protocol v3.1 — CoordinatorLandingpage
+# Team protocol v3.2 — CoordinatorLandingpage
 
-Status: **v3.1 ADOPTED** (17 Oct 2026; v3.0 + the A13/A14 amendment: Owner "add A13 + A14 to P3 and team protocol", [#1 6230407705](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6230407705); wording = Codex Q12 [Common #409 6230450337](https://github.com/reallakshman19/Common/issues/409#issuecomment-6230450337)).
+Status: **v3.2 ADOPTED** (17 Oct 2026; Owner: "Approve PR #63 as Team protocol v3.2, including the D2 audit move to the TeamCoordinator. Merge it after CI passes.", [#1 6233626616](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233626616)).
+
+> (v3.2 draft) Status: **v3.2 DRAFT for Owner approval** (17 Oct 2026; v3.1 plus the relay amendment recorded in Part F. Owner "ok" to adopting the amendment in #62 section C, [#1 6233547571](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233547571); wording revised by an independent check, Part F). It becomes ADOPTED only when the Owner approves this text.
+
+> (v3.1) Status: **v3.1 ADOPTED** (17 Oct 2026; v3.0 + the A13/A14 amendment: Owner "add A13 + A14 to P3 and team protocol", [#1 6230407705](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6230407705); wording = Codex Q12 [Common #409 6230450337](https://github.com/reallakshman19/Common/issues/409#issuecomment-6230450337)).
 
 > (v3.0) Status: **v3.0 ADOPTED** (17 Oct 2026; Owner "with D3 … go ahead", [#1 6230015272](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6230015272); text = draft r2 of PR #59 incl. OTM differences D1–D3).
 
@@ -15,7 +19,11 @@ Status: **v3.1 ADOPTED** (17 Oct 2026; v3.0 + the A13/A14 amendment: Owner "add 
 ### A1. Roles
 
 
-The project's current Owner-recorded role assignment and CONTROL epoch govern. For landing-live, Claude is one combined OTM/TC actor and the sole chat deliverer; Codex is planner/reviewer, publishes on GitHub and does not send to chats or use browser delivery. Combining OTM and TC does not create a second approver or an independent verifier. A later expressly scoped Owner authoring assignment must be recorded; it does not enable self-review or self-acceptance.
+The project's current Owner-recorded role assignment and CONTROL epoch govern. ~~For landing-live, Claude is one combined OTM/TC actor and the sole chat deliverer; Codex is planner/reviewer, publishes on GitHub and does not send to chats or use browser delivery.~~ (v3.1; struck by v3.2: superseded by CONTROL epoch 2, and "planner/reviewer" was never an Owner role.) **v3.2:** The current CONTROL epoch in #1 names the TeamCoordinator and the OwnerTeammember. They may be one actor or two, as the Owner records. The roles are Owner, OwnerTeammember, Oracle, TeamCoordinator and Agents. Combining OTM and TC does not create a second approver or an independent verifier. A later expressly scoped Owner authoring assignment must be recorded; it does not enable self-review or self-acceptance.
+
+**v3.2 Oracle.** Oracle (optional; the Owner nominates an agent, recorded in #1 and the registry, with scope and lifetime): advises only the TeamCoordinator, from the plan's recorded reasoning (A7); the owning issue stays the record. It takes no direct action on anyone: it never instructs agents, approves, sends, merges or writes code. Its advice is recorded on the owning issue with its tag, by the relaying actor naming itself and quoting the advice unchanged (§19.16). With no Oracle, the TeamCoordinator reconciles against the recorded intent; a material change goes to the OwnerTeammember only within its recorded delegation, otherwise to the Owner (A2).
+
+**v3.2 acting Oracle.** If the Owner authorizes an acting Oracle, it is recorded in #1 and the registry with scope and lifetime. The nominated Oracle later reviews that period's advice; revisions are appended corrections. The review approves nothing. No other acting role exists.
 
 Agents perform only their assigned authorized work under exclusive custody. A checker is a different qualified actor from the author for the assessed work, reviews one frozen target and records the exact proof and limits. Freshness/independence requirements follow the applicable Owner-approved review contract; an earlier PASS is not reused for changed material. A role label, a fresh model invocation or this table neither proves independence nor grants a new-agent/helper launch.
 
@@ -25,7 +33,7 @@ Scripts observe/project only; helpers advise only. Keep necessary source review 
 ### A2. Authority
 
 
-For every action use the project's existing authority map: actual deciding actor and Owner record, target/project, permitted action and paths, conditions, lifetime/counter, and revocation/stop conditions. Classification, plan membership, auto_response alone, START, PASS, schema completion, clock tick or protocol installation cannot substitute for that grant.
+For every action use the project's existing authority map: actual deciding actor and Owner record, target/project, permitted action and paths, conditions, lifetime/counter, and revocation/stop conditions. Classification, plan membership, auto_response alone, START, PASS, schema completion, clock tick ~~or protocol installation~~, protocol installation, Oracle advice or an acting-Oracle record (v3.2 adds the last two) cannot substitute for that grant.
 
 On a normal project, OTM may approve only actions covered by the actual unexpired Owner delegation and accepted scope. Label combined TC/OTM approval/self-approval with its basis in #1 and obtain non-doer verification where required. Critical or unset projects require Owner approval, except a specifically recorded standing exception. The critical H1–H3 BuddyRunner v1.7 exception is eligibility-only: actual trigger, no HOLD, registered successor and unchanged scope; it grants no general critical approval or authority for a different handover method. Nudges and assumption-free clarifications must likewise stay inside their recorded scope.
 
@@ -34,6 +42,8 @@ Protected decisions require the applicable explicit Owner record: acceptance, re
 Done, verified and accepted are different. The doer may report execution and self-tests, but is not its own independent verifier or acceptance authority. A performed action with failed readback is done/not verified, with its effect UNKNOWN—not proved absent.
 
 Permission to observe is separate from permission to work. HOLD/expiry blocks new work; only a still-valid separate observation grant permits watching. HOLD lift does not renew expiry or reset a count. Preserve three independent counters: UEM 1–5 per stable work unit (pilot 1), Next Move evidence-cycle checkpoints at n mod 20 in {5,10,15,19}, and Owner delegation allowances. Scheduler ticks, handover, restart and rename reset none.
+
+**v3.2 capacity tags.** Tags are those of §19.22 plus [ORACLE] and [ORACLE · acting]; [OTM] = [OWNERTEAMMEMBER], [TC] = [COORDINATOR], and [WRITER] marks an Owner-named writer. Every record that decides, approves, merges, verifies or advises carries its tag. A decision beyond the TeamCoordinator's delegation that rests on the same actor's advice in another capacity goes to the Owner. The TeamCoordinator cannot be its own Oracle.
 
 
 ### A3. Owner words
@@ -51,7 +61,7 @@ Distinguish direct Owner input, an attributed Owner-word record and an agent's u
 
 HOLD immediately stops new work and dispatch in its actual scope. Record #1 and the structured registry hold with source, scope, lifetime/lift condition and prior value. Owner-requested read-only analysis/record fixes remain allowed; watching continues only under a separate explicit observation grant. Current stopped watchers do not restart because this document is adopted.
 
-The sole authorized deliverer must convey an agent HOLD into that agent's own chat using the supported guarded route. Reconcile pending sends and Owner intervention first; preserve drafts and active generation. A Stop/interrupt control is used only where the actual authority and supported safety guard permit it, never as an automatic consequence of this sentence.
+~~The sole authorized deliverer~~ The TeamCoordinator named in the current CONTROL epoch (A10; v3.2) must convey an agent HOLD into that agent's own chat using the supported guarded route. Reconcile pending sends and Owner intervention first; preserve drafts and active generation. A Stop/interrupt control is used only where the actual authority and supported safety guard permit it, never as an automatic consequence of this sentence.
 
 Record SENT_TO_CHAT with actual receipt when verified. If not sent or uncertain, preserve NOT_SENT/DELIVERY_UNCERTAIN and alert the Owner with the exact delivery gap; do not infer the agent stopped, blindly resend, or lift HOLD to make delivery easier. Only Owner words lift an Owner HOLD. A previously held move returns to its applicable published state and needs fresh approval; expired grants, custody and counters remain unchanged.
 
@@ -71,7 +81,7 @@ Choose the smallest eligible useful step after checking grant, HOLD, exact curre
 
 For delivery, reuse the complete applicable native Next Move claim/approval/publication contract, not a shortened parallel ledger. Validate approval and current basis; claim with a conflict-safe identity/expiry and recipient fence before sending. Recheck control, HOLD, Owner intervention, draft/generation and pending uncertainty. Record SEND_INTENT and the actual NOT_SENT / SENT_TO_CHAT / DELIVERY_UNCERTAIN outcome, then actual attributed PICKED_UP where observed. Expiry, rename and retry do not clear uncertainty. Publication or END alone is not delivery, pickup, GO or acceptance.
 
-For every open item retain next actor, concrete next action, expected return/due event and blocking prerequisite. Write an incremental checkpoint before a wait/exit, not just at task completion. Update maintained registry/status projections with minimal conflict-safe writes and readback; they are separate writes, so expose a partial failure instead of claiming atomic success. Append material authority/delivery/decision receipts once.
+For every open item retain next actor, concrete next action, expected return/due event and blocking prerequisite. Write an incremental checkpoint before a wait/exit, not just at task completion. **v3.2:** before a wait, an exit, or a step expected to outlast the project's selected coordinator cadence, push work in progress to the task branch or draft PR under its lease, and record artifact hashes in a separate checkpoint comment on its own evidence issue, never inside TASK_EVIDENCE or the LOG. Private inputs and any content a native blind phase withholds are not pushed (§19.8); only their hashes are recorded. Work that exists only in a private workspace is UNKNOWN to a successor. Update maintained registry/status projections with minimal conflict-safe writes and readback; they are separate writes, so expose a partial failure instead of claiming atomic success. Append material authority/delivery/decision receipts once.
 
 Keep Owner questions durably OPEN, ANSWERED, ACTION_PENDING, explicitly deferred or superseded with source/reason. An acknowledgement is not an answer. Every Owner decision request includes recommendation, reasoning, exact scope, risk/urgency and who is blocked. Escalate new impact or a due deadline without repeating unchanged alerts.
 
@@ -163,6 +173,8 @@ Correct published evidence, decisions and native phase claims by attributed appe
 
 Accounting is not proof. Show UNKNOWN and evidence age; START or a filled status row cannot turn work green. A continuity test asks a non-author cold reader the Owner's ten reasoning questions from the root entry point. Keep test material off that entry point, but record actual exposure through other reachable comments/API; a separate issue or minimized comment does not prove blindness.
 
+**v3.2 unrecorded interval.** Every record of a reconstruction, written beside the native report, states "last checkpoint (time, repo@sha) → departure or discovery (time)", using NONE, UNKNOWN or a labelled range where needed (A9). Claims inside that interval are hypotheses until verified against an exact GitHub source.
+
 
 ### A8. Succession
 
@@ -175,7 +187,13 @@ While G1 is alive, complete native H1/1a preparation and H2/1b investigation onc
 
 Preserve the native final phase: G1 supplies phase 2 final direction and the required twelve-section handover, then closes; G2 does not add a phase-2 acknowledgement or another round. If G1 cannot write 1a or 2, the authorized coordinator may act as G1 from cited GitHub records, marking inherited unverified claims as hypotheses. This is not independent technical verification. Closure requires the actual owning-issue publication, not renderer output; duplicate handover/intervention keys require receipt verification, not regeneration.
 
+**v3.2 remaining-state inventory.** The coordinator writing 1a as G1 states these facts in a companion comment on the owning issue, linked from the 1a and not changing the native 1a body, each item sourced or UNKNOWN: branch@sha, open PR head, unpushed work, artifacts with hashes, last test run and its source, pending or uncertain sends, last checkpoint, and the unrecorded interval (A7).
+
 Activate only after actual outgoing cessation, settled/fenced pending sends, qualified incoming investigation/adoption, and exclusive custody plus valid work/control authority with no HOLD. Record retirement/activation and remap every affected lease/grant to the successor's actual branch/PR in the same eligible transition, from the confirmed frozen source. Do not renew scope/lifetime, reset any counter or infer an inaccessible chat is dead. No authority means prepare/route the precise missing decision, not launch another runner.
+
+**v3.2 Oracle advice in a handover.** Between 1b and 2 the TeamCoordinator may obtain the Oracle's advice on the 1b's proposals (A10) and pass it, with its own decision, to G1 as input to G1's own phase 2. G1 may disagree and says why. This adds no phase and no G2 round, and the advice is never sent to G2 for acknowledgement.
+
+**v3.2 returning agent.** Activity by an instance recorded as retired or replaced, or by a standby, outside its recorded role is an outside write (§19.3), reviewed before use. The TeamCoordinator records it and, where it can reach that chat by A4's guarded route, sends only a HOLD notice, an exception to the v2.3 §8 and §14 "no send to a retired chat" rule. That HOLD is an agent HOLD under A4 (source: this rule; scope: that instance; lifted only by Owner words). The instance re-reads the owning issue's START HERE and makes no writes. A lease already remapped to a successor stays there; any other former lease is reported to the Owner. The notice grants nothing and is not a Next Move kind.
 
 
 **OTM reconciliation D1 (Owner record, not an invented threshold):** the Owner's standby rule ([#1 6229973054](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6229973054): "we should always have an agent based on our handover meter … facilitate continuity"; "HOLDED only after he is on board") is the scoped standby grant. **Meter warning = 80% of the recorded meter budget, where a meter is actually measured;** where no meter exists (K18), only a self-reported warning or a real chat-end sign triggers it. Slowness alone triggers triage, not a launch.
@@ -192,17 +210,23 @@ Read complete paginated issue comments through the supported API rather than a s
 Keep known issues with source, owner, status and remaining proof. Distinguish a proposed mitigation, adopted rule, implemented fix and independently verified repair. None creates implementation authority.
 
 
-### A10. Codex desk
+### ~~A10. Codex desk~~ A10. Oracle advice and delivery (v3.2)
 
 
-Process the Owner-authorized FOR Codex queue oldest first against current registries and named sources. Post on the named issue with three plain lines: VERDICT, NEXT, DELIVER TO; then evidence, recommendation, reasoning and limits. Verify publication, then post the single FOR TeamCoordinator delivery pointer or DONE-for-Owner receipt in #1. Stop when the queue is empty.
+~~Process the Owner-authorized FOR Codex queue oldest first against current registries and named sources. Post on the named issue with three plain lines: VERDICT, NEXT, DELIVER TO; then evidence, recommendation, reasoning and limits. Verify publication, then post the single FOR TeamCoordinator delivery pointer or DONE-for-Owner receipt in #1. Stop when the queue is empty.~~ (v3.1; struck by v3.2)
 
-Claude alone delivers chat-bound outputs under current permission and records actual delivery proof or NOT_SENT/DELIVERY_UNCERTAIN; pickup is a further fact, not inferred from posting. Do not collapse uncertainty into “not delivered” and resend. Codex makes no chat sends/browser delivery, creates no private work counters or HOLDs, and derives no new engineering, launch or acceptance authority from a queued item.
+~~Claude alone delivers chat-bound outputs under current permission and records actual delivery proof or NOT_SENT/DELIVERY_UNCERTAIN; pickup is a further fact, not inferred from posting. Do not collapse uncertainty into “not delivered” and resend. Codex makes no chat sends/browser delivery, creates no private work counters or HOLDs, and derives no new engineering, launch or acceptance authority from a queued item.~~ (v3.1; struck by v3.2)
 
-Audit approvals relevant to the current request and changed scoped authority evidence. A broader recurring audit requires its own explicit scope; a growing queue does not authorize Codex timers. Queue-age/status display is a proposed projection until implemented and source/readback verified, not a service already guaranteed by this rule.
+~~Audit approvals relevant to the current request and changed scoped authority evidence. A broader recurring audit requires its own explicit scope; a growing queue does not authorize Codex timers. Queue-age/status display is a proposed projection until implemented and source/readback verified, not a service already guaranteed by this rule.~~ (v3.1; struck by v3.2)
 
 
-**OTM reconciliation D2:** for **pilot/test** projects, each Codex desk run includes an audit of OTM approvals since the last audit (Owner, "For Pilot/Test , think of more cycle", [#1 6229973054](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6229973054)). Other projects: audits only as requested.
+**OTM reconciliation D2:** for **pilot/test** projects, each Codex desk run includes an audit of OTM approvals since the last audit (Owner, "For Pilot/Test , think of more cycle", [#1 6229973054](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6229973054)). Other projects: audits only as requested. **v3.2:** the Codex desk is retired, so this duty moves to the TeamCoordinator: for pilot/test projects it lists the OwnerTeammember's approvals since the last list at each reconcile checkpoint (n mod 20 = 19). ~~**OWNER DECISION:** confirm or drop this move.~~ Confirmed by the Owner ([#1 6233626616](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233626616)).
+
+**v3.2.** The TeamCoordinator named in the current CONTROL epoch is the only sender to agent chats, when otherwise authorized (A2, A4, no HOLD), and records delivery proof or NOT_SENT / DELIVERY_UNCERTAIN; pickup is a further fact, and uncertainty is reconciled, never resent (A5). The OwnerTeammember and the Oracle send nothing to agent chats.
+
+After an incoming 1b, at a discovery that changes intent, scope, authority or an accepted plan, and before proposing a scope change to the Owner or the OwnerTeammember, the TeamCoordinator may ask the Oracle, if any, in one complete prompt with no back and forth. The Oracle's chat is not an agent chat for delivery; the prompt is given by the Owner or the TeamCoordinator, and the OwnerTeammember may write it for the Owner to give (Owner, 17 Oct). Advice is recorded on the owning issue (A1) and is not an instruction, approval or grant; a queued item or advice derives no engineering, launch or acceptance authority. Oracle advice is not a Next Move kind and creates no move.
+
+If the Oracle has not answered by the due event the TeamCoordinator recorded with the request (A5), the TeamCoordinator proceeds as with no Oracle (A1: a material change still goes to the OwnerTeammember or the Owner), marks the decision "without Oracle advice", and records it for the Oracle's or the Owner's later review.
 
 ---
 
@@ -219,7 +243,7 @@ Audit approvals relevant to the current request and changed scoped authority evi
 | §4 Coordinator evidence | KEEP with clearer material-change definition. “Only on change” already exists; retain the edited current status plus appended material sends/epoch/Owner-decision receipts. |
 | §5 Cycles | Deliberate REVISE proposal, not an already-proved supersession. Preserve due/liveness/health obligations and separately scoped watch authority; qualify the wake path and obtain the actual cadence change. Do not revive the stopped watcher. |
 | §6 Grounding | KEEP gap-specific intent/source/benchmark/claim review and meaningful ALIGNED/CORRECTED/ESCALATE judgment, not CI scoring. Put assignment/material-change grounding explicitly in R5; the current A7 reference alone does not supply it. |
-| §6b FOR TeamCoordinator | REVISE to add the Codex route, but retain the existing instruction/receipt meanings (RELAY/CORRECTION/ROUTE/STATUS/BREACH/GATE), identity and protected-action limits. Preserve distinct uncertain delivery. |
+| §6b FOR TeamCoordinator | ~~REVISE to add the Codex route,~~ (v3.2: FOR TeamCoordinator goes to the TeamCoordinator named in CONTROL; no Codex queue) REVISE, but retain the existing instruction/receipt meanings (RELAY/CORRECTION/ROUTE/STATUS/BREACH/GATE), identity and protected-action limits. Preserve distinct uncertain delivery. |
 | §7 Authority | REVISE to trace actual per-project grants, protected boundaries and expiry. Do not carry historical Grade9 grants into current landing authority or treat normal classification as permission. |
 | §8 Guards/fallback/takeover | REVISE for a single current actor while preserving finite recovery, UNKNOWN, pending-send fencing, outage escalation and authorized controller replacement/epoch. Outage risk does not vanish when the roles combine. |
 | §9 Handover/new agents | REVISE explicitly: the legacy “one-step” description must not conflict with selected 1a → 1b → 2 native phases and gated pilot policy. Preserve actual launch approval, qualification and no extra rounds. |
@@ -257,13 +281,15 @@ Audit approvals relevant to the current request and changed scoped authority evi
 | §19.16 | KEEP no borrowed approval/review: role's own attributable post or explicit correction. Shared-account identity remains an acknowledged limit. |
 | §19.17 | KEEP different-checker review plus a real failing negative control when a check is weakened. Passing output alone does not validate the new oracle. |
 | §19.18 | REVISE only through the exact project/native standby grant: real chat-end trigger, qualified investigation/grounding, actual stop and custody before activation. Do not replace Owner launch authority with length/slowness/one failed load. |
-| §19.19 | KEEP unreachable active chat as a reported liveness gap, not a silent skip or automatic retirement. Current sole deliverer and supported capability limits remain. |
+| §19.19 | KEEP unreachable active chat as a reported liveness gap, not a silent skip or automatic retirement. Current sole deliverer and supported capability limits remain. (v3.2: the sole deliverer is the TeamCoordinator named in CONTROL.) |
 | §19.20 | KEEP same-transition remap of every affected lease/grant to the actual successor branch/PR. Preserve scope, lifetime and all three counters; “follow the work” is not renewal. |
 | §19.21 | KEEP one frozen review target per evidence block, with intermediate SHAs explicitly superseded. Preserve old proof as history and invalidate only affected current claims after change. |
-| §19.22 | KEEP truthful proof-role tags, [OWNER] only for the actual Owner decision source, and correction of mislabelling. Role tags/shared GitHub account do not authenticate an actor. |
+| §19.22 | KEEP truthful proof-role tags, [OWNER] only for the actual Owner decision source, and correction of mislabelling. Role tags/shared GitHub account do not authenticate an actor. v3.2 adds [ORACLE], [ORACLE · acting] and [WRITER] (A2). |
 
 
 ## Part C — Migration guard (adopted with v3.0)
+
+**v3.2:** adopting v3.2 nominates no Oracle, lifts no HOLD, grants no send, launches no agent and changes no CONTROL epoch. Each instance records its own adoption.
 
 
 Replace Part C.4 and add the migration guard:
@@ -309,6 +335,29 @@ No product work, chat send, browser use, new agent, timer, own counter, new HOLD
 - **Open for the Owner:** adopt v3.0 (with or without D1–D3) or freeze v2.3; the Watchdog workflow stays OPEN.
 
 ---
+
+## Part F — v3.2 relay amendment record (17 Oct 2026)
+
+**Source.** Owner words on roles and the Oracle ([#1 6233187495](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187495)), CONTROL epoch 2 ([6233187632](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187632)), acting Oracle ([6233265443](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233265443)), and "ok" to adopting the amendment ([6233547571](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233547571)). Proposed text: [#62 section C](https://github.com/reallakshman19/CoordinatorLandingpage/issues/62#issuecomment-6233298127), written by the acting Oracle.
+
+**Independent check.** A fresh checker (a separate read-only model run) compared section C with Team protocol v3.1, Next Move v1, BuddyRunner v1.7, Handover Master and Engineering v3.6 at pinned sources. Verdict: PASS WITH FIXES. No rule granted Owner-only authority, added a BuddyRunner phase or G2 round, or touched the v3.6 receipt or LOG. The fixes are applied above.
+
+| #62 rule | Where in v3.2 | Change made by the check |
+|---|---|---|
+| 1 Oracle | A1 "v3.2 Oracle" | "advises only"; the issue, not the Oracle, is the record; relay attribution; OwnerTeammember only within delegation |
+| 2 A1 roles | A1 | rest of A1 kept; role names listed |
+| 3 A10 | A10 | "when otherwise authorized"; one complete prompt; the Oracle chat is not an agent chat; advice reaches G1 only as input; not a Next Move kind |
+| 4 Returning agent | A8 | recorded retirement; HOLD notice as an explicit exception; HOLD lifted only by Owner words |
+| 5 Push before wait or exit | A5 | project cadence instead of "long step"; hashes in a separate checkpoint comment; private and blind inputs not pushed; the v3.6 change is left to #409 |
+| 6 Inventory | A8 | companion comment; native 1a body unchanged |
+| 7 Unrecorded interval | A7 | NONE, UNKNOWN or a range allowed; hypotheses until verified |
+| 8 Capacity tags | A2 | aligned with §19.22; the TeamCoordinator cannot be its own Oracle |
+| 9 Acting roles | A1 "v3.2 acting Oracle" | narrowed to the acting Oracle only |
+| 10 Oracle unavailable | A10 | due event recorded with the request; material changes still escalate |
+
+Also changed for consistency: A2 non-substitutes; A4 deliverer; Part B §6b, §19.19, §19.22; Part C. The D2 audit duty moves from the retired Codex desk to the TeamCoordinator (A10), confirmed by the Owner ([#1 6233626616](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233626616)).
+
+**Not changed:** native TASK EVIDENCE v2 / STATUS v2; the Engineering v3.6 receipt and LOG; BuddyRunner phases; Next Move kinds; the three counters.
 
 ## Appendix — Team protocol v2.3 (15 Oct 2026), historical text
 
