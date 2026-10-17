@@ -59,7 +59,8 @@ SUPERSEDED_RE = re.compile(
 
 from landing_build.evidence_parse import (
     id8, scrub_chat_url, EVIDENCE_RE, VERDICT_RE, OUTSIDE_WRITE_RE,
-    parse_task_evidence, parse_verdict,
+    parse_task_evidence, parse_verdict, validated_issue_ref,
+    registered_issue_numbers, collect_unparsed_evidence,
 )
 
 
@@ -374,9 +375,10 @@ def build_project_data(root: Path, project_name: str, registry: dict,
     now = now.astimezone(timezone.utc)
     thread_owners = {}
     for item in registry.get('agents', []):
-        number = _issue_number(item.get('evidence_thread', ''))
-        if number:
-            thread_owners[number] = thread_owners.get(number, 0) + 1
+        ref = validated_issue_ref(item.get('evidence_thread'), registry, owner_json.REPO)
+        if ref:
+            n = ref[1]
+            thread_owners[n] = thread_owners.get(n, 0) + 1
 
     # Agents
     agents = []
@@ -384,10 +386,8 @@ def build_project_data(root: Path, project_name: str, registry: dict,
         chat = a.get('chat_id8', '')
         thread_url = a.get('evidence_thread', '')
         # Extract thread number
-        thread_num = None
-        m = re.search(r'/issues/(\d+)', thread_url)
-        if m:
-            thread_num = int(m.group(1))
+        ref = validated_issue_ref(thread_url, registry, owner_json.REPO)
+        thread_num = ref[1] if ref else None
 
         thread_data = threads.get(thread_num, {}) if thread_num else {}
         evidence = build_agent_evidence(
@@ -464,16 +464,14 @@ def build_project_data(root: Path, project_name: str, registry: dict,
         timeline_source = 'events_jsonl'
     else:
         # Reconstruct from threads + inbox
-        allowed = {_issue_number(registry.get('status_comment') or
-                                 registry.get('status_issue') or '')}
-        allowed.update(_issue_number(a.get('evidence_thread'))
-                       for a in registry.get('agents', []))
+        allowed = registered_issue_numbers(registry, owner_json.REPO)
         thread_list = [t for n, t in threads.items() if n in allowed]
         timeline = build_timeline_from_threads(
-            thread_list, inbox, project_name, {a['chat_id8'] for a in agents},
+            thread_list, inbox, project_name, ({a['chat_id8'] for a in agents} or None),
             {n for n, count in thread_owners.items() if count > 1}
         )
         timeline_source = 'reconstructed'
+    unparsed = collect_unparsed_evidence(registry, threads, project_name, owner_json.REPO)
     for event in timeline:
         if event.get('type') == 'OWNER_DECISION':
             event['decision_label'] = _wp10_decision_label(event)
@@ -543,6 +541,7 @@ def build_project_data(root: Path, project_name: str, registry: dict,
         'outside_writes': outside_writes,
         'timeline_source': timeline_source,
         'timeline_event_count': len(timeline),
+        **({'unparsed_evidence': unparsed} if unparsed else {}),
         'built_at': now.isoformat(),
     }, timeline
 
@@ -992,9 +991,10 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
                              else None)
         pr_snapshot = (load_json(extra / 'pr-heads.json') if not is_benchmark
                        else None)
-        status_num = _issue_number(
-            registry.get('status_comment') or registry.get('status_issue') or ''
-        )
+        status_ref = validated_issue_ref(
+            registry.get('status_comment') or registry.get('status_issue'),
+            registry, owner_json.REPO)
+        status_num = status_ref[1] if status_ref else None
         status_thread = threads.get(status_num, {}) if status_num else {}
         current_meta = dict(source_meta) if isinstance(source_meta, dict) else None
         if not is_benchmark and current_meta and status_num and status_num not in threads:
@@ -1131,6 +1131,8 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             'open_owner_decisions': pd['registry']['open_owner_decisions'],
             'outside_writes': pd['outside_writes'],
             'timeline_source': pd['timeline_source'],
+            **({'unparsed_evidence': pd['unparsed_evidence']}
+               if pd.get('unparsed_evidence') else {}),
             'is_benchmark': pd['is_benchmark'],
             'benchmark_snapshot': pd['benchmark_snapshot'],
             'built_at': pd['built_at'],

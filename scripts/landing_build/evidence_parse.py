@@ -112,3 +112,73 @@ def parse_verdict(comment_body: str, comment_id: int, comment_ts: str) -> dict |
         'verdict': m.group(1),
         'raw': scrub_chat_url(comment_body),
     }
+
+
+# WP-L2(b): validate the full repository/issue pointer before using issue numbers.
+_ISSUE_REF = re.compile(
+    r"https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/issues/([1-9]\d*)"
+    r"(?:#issuecomment-\d+)?", re.I)
+_TASK_HEADER = re.compile(
+    r"^[ \t]*TASK EVIDENCE v2\s*·\s*([^·\n]+?)\s*·\s*([^·\n]*?)"
+    r"\s*·\s*(?:chat\s+([^·\n]+?)\s*·\s*)?", re.M)
+
+
+def validated_issue_ref(value, registry, control_repo):
+    """Reject foreign/malformed URLs even if the issue number overlaps."""
+    match = _ISSUE_REF.fullmatch(str(value or "").strip())
+    permitted = {str(registry.get("repository") or "").lower(),
+                 control_repo.lower()}
+    if not match or match.group(1).lower() not in permitted:
+        return None
+    return match.group(1), int(match.group(2))
+
+
+def registered_issue_numbers(registry, control_repo):
+    values = [registry.get("status_comment") or registry.get("status_issue")]
+    values.extend(a.get("evidence_thread") for a in registry.get("agents", [])
+                  if isinstance(a, dict))
+    return {ref[1] for value in values
+            if (ref := validated_issue_ref(value, registry, control_repo))}
+
+
+def collect_unparsed_evidence(registry, threads, project, control_repo):
+    """Preserve malformed TASK EVIDENCE on registered issues without guessing."""
+    refs = [registry.get("status_comment") or registry.get("status_issue")]
+    refs.extend(a.get("evidence_thread") for a in registry.get("agents", [])
+                if isinstance(a, dict))
+    found, seen = [], set()
+    for value in refs:
+        ref = validated_issue_ref(value, registry, control_repo)
+        if not ref or ref in seen:
+            continue
+        seen.add(ref)
+        repo, number = ref
+        thread = threads.get(number) or {}
+        if (not isinstance(thread, dict) or
+                (thread.get("repository") and
+                 str(thread["repository"]).lower() != repo.lower())):
+            continue
+        for comment in thread.get("comments", []):
+            if not isinstance(comment, dict):
+                continue
+            body = comment.get("body") or ""
+            if not isinstance(body, str):
+                continue
+            match = _TASK_HEADER.search(body)
+            if not match or match.group(1).strip() != project:
+                continue
+            if parse_task_evidence(body, comment.get("id"), comment.get("created_at")):
+                continue  # Already handled by existing verified agent/timeline intake.
+            role = match.group(2).strip() or None
+            cid = comment.get("id")
+            issue_url = f"https://github.com/{repo}/issues/{number}"
+            found.append({
+                "type": "UNPARSED", "project": project,
+                "comment_id": cid, "ts": comment.get("created_at", ""),
+                "issue_number": number, "issue_url": issue_url,
+                "comment_url": issue_url + f"#issuecomment-{cid}",
+                "header_role": role, "actor": role or "UNATTRIBUTED",
+                "chat_id8": None, "reason": "MALFORMED_HEADER",
+                "raw": scrub_chat_url(body),
+            })
+    return found
