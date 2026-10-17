@@ -40,6 +40,17 @@ def prepare(artifact, destination):
     return projects
 
 
+def _proto_version(artifact):
+    """Protocol version from the served source header (fail-closed: None)."""
+    import re as _re
+    from pathlib import Path as _P
+    try:
+        md = (_P(artifact) / "protocol" / "TEAM_PROTOCOL.md").read_text(encoding="utf-8")
+    except OSError:
+        return None
+    m = _re.search(r"^#\s+Team protocol\s+(v\d+(?:\.\d+)+)", md, _re.M | _re.I)
+    return m.group(1) if m else None
+
 def main():
     if len(sys.argv) != 2:
         raise SystemExit("Usage: python tests/wp2_browser_test.py <artifact-dir>")
@@ -121,7 +132,7 @@ def main():
 
                 goto("protocol")
                 check("WP2_12_protocol_source_label",
-                      lambda: "v2.3 FINAL CANDIDATE" in txt(page, "#protocol-label") and
+                      lambda: bool(_proto_version(sys.argv[1])) and _proto_version(sys.argv[1]) in txt(page, "#protocol-label") and
                       "v2.1" not in txt(page, "#protocol-label"))
 
                 # Existing eight hash routes still point to their original templates.
