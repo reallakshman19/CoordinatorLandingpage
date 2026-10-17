@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """WP16 real five-registry status bar Chromium and pinned-PR50 negative tests."""
 import json
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import shutil
 import sys
@@ -28,6 +29,9 @@ def main():
         root=Path(tmp);site=root/"site"
         expected_from_registry=0
         expected_link_count=0
+        checked=datetime.now(timezone.utc)
+        due=checked+timedelta(minutes=20)
+        control_url="https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6237149165"
         shutil.copytree(Path(sys.argv[1]).resolve(),site)
         for name in PROJECTS:
             folder=root/"logs"/name
@@ -36,6 +40,19 @@ def main():
             if name=="grade9-pilot":
                 # Conflicting identities MUST both appear and be marked.
                 source["agents"][1]["chat_id8"]=source["agents"][0]["chat_id8"]
+            if name=="landing-live":
+                source["control"]["current_coordinator"]={
+                    "holder":"OwnerTeammember","mode":"ACTING",
+                    "epoch":source["control"]["epoch"],"control_ref":control_url,
+                    "effective_at":(checked-timedelta(minutes=5)).isoformat(),
+                    "verified":True}
+                source["agents"][0]["timer_observation"]={
+                    "state":"ACTIVE","last_tick":(checked-timedelta(minutes=2)).isoformat(),
+                    "next_due":due.isoformat(),"checked_at":checked.isoformat(),
+                    "source_ref":control_url,"verified":True}
+                source["agents"][0]["browser_observation"]={
+                    "result":"UP","checked_at":checked.isoformat(),
+                    "source_ref":control_url,"verified":True}
             (folder/"registry.json").write_text(json.dumps(source))
             declared_rows=sb.normalize_roster(source)
             expected_from_registry+=len(declared_rows)
@@ -97,6 +114,34 @@ def main():
                           page.locator("#wp16-tc-rows tr td:nth-child(9)").all_inner_texts())
                       and all(" · " in x for x in
                           page.locator("#wp16-tc-rows tr td:nth-child(10)").all_inner_texts()))
+                if page.locator("#wp16-mode").count():
+                    check("WP_L7_UI_08_coordinator_acting_link_and_unknown",
+                          lambda: "OwnerTeammember" in page.locator(
+                              "#wp16-ot-rows tr").filter(has_text="landing-live").first.inner_text()
+                          and "ACTING" in page.locator(
+                              "#wp16-ot-rows tr").filter(has_text="landing-live").first.inner_text()
+                          and page.locator("#wp16-ot-rows tr").filter(
+                              has_text="landing-live").first.locator(
+                              "a.wp16-control-ref").get_attribute("href")==control_url
+                          and "UNKNOWN" in page.locator(
+                              "#wp16-ot-rows tr").filter(has_text="imo-ab-test").first.inner_text())
+                    check("WP_L7_UI_09_agent_timer_browser_observed",
+                          lambda: "ACTIVE" in page.locator(
+                              "#wp16-tc-rows tr").filter(has_text="landing-live").first.inner_text()
+                          and "UP" in page.locator(
+                              "#wp16-tc-rows tr").filter(has_text="landing-live").first.inner_text()
+                          and "last tick" in page.locator(
+                              "#wp16-tc-rows tr").filter(has_text="landing-live").first.inner_text()
+                          and "next due" in page.locator(
+                              "#wp16-tc-rows tr").filter(has_text="landing-live").first.inner_text()
+                          and "checked" in page.locator(
+                              "#wp16-tc-rows tr").filter(has_text="landing-live").first.inner_text())
+                    check("WP_L7_UI_10_missing_observations_fail_unknown",
+                          lambda: "UNKNOWN" in page.locator(
+                              "#wp16-tc-rows tr").filter(has_text="imo-ab-test").first.inner_text()
+                          and page.locator("#wp16-tc-rows tr").filter(
+                              has_text="imo-ab-test").first.locator(
+                              ".wp16-observation.wp16-green").count()==0)
                 browser.close()
         finally: server.shutdown()
     print(f"WP16_BROWSER_COUNTS pass={len(passed)} fail={len(failed)} error={len(errors)}")
