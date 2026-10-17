@@ -2421,7 +2421,7 @@ jobs:
           path: wp9-browser-red.log
           if-no-files-found: error
 
-wpci1-platform-fixtures:
+  wpci1-platform-fixtures:
     name: WP-CI1 diagnosis · frozen fixture outputs · ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
