@@ -203,6 +203,7 @@ jobs:
           set -o pipefail
           python tests/browser_smoke_test.py _artifact 2>&1 | tee wp1a-browser.log
           python tests/wp_l4_browser_test.py _artifact 2>&1 | tee wp-l4-browser.log
+          python tests/wp_l6_browser_test.py _artifact 2>&1 | tee wp-l6-browser.log
 
       - name: Run WP2 visible browser and mobile/theme checks
         id: wp2_browser
