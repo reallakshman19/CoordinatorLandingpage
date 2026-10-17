@@ -34,7 +34,9 @@ def pr_snapshot(state="open", merged=None, url=PR):
 
 def project(word, prs):
     registry = {"project": "case", "repository": PRODUCT, "agents": [],
-                "status_issue": STATUS_URL, "control": {"epoch": 1},
+                "status_issue": STATUS_URL,
+                "status_comment": STATUS_URL + "#issuecomment-12",
+                "control": {"epoch": 1},
                 "workflow": {}, "open_owner_decisions": []}
     status = status_issue(word)
     return build_data.build_project_data(
