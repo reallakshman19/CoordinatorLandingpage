@@ -247,7 +247,7 @@ def main(argv=None):
     encoded = json.dumps(report, indent=2, ensure_ascii=False, sort_keys=True)
     if opts.output:
         opts.output.parent.mkdir(parents=True, exist_ok=True)
-        opts.output.write_text(encoded + "\n", encoding="utf-8")
+        opts.output.write_text(encoded + "\n", encoding="utf-8", newline="\n")
     print(encoded)
     return report
 

@@ -105,7 +105,7 @@ def extract_issue_number(url: str, repo: str | None = None):
 def save_json(path: Path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n",
-                    encoding="utf-8")
+                    encoding="utf-8", newline="\n")
 
 
 def discover_sources(root: Path, repo: str):

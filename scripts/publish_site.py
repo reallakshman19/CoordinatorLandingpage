@@ -120,7 +120,7 @@ def stamp_asset_urls(artifact, source_commit):
         if html.count(original) != 1:
             raise ValueError("cannot version published index.html: " + original)
         html = html.replace(original, replacement, 1)
-    path.write_text(html, encoding="utf-8")
+    path.write_text(html, encoding="utf-8", newline="\n")
     print("SITE_ASSETS_VERSIONED=" + version)
     return version
 
@@ -153,7 +153,7 @@ def stamp(artifact, logs, cache_dir, repo, source_commit, run_id):
         "benchmark_projects_sha256": sha256(data / "benchmarks" / "projects.json"),
     }
     out = artifact / "build-info.json"
-    out.write_text(json.dumps(info, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    out.write_text(json.dumps(info, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     print("BUILD_INFO_SHA256=" + sha256(out))
     return info
 
