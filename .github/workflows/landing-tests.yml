@@ -1403,8 +1403,8 @@ jobs:
           for path in site/app.js site/index.html; do
             git show "${BASE}:$path" > "$path"
           done
-          # Old-page negative uses the matching pre-split asset stamper.
-          git show "${BASE}:scripts/publish_site.py" > scripts/publish_site.py
+          # Old-page browser red must retain the last app-compatible stamper.
+          git show a83c8cd26e04052a1d635fda39807a7f8b5a5220:scripts/publish_site.py > scripts/publish_site.py
       - name: Build isolated existing browser artifact
         shell: bash
         run: |
