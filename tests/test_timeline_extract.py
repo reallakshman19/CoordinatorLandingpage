@@ -13,9 +13,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import build_data
 
-# Baseline updated after #69 (7f5a6797) intentionally added coordinator/timer/browser\n# projection keys. OTM independently verified this current-main frozen-fixture SHA-256.
+# Frozen fixture: #69 (7f5a6797) added project observation keys; WP-CI1
+# compared 18 Windows/Linux files (run 39060897918): only CRLF differed.
+# Generated JSON is now always LF; this is the cross-platform byte oracle.
 PRE_REFACTOR_SHA256 = (
-    "fcc158a0f05dc5b16288cc90728b1cd65902a3dd1530b4f9f7abf0bb9ac22095")
+    "3eb5bddf175f2d44e50b7d2da9fecc30ac95742fcb17d3a3b62bc61eb8bcf311")
 
 
 class FixedDatetime(datetime):
