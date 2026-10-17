@@ -10,6 +10,11 @@ import re
 PROJECT_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$")
 ID8 = re.compile(r"^[0-9a-f]{8}$")
 ORDER = {"green": 0, "yellow": 1, "grey": 2, "red": 3}
+# Attributable GitHub issue-comment records, never arbitrary external URLs.
+CONTROL_REF = re.compile(
+    r"^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/"
+    r"(?:issues|pull)/[1-9][0-9]*#issuecomment-[1-9][0-9]*$"
+)
 
 
 def _stamp(raw):
@@ -20,6 +25,59 @@ def _stamp(raw):
         return value.astimezone(timezone.utc) if value.tzinfo else None
     except ValueError:
         return None
+
+
+def _control_record(registry, now):
+    """Project CONTROL is source-linked; missing or inconsistent grants no role."""
+    unknown = {"holder": None, "mode": "UNKNOWN", "epoch": None,
+               "control_ref": None, "effective_at": None}
+    control = registry.get("control") or {}
+    data = control.get("current_coordinator")
+    if not isinstance(data, dict) or data.get("verified") is False:
+        return unknown
+    holder, mode = data.get("holder"), data.get("mode")
+    when = _stamp(data.get("effective_at"))
+    epoch = data.get("epoch")
+    ref = data.get("control_ref")
+    if (not isinstance(holder, str) or not holder.strip()
+            or mode not in ("NORMAL", "ACTING")
+            or type(epoch) is not int or epoch < 1
+            or epoch != control.get("epoch")
+            or not isinstance(ref, str) or not CONTROL_REF.fullmatch(ref)
+            or when is None or when > now):
+        return unknown
+    return {"holder": holder.strip(), "mode": mode, "epoch": epoch,
+            "control_ref": ref, "effective_at": when.isoformat()}
+
+
+def _recorded_observation(raw, kind, now):
+    """No execution inference: only fresh, explicitly checked observations."""
+    state_field = "state" if kind == "timer" else "result"
+    default = {state_field: "UNKNOWN", "checked_at": None, "source_ref": None}
+    if kind == "timer":
+        default.update(last_tick=None, next_due=None)
+    if not isinstance(raw, dict) or raw.get("verified") is not True:
+        return default
+    observed = _stamp(raw.get("checked_at"))
+    ref = raw.get("source_ref")
+    choice = raw.get(state_field)
+    allowed = ("ACTIVE", "PAUSED", "UNKNOWN") if kind == "timer" else (
+        "UP", "DOWN", "UNKNOWN")
+    if (choice not in allowed or observed is None
+            or not timedelta(0) <= now - observed <= timedelta(minutes=30)
+            or not isinstance(ref, str) or not CONTROL_REF.fullmatch(ref)):
+        return default
+    answer = {state_field: choice, "checked_at": observed.isoformat(),
+              "source_ref": ref}
+    if kind == "timer":
+        for key in ("last_tick", "next_due"):
+            value = raw.get(key)
+            dt = _stamp(value) if value is not None else None
+            if value is not None and (dt is None or
+                    (key == "last_tick" and dt > now)):
+                return default
+            answer[key] = dt.isoformat() if dt else None
+    return answer
 
 
 def _sources(registry):
@@ -86,6 +144,8 @@ def normalize_roster(registry):
                          ("BOUNDED_UNIT_COMPLETE_FACTUAL_RESULT_ONLY",),
             "chat_link": None, "conflicts": [],
             "observation": entry.get("observation"),
+            "timer_observation": entry.get("timer_observation"),
+            "browser_observation": entry.get("browser_observation"),
             "monitoring": entry.get("monitoring"),
             "last_evaluation": entry.get("last_evaluation"),
             "grant": entry.get("grant") or entry.get("execution_grant"),
@@ -210,9 +270,12 @@ def derive_status(row, registry, project_view, now=None):
         light, reason = "green", "all_three_dimensions_verified"
     else:
         light, reason = "yellow", "waiting_stale_or_unknown"
+    timer = _recorded_observation(row.get("timer_observation"), "timer", now)
+    browser = _recorded_observation(row.get("browser_observation"), "browser", now)
     return {**row, "light": light, "light_reason": reason,
             "dimensions": {"work": work_state, "monitoring": monitor,
-                           "execution_authority": authority}}
+                           "execution_authority": authority},
+            "timer": timer, "browser": browser}
 
 
 def build_status_bar(registries,project_views,now=None):
@@ -248,8 +311,10 @@ def build_status_bar(registries,project_views,now=None):
             light,reason="green","all_active_instances_and_dependencies_green"
         else:
             light,reason="yellow","work_or_coverage_not_proven"
+        coordinator = _control_record(registry, now)
         projects.append({
             "project":project,"light":light,"reason":reason,
+            "coordinator":coordinator,
             "complete":bool(active) and all(a["complete"] for a in active),
             "dependencies":{"blocked":blocked,"unknown":unknown,
                             "projects":[d for d in depnames if d in registries]},
