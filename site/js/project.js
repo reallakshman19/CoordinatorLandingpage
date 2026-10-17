@@ -40,6 +40,18 @@ async function renderProject(app, projectName) {
 
   $('back-to-home').addEventListener('click', () => navigate('#home'));
   $('project-title').textContent = projectName;
+  const l4Links = el('nav','l4-project-links');
+  l4Links.setAttribute('aria-label','Project history views');
+  for (const [view,label] of [
+    ['understanding','Understanding'],['people','People'],
+    ['engineering-history','History'],['sources','Original sources'],
+    ['improvements','Improvements'],['changeover','Changeover']
+  ]) {
+    const link = el('a','btn btn-small',label);
+    link.href = '#' + view + '/' + encodeURIComponent(projectName);
+    l4Links.appendChild(link);
+  }
+  $('project-title').parentNode.appendChild(l4Links);
   renderG8Disagreement($('g8-disagreement'),
     proj.status_merge_disagreement || detail?.status_merge_disagreement,
     proj.repository);
