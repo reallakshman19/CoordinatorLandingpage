@@ -2,6 +2,8 @@
   "project": "grade9-pilot",
   "protocol": "Team protocol v2.1",
   "repository": "reallakshman19/Grade9v3.5",
+  "project_status": "SUPERSEDED",
+  "superseded": {"at": "2026-10-17T04:4x+04:00", "owner_words": "Lets reset (consider superseded) all project expect LandingPage (Owner, 17 Oct 04:4x)", "recorded_by": "OwnerTeammember", "note": "kept for history, not deleted; no agent sends; reopen only on Owner words"},
   "updated": "2026-10-16T15:40:57+04:00",
   "updated_by": "Codex TC/OT: Owner-approved one execution-only runner; no V/M code release",
   "control": {
