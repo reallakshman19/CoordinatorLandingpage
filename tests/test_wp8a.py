@@ -30,9 +30,9 @@ class BaseCompatibleWP8a(unittest.TestCase):
 
     def test_wp8a_stamped_javascript_and_stylesheet_urls(self):
         sha8 = self.source[:8]
-        self.assertIn('src="app.js?v=' + sha8 + '"', self.document)
+        self.assertIn('src="js/core.js?v=' + sha8 + '"', self.document)
         self.assertIn('href="style.css?v=' + sha8 + '"', self.document)
-        self.assertNotIn('src="app.js"', self.document)
+        self.assertNotIn('src="js/core.js"', self.document)
         self.assertNotIn('href="style.css"', self.document)
 
     def test_wp8a_build_info_has_matching_site_version(self):
@@ -59,10 +59,10 @@ class BaseCompatibleWP8a(unittest.TestCase):
 class ExtraWP8a(unittest.TestCase):
     def test_wp8a_source_template_unversioned_until_publisher_runs(self):
         template = (ROOT / "site/index.html").read_text()
-        self.assertIn('src="app.js"', template)
+        self.assertIn('src="js/core.js"', template)
         self.assertIn('href="style.css"', template)
         self.assertIn('id="site-update-banner"', template)
-        self.assertNotIn('src="app.js?v=', template)
+        self.assertNotIn('src="js/core.js?v=', template)
 
 
 if __name__ == "__main__":

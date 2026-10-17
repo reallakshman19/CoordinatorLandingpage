@@ -905,6 +905,18 @@ jobs:
           set -euo pipefail
           BASE=5a9d0442b4e5c41300987e03d140e8405d1bfa77
           git show "${BASE}:site/app.js" > site/app.js
+          # Test-fixture path adapter: load the pinned old app as the only classic script.
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('site/index.html')
+          text = p.read_text(encoding='utf-8')
+          first = '<script src="js/core.js"></script>'
+          last = '<script src="js/benchmarks.js"></script>'
+          start = text.index(first)
+          stop = text.index(last, start) + len(last)
+          p.write_text(text[:start] + '<script src="app.js"></script>' + text[stop:],
+                       encoding='utf-8', newline='\n')
+          PY
       - name: Build synthetic benchmark browser artifact
         run: |
           set -euo pipefail
@@ -1391,6 +1403,8 @@ jobs:
           for path in site/app.js site/index.html; do
             git show "${BASE}:$path" > "$path"
           done
+          # Old-page browser red must retain the last app-compatible stamper.
+          git show a83c8cd26e04052a1d635fda39807a7f8b5a5220:scripts/publish_site.py > scripts/publish_site.py
       - name: Build isolated existing browser artifact
         shell: bash
         run: |
@@ -1764,6 +1778,18 @@ jobs:
         run: |
           set -euo pipefail
           git show f22b170f23765810a880419271d0cf9a06d9c6d1:site/app.js > site/app.js
+          # Test-fixture path adapter: load the pinned old app as the only classic script.
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('site/index.html')
+          text = p.read_text(encoding='utf-8')
+          first = '<script src="js/core.js"></script>'
+          last = '<script src="js/benchmarks.js"></script>'
+          start = text.index(first)
+          stop = text.index(last, start) + len(last)
+          p.write_text(text[:start] + '<script src="app.js"></script>' + text[stop:],
+                       encoding='utf-8', newline='\n')
+          PY
       - name: Build same local benchmark artifact as head
         run: |
           set -euo pipefail
@@ -2027,6 +2053,18 @@ jobs:
         run: |
           set -euo pipefail
           git show 27df6c347fb995a3956552af75da6e82a372c945:site/app.js > site/app.js
+          # Test-fixture path adapter: load the pinned old app as the only classic script.
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('site/index.html')
+          text = p.read_text(encoding='utf-8')
+          first = '<script src="js/core.js"></script>'
+          last = '<script src="js/benchmarks.js"></script>'
+          start = text.index(first)
+          stop = text.index(last, start) + len(last)
+          p.write_text(text[:start] + '<script src="app.js"></script>' + text[stop:],
+                       encoding='utf-8', newline='\n')
+          PY
       - name: Build offline benchmark artifact
         run: |
           set -euo pipefail
@@ -2170,6 +2208,18 @@ jobs:
           set -euo pipefail
           BASE=bc8f904873ab62f6d19bf9ef30d7b7653376065c
           git show "${BASE}:site/app.js" > site/app.js
+          # Test-fixture path adapter: load the pinned old app as the only classic script.
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('site/index.html')
+          text = p.read_text(encoding='utf-8')
+          first = '<script src="js/core.js"></script>'
+          last = '<script src="js/benchmarks.js"></script>'
+          start = text.index(first)
+          stop = text.index(last, start) + len(last)
+          p.write_text(text[:start] + '<script src="app.js"></script>' + text[stop:],
+                       encoding='utf-8', newline='\n')
+          PY
       - name: Assemble benchmark artifact without remote API
         shell: bash
         run: |
@@ -2369,6 +2419,18 @@ jobs:
           set -euo pipefail
           BASE=e23d7cc7d25d43c6df48f7bd4d34f6e9904d1cfc
           git show "${BASE}:site/app.js" > site/app.js
+          # Test-fixture path adapter: load the pinned old app as the only classic script.
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('site/index.html')
+          text = p.read_text(encoding='utf-8')
+          first = '<script src="js/core.js"></script>'
+          last = '<script src="js/benchmarks.js"></script>'
+          start = text.index(first)
+          stop = text.index(last, start) + len(last)
+          p.write_text(text[:start] + '<script src="app.js"></script>' + text[stop:],
+                       encoding='utf-8', newline='\n')
+          PY
           echo "WP9 RED: restored old UI code from $BASE, keeping all HEAD tests"
       - name: Build isolated browser artifact (no GitHub API write)
         shell: bash

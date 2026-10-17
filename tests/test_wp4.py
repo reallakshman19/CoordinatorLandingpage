@@ -157,7 +157,9 @@ class PublisherGateTests(unittest.TestCase):
             json.dumps([{"is_benchmark": True, "project": "frozen"}]))
         (self.root / "artifact/index.html").write_text(
             '<!doctype html><html><head><link rel="stylesheet" href="style.css">'
-            '</head><body><script src="app.js"></script></body></html>')
+            '</head><body><script src="js/core.js"></script></body></html>')
+        (self.root / "artifact/js").mkdir()
+        (self.root / "artifact/js/core.js").write_text("// test fixture\n")
         p = self.root / "artifact/protocol"
         p.mkdir()
         (p / "TEAM_PROTOCOL.md").write_text("# Test source")

@@ -22,6 +22,7 @@ from landing_build.timeline import (
 from landing_build.freshness import (
     last_completed_cycle, derive_freshness, LIVENESS_OBSERVATION_LIMIT,
 )
+# G02/G05/G06: projection is reporting, NOT authorization.
 def build_project_data(root: Path, project_name: str, registry: dict,
                         threads: dict, inbox: list, events_path: Path | list[Path] | None,
                         source_meta: dict | None = None,
