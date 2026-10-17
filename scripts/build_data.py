@@ -38,7 +38,6 @@ def load_json(path: Path):
     with open(path, encoding="utf-8") as f:
         return json.load(f)
 
-
 def save_json(path: Path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8", newline="\n") as f:
@@ -56,13 +55,11 @@ SUPERSEDED_RE = re.compile(
     re.IGNORECASE
 )
 
-
 from landing_build.evidence_parse import (
     id8, scrub_chat_url, EVIDENCE_RE, VERDICT_RE, OUTSIDE_WRITE_RE,
     parse_task_evidence, parse_verdict, validated_issue_ref,
     registered_issue_numbers, collect_unparsed_evidence,
 )
-
 
 def build_agent_evidence(thread: dict, project: str | None = None,
                          chat_id8: str | None = None, shared: bool = False) -> list:
@@ -124,12 +121,10 @@ def build_agent_evidence(thread: dict, project: str | None = None,
 
     return items
 
-
 from landing_build.timeline import (
     build_timeline_from_events, build_timeline_from_threads,
     COORD_EVIDENCE_RE, NEEDS_YOU_RE, TIME_CORRECTED_RE, FOR_TC_RE,
 )
-
 
 from landing_build.freshness import (
     _utc_time, last_completed_cycle, derive_freshness,
@@ -989,6 +984,8 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
                              else None)
         pr_snapshot = (load_json(extra / 'pr-heads.json') if not is_benchmark
                        else None)
+        lineage_snapshot = (load_json(extra / 'lineage.json') if not is_benchmark
+                            else None)
         status_ref = validated_issue_ref(
             registry.get('status_comment') or registry.get('status_issue'),
             registry, owner_json.REPO)
@@ -1007,6 +1004,8 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             child_observations=children_snapshot,
             pr_observation=pr_snapshot
         )
+        if isinstance(lineage_snapshot, list) and lineage_snapshot:
+            project_data['lineage'] = lineage_snapshot
         # WP13 publisher validates read-only Next Move source records. Nothing
         # is created or altered under logs/; invalid records are quarantined.
         agent_heads = {
@@ -1093,6 +1092,7 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             'source_capture_at': pd['source_capture_at'],
             'source_health': pd['source_health'],
             'source_refs': pd['source_refs'],
+            **({'lineage': pd['lineage']} if pd.get('lineage') else {}),
             'last_cycle_at': pd['last_cycle_at'],
             'freshness_status': pd['freshness_status'],
             'liveness_observation_limit': pd['liveness_observation_limit'],
