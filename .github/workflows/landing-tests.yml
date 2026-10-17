@@ -161,6 +161,14 @@ jobs:
           set -o pipefail
           python -m unittest tests.test_wp15 -v 2>&1 | tee wp15-unit-head.log
 
+      - name: Run WP-L1 extraction seam and frozen-fixture Python checks
+        id: extract_seams
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m unittest tests.test_timeline_extract tests.test_freshness_extract tests.test_evidence_parse_extract -v 2>&1 | tee extraction-seams-head.log
+
       - name: Assemble benchmark-backed browser artifact (no live API)
         id: artifact
         continue-on-error: true
@@ -368,6 +376,7 @@ jobs:
             wp14-unit-head.log
             wp14-browser-head.log
             wp15-unit-head.log
+            extraction-seams-head.log
             wp15-browser-head.log
           if-no-files-found: ignore
 
@@ -429,6 +438,7 @@ jobs:
           require_success "WP14-source-authority-claim-CAS-and-WP13-notes" "${{ steps.wp14_unit.outcome }}"
           require_success "WP14-browser-github-draft-compose-approve" "${{ steps.wp14_browser.outcome }}"
           require_success "WP15-evaluator-trigger-heartbeat-review" "${{ steps.wp15_unit.outcome }}"
+          require_success "WP-L1-extraction-seams-and-frozen-fixtures" "${{ steps.extract_seams.outcome }}"
           require_success "WP15-board-evaluator-cross-check" "${{ steps.wp15_browser.outcome }}"
           echo "FINAL GATE: 35/35 actual head outcomes success"
 
