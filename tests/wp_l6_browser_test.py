@@ -48,14 +48,14 @@ def main(artifact):
                       bool(page.locator(".wp16-continuity-input a[href*='/issues/21']").count()))
                 check("EXISTING_THREE_DIMENSIONS_REMAIN",
                       page.locator("#wp16-tc-table th").count() == 14)
-                page.goto(root + "#people/landing-live", wait_until="networkidle")
+                page.goto(root + "#people/grade9-pilot", wait_until="networkidle")
                 page.wait_for_selector(".l4-oracle")
                 check("ORACLE_NONE_AND_ADVISORY_ONLY",
                       "none" in page.locator(".l4-oracle").inner_text() and
                       "advises only" in page.locator(".l4-oracle").inner_text())
                 check("L4_UNKNOWN_RULE", page.locator(".l4-unknown").evaluate_all(
                      "(nodes) => nodes.length===0 || nodes.every(x => getComputedStyle(x).color !== 'rgba(0, 0, 0, 0)')"))
-                page.goto(root + "#changeover/landing-live", wait_until="networkidle")
+                page.goto(root + "#changeover/grade9-pilot", wait_until="networkidle")
                 page.wait_for_selector("#l4-changeover")
                 brief = page.evaluate("""() => l4SuccessorBrief(
                     {projectName:'test',repo:'reallakshman19/Common',
