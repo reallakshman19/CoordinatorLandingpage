@@ -183,7 +183,7 @@ class WP3Additional(unittest.TestCase):
         note=row["liveness_observation_limit"]
         self.assertIn("team roles share one GitHub account",note)
         self.assertIn("not identity proof",note)
-        page=(ROOT/"site/app.js").read_text()
+        page=(ROOT/"site/js/home.js").read_text()
         self.assertIn("Team roles share one GitHub account",page)
         self.assertIn("actual role cannot be distinguished",page)
 
