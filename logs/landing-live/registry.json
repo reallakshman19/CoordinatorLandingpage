@@ -26,7 +26,7 @@
       "GO / FIX / HOLD",
       "next slice"
     ],
-    "current": "P1 #62 G1/WP-L2(a) only: qualified g3 01a149bf, final2 #64/6233973647 CLOSED; fresh exact-path lease. CAPABILITY no product writes, then conditional CHAT_NA parser fix only. Release NOT_DELIVERED until native pickup; no broad split. Common408/409 remain held, UEM parked.", "previous": "WP0-WP4 merged (#24-#28); next WP5 + F7 Owner round trip"
+    "current": "P1 #62 G1/WP-L2(a) only: qualified g3 01a149bf, final2 #64/6233973647 CLOSED; fresh exact-path lease. CAPABILITY no product writes, then conditional CHAT_NA parser fix only. Actual native pickup confirmed; stopped before clone/tests for explicit Owner Coder designation; no broad split. Common408/409 remain held, UEM parked.", "previous": "WP0-WP4 merged (#24-#28); next WP5 + F7 Owner round trip"
   },
   "agents": [
     {
@@ -53,7 +53,7 @@
       "role": "implementer",
       "generation": 3,
       "chat_id8": "01a149bf",
-      "status": "ready — OTM qualified1b; final2 CLOSED; fresh first-workpack lease granted; native release pending delivery/pickup, not claimed working",
+      "status": "blocked — workpack native pickup verified; explicit Owner Coder designation required by session policy before clone/tests/code; final2 CLOSED and bounded lease retained",
       "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64",
       "native_route": "codex-local",
       "instance_sha256": "22730a77de353748ba751af60370f964764abc0f3cb359d33e11e0d8d913ea0c",
@@ -75,9 +75,10 @@
         "correction": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6229302006"
       },
       "execution_mode": "write",
-      "workpack_gate": "CAPABILITY first: no product/tracked write; CHAT_NA only after actual suite/capability PASS and valid session-role authority; code scope exactly two production regexes plus new test file",
+      "workpack_gate": "BLOCKED before CAPABILITY: actual native response requests explicit Owner Coder designation for this named session/workpack. No clone/tests/code performed per agent. After real role authority: CAPABILITY no product/tracked write, then conditional CHAT_NA only; no expansion",
+      "workpack_pickup_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6234004873",
       "independent_reviewer": "Claude/OwnerTeammember, non-author review-routing owner; actual fresh exact-head engineering verdict pending, not the Oracle advice",
-      "onboarded": "QUALIFIED #64/6233814152; final2 #64/6233973647; fresh first-workpack lease only, delivery still pending",
+      "onboarded": "QUALIFIED #64/6233814152; final2 CLOSED #64/6233973647; fresh first-workpack lease and actual native pickup verified; separate Coder role gate outstanding",
       "branch": "codex/landing-p1-chat-na-01a149bf",
       "branch_state": "RESERVED_NOT_CREATED; implementer creates only after no-write capability stage PASS",
       "timer": "NOT_ARMED"
