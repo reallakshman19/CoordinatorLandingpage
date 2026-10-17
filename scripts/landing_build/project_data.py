@@ -5,6 +5,7 @@ import owner_json
 from pathlib import Path
 from datetime import datetime, timezone
 from landing_build.disagreement import project_disagreement
+from landing_build.registry_schema import project_additions
 from landing_build.project_evidence import build_agent_evidence
 from landing_build.project_view import (
     _issue_number, _SAFE_GH_LINK, _wp10_link, _wp10_external_links,
@@ -188,6 +189,7 @@ def build_project_data(root: Path, project_name: str, registry: dict,
         'liveness_observation_limit': LIVENESS_OBSERVATION_LIMIT,
         'published_at': None,
         'stale_lease_count': sum(l.get('warning') == 'RETIRED_HOLDER' for l in leases),
+        **project_additions(registry),
         'registry': {
             'protocol': registry.get('protocol', ''),
             'repository': registry.get('repository', ''),

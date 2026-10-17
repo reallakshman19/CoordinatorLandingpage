@@ -258,6 +258,8 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             'source_health': pd['source_health'],
             'source_refs': pd['source_refs'],
             **({'lineage': pd['lineage']} if pd.get('lineage') else {}),
+            **{key: pd[key] for key in ('originals', 'improvements', 'succession')
+               if key in pd},
             **({'status_merge_disagreement': pd['status_merge_disagreement']}
                if pd.get('status_merge_disagreement') is not None else {}),
             'last_cycle_at': pd['last_cycle_at'],
