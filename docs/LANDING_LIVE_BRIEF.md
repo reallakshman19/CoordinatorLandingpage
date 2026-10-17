@@ -4,6 +4,7 @@
 
 - **Root issue:** [#21](https://github.com/reallakshman19/CoordinatorLandingpage/issues/21) (Owner intent). **Evidence thread:** [#22](https://github.com/reallakshman19/CoordinatorLandingpage/issues/22). **Owner decisions and control:** [#1](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1).
 - **How the code turns inputs into the page:** [docs/ROUTE_MAP.md](ROUTE_MAP.md).
+- **Known issues (bugs and gaps, with owners):** [docs/KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 - **Built from:** Codex's S1 source reading (17 Oct 2026, 05:56–06:03 Dubai, main `23843c96ee142ea21577312b504d4ba6cb3f8fc8`). Corrections and the current state come from OwnerTeammember (17 Oct, after the S2 cold-reader test on #21 judged PARTIAL).
 - **Pins are history.** Re-check main, PR heads and the registry before acting on anything here.
 
