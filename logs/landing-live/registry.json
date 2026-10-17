@@ -6,7 +6,7 @@
   "criticality_owner_words": "landing normal, proceed implementation (Owner, 16 Oct ~19:4x)",
   "next_move": {"pilot": true, "approval_required": true, "spec": "protocol/NEXT_MOVE_v1.md", "owner_words": "review cycle is over. start planning and implement."},
   "parent_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/21",
-  "updated": "2026-10-17T15:5x+04:00",
+  "updated": "2026-10-17T15:51+04:00",
   "updated_by": "OwnerTeammember",
   "control": {
     "epoch": 2,
