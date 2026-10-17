@@ -1,17 +1,21 @@
 'use strict';
+function l4MarkdownEscape(value) {
+  const text = l4Text(value).replace(/\r?\n/g, ' ');
+  return text.replace(/([\\\x60*_{}\[\]()#+.!>|~-])/g, '\\$1');
+}
 function l4SuccessorBrief(ctx, succession) {
   const fields = [
-    '# Successor brief · ' + ctx.projectName,
+    '# Successor brief · ' + l4MarkdownEscape(ctx.projectName),
     '',
     '## Custody and authority',
     'Projection only; not a verified approval or execution instruction.',
-    'Project: ' + l4Text(ctx.projectName),
-    'Repository: ' + l4Text(ctx.repo),
-    'Outgoing: ' + l4Text(succession.outgoing),
-    'Incoming: ' + l4Text(succession.incoming),
-    'Method: ' + l4Text(succession.method),
-    'Phase: ' + l4Text(succession.phase),
-    'Custody: ' + l4Text(succession.custody),
+    'Project: ' + l4MarkdownEscape(ctx.projectName),
+    'Repository: ' + l4MarkdownEscape(ctx.repo),
+    'Outgoing: ' + l4MarkdownEscape(succession.outgoing),
+    'Incoming: ' + l4MarkdownEscape(succession.incoming),
+    'Method: ' + l4MarkdownEscape(succession.method),
+    'Phase: ' + l4MarkdownEscape(succession.phase),
+    'Custody: ' + l4MarkdownEscape(succession.custody),
     '',
     '## Handover references',
   ];
@@ -24,11 +28,11 @@ function l4SuccessorBrief(ctx, succession) {
   fields.push('','## Pending sends');
   const sends = succession.pending_sends;
   if (Array.isArray(sends) && sends.length)
-    for (const s of sends) fields.push('- ' + l4Text(s));
+    for (const s of sends) fields.push('- ' + l4MarkdownEscape(s));
   else fields.push('UNKNOWN');
   fields.push('','## Unrecorded interval',
-    'From checkpoint: ' + l4Text(succession.unrecorded_interval?.from_checkpoint),
-    'To departure: ' + l4Text(succession.unrecorded_interval?.to_departure),
+    'From checkpoint: ' + l4MarkdownEscape(succession.unrecorded_interval?.from_checkpoint),
+    'To departure: ' + l4MarkdownEscape(succession.unrecorded_interval?.to_departure),
     '','## Evidence sources');
   const status = ctx.summary.source_refs?.status_issue;
   fields.push('Status issue: ' + (allowedExternalLink(status,ctx.repo) ||

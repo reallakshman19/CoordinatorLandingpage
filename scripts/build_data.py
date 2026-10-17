@@ -240,7 +240,8 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
     status_bar = build_status_bar(
         selected_registries,
         {pd['project']: pd for pd in all_projects},
-        now=datetime.now(timezone.utc))
+        now=datetime.now(timezone.utc),
+        include_continuity=not bool(benchmark_dirs))
     if not status_bar['coverage']['complete']:
         raise ValueError('WP16 selected registry roster coverage incomplete')
     save_json(out_dir / 'status-bar.json', status_bar)

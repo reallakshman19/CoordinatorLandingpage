@@ -167,7 +167,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          python -m unittest tests.test_timeline_extract tests.test_freshness_extract tests.test_evidence_parse_extract tests.test_lf_writers -v 2>&1 | tee extraction-seams-head.log
+          python -m unittest tests.test_timeline_extract tests.test_freshness_extract tests.test_evidence_parse_extract tests.test_lf_writers tests.test_l6_continuity -v 2>&1 | tee extraction-seams-head.log
 
       - name: Assemble benchmark-backed browser artifact (no live API)
         id: artifact
@@ -203,6 +203,7 @@ jobs:
           set -o pipefail
           python tests/browser_smoke_test.py _artifact 2>&1 | tee wp1a-browser.log
           python tests/wp_l4_browser_test.py _artifact 2>&1 | tee wp-l4-browser.log
+          python tests/wp_l6_browser_test.py _artifact 2>&1 | tee wp-l6-browser.log
 
       - name: Run WP2 visible browser and mobile/theme checks
         id: wp2_browser
@@ -2505,4 +2506,4 @@ jobs:
           PYTHONIOENCODING: utf-8
         run: |
           set -euo pipefail
-          python -m unittest tests.test_timeline_extract tests.test_freshness_extract tests.test_evidence_parse_extract tests.test_lf_writers -v
+          python -m unittest tests.test_timeline_extract tests.test_freshness_extract tests.test_evidence_parse_extract tests.test_lf_writers tests.test_l6_continuity -v
