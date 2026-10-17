@@ -97,7 +97,7 @@ class FreshnessExtractTests(unittest.TestCase):
             files = sorted(out.glob("*.json"))
             self.assertTrue(files)
             for path in files:
-                digest.update(path.name.encode("utf-8") + b"\\0")
+                digest.update(path.name.encode("utf-8") + b"\0")
                 digest.update(path.read_bytes())
             return digest.hexdigest()
         with tempfile.TemporaryDirectory() as tmp:
@@ -110,6 +110,7 @@ class FreshnessExtractTests(unittest.TestCase):
             second = fingerprint(right)
             print("FROZEN_FIXTURE_SHA256=" + first)
             self.assertEqual(first, second)
+            self.assertEqual(first, "3eb5bddf175f2d44e50b7d2da9fecc30ac95742fcb17d3a3b62bc61eb8bcf311")
             self.assertEqual(
                 {p.name: p.read_bytes() for p in left.glob("*.json")},
                 {p.name: p.read_bytes() for p in right.glob("*.json")})
