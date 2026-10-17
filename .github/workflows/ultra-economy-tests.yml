@@ -14,7 +14,7 @@ on:
       - "tests/wp18_red_verify.py"
       - "pilot/**"
       - "tests/wp17_red_verify.py"
-      - "site/app.js"
+      - "site/js/**"
       - "site/index.html"
       - "site/style.css"
       - "tests/test_ultra_economy.py"
@@ -43,7 +43,7 @@ jobs:
           python-version: '3.11'
       - name: Validate app syntax and publisher modules
         run: |
-          node --check site/app.js
+          for script in site/js/*.js; do node --check "$script"; done
           python -m py_compile scripts/status_bar.py scripts/build_data.py scripts/ultra_economy.py
       - name: Require all UEM and inherited Next Move + WP16 Python tests
         run: |
