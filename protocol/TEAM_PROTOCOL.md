@@ -1,6 +1,8 @@
-# Team protocol v3.0 — CoordinatorLandingpage
+# Team protocol v3.1 — CoordinatorLandingpage
 
-Status: **v3.0 ADOPTED** (17 Oct 2026; Owner "with D3 … go ahead", [#1 6230015272](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6230015272); text = draft r2 of PR #59 incl. OTM differences D1–D3).
+Status: **v3.1 ADOPTED** (17 Oct 2026; v3.0 + the A13/A14 amendment: Owner "add A13 + A14 to P3 and team protocol", [#1 6230407705](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6230407705); wording = Codex Q12 [Common #409 6230450337](https://github.com/reallakshman19/Common/issues/409#issuecomment-6230450337)).
+
+> (v3.0) Status: **v3.0 ADOPTED** (17 Oct 2026; Owner "with D3 … go ahead", [#1 6230015272](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6230015272); text = draft r2 of PR #59 incl. OTM differences D1–D3).
 
 **What changed from v2.3:** Part A states the rules in force. Part B maps every v2.3 section (KEEP / REVISE). The v2.3 text is kept below as a historical appendix, struck through where superseded and **not deleted** (Owner: "Scrap all the old modes, do not delete, mark like comment"). Permission still comes only from recorded Owner decisions. Adopting this protocol starts no project, agent or work by itself (Part C).
 
@@ -91,6 +93,64 @@ Assess separately: readable record, sufficient evidence for the stated claim, an
 
 Proof requirements are stage-appropriate: a read-only review does not require future implementation CI. Applicable engineering/review/hosted-CI claims identify the exact assessed SHA and actual run; authorized local evidence states its route and limitations. A moved head invalidates affected claims of current qualification, while the prior run remains historical evidence. Do not call it baseline-red without same-check/base proof or treat a passing check as academic/product acceptance.
 
+
+### A6.1 Coding practice (P3 A13, added in v3.1)
+
+**A13 — coding practice within authorized scope.** New authored source/test files and materially changed source/test files must satisfy the 300-line file limit. An existing file already over 300 lines must not grow; when materially touched it is split along a coherent responsibility boundary as part of that authorized change. Unrelated oversized files are not a mandate for a big-bang rewrite. If the necessary split crosses allowed paths or changes an interface/scope beyond the grant, report that precise prerequisite; do not perform the wider refactor or claim compliance.
+
+Use one documented, deterministic size basis: physical file lines, including blank/comment lines, at the exact comparison base and candidate; report each changed file's before/after count. Identify the authored source/test file set and any generated/vendor/data exclusions explicitly. An exclusion is a scope rule to justify, not a loophole for hiding authored logic. Do not compress statements, delete useful explanation or scatter coupled code merely to pass a number.
+
+Functions should normally be approximately 50 lines or fewer, using a documented language-aware span measurement. A deviation is recorded with its reason and reviewed for cohesion; an approximate target does not silently become a hard universal parser gate.
+
+Keep one coherent responsibility per module, reuse established modules, and avoid duplicate engines/parallel implementations of the same responsibility. The required independent reviewer assesses these properties and any claimed deviation; line counts alone do not establish them.
+
+Changed behavior has applicable tests, including changed failure boundaries where relevant. Report the actual tested source, commands/environment, results, failures/skips and NOT_RUN reasons. Scope-preserving structural changes still need appropriate regression evidence. A read-only or blocked task uses its own stage-appropriate criteria, not invented future implementation tests.
+
+Mechanical checks may verify size measurements and explicit ratchet violations; they do not judge understanding, architecture, benefit, correctness or acceptance. New workflow changes or widening shared paths require their own applicable authority.
+
+### A6.2 Pre-claim self-check (P3 A14, added in v3.1)
+
+**A14 — self-check and issue reconciliation before a task claim.** Before a new DONE, PARTIAL or BLOCKED claim, publish one source-bound SELF-CHECK v1 companion on the task's actual evidence issue. Use the real stable task ID, governing plan/criteria revision, issue and assessed candidate/source. Where the native task has no candidate or accessible source yet, state UNKNOWN/NOT_AVAILABLE and identify the resolver; never invent an identity.
+
+Reconcile each applicable done-when item for the current authorized task/stage against actual proof, the planned/changed scope, A13 where applicable, actual tests, the issue checklist and every known unresolved task obligation. Mark MET only when the cited proof supports that criterion; otherwise use NOT_MET, NOT_RUN or UNKNOWN with its limit. NOT_APPLICABLE requires an explicit stage/scope basis and cannot waive an unmet criterion.
+
+List pending items with their stable existing task/issue reference where one exists, responsible actor, smallest next action, dependency/unblock condition and whether they prevent this task's done-when. Unknown ownership is reported UNKNOWN and routed, not invented. This is reconciliation of existing work, not another task-number/counter scheme.
+
+DONE is supportable only when all applicable task done-when criteria are MET, no unresolved obligation needed for that task remains, and the scope/required checks are satisfied. Separate future work may remain open if genuinely outside the approved unit; retain its source/owner and limits. Do not shrink criteria, rename the unit or move pending work merely to obtain DONE. PARTIAL/BLOCKED reports remain honest when evidence or capability is missing.
+
+A self-check is the author's report, not independent verification, approval, release or Owner acceptance. The coordinator assesses its applicability/sufficiency against the real issue, plan, source and authority. Missing or stale self-check means the new completion claim is unqualified; it does not erase material work, prove a failure, or prohibit reporting a blocker.
+
+Keep native evidence/LOG unchanged. The self-check is linked supporting context, earns no native evidence/progress/acceptance credit by itself, and creates no new lifecycle/phase. Corrections append with the replaced companion's reference; changed plan/candidate/proof invalidates affected current claims while preserving history.
+
+The coordinator reconciles pending facts into the existing issue/control/status records, keeping actual ownership, next action and unresolved decisions visible. Use Next Move only where the project's real opt-in and authority permit it. A pending row or “next” instruction is neither dispatch nor permission to work. Do not tick issues, expand scope or approve work merely from the self-check.
+
+**OTM extension (labelled, not Owner wording):** the same self-check also applies before a FAILED claim.
+
+**Team-protocol integration (Codex Q12 §5):**
+
+Where this Owner-adopted amendment applies, perform A13 and publish the A14 SELF-CHECK companion before a new DONE/PARTIAL/BLOCKED claim. Publish the companion on the existing registered evidence issue, then reference its actual permalink through an existing TASK EVIDENCE v2 Proof line, graded CLAIM-ONLY for the author's self-assessment. Actual test/readback proof keeps its own true grade. Preserve every existing field, task status, STATUS v2 rule, NOT_POSTED relay and evidence-publication requirement.
+
+Do not add another mandatory terminal section, repeat the entire self-check inside the task block, or introduce a competing completion count. The same native block still appears in the agent reply and evidence issue. A linked companion establishes that an assessment was recorded, not that the task passed independent verification or was accepted.
+
+If publication is unavailable, show the actual NOT_POSTED limit and follow the existing unchanged attributed-relay rule. Do not claim the self-check was published or the completion gate qualified without actual readback. Urgent blocker/unsafe-work/Owner-intervention reporting is never withheld pending a form or unavailable tool; stop affected work as required and report the missing assessment honestly.
+
+Reconcile pending items in existing issue/control records; invoke Next Move only under its actual pilot/authority. Self-checks do not grant authority, clear HOLD, renew allowances, reset task-cycle counters or activate a watcher.
+
+**Companion template** (plain text; not a completion receipt):
+
+```text
+SELF-CHECK v1 · <stable task ID> · <own evidence issue>
+Basis: plan/criteria <source + revision>; candidate <repo@sha or UNKNOWN with reason>; source/fixtures <refs or limits>
+Done-when: <criterion> → MET <proof> | NOT_MET <gap> | NOT_RUN <why> | UNKNOWN <missing source>
+Scope: approved <paths/ref>; actual changed <paths>; extras <none or grant/gap>
+A13: applicable <yes/no + basis>; files <before→after/count source>; legacy split <result/gap>
+A13 review: function-span findings <refs>; cohesion/reuse/duplicates <author's assessment + limits>
+Tests: <command/environment> @ <tested sha> → <actual result>; failures/skips/NOT_RUN <limits>
+Issue reconciliation: <criterion/checklist ref> → <actual proof or mismatch>
+Pending: <existing ref or descriptive item> · owner <actor/UNKNOWN> · next <action> · unblocks <event> · prevents task DONE <yes/no + basis>
+Proposed claim: DONE | PARTIAL | BLOCKED · reason/limits <text>
+Native report: <permalink when published, or PENDING/NOT_POSTED with reason>
+```
 
 ### A7. Continuity
 
