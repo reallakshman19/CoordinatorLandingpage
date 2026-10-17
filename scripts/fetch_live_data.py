@@ -7,372 +7,47 @@ instructions, modifies no GitHub content and never treats a fetch failure as
 successful observation.
 """
 import argparse
-from contextvars import ContextVar
 from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
 import re
 import shutil
-import subprocess
+import subprocess  # Compatibility: existing callers patch subprocess.run here.
 import sys
 from urllib.parse import urlparse
+
+from landing_build.fetch_github import _API_ERRORS, gh_api, save_json
+from landing_build.fetch_github import fetch_issue as _fetch_issue
+from landing_build.fetch_discovery import (
+    discover_sources, extract_issue_number, issue_ref, discover_project_refs,
+)
+from landing_build.fetch_extras import WP12_CHILD_LIMIT, OWNER_INDEX_PAGE_LIMIT
+from landing_build import fetch_extras as _fetch_extras
 from landing_build.lineage import plan_lineage, finish_lineage
-
-_API_ERRORS = ContextVar("gh_api_errors", default=None)
-
-
-def gh_api(path: str, errors=None):
-    """Return decoded resource or None; report safe HTTP/transport reason."""
-    def report(reason):
-        sink = errors if errors is not None else _API_ERRORS.get()
-        if sink is not None:
-            sink.append(f"gh_api_failure:{path}:{reason}")
-    try:
-        # Owner indexes are fetched with explicit page numbers, max five.
-        # Never let gh --paginate silently ignore that strict upper bound.
-        bounded = bool(re.search(
-            r"/issues\?state=all&.*per_page=100&page=[1-5]$", path))
-        command = ["gh", "api"] + ([] if bounded else ["--paginate"]) + [path]
-        proc = subprocess.run(
-            command,
-            capture_output=True, text=True, check=True
-        )
-        raw = proc.stdout.strip()
-        if not raw:
-            report("EMPTY_RESPONSE")
-            return None
-        decoder = json.JSONDecoder()
-        pos = 0
-        pages = []
-        while pos < len(raw):
-            while pos < len(raw) and raw[pos].isspace():
-                pos += 1
-            if pos >= len(raw):
-                break
-            value, pos = decoder.raw_decode(raw, pos)
-            pages.append(value)
-        if len(pages) == 1:
-            return pages[0]
-        values = []
-        for page in pages:
-            if isinstance(page, list):
-                values.extend(page)
-            else:
-                values.append(page)
-        return values
-    except (subprocess.CalledProcessError, OSError, ValueError, TypeError) as exc:
-        # Never echo stderr: it might contain credentials or response bodies.
-        stderr = exc.stderr if isinstance(exc, subprocess.CalledProcessError) else ""
-        match = re.search(r"(?i)\bHTTP(?:\s+error)?[\s:=-]*([45]\d{2})\b",
-                          stderr if isinstance(stderr, str) else "")
-        reason = ("HTTP_" + match.group(1) if match else
-                  "TRANSPORT_ERROR" if isinstance(exc, OSError) else
-                  "INVALID_RESPONSE" if isinstance(exc, (ValueError, TypeError))
-                  else "API_FAILURE")
-        report(reason)
-        print(f"  fetch failed for {path}: {reason}", file=sys.stderr)
-        return None
 
 
 def fetch_issue(repo: str, number: int):
-    """Return issue and complete comments; never mistake missing comments for []."""
-    issue = gh_api(f"/repos/{repo}/issues/{number}")
-    if isinstance(issue, list):
-        issue = issue[0] if len(issue) == 1 else None
-    if not isinstance(issue, dict):
-        return None
-    comments = gh_api(f"/repos/{repo}/issues/{number}/comments")
-    if not isinstance(comments, list):
-        return None
-    return {
-        "number": number,
-        "repository": repo,
-        "id": issue.get("id"),
-        "title": issue.get("title", ""),
-        "body": issue.get("body", ""),
-        "state": issue.get("state", ""),
-        "created_at": issue.get("created_at", ""),
-        "updated_at": issue.get("updated_at", ""),
-        "html_url": issue.get("html_url", ""),
-        "author_association": issue.get("author_association", ""),
-        "comments": [
-            {"id": c.get("id"), "created_at": c.get("created_at", ""),
-             "updated_at": c.get("updated_at", ""),
-             "body": c.get("body", ""),
-             "author_association": c.get("author_association", "")}
-            for c in comments if isinstance(c, dict)
-        ],
-    }
-
-
-def extract_issue_number(url: str, repo: str | None = None):
-    """Accept only a real issues URL, optionally fenced to the control repo."""
-    if not isinstance(url, str):
-        return None
-    m = re.fullmatch(
-        r"https://github\.com/([^/]+/[^/]+)/issues/(\d+)(?:#.*)?",
-        url.strip(), flags=re.IGNORECASE
-    )
-    if not m or (repo and m.group(1).lower() != repo.lower()):
-        return None
-    return int(m.group(2))
-
-
-def save_json(path: Path, data):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n",
-                    encoding="utf-8", newline="\n")
-
-
-def discover_sources(root: Path, repo: str):
-    """Registry-controlled source IDs. Inbox #1 is deliberately NOT inferred."""
-    issue_numbers = {1}
-    statuses = {}
-    errors = []
-    logs_root = root / "logs"
-    for registry_path in sorted(logs_root.glob("*/registry.json")):
-        project = registry_path.parent.name
-        try:
-            registry = json.loads(registry_path.read_text(encoding="utf-8"))
-            if not isinstance(registry, dict):
-                raise ValueError("registry is not an object")
-        except (OSError, ValueError) as exc:
-            errors.append(f"registry_invalid:{project}:{type(exc).__name__}")
-            continue
-        if registry.get("project") and registry["project"] != project:
-            errors.append(f"registry_project_mismatch:{project}")
-            continue
-        status_url = registry.get("status_comment") or registry.get("status_issue") or ""
-        if status_url:
-            status_no = extract_issue_number(status_url, repo)
-            if status_no is None:
-                errors.append(f"status_reference_invalid:{project}")
-            else:
-                statuses[project] = status_no
-                issue_numbers.add(status_no)
-        for agent in registry.get("agents", []):
-            if not isinstance(agent, dict):
-                errors.append(f"agent_reference_invalid:{project}")
-                continue
-            ref = agent.get("evidence_thread", "")
-            if ref:
-                number = extract_issue_number(ref, repo)
-                if number is None:
-                    errors.append(f"evidence_reference_invalid:{project}")
-                else:
-                    issue_numbers.add(number)
-    return issue_numbers, statuses, errors
-
-
-
-def issue_ref(url: str, product_repo: str, control_repo: str):
-    """Explicit URL repository wins; never resolve only the issue number.
-
-    A project's registry can point at its PRODUCT repo or the control hub.
-    Other repositories are not authorized data sources.
-    """
-    m = re.fullmatch(
-        r"https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/issues/(\d+)"
-        r"(?:#issuecomment-\d+)?",
-        str(url or "").strip(), flags=re.IGNORECASE,
-    )
-    if not m:
-        return None
-    chosen = m.group(1)
-    if chosen.lower() not in {product_repo.lower(), control_repo.lower()}:
-        return None
-    return chosen, int(m.group(2))
-
-
-def discover_project_refs(root: Path, control_repo: str):
-    """Scope each project by its registry product repo, and each link by URL."""
-    projects, refs, errors = {}, {(control_repo, 1)}, []
-    for path in sorted((root / "logs").glob("*/registry.json")):
-        project = path.parent.name
-        try:
-            registry = json.loads(path.read_text(encoding="utf-8"))
-            if not isinstance(registry, dict) or (registry.get("project") and
-                                                  registry["project"] != project):
-                raise ValueError("registry/project mismatch")
-            product = registry.get("repository")
-            if not isinstance(product, str) or not re.fullmatch(
-                    r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", product):
-                raise ValueError("product repository invalid")
-        except (OSError, ValueError) as exc:
-            errors.append(f"registry_invalid:{project}:{type(exc).__name__}")
-            continue
-        status_url = registry.get("status_comment") or registry.get("status_issue") or ""
-        status = issue_ref(status_url, product, control_repo) if status_url else None
-        if status_url and status is None:
-            errors.append(f"status_reference_invalid:{project}")
-        named = set()
-        if status:
-            named.add(status)
-        for agent in registry.get("agents", []):
-            if not isinstance(agent, dict):
-                errors.append(f"agent_reference_invalid:{project}")
-                continue
-            url = agent.get("evidence_thread", "")
-            if not url:
-                continue
-            pointer = issue_ref(url, product, control_repo)
-            if pointer is None:
-                errors.append(f"evidence_reference_invalid:{project}")
-            else:
-                named.add(pointer)
-        refs.update(named)
-        projects[project] = {"repository": product,
-                             "status": status, "threads": sorted(named)}
-    return projects, refs, errors
-
-
-
-
-WP12_CHILD_LIMIT = 12
+    """Public compatibility API; preserve patched fetch_live_data.gh_api."""
+    return _fetch_issue(repo, number, api=gh_api)
 
 
 def capture_project_extras(root, cache, projects, errors, control_repo=None):
-    token = _API_ERRORS.set(errors)
-    try:
-        return _capture_project_extras(root, cache, projects, errors, control_repo)
-    finally:
-        _API_ERRORS.reset(token)
+    """Public compatibility API; preserve caller-patched provider/writer."""
+    return _fetch_extras.capture_project_extras(
+        root, cache, projects, errors, control_repo, api=gh_api, save=save_json)
 
 
 def _capture_project_extras(root, cache, projects, errors, control_repo=None):
-    """Bounded read-only child-title and PR-head observations per project."""
-    extras = cache / "project-extras"
-    if extras.exists():
-        shutil.rmtree(extras)
-    extras.mkdir(parents=True)
-    for project, config in sorted(projects.items()):
-        reg = json.loads((root / "logs" / project / "registry.json")
-                         .read_text(encoding="utf-8"))
-        repo = config['repository']
-        dest = extras / project
-        dest.mkdir()
-        lineage = plan_lineage(reg, control_repo or repo)
-        observations = {}
-        for item in lineage:
-            if item["status"] != "PENDING":
-                continue
-            key = (item["repository"], item["issue_number"])
-            if key not in observations:
-                endpoint = f"/repos/{key[0]}/issues/{key[1]}"
-                earlier = len(errors)
-                result = gh_api(endpoint)
-                reason = next((x.rsplit(":", 1)[-1] for x in errors[earlier:]
-                               if x.startswith(f"gh_api_failure:{endpoint}:")), None)
-                observations[key] = (result, reason)
-            result, reason = observations[key]
-            finish_lineage(item, result)
-            if item["status"] == "INACCESSIBLE" and reason:
-                item["reason"] = reason
-        if lineage:
-            save_json(dest / "lineage.json", lineage)
-        children = reg.get('children', [])
-        if children:
-            if not isinstance(children, list) or len(children) > 100:
-                errors.append(f"children_limit_or_shape_invalid:{project}")
-            else:
-                results, seen = [], set()
-                for entry in children:
-                    url = entry.get('url') if isinstance(entry, dict) else entry
-                    mt = re.fullmatch(
-                        r'https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/issues/(\d+)',
-                        str(url or ''))
-                    if not mt or mt.group(1) != repo:
-                        errors.append(f"child_reference_invalid:{project}")
-                        continue
-                    if url in seen:
-                        continue  # duplicate registry pointer is one child
-                    seen.add(url)
-                    if len(seen) > WP12_CHILD_LIMIT:
-                        errors.append(f"children_limit_or_shape_invalid:{project}")
-                        break
-                    num = int(mt.group(2))
-                    # A single resource endpoint, not a paginated search.
-                    value = gh_api(f"/repos/{repo}/issues/{num}")
-                    if (not isinstance(value, dict)
-                            or value.get('number') != num
-                            or value.get('pull_request')
-                            or value.get('html_url', url) != url):
-                        errors.append(f"child_fetch_invalid:{project}:{num}")
-                        continue
-                    results.append({'url': url, 'repository': repo,
-                                    'title': value.get('title', '')})
-                save_json(dest / "children.json", results)
-        # One declared schema, at root and/or agents[i].evidence.
-        # At most 12 unique, own-repository PR HEAD GETs per project.
-        declarations = [reg.get('evidence')]
-        declarations.extend(a.get('evidence') for a in reg.get('agents', [])
-                            if isinstance(a, dict))
-        pr_urls = []
-        for record in declarations:
-            if record is None:
-                continue
-            if not isinstance(record, dict):
-                errors.append(f"evidence_declaration_invalid:{project}")
-                continue
-            url, sha = record.get('pr_url'), record.get('head')
-            mt = re.fullmatch(
-                r'https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/pull/(\d+)',
-                str(url or ''))
-            if (not mt or mt.group(1) != repo or not isinstance(sha, str)
-                    or not re.fullmatch(r'[0-9a-fA-F]{40}', sha)):
-                errors.append(f"evidence_declaration_invalid:{project}")
-                continue
-            if url not in pr_urls:
-                pr_urls.append(url)
-        if len(pr_urls) > WP12_CHILD_LIMIT:
-            errors.append(f"evidence_pr_limit:{project}")
-            continue
-        snapshots = []
-        for url in pr_urls:
-            number = int(url.rsplit('/', 1)[-1])
-            value = gh_api(f"/repos/{repo}/pulls/{number}")
-            current = value.get('head') if isinstance(value, dict) else None
-            sha = current.get('sha') if isinstance(current, dict) else None
-            if (not isinstance(sha, str) or
-                    not re.fullmatch(r'[0-9a-fA-F]{40}', sha)
-                    or value.get('number') != number):
-                errors.append(f"evidence_pr_head_unavailable:{project}")
-                continue
-            snap = {'url': url, 'repository': repo, 'head': sha}
-            if value.get('state') in ('open', 'closed'):
-                snap['state'] = value['state']
-            if 'merged_at' in value:
-                snap['merged_at'] = value['merged_at']
-            snapshots.append(snap)
-        if pr_urls:
-            save_json(dest / "pr-heads.json", snapshots)
-
-
-OWNER_INDEX_PAGE_LIMIT = 5
+    """Compatibility alias for existing non-CLI callers."""
+    return _fetch_extras._capture_project_extras(
+        root, cache, projects, errors, control_repo, api=gh_api, save=save_json)
 
 
 def fetch_bounded_owner_index(repo, labelled, max_pages=OWNER_INDEX_PAGE_LIMIT):
-    """Read up to 5 explicit pages without gh auto-pagination.
-
-    Page five containing 100 items is ambiguous (page six could exist):
-    return None and refuse green publication rather than truncate silently.
-    """
-    if max_pages != OWNER_INDEX_PAGE_LIMIT:
-        raise ValueError("Owner issue page bound cannot be changed")
-    prefix = f"/repos/{repo}/issues?state=all&"
-    if labelled:
-        prefix += "labels=owner-input&"
-    rows = []
-    for page in range(1, max_pages + 1):
-        chunk = gh_api(prefix + f"per_page=100&page={page}")
-        if not isinstance(chunk, list) or len(chunk) > 100:
-            return None
-        rows.extend(chunk)
-        if len(chunk) < 100:
-            return rows
-    # Even if there were exactly 500, we cannot prove no sixth page.
-    return None
+    """Public compatibility API; preserve caller-patched gh_api."""
+    return _fetch_extras.fetch_bounded_owner_index(
+        repo, labelled, max_pages, api=gh_api)
 
 
 def main():
