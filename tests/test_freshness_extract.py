@@ -110,7 +110,9 @@ class FreshnessExtractTests(unittest.TestCase):
             second = fingerprint(right)
             print("FROZEN_FIXTURE_SHA256=" + first)
             self.assertEqual(first, second)
-            self.assertEqual(first, "3eb5bddf175f2d44e50b7d2da9fecc30ac95742fcb17d3a3b62bc61eb8bcf311")
+            # Legacy SHA256: 3eb5bddf175f2d44e50b7d2da9fecc30ac95742fcb17d3a3b62bc61eb8bcf311
+            # WP-L2(b) intentional five-only UNPARSED evidence revision.
+            self.assertEqual(first, "0a7ebd12ca385963c97adadfeb033a8f88777a4ec6ad9d1bcddf0e785e4095a8")
             self.assertEqual(
                 {p.name: p.read_bytes() for p in left.glob("*.json")},
                 {p.name: p.read_bytes() for p in right.glob("*.json")})

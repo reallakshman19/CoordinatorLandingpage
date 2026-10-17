@@ -164,7 +164,9 @@ def build_timeline_from_threads(threads: list, inbox: list, project: str,
                 events.append({
                     'type': 'TASK_EVIDENCE',
                     'ts': ts,
-                    'actor': f"agent:{ev['chat_id8']}",
+                    'actor': (f"{ev['role']} · agent:{ev['chat_id8']}"
+                              if allowed_chats is None
+                              else f"agent:{ev['chat_id8']}"),
                     'project': project,
                     'chat_id8': ev['chat_id8'],
                     'seq': ev['seq'],

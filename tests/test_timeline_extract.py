@@ -16,8 +16,11 @@ import build_data
 # Frozen fixture: #69 (7f5a6797) added project observation keys; WP-CI1
 # compared 18 Windows/Linux files (run 39060897918): only CRLF differed.
 # Generated JSON is now always LF; this is the cross-platform byte oracle.
+# LEGACY FROZEN SHA256: 3eb5bddf175f2d44e50b7d2da9fecc30ac95742fcb17d3a3b62bc61eb8bcf311
+# Replaced only for WP-L2(b): 5 chat-UNKNOWN TASK EVIDENCE records were
+# restored as UNPARSED in grade9-pilot project/summary, verified five-only JSON diff.
 PRE_REFACTOR_SHA256 = (
-    "3eb5bddf175f2d44e50b7d2da9fecc30ac95742fcb17d3a3b62bc61eb8bcf311")
+    "0a7ebd12ca385963c97adadfeb033a8f88777a4ec6ad9d1bcddf0e785e4095a8")
 
 
 class FixedDatetime(datetime):
