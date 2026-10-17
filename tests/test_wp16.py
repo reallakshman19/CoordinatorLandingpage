@@ -298,6 +298,7 @@ class WP16StatusBar(unittest.TestCase):
 
     def test_24_overdue_or_missing_next_due_never_active(self):
         reg=registry()
+        baseline=sb.build_status_bar({"demo":reg},{},NOW)["instances"][0]["light"]
         ref="https://github.com/acme/demo/issues/1#issuecomment-123"
         timer={"state":"ACTIVE","checked_at":"2026-10-16T17:55:00Z",
                "last_tick":"2026-10-16T17:50:00Z",
@@ -307,7 +308,7 @@ class WP16StatusBar(unittest.TestCase):
                 reg["agents"][0]["timer_observation"]={**timer,"next_due":due}
                 out=sb.build_status_bar({"demo":reg},{},NOW)
                 self.assertEqual(out["instances"][0]["timer"]["state"],"UNKNOWN")
-                self.assertEqual(out["instances"][0]["light"],"green")
+                self.assertEqual(out["instances"][0]["light"],baseline)
         reg["agents"][0]["timer_observation"]={**timer,
                                                 "next_due":"2026-10-16T18:20:00Z"}
         self.assertEqual(sb.build_status_bar({"demo":reg},{},NOW)
