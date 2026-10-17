@@ -6,27 +6,27 @@
   "criticality_owner_words": "landing normal, proceed implementation (Owner, 16 Oct ~19:4x)",
   "next_move": {"pilot": true, "approval_required": true, "spec": "protocol/NEXT_MOVE_v1.md", "owner_words": "review cycle is over. start planning and implement."},
   "parent_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/21",
-  "updated": "2026-10-17T16:18+04:00",
-  "updated_by": "TeamCoordinator (source-bound g3 1b publication state; authority unchanged)",
+  "updated": "2026-10-17T16:39:48.000+04:00",
+  "updated_by": "TeamCoordinator; actual Owner first-workpack release, qualification/final2 and fresh bounded lease",
   "control": {
     "epoch": 2,
     "coordinator": "Codex (TeamCoordinator; onboarded in CL#16)",
     "owner_words": "You will be Ownerteammember ... | Another Codex agent who is already on board in the landing page | (selected) Same Codex.",
     "since": "2026-10-17T15:08+04:00",
     "control_post": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187632",
-    "hold": {"since": "2026-10-17 (Owner chat, Claude session bd6b17ad)", "owner_words": "Hold. Stay read-in, do nothing until I say.", "scope": "all projects", "lifted_for": ["phase 0 role-change records (\"proceed\")", "P1 may start with the plan (\"go\" -> \"ok\")", "landing-live operations (\"Approved\", #1 6233547571)"], "still_held": "nothing for landing-live; handover-master and v36-continuity stay held", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187495", "lifts_on": "Owner words", "landing_live_status": "operations lifted; TeamCoordinator acts after installing its graded skill (#16 6233544709)", "new_agent_approved": "one landing implementer L1 g3 for P1 (\"ok\", #1 6233547571)"}, "hold_history": [{"since": "2026-10-17T04:1x+04:00", "owner_words": "HOLD", "scope": "operational: no chat sends or coordinator cycles; read-only work and Owner-requested record/doc fixes allowed", "lifts_on": "Owner words (e.g. resume)", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6229575580", "previous": null, "lifted": "2026-10-17T09:09+04:00", "lifted_words": "No HOLD, continue"}],
+    "hold": null, "hold_history": [{"since":"2026-10-17 (Owner chat, Claude session bd6b17ad)","owner_words":"Hold. Stay read-in, do nothing until I say.","scope":"all projects","lifted_for":["phase 0 role-change records (\"proceed\")","P1 may start with the plan (\"go\" -> \"ok\")","landing-live operations (\"Approved\", #1 6233547571)"],"still_held":"nothing for landing-live; handover-master and v36-continuity stay held","source":"https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187495","lifts_on":"Owner words","landing_live_status":"operations lifted; TeamCoordinator acts after installing its graded skill (#16 6233544709)","new_agent_approved":"one landing implementer L1 g3 for P1 (\"ok\", #1 6233547571)","projection_corrected_at":"2026-10-17T16:39:48.000+04:00","lifted_for_this_project":"landing-live only; Owner #1/6233547571 and direct current first-workpack release #1/6233960298","lifted_source":"https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233547571","other_projects":"Common408/409 remain on their existing HOLDs; this landing registry does not lift them"},{"since": "2026-10-17T04:1x+04:00", "owner_words": "HOLD", "scope": "operational: no chat sends or coordinator cycles; read-only work and Owner-requested record/doc fixes allowed", "lifts_on": "Owner words (e.g. resume)", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6229575580", "previous": null, "lifted": "2026-10-17T09:09+04:00", "lifted_words": "No HOLD, continue"}],
     "known_gap": "no independent checker inside the team; C15 needs an Owner-named checker",
     "history": [{"epoch": 1, "coordinator": "Claude session (dual role with OwnerTeammember)", "owner_words": "read this issue .../issues/21 . improvise, lauch a new agent in your tab. you will be teamcoodinator and ownerteammember", "since": "2026-10-15T14:42+04:00", "control_post": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6190161629", "ended": "2026-10-17T15:08+04:00"}]
   },
   "roles": {"owner_teammember": "Claude session (role only; no sends to agent chats)", "team_coordinator": "Codex (TeamCoordinator epoch2); graded coordinator-protocol3.40.0 installed; landing-live-only operations resumed under #1 6233547571", "oracle": "Claude, acting Oracle (Owner: \"for now you step in shoes of oracle, authorized. oracle will review later\"); advice tagged [ORACLE · acting] to the TeamCoordinator only; source https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233265443", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187495"},
   "workflow": {
     "loop": [
-      "L1 posts TASK EVIDENCE v2 in #22",
+      "L1 g3 posts TASK EVIDENCE v2 in #64; predecessor evidence remains #22",
       "coordinator checks against GitHub",
       "GO / FIX / HOLD",
       "next slice"
     ],
-    "current": "P1 #62: L1 g3 01a149bf launched; native BuddyRunner1.7 1b #64/6233766025 hash/readback verified; OTM qualification/final2 pending. Product implementation/custody not yet released; g2 lease remains released. Common408/409 remain held; UEM parked.", "previous": "WP0-WP4 merged (#24-#28); next WP5 + F7 Owner round trip"
+    "current": "P1 #62 G1/WP-L2(a) only: qualified g3 01a149bf, final2 #64/6233973647 CLOSED; fresh exact-path lease. CAPABILITY no product writes, then conditional CHAT_NA parser fix only. Release NOT_DELIVERED until native pickup; no broad split. Common408/409 remain held, UEM parked.", "previous": "WP0-WP4 merged (#24-#28); next WP5 + F7 Owner round trip"
   },
   "agents": [
     {
@@ -43,7 +43,7 @@
       "role": "implementer",
       "generation": 2,
       "chat_id8": "6ad1a045",
-      "status": "retired 2026-10-17 03:39 +04 (chat reached ChatGPT maximum conversation length; no standby existed). 1a prepared by OwnerTeammember acting as G1: #22 6226735852, corrected by a later #22 comment. No successor selected (g3 NOT_SELECTED)",
+      "status": "retired 2026-10-17 03:39 +04 (chat reached ChatGPT maximum conversation length; no standby existed). 1a prepared by OwnerTeammember acting as G1: #22 6226735852, corrected by a later #22 comment. Historical g3 NOT_SELECTED superseded: qualified g3 01a149bf now has its own fresh bounded lease; old g2 stays retired",
       "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22",
       "handover": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6207718018",
       "onboarded": "2026-10-16T07:49+04:00 DELIVERED"
@@ -53,17 +53,20 @@
       "role": "implementer",
       "generation": 3,
       "chat_id8": "01a149bf",
-      "status": "1b PUBLISHED/hash-readback verified; native initial turn COMPLETE/idle; OTM qualification and G1 final2/custody pending; product implementation not released",
+      "status": "ready — OTM qualified1b; final2 CLOSED; fresh first-workpack lease granted; native release pending delivery/pickup, not claimed working",
       "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64",
       "native_route": "codex-local",
       "instance_sha256": "22730a77de353748ba751af60370f964764abc0f3cb359d33e11e0d8d913ea0c",
       "assignment_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64",
-      "authority_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233547571",
-      "handover": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233766025",
+      "authority_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233960298",
+      "handover": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233973647",
       "handover_detail": {
         "method": "BuddyRunner1.7",
         "key": "landing-live-L1-g2-to-g3",
-        "phase": "1b_SUBMITTED_QUALIFICATION_PENDING",
+        "phase": "2_CLOSED",
+        "phase2": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233973647",
+        "qualification": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233814152",
+        "oracle_advice": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233814426",
         "phase1b": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233766025",
         "phase1b_sha256": "89d8945b06958a3079f3cdcfadce34d736e0bd86b91758d8154cca315e398de9",
         "qualification_request": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233774751",
@@ -71,13 +74,34 @@
         "phase1a": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6226735852",
         "correction": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6229302006"
       },
-      "execution_mode": "read_only",
-      "onboarded": "Own-source/role adoption PUBLISHED and provider/hash verified; OTM qualification PENDING; no writer lease",
-      "branch": null,
+      "execution_mode": "write",
+      "workpack_gate": "CAPABILITY first: no product/tracked write; CHAT_NA only after actual suite/capability PASS and valid session-role authority; code scope exactly two production regexes plus new test file",
+      "independent_reviewer": "Claude/OwnerTeammember, non-author review-routing owner; actual fresh exact-head engineering verdict pending, not the Oracle advice",
+      "onboarded": "QUALIFIED #64/6233814152; final2 #64/6233973647; fresh first-workpack lease only, delivery still pending",
+      "branch": "codex/landing-p1-chat-na-01a149bf",
+      "branch_state": "RESERVED_NOT_CREATED; implementer creates only after no-write capability stage PASS",
       "timer": "NOT_ARMED"
     }
   ],
   "leases": [
+    {
+      "holder": "Agent L1 g3 01a149bf",
+      "branches": "codex/landing-p1-chat-na-01a149bf",
+      "paths": [
+        "scripts/build_data.py",
+        "tests/test_chat_na.py"
+      ],
+      "granted": "2026-10-17T16:39:48.000+04:00",
+      "authority_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233960298",
+      "handover_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233973647",
+      "incumbent_stop_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6229302006",
+      "source_sha": "1a982c5a9a68df56f182ce3ce2e1e54da794c549",
+      "source_parser_blob": "1bb4dd3cb7e10f036d65c633ecc8c567af3b0401",
+      "workpack": "#62 G1/WP-L2(a): CAPABILITY → conditional CHAT_NA",
+      "conditions": "Exclusive. First clean clone/current exact head and unchanged suites, NO product/tracked edits. If PASS, only EVIDENCE_RE/STATUS_RE two regexes no net growth plus new test. Any wider production edit or failed capability stops affected work; report precise gap. No broad split or Common work.",
+      "independent_reviewer": "Claude/OTM non-author review-routing owner; fresh exact-head verdict required before merge",
+      "ends_on": "First workpack candidate/report or Owner revocation/HOLD; no automatic next slice or lifetime expansion"
+    },
     {
       "holder": "Agent L1 g2",
       "branches": "l1/*",
@@ -94,6 +118,14 @@
     }
   ],
   "decisions": [
+    {
+      "id": "OWNER-P1-CHAT-NA-FIRST-WORKPACK",
+      "owner_words": "As G1, publish final phase 2 on #64 once, then release only the first workpack to L1 g3 under its fresh lease: a no-write clone-and-test capability check, then the \"chat n/a\" parser fix. Record in #1.",
+      "at": "2026-10-17T16:39:48.000+04:00",
+      "event_time": "Owner message time not exposed; this is actual TC record time",
+      "scope": "Existing L1 g3 only, #62 G1/WP-L2(a), exact staged lease above; no other grant renewed",
+      "source_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233960298"
+    },
     {
       "id": "MERGE-STANDING",
       "owner_words": "go ahead. merge approved further.",
