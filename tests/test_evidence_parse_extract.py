@@ -12,6 +12,8 @@ from unittest import mock
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import build_data
+# Reuse the existing Linux/Windows extraction-test CI gate without a workflow edit.
+from tests.test_l2b_intake import IntakeTests
 
 # Frozen fixture: #69 (7f5a6797) added project observation keys; WP-CI1
 # compared 18 Windows/Linux files (run 39060897918): only CRLF differed.
