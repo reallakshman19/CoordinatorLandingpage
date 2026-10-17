@@ -16,6 +16,7 @@ import shutil
 import subprocess
 import sys
 from urllib.parse import urlparse
+from landing_build.lineage import plan_lineage, finish_lineage
 
 
 def gh_api(path: str):
@@ -215,7 +216,7 @@ def discover_project_refs(root: Path, control_repo: str):
 WP12_CHILD_LIMIT = 12
 
 
-def capture_project_extras(root, cache, projects, errors):
+def capture_project_extras(root, cache, projects, errors, control_repo=None):
     """Bounded read-only child-title and PR-head observations per project."""
     extras = cache / "project-extras"
     if extras.exists():
@@ -227,6 +228,17 @@ def capture_project_extras(root, cache, projects, errors):
         repo = config['repository']
         dest = extras / project
         dest.mkdir()
+        lineage = plan_lineage(reg, control_repo or repo)
+        observations = {}
+        for item in lineage:
+            if item["status"] != "PENDING":
+                continue
+            key = (item["repository"], item["issue_number"])
+            if key not in observations:
+                observations[key] = gh_api(f"/repos/{key[0]}/issues/{key[1]}")
+            finish_lineage(item, observations[key])
+        if lineage:
+            save_json(dest / "lineage.json", lineage)
         children = reg.get('children', [])
         if children:
             if not isinstance(children, list) or len(children) > 100:
@@ -359,7 +371,7 @@ def main():
 
     project_refs, all_refs, errors = discover_project_refs(root, args.repo)
     captured_at = datetime.now(timezone.utc).isoformat()
-    capture_project_extras(root, cache, project_refs, errors)
+    capture_project_extras(root, cache, project_refs, errors, control_repo=args.repo)
     fetched = {}
     # A (repo, number) pair is the immutable identity. 12@product-A is not
     # 12@product-B and neither may be substituted for 12@control-hub.
