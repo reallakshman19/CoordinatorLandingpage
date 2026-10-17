@@ -683,6 +683,27 @@ function wp16Row(body,cells,key) {
   }
   body.appendChild(tr);
 }
+function wp16CoordinatorCell(record){
+  const info=record && typeof record==='object'?record:{};
+  const valid=['NORMAL','ACTING'].includes(info.mode) &&
+              typeof info.holder==='string' && info.holder.trim();
+  const cell=el('span','wp16-coordinator',
+    valid?info.holder+' · '+info.mode:'UNKNOWN');
+  const ref=String(info.control_ref||'');
+  if(valid && /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/(?:issues|pull)\/[1-9][0-9]*#issuecomment-[1-9][0-9]*$/.test(ref)){
+    const a=el('a','wp16-control-ref','CONTROL');
+    a.href=ref;a.target='_blank';a.rel='noopener noreferrer';
+    cell.append(el('span','note',' · '),a);
+  }
+  return cell;
+}
+function wp16Observation(record,kind){
+  const info=record && typeof record==='object'?record:{};
+  const state=kind==='timer'
+    ?(['ACTIVE','PAUSED'].includes(info.state)?info.state:'UNKNOWN')
+    :(['UP','DOWN'].includes(info.result)?info.result:'UNKNOWN');
+  return state;
+}
 async function renderStatusBar(app){
   app.replaceChildren(cloneTemplate('tpl-status-bar'));
   const source=await fetchJSON(
@@ -709,7 +730,7 @@ async function renderStatusBar(app){
       String(cv.projected??0)+'/'+String(cv.expected??'?'),
       p.active_count??0,
       (p.dependencies?.blocked||[]).concat(p.dependencies?.unknown||[]).join(', ')||'none verified',
-      p.reason||'unknown']);
+      p.reason||'unknown',wp16CoordinatorCell(p.coordinator)]);
   }
   for(const r of source.instances){
     let link=el('span','note','no registered id8');
@@ -720,6 +741,13 @@ async function renderStatusBar(app){
       link.title='id8-only chat reference; full private chat ID is not stored';
     }
     const mon=r.dimensions?.monitoring||{},auth=r.dimensions?.execution_authority||{};
+    const timer=r.timer||{},browser=r.browser||{};
+    const timerState=wp16Observation(timer,'timer');
+    const browserState=wp16Observation(browser,'browser');
+    const timerTimes='last tick '+String(timerState==='UNKNOWN'?'UNKNOWN':timer.last_tick||'UNKNOWN')+
+      ' · next due '+String(timerState==='UNKNOWN'?'UNKNOWN':timer.next_due||'UNKNOWN');
+    const browserCheck=browserState+' · checked '+
+      String(browserState==='UNKNOWN'?'UNKNOWN':browser.checked_at||'UNKNOWN');
     wp16Row($('wp16-tc-rows'),[
       r.project,r.workstream,String(r.kind)+' · '+String(r.alias||r.role),
       link,r.generation==null?'unknown':'g'+r.generation,
@@ -728,6 +756,8 @@ async function renderStatusBar(app){
       String(mon.state||'unknown')+' · last '+String(mon.last_evaluation||'not recorded')+
         ' · next '+String(mon.next_due||'unknown'),
       String(auth.state||'unknown')+' · '+String(auth.reason||'unknown'),
+      el('span','wp16-observation',timerState),
+      timerTimes,el('span','wp16-observation',browserCheck),
       (r.conflicts||[]).join('; ')||'none'
     ],r.key);
   }

@@ -194,7 +194,7 @@ class WP16StatusBar(unittest.TestCase):
             with self.subTest(mode=mode):
                 reg["control"]["current_coordinator"]={
                     "holder":holder,"mode":mode,"epoch":4,"control_ref":ref,
-                    "effective_at":"2026-10-16T17:30:00Z"}
+                    "effective_at":"2026-10-16T17:30:00Z","verified":True}
                 out=sb.build_status_bar({"demo":reg},{},NOW)
                 self.assertEqual(out["projects"][0]["coordinator"]["holder"],holder)
                 self.assertEqual(out["projects"][0]["coordinator"]["mode"],mode)
@@ -206,7 +206,7 @@ class WP16StatusBar(unittest.TestCase):
                          ["projects"][0]["coordinator"]["mode"],"UNKNOWN")
         record={"holder":"OwnerTeammember","mode":"ACTING","epoch":4,
                 "control_ref":"https://github.com/acme/demo/issues/1#issuecomment-123",
-                "effective_at":"2026-10-16T17:30:00Z"}
+                "effective_at":"2026-10-16T17:30:00Z","verified":True}
         for patch in ({"verified":False},{"epoch":3},
                       {"control_ref":"not a CONTROL link"},
                       {"effective_at":"2026-10-17T12:00:00Z"}):
@@ -265,12 +265,54 @@ class WP16StatusBar(unittest.TestCase):
                         "holder":"OwnerTeammember","mode":"ACTING",
                         "epoch":reg["control"]["epoch"],
                         "control_ref":"https://github.com/acme/demo/issues/1#issuecomment-123",
-                        "effective_at":"2026-10-16T17:00:00Z"}
+                        "effective_at":"2026-10-16T17:00:00Z","verified":True}
                 (target/"registry.json").write_text(json.dumps(reg))
             build_data.build_all(root,root/"out",cache_dir=root/"cache")
             projected=json.loads((root/"out"/"status-bar.json").read_text())
             target=next(p for p in projected["projects"] if p["project"]=="landing-live")
             self.assertEqual(target["coordinator"]["mode"],"ACTING")
+
+
+    def test_22_malformed_control_never_crashes_or_confers_coordinator(self):
+        for value in ("not-a-control", ["not", "a", "dict"], 7):
+            with self.subTest(control=value):
+                reg=registry();reg["control"]=value
+                out=sb.build_status_bar({"demo":reg},{"demo":view()},NOW)
+                self.assertEqual(out["projects"][0]["coordinator"]["mode"],"UNKNOWN")
+                self.assertEqual(out["coverage"]["projected"],1)
+                self.assertEqual(out["instances"][0]["light"],"green")
+
+    def test_23_control_requires_explicit_verified_true(self):
+        reg=registry();reg["control"]["epoch"]=4
+        record={"holder":"Acting TC","mode":"ACTING","epoch":4,
+                "control_ref":"https://github.com/acme/demo/issues/1#issuecomment-123",
+                "effective_at":"2026-10-16T17:30:00Z"}
+        for extra in ({},{"verified":False},{"verified":None},{"verified":"true"}):
+            with self.subTest(extra=extra):
+                reg["control"]["current_coordinator"]={**record,**extra}
+                out=sb.build_status_bar({"demo":reg},{},NOW)
+                self.assertEqual(out["projects"][0]["coordinator"]["mode"],"UNKNOWN")
+        reg["control"]["current_coordinator"]={**record,"verified":True}
+        self.assertEqual(sb.build_status_bar({"demo":reg},{},NOW)
+                         ["projects"][0]["coordinator"]["mode"],"ACTING")
+
+    def test_24_overdue_or_missing_next_due_never_active(self):
+        reg=registry()
+        baseline=sb.build_status_bar({"demo":reg},{},NOW)["instances"][0]["light"]
+        ref="https://github.com/acme/demo/issues/1#issuecomment-123"
+        timer={"state":"ACTIVE","checked_at":"2026-10-16T17:55:00Z",
+               "last_tick":"2026-10-16T17:50:00Z",
+               "source_ref":ref,"verified":True}
+        for due in ("2026-10-16T17:59:00Z","2026-10-16T18:00:00Z",None):
+            with self.subTest(next_due=due):
+                reg["agents"][0]["timer_observation"]={**timer,"next_due":due}
+                out=sb.build_status_bar({"demo":reg},{},NOW)
+                self.assertEqual(out["instances"][0]["timer"]["state"],"UNKNOWN")
+                self.assertEqual(out["instances"][0]["light"],baseline)
+        reg["agents"][0]["timer_observation"]={**timer,
+                                                "next_due":"2026-10-16T18:20:00Z"}
+        self.assertEqual(sb.build_status_bar({"demo":reg},{},NOW)
+                         ["instances"][0]["timer"]["state"],"ACTIVE")
 
 class WP16PinnedBase(unittest.TestCase):
     """Old PR #50 publisher fails these exact two assertions (0 ERROR)."""

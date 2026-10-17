@@ -31,9 +31,10 @@ def _control_record(registry, now):
     """Project CONTROL is source-linked; missing or inconsistent grants no role."""
     unknown = {"holder": None, "mode": "UNKNOWN", "epoch": None,
                "control_ref": None, "effective_at": None}
-    control = registry.get("control") or {}
+    control = registry.get("control")
+    control = control if isinstance(control, dict) else {}
     data = control.get("current_coordinator")
-    if not isinstance(data, dict) or data.get("verified") is False:
+    if not isinstance(data, dict) or data.get("verified") is not True:
         return unknown
     holder, mode = data.get("holder"), data.get("mode")
     when = _stamp(data.get("effective_at"))
@@ -77,6 +78,10 @@ def _recorded_observation(raw, kind, now):
                     (key == "last_tick" and dt > now)):
                 return default
             answer[key] = dt.isoformat() if dt else None
+    if kind == "timer" and choice == "ACTIVE":
+        next_due = _stamp(raw.get("next_due"))
+        if next_due is None or next_due <= now:
+            return default
     return answer
 
 
@@ -259,7 +264,8 @@ def derive_status(row, registry, project_view, now=None):
                    "next_due": due.isoformat(),
                    "reason": "recorded_evaluator_cycle"}
     authority = _authority(registry, row, now, uem)
-    control = registry.get("control") or {}
+    control = registry.get("control")
+    control = control if isinstance(control, dict) else {}
     if control.get("hold"):
         light, reason = "grey", "project_HOLD"
     elif row["conflicts"]:
@@ -303,7 +309,8 @@ def build_status_bar(registries,project_views,now=None):
         depnames=[x if isinstance(x,str) else None for x in references]
         unknown=[str(d) for d in depnames if d is None or d not in registries]
         complete=(len(roster)==len(scoped) and len({x["key"] for x in scoped})==len(scoped))
-        if (registry.get("control") or {}).get("hold"):
+        control = registry.get("control")
+        if (control if isinstance(control, dict) else {}).get("hold"):
             light,reason="grey","project_HOLD"
         elif blocked or any(a["light"]=="red" for a in active):
             light,reason="red","blocked_workstream_or_active_instance"
