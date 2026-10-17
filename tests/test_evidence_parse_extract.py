@@ -12,6 +12,7 @@ from unittest import mock
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import build_data
+from tests.test_l2d_disagreement import G8DisagreementTests
 from tests.test_l2c_lineage import LineageTests
 # Reuse the existing Linux/Windows extraction-test CI gate without a workflow edit.
 from tests.test_l2b_intake import IntakeTests

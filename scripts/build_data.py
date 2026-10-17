@@ -55,6 +55,7 @@ SUPERSEDED_RE = re.compile(
     re.IGNORECASE
 )
 
+from landing_build.disagreement import project_disagreement
 from landing_build.evidence_parse import (
     id8, scrub_chat_url, EVIDENCE_RE, VERDICT_RE, OUTSIDE_WRITE_RE,
     parse_task_evidence, parse_verdict, validated_issue_ref,
@@ -133,29 +134,24 @@ from landing_build.freshness import (
     _EPOCH_FIELD, _ISO_HEADER_TIME,
 )
 
-
 def git_blob_sha(path: Path):
     if not path.exists():
         return None
     data = path.read_bytes()
     return hashlib.sha1(f'blob {len(data)}\0'.encode('ascii') + data).hexdigest()
 
-
 def _issue_number(url):
     match = re.search(r'/issues/(\d+)', url or '')
     return int(match.group(1)) if match else None
-
 
 # WP10: registry projections report scoped claims, never confer authority.
 _SAFE_GH_LINK = re.compile(
     r'^https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/(issues|pull)/(\d+)(?:#issuecomment-\d+)?$'
 )
 
-
 def _wp10_link(url, allowed):
     match = _SAFE_GH_LINK.fullmatch(url) if isinstance(url, str) else None
     return url if match and match.group(1) in allowed else None
-
 
 def _wp10_external_links(registry):
     product = registry.get('repository')
@@ -177,7 +173,6 @@ def _wp10_external_links(registry):
                 seen.add(url)
                 result.append({'kind': kind, 'url': url, 'read_only': True})
     return result
-
 
 def _wp10_auto_response(registry, now):
     """Project each recorded scope; retain the legacy single-dict projection."""
@@ -211,7 +206,6 @@ def _wp10_auto_response(registry, now):
     if isinstance(source, dict):
         return project_scope(source)
     return None
-
 
 def _wp10_decision_label(item):
     text = item.get('text', '') if isinstance(item, dict) else item
@@ -474,6 +468,8 @@ def build_project_data(root: Path, project_name: str, registry: dict,
     child_progress = _wp12_children(registry, child_observations)
     evidence_head_report = _wp12_evidence_head(
         registry.get('evidence'), pr_observation, registry.get('repository'))
+    disagreement = project_disagreement(registry, status_thread or {},
+                                        pr_observation, owner_json.REPO)
     capture = source_meta if isinstance(source_meta, dict) else None
     status_pointer = registry.get('status_comment') or registry.get('status_issue') or ''
     pinned = re.search(r'#issuecomment-(\d+)', status_pointer)
@@ -503,6 +499,7 @@ def build_project_data(root: Path, project_name: str, registry: dict,
         'reporting_tree': _wp12_tree(agents),
         'child_progress': child_progress,
         'evidence_head_status': evidence_head_report,
+        **({'status_merge_disagreement': disagreement} if disagreement is not None else {}),
         'source_capture_at': source_capture_at,
         'source_health': health,
         'source_refs': {
@@ -1093,6 +1090,8 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             'source_health': pd['source_health'],
             'source_refs': pd['source_refs'],
             **({'lineage': pd['lineage']} if pd.get('lineage') else {}),
+            **({'status_merge_disagreement': pd['status_merge_disagreement']}
+               if pd.get('status_merge_disagreement') is not None else {}),
             'last_cycle_at': pd['last_cycle_at'],
             'freshness_status': pd['freshness_status'],
             'liveness_observation_limit': pd['liveness_observation_limit'],

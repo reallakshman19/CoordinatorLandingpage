@@ -7,6 +7,7 @@ instructions, modifies no GitHub content and never treats a fetch failure as
 successful observation.
 """
 import argparse
+from contextvars import ContextVar
 from datetime import datetime, timezone
 import json
 import os
@@ -18,9 +19,15 @@ import sys
 from urllib.parse import urlparse
 from landing_build.lineage import plan_lineage, finish_lineage
 
+_API_ERRORS = ContextVar("gh_api_errors", default=None)
 
-def gh_api(path: str):
-    """Return a decoded GitHub API resource, or None on transport/JSON failure."""
+
+def gh_api(path: str, errors=None):
+    """Return decoded resource or None; report safe HTTP/transport reason."""
+    def report(reason):
+        sink = errors if errors is not None else _API_ERRORS.get()
+        if sink is not None:
+            sink.append(f"gh_api_failure:{path}:{reason}")
     try:
         # Owner indexes are fetched with explicit page numbers, max five.
         # Never let gh --paginate silently ignore that strict upper bound.
@@ -33,6 +40,7 @@ def gh_api(path: str):
         )
         raw = proc.stdout.strip()
         if not raw:
+            report("EMPTY_RESPONSE")
             return None
         decoder = json.JSONDecoder()
         pos = 0
@@ -54,8 +62,16 @@ def gh_api(path: str):
                 values.append(page)
         return values
     except (subprocess.CalledProcessError, OSError, ValueError, TypeError) as exc:
-        # Do not print API response bodies or credentials.
-        print(f"  fetch failed for {path}: {type(exc).__name__}", file=sys.stderr)
+        # Never echo stderr: it might contain credentials or response bodies.
+        stderr = exc.stderr if isinstance(exc, subprocess.CalledProcessError) else ""
+        match = re.search(r"(?i)\bHTTP(?:\s+error)?[\s:=-]*([45]\d{2})\b",
+                          stderr if isinstance(stderr, str) else "")
+        reason = ("HTTP_" + match.group(1) if match else
+                  "TRANSPORT_ERROR" if isinstance(exc, OSError) else
+                  "INVALID_RESPONSE" if isinstance(exc, (ValueError, TypeError))
+                  else "API_FAILURE")
+        report(reason)
+        print(f"  fetch failed for {path}: {reason}", file=sys.stderr)
         return None
 
 
@@ -217,6 +233,14 @@ WP12_CHILD_LIMIT = 12
 
 
 def capture_project_extras(root, cache, projects, errors, control_repo=None):
+    token = _API_ERRORS.set(errors)
+    try:
+        return _capture_project_extras(root, cache, projects, errors, control_repo)
+    finally:
+        _API_ERRORS.reset(token)
+
+
+def _capture_project_extras(root, cache, projects, errors, control_repo=None):
     """Bounded read-only child-title and PR-head observations per project."""
     extras = cache / "project-extras"
     if extras.exists():
@@ -235,8 +259,16 @@ def capture_project_extras(root, cache, projects, errors, control_repo=None):
                 continue
             key = (item["repository"], item["issue_number"])
             if key not in observations:
-                observations[key] = gh_api(f"/repos/{key[0]}/issues/{key[1]}")
-            finish_lineage(item, observations[key])
+                endpoint = f"/repos/{key[0]}/issues/{key[1]}"
+                earlier = len(errors)
+                result = gh_api(endpoint)
+                reason = next((x.rsplit(":", 1)[-1] for x in errors[earlier:]
+                               if x.startswith(f"gh_api_failure:{endpoint}:")), None)
+                observations[key] = (result, reason)
+            result, reason = observations[key]
+            finish_lineage(item, result)
+            if item["status"] == "INACCESSIBLE" and reason:
+                item["reason"] = reason
         if lineage:
             save_json(dest / "lineage.json", lineage)
         children = reg.get('children', [])
@@ -307,7 +339,12 @@ def capture_project_extras(root, cache, projects, errors, control_repo=None):
                     or value.get('number') != number):
                 errors.append(f"evidence_pr_head_unavailable:{project}")
                 continue
-            snapshots.append({'url': url, 'repository': repo, 'head': sha})
+            snap = {'url': url, 'repository': repo, 'head': sha}
+            if value.get('state') in ('open', 'closed'):
+                snap['state'] = value['state']
+            if 'merged_at' in value:
+                snap['merged_at'] = value['merged_at']
+            snapshots.append(snap)
         if pr_urls:
             save_json(dest / "pr-heads.json", snapshots)
 
@@ -339,6 +376,13 @@ def fetch_bounded_owner_index(repo, labelled, max_pages=OWNER_INDEX_PAGE_LIMIT):
 
 
 def main():
+    try:
+        return _main()
+    finally:
+        _API_ERRORS.set(None)
+
+
+def _main():
     parser = argparse.ArgumentParser(description="Fetch read-only issue projections")
     parser.add_argument("--root", default=".")
     parser.add_argument("--repo", required=True)
@@ -370,6 +414,7 @@ def main():
             path.unlink()
 
     project_refs, all_refs, errors = discover_project_refs(root, args.repo)
+    _API_ERRORS.set(errors)
     captured_at = datetime.now(timezone.utc).isoformat()
     capture_project_extras(root, cache, project_refs, errors, control_repo=args.repo)
     fetched = {}
