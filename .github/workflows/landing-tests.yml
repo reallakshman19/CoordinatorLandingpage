@@ -2438,6 +2438,8 @@ jobs:
           python-version: '3.11'
       - name: Generate unmodified fixed-clock fixture outputs
         shell: bash
+        env:
+          PYTHONIOENCODING: utf-8
         run: |
           set -euo pipefail
           python - <<'PY'
