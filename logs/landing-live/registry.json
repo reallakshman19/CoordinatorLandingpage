@@ -6,8 +6,8 @@
   "criticality_owner_words": "landing normal, proceed implementation (Owner, 16 Oct ~19:4x)",
   "next_move": {"pilot": true, "approval_required": true, "spec": "protocol/NEXT_MOVE_v1.md", "owner_words": "review cycle is over. start planning and implement."},
   "parent_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/21",
-  "updated": "2026-10-17T15:49:33Z",
-  "updated_by": "TC01a142d0; actual WP16 report/verdict/current draft projection, bounded lease end; no merge",
+  "updated": "2026-10-17T16:08:05Z",
+  "updated_by": "TC01a142d0; actual bounded workpack closure after provider merges, no roadmap closure or next-slice release",
   "control": {
     "epoch": 2,
     "coordinator": "Codex (TeamCoordinator; onboarded in CL#16)",
@@ -26,14 +26,14 @@
       "GO / FIX / HOLD",
       "next slice"
     ],
-    "current": "WP16 GREENfcd7a46a actual TASK EVIDENCE#3 relay6236023710, own A14, OTM non-author PASS6236009468 and38/38 exact-head CI. PR66 still draft, merge not performed; retained-authority operator must reconcile readiness/current target then WP16→PR65 sequence. No new product task or lease. PR65 ready479de09d, source/report/review retained; old red CI is not post-WP16 proof. Native01a149bf read-only, Common408/409 held, UEM parked.", "previous": "WP0-WP4 merged (#24-#28); next WP5 + F7 Owner round trip"
+    "current": "WP-L2(a) and WP16 bounded deliveries CLOSED: PR66 merged253feb9f then PR65 integrated/tested a737b697 and mergede7d975e4. Actual provider records and38/38 CI verified; e7 result tree equals tested a737 tree. OTM's local PR66 integration claim named6911892, actual merge parent8e065e4f includes later TC registry-only record; subsequent tested a737 incorporates253 and that parent. Historical claims preserved with this limitation. Coder6ad36e4d has no active product work/lease, read-only pending fresh scoped release. #62 broader roadmap OPEN; Common408/409 held; UEM parked.", "previous": "WP0-WP4 merged (#24-#28); next WP5 + F7 Owner round trip"
   },
   "agents": [
     {
       "alias": "L1 g4 Coder",
       "role": "coder",
       "chat_id8": "6ad36e4d",
-      "status": "WP16 GREEN fcd7a46a reported via actual attributed TASK EVIDENCE#3; OTM non-author PASS published. PR66 still DRAFT; no new product task. Live chat UNKNOWN.",
+      "status": "WP-L2(a) and WP16 bounded workpacks DELIVERED/MERGED; no active product task or writer lease. Native live chat UNKNOWN; broader #62 roadmap remains open.",
       "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64",
       "native_route": "chatgpt-browser",
       "instance_sha256": null,
@@ -41,10 +41,10 @@
       "assignment_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6234121974",
       "authority_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6235839429",
       "direction_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233973647",
-      "execution_mode": "write",
+      "execution_mode": "read_only",
       "branch": "codex/landing-wp16-registry-roster-6ad36e4d",
-      "branch_state": "CREATED; PR66 GREEN fcd7a46a3d2e8011a86cc5bb45818e3463cd7b0f, draft at15:48Z observation",
-      "workpack_gate": "Owner-recorded WP16 roster fix only, separate PR66, exactly tests/test_wp16.py and tests/wp16_browser_test.py. Registry-derived counts, RED-first then GREEN; no production/module/workflow changes. Actual native plan/SELF-CHECK/TASK EVIDENCE and exact-head non-author review before completion/merge.",
+      "branch_state": "WP16 PR66 merged253feb9f; WP-L2(a) PR65 updated by OTM to a737b697 and merged e7d975e4; historical author branches/evidence retained",
+      "workpack_gate": "Both bounded implementation deliveries closed; no automatic next code slice, own HOLD or acceptance inferred. Fresh scoped release/lease required for further product work; current activity read-only/reference only.",
       "onboarded": "First-workpack own source-bound TASK EVIDENCEv2/A14 published PR65/6234321102 and6234308430. WP16 own PR66 description names role/source/scope/RED plan; canonical WP16 plan/evidence NOT_YET_SEEN, not inherited completion.; WP16 actual unchanged attributed TASK EVIDENCE#3 relay62/6236023710 and own A14 PR66/6235967572 now published. These do not grant a next slice.",
       "delivery_owner": "TC epoch2 owns further sends. Owner-approved OTM stand-in sent WP16 once (#1/6235891170); exception does not authorize future OTM sends. NEVER resend.",
       "delivery_receipt": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6235891170",
@@ -58,7 +58,8 @@
       "previous_workpack": "PR65/479de09d7711e90d3b7a9a26f790ab26683a8ae5; Owner6234248920 superseded local StageA with connector authoring/hosted CI; source-bound report6234321102, non-author verdict6234361985. No automatic next slice.",
       "current_pr": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/66",
       "current_evidence": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/62#issuecomment-6236023710",
-      "current_non_author_verdict": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/66#issuecomment-6236009468"
+      "current_non_author_verdict": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/66#issuecomment-6236009468",
+      "completed_workpacks": "WP16: report6236023710, non-author PASS6236009468, merge253feb9f74f194cda0e32aef67f5a16c9bd27ab8. WP-L2(a): author report6234321102 at479de09d, authorized OTM integration a737b6972fffdd4595d2ff64def2a4a66adabf11, actual38/38 CI, mergee7d975e4892b2b934ba73591c0090e4a81ae0681 with identical tested/result tree."
     },
     {
       "alias": "Agent L1",
