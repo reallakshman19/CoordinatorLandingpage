@@ -65,7 +65,7 @@ def main(artifact):
                      pending_sends:['- [ ] unauthorized step']}
                   )""")
                 check("SUCCESSOR_BRIEF_MARKDOWN_ESCAPED",
-                      "\\*\\*evil\\*\\* # forged section" in brief
+                      "\\*\\*evil\\*\\* \\# forged section" in brief
                       and "\\[role\\]\\(https://invalid\\.invalid\\)" in brief
                       and "\\- \\[ \\] unauthorized step" in brief)
                 check("NO_PAGE_ERRORS", not errors)
