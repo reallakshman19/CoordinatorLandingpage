@@ -55,7 +55,7 @@ class EvidenceParseExtractTests(unittest.TestCase):
 
     def test_03_chat_na_hex_verdict_and_outside_write_unchanged(self):
         prefix = "TASK EVIDENCE v2 · landing-live · coder · chat "
-        suffix = " · #2 · 2026-10-17T09:38:00+04:00\\nTask: check\\nStatus: DONE"
+        suffix = " · #2 · 2026-10-17T09:38:00+04:00\nTask: check\nStatus: DONE"
         na = build_data.parse_task_evidence(prefix + "n/a (Claude session)" + suffix,
                                              42, "2026-10-17T09:38:00Z")
         self.assertEqual(na["chat_id8"], None)
@@ -84,7 +84,7 @@ class EvidenceParseExtractTests(unittest.TestCase):
             files = sorted(out.glob("*.json"))
             self.assertTrue(files)
             for path in files:
-                sha.update(path.name.encode("utf-8") + b"\\0")
+                sha.update(path.name.encode("utf-8") + b"\0")
                 sha.update(path.read_bytes())
             print("FROZEN_FIXTURE_SHA256=" + sha.hexdigest())
             self.assertEqual(sha.hexdigest(), PRE_REFACTOR_SHA256)
