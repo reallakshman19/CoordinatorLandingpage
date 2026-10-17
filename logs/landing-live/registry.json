@@ -24,7 +24,7 @@
       "GO / FIX / HOLD",
       "next slice"
     ],
-    "current": "WP0-WP4 merged (#24-#28); next WP5 + F7 Owner round trip"
+    "current": "WP0-WP18 + NM0 merged (last: #50 -> main 885d95b4, 17 Oct); UEM PARKED (Owner 17 Oct); no active writer (L1 g2 retired 03:39); operational HOLD (Owner 17 Oct 04:1x); next: only Owner-named work; start at docs/LANDING_LIVE_BRIEF.md", "previous": "WP0-WP4 merged (#24-#28); next WP5 + F7 Owner round trip"
   },
   "agents": [
     {
@@ -41,7 +41,7 @@
       "role": "implementer",
       "generation": 2,
       "chat_id8": "6ad1a045",
-      "status": "active (pane tab-1)",
+      "status": "retired 2026-10-17 03:39 +04 (chat reached ChatGPT maximum conversation length; no standby existed). 1a prepared by OwnerTeammember acting as G1: #22 6226735852, corrected by a later #22 comment. No successor selected (g3 NOT_SELECTED)",
       "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22",
       "handover": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6207718018",
       "onboarded": "2026-10-16T07:49+04:00 DELIVERED"
@@ -60,7 +60,7 @@
       ],
       "granted": "2026-10-15T14:42+04:00",
       "note": "WP0 is read-only; writes start only after GO in #22",
-      "remapped": "2026-10-16 changeover (§19 rule 20)"
+      "remapped": "2026-10-16 changeover (§19 rule 20)", "released": "2026-10-17T03:39+04:00 holder chat ended; no current writer; a successor needs a fresh remap under §19 rule 20 and Owner/OTM words"
     }
   ],
   "decisions": [

@@ -1,6 +1,11 @@
 # UltraEconomyMode v1 — agent-led bounded workplan loop
 
-**Status:** Draft implementation, opt-in only. Preserves `protocol/TEAM_PROTOCOL.md`,
+**Status:** PARKED (Owner, 17 Oct 2026: "UEM is later. Park it."). Code merged to main (885d95b4); enabled in **no** registry. Opt-in only.
+
+> **Read this first: activation and monitoring are separate (17 Oct 2026 clarification).**
+> - **Activation** needs explicit Owner words + the registry `ultra_economy` opt-in + the work prerequisites listed in `pilot/WP18_LANDING_LIVE_RUNBOOK.md` (roster, source bindings, execution grant, monitoring grant, cycle ledger). **A timer is not a prerequisite;** the default pilot runs with no timer.
+> - **Monitoring** is the single coordinator watcher (OwnerTeammember). Agent timers are **NOT_ARMED** by default; an optional exception needs Owner words + creation proof + one fire + cancellation proof.
+> - The struck "hourly fallback" text below is kept for history only and must not be followed. Preserves `protocol/TEAM_PROTOCOL.md`,
 `protocol/NEXT_MOVE_v1.md`, Owner approval, BuddyRunner and existing Pages publisher.
 **Parent:** [CoordinatorLandingpage #21](https://github.com/reallakshman19/CoordinatorLandingpage/issues/21).
 
@@ -86,11 +91,13 @@ Fallback: NOT_ARMED no authorized host timer
    terminal decision, role retirement or reaching the configured maximum.
    Do not start cycle 6 of 5. A fresh authorized task Y may start its own
    independently configured cycle 1.
-8. Stop/cancel the recurring ChatGPT task on terminal completion. If the
+8. ~~Stop/cancel the recurring ChatGPT task on terminal completion.~~ **SUPERSEDED 17 Oct 2026:** no recurring task exists (step 2: NOT_ARMED). If an Owner-authorised one-shot timer ever exists, verify its cancellation as in the timer section below. Original text kept: If the
    scheduler does not support programmatic cancellation from the agent,
    ask for explicit user action and mark it as still active/unknown.
 
-## Hourly fallback instruction (agent uses native ChatGPT scheduling)
+## ~~Hourly fallback instruction (agent uses native ChatGPT scheduling)~~ — SUPERSEDED 17 Oct 2026
+
+> Kept for history only (Owner, 17 Oct: "do not delete, mark like comment"). **Do not use.** It contradicts step 2 (NOT_ARMED) and the WP17/WP18 one-shot rule.
 
 ```text
 Every hour, check the registered GitHub evidence issue for TASK START v1 and
@@ -183,3 +190,12 @@ GitHub-pull delivery or other project's pilot is activated by this branch.
 The landing-live single-cycle diff is staged **only** at `pilot/landing-live-uem-v1.proposed.patch`; it has **NOT** been applied to any registry. The procedure and source-custody roles are in `pilot/WP18_LANDING_LIVE_RUNBOOK.md`. `ultra_economy.enabled=true` with `max_cycles=1` requires new explicit Owner approval before a separate registry PR. The TeamCoordinator (acting as OwnerTeammember) is the named custodian who proposes reviewed START/END URL/comment_id/updated_at/body_sha256 bindings and the persisted workplan-task `cycle_ledger` and separate grants. The implementer cannot self-certify those entries.
 
 A future host timer, if ever approved, requires **Owner words** specific to that timer and scope, independently verified **creation proof** with real host task ID, **one fire** only, and verified **cancellation** or completion. Default and WP18 state remain **NOT_ARMED**; no timer or task is created here. Timer monitoring gives no write, execution or send authority. Reviewer must check the claim and delivery ledger independently (START -> END -> APPROVED -> CLAIMED -> SEND_INTENT -> SENT_TO_CHAT -> PICKED_UP), recognizing that a finished single cycle cannot be restarted even after successful pickup. Replay adds no duplicate comments, moves, sends or timers.
+
+## Review-note dispositions (17 Oct 2026, OwnerTeammember)
+
+| Note (source) | Disposition | Owner / revisit trigger |
+|---|---|---|
+| Foreign-source agents are dropped without a visible reason (#53 and #50 checks) | **OPEN.** Behaviour stays fail-closed (no `may_proceed` path, confirmed by the #50 final check). Add a visible "foreign source rejected" reason. | OwnerTeammember; scheduled into the landing-page revision (P1) |
+| Abbreviated END template (#53 check) | **CLOSED:** the template is illustrative. A real END is always the full native TASK EVIDENCE v2 block plus `UEM cycle:`. | none |
+| "Unavailable timer" not a separate test case (#53 check) | **DEFERRED:** no effect while timers are NOT_ARMED by default. | Add the test if a timer exception is ever authorised |
+| Hourly fallback prose contradicted NOT_ARMED (S2 cold-reader test, #21) | **CLOSED:** struck above with a pointer to the rule in force. | none |
