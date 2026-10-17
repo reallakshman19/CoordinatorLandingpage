@@ -1,7 +1,7 @@
 'use strict';
 function l4MarkdownEscape(value) {
   const text = l4Text(value).replace(/\r?\n/g, ' ');
-  return text.replace(/([\\\x60*_{}\[\]()#+.!>|~-])/g, '\\$1');
+  return text.replace(/([\\\x60*_{}\[\]()#+!>|~])/g, '\\$1');
 }
 function l4SuccessorBrief(ctx, succession) {
   const fields = [
