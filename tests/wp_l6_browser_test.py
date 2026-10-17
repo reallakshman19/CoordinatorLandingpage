@@ -29,6 +29,14 @@ def main(artifact):
             "head_fresh": {"state": "OK", "source": None},
         }}
         (data / "status-bar.json").write_text(json.dumps(source), encoding="utf-8")
+        # A completely empty registered project must visibly render UNKNOWN.
+        blank = {"project": "l6-empty", "repository": "reallakshman19/Common",
+                 "source_refs": {}, "registry": {"workflow": {},
+                 "standing_owner_decisions": []}, "agents": []}
+        projects = json.loads((data / "projects.json").read_text())
+        projects.append(blank)
+        (data / "projects.json").write_text(json.dumps(projects), encoding="utf-8")
+        (data / "project-l6-empty.json").write_text(json.dumps(blank), encoding="utf-8")
         server = start_server(str(site), find_free_port())
         try:
             with sync_playwright() as browser:
@@ -53,13 +61,28 @@ def main(artifact):
                 check("ORACLE_NONE_AND_ADVISORY_ONLY",
                       "none" in page.locator(".l4-oracle").inner_text() and
                       "advises only" in page.locator(".l4-oracle").inner_text())
-                check("L4_UNKNOWN_RULE", page.locator(".l4-unknown").evaluate_all(
-                     "(nodes) => nodes.length===0 || nodes.every(x => getComputedStyle(x).color !== 'rgba(0, 0, 0, 0)')"))
+                page.goto(root + "#understanding/l6-empty", wait_until="networkidle")
+                page.wait_for_selector("#l4-understanding")
+                styles = page.evaluate("""() => {
+                  const nodes = [...document.querySelectorAll('#l4-understanding .l4-unknown')];
+                  const green = document.createElement('span');
+                  green.className = 'badge badge-green';
+                  document.body.appendChild(green);
+                  const success = getComputedStyle(green);
+                  const color = success.color, background = success.backgroundColor;
+                  const distinct = nodes.length > 0 && nodes.every(node => {
+                    const style = getComputedStyle(node);
+                    return style.color !== color && style.backgroundColor !== background;
+                  });
+                  green.remove();
+                  return {count: nodes.length, distinct};
+                }""")
+                check("L4_UNKNOWN_RULE", styles["count"] > 0 and styles["distinct"])
                 page.goto(root + "#changeover/grade9-pilot", wait_until="networkidle")
                 page.wait_for_selector("#l4-changeover")
                 brief = page.evaluate(
                     "(data) => l4SuccessorBrief(data.ctx, data.succession)",
-                    {"ctx": {"projectName": "test",
+                    {"ctx": {"projectName": "relay-demo.v1-2",
                              "repo": "reallakshman19/Common",
                              "summary": {"source_refs": {}}},
                      "succession": {
