@@ -12,6 +12,17 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
 import build_data
 
+def _proto_version(artifact):
+    """Protocol version from the served source header (fail-closed: None)."""
+    import re as _re
+    from pathlib import Path as _P
+    try:
+        md = (_P(artifact) / "protocol" / "TEAM_PROTOCOL.md").read_text(encoding="utf-8")
+    except OSError:
+        return None
+    m = _re.search(r"^#\s+Team protocol\s+(v\d+(?:\.\d+)+)", md, _re.M | _re.I)
+    return m.group(1) if m else None
+
 def main():
     if len(sys.argv)!=2: raise SystemExit("usage: python tests/wp8b_browser_test.py <artifact>")
     from playwright.sync_api import sync_playwright
@@ -60,7 +71,7 @@ def main():
                       and "posted 19:10 +04 · updated 19:10 +04" in
                       page.locator("#needs-you-list").inner_text()
                       and "Asked at" not in page.locator("#needs-you-list").inner_text()
-                      and "Decision needed: Review freeze of current Team protocol v2.3" in
+                      and ("Decision needed: Review freeze of current Team protocol "+str(_proto_version(sys.argv[1]))) in
                       page.locator("#needs-you-list").inner_text())
                 if page.locator("#home-new-input").count():
                     page.locator("#home-new-input").click()
@@ -90,7 +101,7 @@ def main():
                       and "time not recorded" in page.locator(".trace-step[data-step='sent']").inner_text())
                 page.goto(base+"#project/grade9-pilot",wait_until="networkidle")
                 check("WP8B_UI_07_protocol_freeze_from_source_not_stale_registry",
-                      lambda: "Review freeze of current Team protocol v2.3" in
+                      lambda: ("Review freeze of current Team protocol "+str(_proto_version(sys.argv[1]))) in
                       page.locator("#open-decisions-list").inner_text()
                       and "freeze Team protocol v2.0" not in
                       page.locator("#open-decisions-list").inner_text())
