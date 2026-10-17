@@ -2420,3 +2420,121 @@ jobs:
           name: wp9-base-browser-red
           path: wp9-browser-red.log
           if-no-files-found: error
+
+wpci1-platform-fixtures:
+    name: WP-CI1 diagnosis · frozen fixture outputs · ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Generate unmodified fixed-clock fixture outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          from datetime import datetime,timezone
+          import hashlib,json,os,sys
+          from unittest import mock
+          root=Path('.').resolve()
+          sys.path.insert(0,str(root/'scripts'))
+          import build_data
+          class FixedDatetime(datetime):
+              @classmethod
+              def now(cls,tz=None):
+                  value=datetime(2026,10,17,15,0,tzinfo=timezone.utc)
+                  return value if tz is None else value.astimezone(tz)
+          fixtures=[root/'benchmarks'/name for name in ('grade9-pilot-2026-10-15','imo-ab-test-2026-10-15')]
+          output=root/'_wpci1_parity'/'files'
+          with mock.patch.object(build_data,'datetime',FixedDatetime):
+              build_data.build_all(root,output,benchmark_dirs=fixtures)
+          summary={}
+          digest=hashlib.sha256()
+          for p in sorted(output.glob('*.json')):
+              content=p.read_bytes()
+              digest.update(p.name.encode('utf-8')+b'\0')
+              digest.update(content)
+              summary[p.name]={'size':len(content),'sha256':hashlib.sha256(content).hexdigest(),'crlf':content.count(b'\r\n'),'lf':content.count(b'\n')}
+          for path in [root/'benchmarks'/n/'logs'/'registry.json' for n in ('grade9-pilot-2026-10-15','imo-ab-test-2026-10-15')]:
+              blob=path.read_bytes()
+              summary['INPUT:'+str(path.parent.parent.name)]={'size':len(blob),'sha256':hashlib.sha256(blob).hexdigest(),'crlf':blob.count(b'\r\n'),'lf':blob.count(b'\n')}
+          with (root/'_wpci1_parity'/'manifest.json').open('w',encoding='utf8',newline='\n') as f:
+              json.dump({'os':os.name,'aggregate':digest.hexdigest(),'files':summary},f,indent=2)
+          print('PLATFORM_FIXTURE_AGGREGATE='+digest.hexdigest(),flush=True)
+          print('PLATFORM_FIXTURE_MANIFEST='+json.dumps(summary,sort_keys=True),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wpci1-fixtures-${{ matrix.os }}
+          path: _wpci1_parity/
+          if-no-files-found: error
+  wpci1-platform-diff:
+    name: WP-CI1 diagnosis · compare exact Windows/Linux bytes
+    needs: wpci1-platform-fixtures
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wpci1-fixtures-*
+          path: _wpci1_artifacts
+      - name: Compare bytes and JSON values without normalizing
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          parent=Path('_wpci1_artifacts')
+          linux=parent/'wpci1-fixtures-ubuntu-latest'
+          win=parent/'wpci1-fixtures-windows-latest'
+          for name,root in [('LINUX',linux),('WINDOWS',win)]:
+              assert (root/'manifest.json').is_file(),(name,root)
+              meta=json.loads((root/'manifest.json').read_text())
+              print('PLATFORM',name,'AGGREGATE',meta['aggregate'])
+              for n,m in sorted(meta['files'].items()):
+                  print('SOURCE',name,n,json.dumps(m,sort_keys=True))
+          left={p.name:p for p in (linux/'files').glob('*.json')}
+          right={p.name:p for p in (win/'files').glob('*.json')}
+          print('FILESET',sorted(left),sorted(right))
+          assert left.keys()==right.keys()
+          report={}
+          def scalar_diffs(a,b,path='$'):
+              out=[]
+              if type(a) is not type(b):
+                  return [(path,a,b)]
+              if isinstance(a,dict):
+                  for k in sorted(a.keys()|b.keys()):
+                      if k not in a or k not in b:
+                          out.append((path+'.'+k,a.get(k,'<MISSING>'),b.get(k,'<MISSING>')))
+                      else: out.extend(scalar_diffs(a[k],b[k],path+'.'+k))
+              elif isinstance(a,list):
+                  if len(a)!=len(b):out.append((path+'.length',len(a),len(b)))
+                  for i,(x,y) in enumerate(zip(a,b)):
+                      out.extend(scalar_diffs(x,y,path+'['+str(i)+']'))
+              elif a!=b: out.append((path,a,b))
+              return out
+          for n in sorted(left):
+              lb=left[n].read_bytes();wb=right[n].read_bytes()
+              json_diff=scalar_diffs(json.loads(lb),json.loads(wb))
+              crlf_only=wb.replace(b'\r\n',b'\n')==lb
+              carriages=[i for i,b in enumerate(wb) if b==13 and i+1<len(wb) and wb[i+1]==10]
+              changed=[i for i,(x,y) in enumerate(zip(lb,wb)) if x!=y]
+              details={'linux_sha256':hashlib.sha256(lb).hexdigest(),'windows_sha256':hashlib.sha256(wb).hexdigest(),'linux_size':len(lb),'windows_size':len(wb),'windows_crlf_insertions':len(carriages),'crlf_only':crlf_only,'first_windows_cr_offsets':carriages[:24],'first_equal_offset_byte_diffs':[{'offset':i,'linux':lb[i],'windows':wb[i]} for i in changed[:24]],'semantic_differences':[{'json_path':p,'linux':str(a)[:300],'windows':str(b)[:300]} for p,a,b in json_diff]}
+              report[n]=details
+              print('FILE_BYTE_DIFF',n,json.dumps(details,sort_keys=True)[:14000],flush=True)
+          Path('_wpci1_artifacts/diff.json').write_text(json.dumps(report,indent=2),encoding='utf8')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wpci1-platform-byte-diff
+          path: _wpci1_artifacts/diff.json
+          if-no-files-found: error
