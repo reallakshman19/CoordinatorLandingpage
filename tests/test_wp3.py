@@ -103,6 +103,12 @@ class BaseCompatibleWP3(unittest.TestCase):
 
     def test_wp3_running_deploys_do_not_share_legacy_pages_group(self):
         workflow=(ROOT/".github/workflows/deploy.yml").read_text()
+        # NextNudge may commit data, but it must never become a second Pages publisher.
+        nextnudge=(ROOT/".github/workflows/nextnudge-save.yml").read_text()
+        self.assertIn("contents: write",nextnudge)
+        self.assertIn("issues: write",nextnudge)
+        self.assertNotIn("pages: write",nextnudge)
+        self.assertIn("cancel-in-progress: false",nextnudge)
         self.assertIn("group: landing-live-single-publisher-",workflow)
         self.assertIn("cancel-in-progress: false",workflow)
         self.assertNotIn("cancel-in-progress: true",workflow)
@@ -191,7 +197,8 @@ class WP3Additional(unittest.TestCase):
         import re
         workflows=sorted((ROOT/".github/workflows").glob("*.yml"))
         self.assertEqual({p.name for p in workflows},
-                         {"blank.yml","deploy.yml","landing-tests.yml","ultra-economy-tests.yml"})
+                         {"blank.yml","deploy.yml","landing-tests.yml","ultra-economy-tests.yml",
+                          "nextnudge-save.yml"})
         for path in workflows:
             content=path.read_text()
             self.assertIsNone(
