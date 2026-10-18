@@ -63,6 +63,12 @@ async function renderProject(app, projectName) {
   wp12ReportingTree($('wp12-reporting-tree'),proj.reporting_tree || detail?.reporting_tree);
   wp12ChildProgress($('wp12-child-progress'),proj.child_progress || detail?.child_progress,
                     proj.repository);
+  const v36 = proj.v36_scoreboard || detail?.v36_scoreboard;
+  if (v36) {
+    const slot = el('div', 'v36-scoreboard-slot');
+    $('wp12-child-progress').closest('.card').after(slot);
+    renderV36Scoreboard(slot, v36);
+  }
   wp12HeadStatus($('wp12-head-status'),proj.evidence_head_status ||
                  detail?.evidence_head_status, proj.repository);
   const hold = ctrl.hold;

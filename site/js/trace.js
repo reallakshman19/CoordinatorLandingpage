@@ -141,7 +141,7 @@ function wp12ChildProgress(where, progress, repository) {
     return;
   }
   where.appendChild(el('strong','wp12-child-total',
-    'v3.6 child progress: ' + progress.done + '/' + progress.total + ' DONE'));
+    'v3.6 child progress · derived from title (not E/acceptance): ' + progress.done + '/' + progress.total + ' DONE'));
   for (const item of progress.items || []) {
     const safe = allowedExternalLink(item.url, repository);
     if (!safe || !safe.includes('/issues/')) continue;

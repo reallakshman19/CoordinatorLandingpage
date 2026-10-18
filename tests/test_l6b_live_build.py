@@ -3,6 +3,7 @@ import json
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,7 +27,11 @@ class LiveContinuityContract(unittest.TestCase):
         parent_url = landing["parent_issue"]
         self.assertEqual(parent_url,
                          "https://github.com/reallakshman19/CoordinatorLandingpage/issues/21")
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory() as temp, mock.patch(
+            "owner_json.github_provenance",
+            return_value={"sha": None, "author": None, "association": "UNKNOWN"}
+        ), mock.patch("owner_json.subprocess.run",
+                      side_effect=AssertionError("test attempted gh api")):
             output = Path(temp) / "output"
             cache = Path(temp) / "cache"
             extra = cache / "project-extras" / "landing-live"

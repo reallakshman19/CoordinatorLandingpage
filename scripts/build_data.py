@@ -46,6 +46,7 @@ from landing_build.owner_helpers import (
 )
 from landing_build.owner_inputs import build_owner_inputs
 from landing_build.benchmarks import load_benchmark, load_live_threads
+from landing_build.v36_scoreboard import scoreboard_project
 from landing_build import project_data as _project_data
 from landing_build.disagreement import project_disagreement
 from landing_build.evidence_parse import (
@@ -76,7 +77,6 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
     """Main build entry point."""
     print(f"Building site data → {out_dir}")
     out_dir.mkdir(parents=True, exist_ok=True)
-
     # Determine sources
     if benchmark_dirs:
         sources = []
@@ -90,7 +90,6 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             for proj_dir in logs_root.iterdir():
                 if proj_dir.is_dir() and proj_dir.name != 'README.md':
                     sources.append(('live', proj_dir))
-
     all_projects = []
     selected_registries = {}  # raw complete logs/*/registry.json, never UI summary
     all_timelines = {}
@@ -100,7 +99,6 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
         _owner_cache = cache_dir if cache_dir else root / '_live_cache'
         owner_source = load_json(_owner_cache / 'owner-inputs-source.json') or []
         owner_capture = load_json(_owner_cache / 'capture-info.json')
-
     # Reuse WP7's GitHub-provenance check; no typed role or unverified JSON
     # becomes an effective Next Move approval.
     verified_inputs = owner_json.read_committed_inputs(root) if not benchmark_dirs else []
@@ -140,7 +138,6 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             source_meta = load_json(_cache / 'capture-info.json')
             events_path = sorted(source_path.rglob('events.jsonl'))
             is_benchmark = False
-
         # Per-project external title/head observations are read-only GitHub
         # capture outputs. Missing observations never count as DONE/current.
         extra = ((cache_dir if cache_dir else root / '_live_cache') /
@@ -199,14 +196,16 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             now=datetime.now(timezone.utc))
         project_data['next_move'] = next_view
         project_data['is_benchmark'] = is_benchmark
+        if not is_benchmark:
+            v36 = scoreboard_project(root, project_name, registry, project_data)
+            if v36 is not None:
+                project_data['v36_scoreboard'] = v36
         project_data['benchmark_snapshot'] = (
             load_json(source_path / 'MANIFEST.json') or {}
         ).get('snapshot') if is_benchmark else None
-
         selected_registries[project_name] = registry
         all_projects.append(project_data)
         all_timelines[project_name] = timeline
-
         # Save per-agent evidence
         for agent in project_data['agents']:
             aid = agent['chat_id8']
@@ -223,7 +222,6 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
                         'source_health': {'status': 'ambiguous_agent_id8'},
                         'projects': [evidence_names[aid], project_name],
                     })
-
         # Save timeline
         save_json(
             out_dir / f'timeline-{project_name}.json',
@@ -275,6 +273,8 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             'child_progress': pd['child_progress'],
             'evidence_head_status': pd['evidence_head_status'],
             'next_move': pd['next_move'],
+            **({'v36_scoreboard': pd['v36_scoreboard']}
+               if 'v36_scoreboard' in pd else {}),
             'status_bar': status_by_project[pd['project']],
             'control': pd['registry']['control'],
             'workflow': pd['registry']['workflow'],
