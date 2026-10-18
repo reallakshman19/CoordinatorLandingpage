@@ -26,7 +26,7 @@ class PinnedV36ScoreboardTests(unittest.TestCase):
         result = project(ROOT)
         self.assertEqual(SHA256, "a3d3a50ab830ebf261004936cc916f9ca9659d93be23e9fc41edf6bc2e1d34d3")
         self.assertEqual(ARTIFACT, "benchmarks/v36-scoreboard/scoreboard.json")
-        self.assertEqual(result["status"], "SYNTHETIC_FIXTURE")
+        self.assertEqual(result["status"], "SYNTHETIC_FIXTURE", result)
         self.assertEqual(result["source_class"], "synthetic fixture")
         self.assertEqual(result["source_parent"], "reallakshman19/Common#341")
         self.assertEqual(result["registry_parent"], PARENT)
