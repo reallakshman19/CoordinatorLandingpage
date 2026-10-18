@@ -4,6 +4,7 @@ Neither function performs provider reads or treats a shared GitHub author as
 proof of an Owner decision. Keep the source and truncation visible.
 """
 import re
+from landing_build.continuity import assess_amendment_checkpoint
 
 MAX_AMENDMENTS = 25
 MAX_COMMENT_CHARS = 900
@@ -78,9 +79,12 @@ def _amendments(project, inbox, fetched, control_repo):
     }
 
 
-def project_intake(project, registry, lineage, inbox, inbox_fetched, control_repo):
-    """No fetches; only per-project confirmed lineage and bounded #1 cache."""
+def project_intake(project, registry, lineage, inbox, inbox_fetched, control_repo,
+                   last_cycle_at=None):
+    """No fetches; bind the project amendment marker to its real checkpoint."""
+    amendments = _amendments(project, inbox, inbox_fetched, control_repo)
     return {
         "intent": _intent(registry if isinstance(registry, dict) else {}, lineage),
-        "amendments": _amendments(project, inbox, inbox_fetched, control_repo),
+        "amendments": amendments,
+        "amendment_checkpoint": assess_amendment_checkpoint(amendments, last_cycle_at),
     }
