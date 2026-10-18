@@ -220,5 +220,33 @@ class D3OwnerChangeAfterCheckpoint(unittest.TestCase):
             "PROBLEM")
 
 
+    def test_11_qualified_newer_status_checkpoint_clears_built_marker(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root, cache, output = prepared_snapshot(temp)
+            status = cache / "project-threads" / PROJECT / "issue-30.json"
+            thread = json.loads(status.read_text())
+            later = "2026-10-17T21:17:00Z"
+            thread["comments"].append({
+                "id": 990000003, "created_at": later, "updated_at": later,
+                "author_association": "OWNER",
+                "body": ("COORDINATOR RECEIPT · landing-live · epoch 2 · " + later +
+                         "\nCoordinator last completed cycle: " + later),
+            })
+            status.write_text(json.dumps(thread))
+            with mock.patch(
+                "owner_json.github_provenance",
+                return_value={"sha": None, "author": None, "association": "UNKNOWN"}
+            ), mock.patch("owner_json.subprocess.run",
+                          side_effect=AssertionError("network attempted")):
+                build_all(root, output, cache_dir=cache)
+            p = json.loads((output / "project-landing-live.json").read_text())
+            self.assertEqual(p["last_cycle_at"], "2026-10-17T21:17:00+00:00")
+            self.assertEqual(p["amendment_checkpoint"]["status"], "RECONCILED")
+            self.assertEqual(p["amendment_checkpoint"]["markers"], [])
+            bar = json.loads((output / "status-bar.json").read_text())
+            owner = bar["projects"][0]["continuity"]["inputs"]["owner_input_captured"]
+            self.assertNotEqual(owner["reason"], "post_checkpoint_owner_amendment")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
