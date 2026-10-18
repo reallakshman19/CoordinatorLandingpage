@@ -44,7 +44,7 @@ async function renderL4Understanding(app, name) {
       if (entry.truncated) record.appendChild(el('span', 'note', ' · truncated'));
       record.appendChild(el('span', 'note', ' · ' +
         String(entry.attribution || 'UNVERIFIED_AUTHOR')));
-      l4Link(record, 'Source record', entry.source, REPO);
+      l4Link(span, 'Source record', entry.source, REPO);
       inbox.appendChild(record);
     }
     if (sourceAmendments.truncated) inbox.appendChild(el('p', 'note',
