@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {gzipSync} from 'node:zlib';
-import {newThread,parse,serialize,validate,archiveRun,currentState,reconcile,assertPublic,activeIntent} from '../site/nextnudge/revamp/thread.mjs';
+import {newThread,parse,serialize,validate,archiveRun,currentState,closureMet,reconcile,assertPublic,activeIntent} from '../site/nextnudge/revamp/thread.mjs';
 import {delta,applyDelta,issueUrl} from '../site/nextnudge/revamp/save.mjs';
 import {applyIssue,ownerIssue,unpack} from '../scripts/nextnudge_thread_apply.mjs';
 const ID='NN-20261019-010101-ab12',M='NN-20261019-010102-cd34';
@@ -117,6 +117,78 @@ test('fixture issue applies a real thread file, with owner guard and SHA rejecti
   assert.deepEqual(x.moves,[move()]); // local draft remains unchanged
   assert.equal(await applyIssue({...harness,issue:{...issue,user:{login:'outsider'}}}),'IGNORED');
 });
+
+test('Close is a Reconcile-only decision; Unknown and Not met never show Done',()=>{
+  const x=example(),criteria=x.doneWhen;
+  const close=(checks,note)=>({...move(M,'close','Close packet'),note:
+    'OWNER_CLOSE_CHECKS:'+JSON.stringify({criteria,checks})});
+  const reply={...move('NN-20261019-010103-ff55','reply',''),delivery:'draft',returnLine:'ACK completed'};
+  const page=fs.readFileSync(new URL('../site/nextnudge/revamp/app.mjs',import.meta.url),'utf8');
+  assert.doesNotMatch(page,/data-action="compose-close"/);
+  assert.match(page,/Close via Reconcile/);
+  for(const checks of [['met','unknown'],['not met','met']]){
+    assert.throws(()=>reconcile({checks,decision:'close',criteria,
+      nudgeId:M,goal:x.goal}),/cannot close/);
+    x.moves=[close(checks),reply];
+    assert.equal(closureMet(x,x.moves[0]),false);
+    assert.notEqual(currentState(x),'Done');
+  }
+  x.moves=[{...move(M,'close'),note:''},reply];
+  assert.notEqual(currentState(x),'Done','forged Close without a review receipt');
+  const approved=reconcile({checks:['met','met'],decision:'close',criteria,
+    nudgeId:M,goal:x.goal});
+  x.moves=[close(approved.closure.checks),reply];
+  assert.equal(currentState(x),'Done');
+  x.doneWhen=['Owner changed acceptance']; // old review can no longer close new outcome
+  assert.notEqual(currentState(x),'Done');
+});
+test('privacy: schemeless, encoded and AI Studio chat references are refused client and server',async()=>{
+  const secrets=['chatgpt.com/c/x','claude.ai/chat/x',
+    'https%3A%2F%2Fchatgpt.com%2Fc%2Fx','aistudio.google.com/prompts/abc'];
+  const header=example();delete header.moves;
+  const original=example();let written=0;
+  for(const field of ['packet','digest'])for(const secret of secrets){
+    const candidate={...move(),[field]:'Agent output '+secret};
+    const local={...original,moves:[candidate]};
+    assert.throws(()=>validate(local),/Private chat URL/,field+' '+secret);
+    const payload={v:3,id:ID,baseSha:null,expectedCount:0,header,moves:[candidate]};
+    const body='Owner review\n'+encode(payload);
+    assert.throws(()=>unpack(body),/Private chat URL/,field+' '+secret);
+    const issue={user:{login:'reallakshman19'},state:'open',labels:[{name:'nextnudge-save'}],body};
+    let receipt='';
+    const result=await applyIssue({issue,owner:'reallakshman19',read:async()=>null,
+      write:async()=>{written++;},comment:async v=>{receipt=v;},close:async()=>{}});
+    assert.equal(result,'REJECTED');assert.match(receipt,/Private chat URL/);
+  }
+  assert.equal(written,0,'privacy rejection must not write any thread');
+});
+test('reserved metadata injected into a packet is rejected by client and server before write',async()=>{
+  const header=example();delete header.moves;
+  for(const marker of ['<!-- nn3:header','<!-- nn3:move']){
+    const item={...move(),packet:'Original work\n'+marker+'\n{"fake":true}\n'};
+    assert.throws(()=>serialize({...example(),moves:[item]}),/Reserved thread metadata marker/);
+    const issue={user:{login:'reallakshman19'},state:'open',
+      labels:[{name:'nextnudge-save'}],body:'Review\n'+encode({
+        v:3,id:ID,baseSha:null,expectedCount:0,header,moves:[item]})};
+    let writes=0,receipt='';
+    const status=await applyIssue({issue,owner:'reallakshman19',read:async()=>null,
+      write:async()=>{writes++;},comment:async v=>{receipt=v;},close:async()=>{}});
+    assert.equal(status,'REJECTED');assert.equal(writes,0);
+    assert.match(receipt,/Reserved thread metadata marker/);
+  }
+});
+test('Windows CRLF converts safely to LF and LF source preserves packet bytes',()=>{
+  const seed=fs.readFileSync(new URL('threads/NN-20261018-171656-66d2.md',root),'utf8');
+  const converted=parse(seed.replace(/\n/g,'\r\n'));
+  assert.equal(converted.hold,'Owner HOLD');
+  assert.equal(serialize(converted),seed);
+  const raw='First line\nSecond line\n'+String.fromCharCode(0x2603);
+  const x=example();x.moves.push(move(M,'task',raw));
+  assert.equal(parse(serialize(x)).moves[0].packet,raw);
+  const attrs=fs.readFileSync(new URL('../.gitattributes',import.meta.url),'utf8');
+  assert.match(attrs,/site\/nextnudge-data\/threads\/\*\.md text eol=lf/);
+});
+
 test('all NextNudge R1 touched source files have at most 300 physical lines',()=>{
   const root=new URL('../',import.meta.url);
   const files=['site/nextnudge/index.html','site/nextnudge/v2.html',
