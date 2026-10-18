@@ -57,11 +57,12 @@ export function applyDelta(remote,packet) {
   if(packet?.v!==3||!THREAD_ID.test(packet.id)||!Number.isSafeInteger(packet.expectedCount)||
      !Array.isArray(packet.moves)||packet.moves.length>50)throw Error('Bad save packet');
   if(remote) {
+    if(packet.id!==remote.id)throw Error('Thread path and ID disagree');
     if(packet.expectedCount!==remote.moves.length||packet.header)throw Error('Stale append');
     const merged=validate({...remote,moves:[...remote.moves,...packet.moves]});
     return serialize(merged);
   }
-  if(packet.expectedCount!==0||!packet.header)throw Error('New thread needs initial intent');
+  if(packet.expectedCount!==0||!packet.header||packet.header.id!==packet.id)throw Error('New thread needs matching initial intent');
   return serialize(validate({...packet.header,moves:packet.moves}));
 }
 export async function issueUrl(packet) {
