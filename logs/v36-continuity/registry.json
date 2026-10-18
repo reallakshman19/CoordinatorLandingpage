@@ -3,7 +3,7 @@
   "protocol": "Team protocol v3.2 (protocol/TEAM_PROTOCOL.md; adopted 17 Oct, #63 07cec2d1), alongside reallakshman19/Common AGENTS.md and the native v3.6 contract",
   "repository": "reallakshman19/Common",
   "parent_issue": "https://github.com/reallakshman19/Common/issues/409",
-  "updated": "2026-10-17T15:18+04:00",
+  "updated": "2026-10-18T10:34+04:00",
   "updated_by": "OwnerTeammember",
   "control": {
     "epoch": 2,
@@ -29,8 +29,22 @@
     "since": "2026-10-17T15:08+04:00",
     "history": [{"epoch": 1, "coordinator": "Claude session (combined OwnerTeammember + TeamCoordinator)", "owner_words": "add A13 + A14 to P3 and team protocol, then start P3", "control_post": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6230407705", "ended": "2026-10-17T15:08+04:00"}]
   },
-  "roles": {"owner_teammember": "Claude session (role only; no sends to agent chats)", "team_coordinator": "Codex (CL#16); observes first, acknowledges in #1; skill update to Team protocol v3.1 + Oracle rule pending in #16", "oracle": "Claude, acting Oracle (Owner: \"for now you step in shoes of oracle, authorized. oracle will review later\"); advice tagged [ORACLE · acting] to the TeamCoordinator only; source https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233265443", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187495"},
-  "agents": [],
+  "roles": {"owner_teammember": "Claude session; ~~role only; no sends to agent chats~~ also acting TeamCoordinator since 17 Oct (https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6236724626)", "team_coordinator": "~~Codex (CL#16); observes first, acknowledges in #1; skill update to Team protocol v3.1 + Oracle rule pending in #16~~ OwnerTeammember (Claude) acting since 17 Oct; Codex TC 01a142d0 stood down (https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6236724626). control.epoch record unchanged", "oracle": "Claude, acting Oracle (Owner: \"for now you step in shoes of oracle, authorized. oracle will review later\"); advice tagged [ORACLE · acting] to the TeamCoordinator only; source https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233265443", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187495"},
+  "agents": [
+    {
+      "alias": "V36 g1 Coder",
+      "role": "coder",
+      "chat_id8": "6ad467d7",
+      "generation": 1,
+      "status": "ONBOARDING: adoption, environment check and criteria grounding for Common #430; no code before OTM confirms the criteria",
+      "native_route": "chatgpt-browser",
+      "evidence_thread": "https://github.com/reallakshman19/Common/issues/430",
+      "assignment_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6246594085",
+      "authority_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6246574831",
+      "predecessor": "none (new agent on the Owner's words); Common coder 6ad3b9ce parked with no open work, chat kept",
+      "timer": "NOT_ARMED"
+    }
+  ],
   "leases": [
     {
       "holder": "OwnerTeammember (Claude session)",
@@ -40,6 +54,16 @@
       ],
       "granted": "2026-10-17T09:57+04:00",
       "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6230427090"
+    },
+    {
+      "holder": "V36 g1 6ad467d7 (coder)",
+      "branches": "codex/v36-modes-*",
+      "paths": [
+        "skills/engineering-pr-delivery-v3.6/**"
+      ],
+      "granted": "2026-10-18T10:34+04:00",
+      "scope": "Common #430 only; no merge, close, approval or live GitHub metadata writes",
+      "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6246574831"
     }
   ],
   "workflow": {
@@ -58,12 +82,19 @@
     ]
   },
   "status_issue": "https://github.com/reallakshman19/Common/issues/409",
-  "criticality_note": "unset (treated as critical). The earlier 'normal' was inferred from writer/merge grant words, which grant actions, not a classification (Codex Q12 §8, 17 Oct). The explicit scoped grants in control.grants stand.",
+  "criticality": "normal",
+  "criticality_owner_words": "\"yes\" (asked whether Common #408/#409 count as non-critical; https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6238268372) and \"go ahead. Non critical project, you are authorized on my behalf.\" (https://github.com/reallakshman19/Common/issues/409#issuecomment-6244462145)",
+  "criticality_note": "~~unset (treated as critical). The earlier 'normal' was inferred from writer/merge grant words, which grant actions, not a classification (Codex Q12 §8, 17 Oct). The explicit scoped grants in control.grants stand.~~ Superseded 18 Oct: set to normal by the Owner's words (criticality_owner_words). The explicit scoped grants in control.grants stand.",
   "criticality_history": [
     {
       "value": "normal",
       "basis": "P3: OTM writer, OTM merges after independent PASS (Owner, 17 Oct 2026) — scoped to this workpack; see control.grants",
       "withdrawn": "2026-10-17 (Q12 §8)"
+    },
+    {
+      "value": "normal",
+      "basis": "Owner words recorded in criticality_owner_words (17 and 18 Oct 2026)",
+      "set": "2026-10-18T10:34+04:00 (recorded by OwnerTeammember)"
     }
   ]
 }
