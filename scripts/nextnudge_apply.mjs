@@ -116,6 +116,10 @@ async function api(path,options={}) {
 }
 export async function main() {
   const event=JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH,'utf8'));
+  if(event.issue?.body?.includes('nextnudge-thread-save')) {
+    const thread=await import('./nextnudge_thread_apply.mjs');
+    return thread.main();
+  }
   const number=event.issue?.number;
   if(!Number.isSafeInteger(number))throw Error('Missing issue number');
   const repoOwner=process.env.GITHUB_REPOSITORY.split('/')[0];
