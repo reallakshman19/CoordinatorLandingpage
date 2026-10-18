@@ -103,7 +103,7 @@ def scoreboard_project(root, project_name, registry, project_view):
     if hashlib.sha256(raw).hexdigest() != SHA256:
         # Windows Actions checkout may materialize committed LF as CRLF.
         # Accept only if byte-for-byte canonical LF hashes to the same pin.
-        canonical = raw.replace(b"\\r\\n", b"\\n")
+        canonical = raw.replace(b"\r\n", b"\n")
         if hashlib.sha256(canonical).hexdigest() != SHA256:
             return _fail(registry, "ERROR", "artifact_sha256_mismatch", project_view)
     total = board["totals"]
