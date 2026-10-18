@@ -1,0 +1,554 @@
+{
+  "A": "NOT_EVALUATED: #401 chain accounting not admitted (#409 Q13)",
+  "A_detail": {
+    "accounted": null,
+    "attested": null,
+    "external_attestation": "NOT_EVALUATED",
+    "not_applicable": null,
+    "reason": "#401 chain audit not admitted; no 11/11 or A100% claim",
+    "reported": null,
+    "required_categories": [
+      "ROOT_OWNER_INTENT",
+      "OWNER_AMENDMENTS",
+      "ORIGINAL_INPUT",
+      "COMPLETE_GOLDEN",
+      "MEASURED_BENCHMARK",
+      "SOURCE_IMPLEMENTATION_CRUX",
+      "AGENT_CONTRIBUTIONS",
+      "DECISION_AND_PARKED_IDEAS",
+      "KNOWN_FAILURES",
+      "SELECTED_NEXT_VERIFICATION",
+      "TECHNICAL_HANDOVER"
+    ],
+    "status": "NOT_EVALUATED",
+    "unknown": null
+  },
+  "V": "NOT_EVALUATED: no external source attestation; native verified_complete=0 is a constant",
+  "V_detail": {
+    "external_attestation": "NOT_EVALUATED",
+    "native_zero_limit": "snapshot verified_complete=0 is a constant, not a query",
+    "reported_only_tool_limit": "C1 reports 0/11 externally verified by this tool, not zero proof in existence",
+    "status": "NOT_EVALUATED"
+  },
+  "acceptance": "NOT_EVALUATED: no authorised acceptance-source reader; only the Owner accepts",
+  "by_child": {
+    "https://github.com/reallakshman19/Common/issues/345": {
+      "E_current": 1,
+      "E_stale": 0,
+      "E_unknown": 0,
+      "counting_unit": "linked plan task",
+      "heads": [
+        "11b17586e7a14c4be90cca46cb4a2193804cd59e"
+      ],
+      "task_ids": [
+        "V36-341-WP1"
+      ],
+      "tasks": 1
+    }
+  },
+  "by_pr": {
+    "https://github.com/reallakshman19/Common/pull/344": {
+      "E_current": 1,
+      "E_stale": 0,
+      "E_unknown": 0,
+      "counting_unit": "linked plan task",
+      "heads": [
+        "11b17586e7a14c4be90cca46cb4a2193804cd59e"
+      ],
+      "task_ids": [
+        "V36-341-WP1"
+      ],
+      "tasks": 1
+    }
+  },
+  "edited_sources": [],
+  "label_sha": "4b90240",
+  "last_complete_read_at": "2026-10-17T12:00:00+04:00",
+  "managed_region": [
+    "<!-- v36-scoreboard:begin (managed; text outside is never changed) -->",
+    "<!-- v36-scoreboard:end -->"
+  ],
+  "observed_at": "2026-10-17T12:00:00+04:00",
+  "parent": "reallakshman19/Common#341",
+  "plan": "V36-341-PLAN-02",
+  "read_complete": true,
+  "render_mode": "READ_ONLY_DRY_RUN",
+  "rows": [
+    {
+      "A": "NOT_EVALUATED: #401 chain accounting not admitted (#409 Q13)",
+      "A_detail": {
+        "source": "#401 not admitted",
+        "status": "NOT_EVALUATED"
+      },
+      "E": "CURRENT_EVIDENCE",
+      "V": "NOT_EVALUATED: no external source attestation; native verified_complete=0 is a constant",
+      "acceptance": "NOT_EVALUATED: no authorised acceptance-source reader; only the Owner accepts",
+      "candidate_matches": true,
+      "candidate_sha": "11b17586e7a14c4be90cca46cb4a2193804cd59e",
+      "child_attributed": true,
+      "child_denominator": 1,
+      "claim": "DONE",
+      "claim_qualified": true,
+      "done_when": {
+        "MET": 2,
+        "NOT_APPLICABLE": 0,
+        "NOT_MET": 0,
+        "NOT_RUN": 0,
+        "UNKNOWN": 0
+      },
+      "evidence": "https://github.com/reallakshman19/Common/issues/345#issuecomment-9002",
+      "gaps": [
+        "original input UNKNOWN; no source-authenticated input identification",
+        "complete/partial golden UNKNOWN",
+        "benchmark/oracle UNKNOWN"
+      ],
+      "head_matches_candidate": true,
+      "implementation_crux": "UNKNOWN: source implementation crux not in ECO-02b read model",
+      "issue": "https://github.com/reallakshman19/Common/issues/345",
+      "native_E": "CURRENT_EVIDENCE",
+      "next": {
+        "action": "read companion, verify originals and scope independently; request Owner decision",
+        "actor": "coordinator",
+        "source": "claim structurally qualified; Owner acceptance undecided"
+      },
+      "observed_head": "11b17586e7a14c4be90cca46cb4a2193804cd59e",
+      "original_input": {
+        "attribution": "REPORTED_BY_AUTHOR",
+        "benchmark": "UNKNOWN",
+        "golden": "UNKNOWN",
+        "input": "UNKNOWN"
+      },
+      "outcome": "O1",
+      "owner_inputs": [],
+      "pending": [],
+      "pr": "https://github.com/reallakshman19/Common/pull/344",
+      "pr_attributed": true,
+      "pr_denominator": 1,
+      "qualification_basis": "STRUCTURAL: author's declared fields only; prose not interpreted",
+      "source_age_minutes": 60,
+      "source_history_hops": [],
+      "source_revisions": [
+        {
+          "body_sha256": "b39e8a27c92a56e506f51158bdfbcb54fe729373357157ea341887769fe1463c",
+          "comment_id": 9001,
+          "updated_at": "2026-10-17T07:00:00Z",
+          "url": "https://github.com/reallakshman19/Common/issues/345#issuecomment-9001"
+        },
+        {
+          "body_sha256": "998421de2f08d5d5796cd714dbfea4e97fdf99617b0b5c73ca0929d41937846d",
+          "comment_id": 9002,
+          "updated_at": "2026-10-17T07:00:00Z",
+          "url": "https://github.com/reallakshman19/Common/issues/345#issuecomment-9002"
+        }
+      ],
+      "task_id": "V36-341-WP1",
+      "user_outcome": "UNKNOWN: original Owner outcome/amendments not in ECO-02b read model",
+      "verification_scope": {
+        "note": "SELF-CHECK is author-reported; native E is a source/head binding, not test validation",
+        "reported_done_when": {
+          "MET": 2,
+          "NOT_APPLICABLE": 0,
+          "NOT_MET": 0,
+          "NOT_RUN": 0,
+          "UNKNOWN": 0
+        },
+        "run_verified": "NOT_EVALUATED",
+        "structural_self_check": "QUALIFIED",
+        "tested_head": "UNKNOWN"
+      }
+    },
+    {
+      "A": "NOT_EVALUATED: #401 chain accounting not admitted (#409 Q13)",
+      "A_detail": {
+        "source": "#401 not admitted",
+        "status": "NOT_EVALUATED"
+      },
+      "E": "MISSING_CHILD",
+      "V": "NOT_EVALUATED: no external source attestation; native verified_complete=0 is a constant",
+      "acceptance": "NOT_EVALUATED: no authorised acceptance-source reader; only the Owner accepts",
+      "candidate_matches": null,
+      "candidate_sha": null,
+      "child_attributed": false,
+      "child_denominator": null,
+      "claim": "NONE",
+      "claim_qualified": false,
+      "done_when": null,
+      "evidence": null,
+      "gaps": [
+        "native evidence MISSING_CHILD",
+        "no SELF-CHECK v1 companion found",
+        "original input UNKNOWN; no source-authenticated input identification",
+        "complete/partial golden UNKNOWN",
+        "benchmark/oracle UNKNOWN"
+      ],
+      "head_matches_candidate": null,
+      "implementation_crux": "UNKNOWN: source implementation crux not in ECO-02b read model",
+      "issue": null,
+      "native_E": "MISSING_CHILD",
+      "next": {
+        "action": "resolve the task's one child issue",
+        "actor": "coordinator",
+        "source": "MISSING_CHILD"
+      },
+      "observed_head": null,
+      "original_input": {
+        "attribution": "REPORTED_BY_AUTHOR",
+        "benchmark": "UNKNOWN",
+        "golden": "UNKNOWN",
+        "input": "UNKNOWN"
+      },
+      "outcome": "O1",
+      "owner_inputs": [],
+      "pending": [],
+      "pr": null,
+      "pr_attributed": false,
+      "pr_denominator": null,
+      "qualification_basis": "STRUCTURAL: author's declared fields only; prose not interpreted",
+      "source_age_minutes": null,
+      "source_history_hops": [],
+      "source_revisions": [],
+      "task_id": "V36-341-WP2",
+      "user_outcome": "UNKNOWN: original Owner outcome/amendments not in ECO-02b read model",
+      "verification_scope": {
+        "note": "SELF-CHECK is author-reported; native E is a source/head binding, not test validation",
+        "reported_done_when": null,
+        "run_verified": "NOT_EVALUATED",
+        "structural_self_check": "NOT_QUALIFIED",
+        "tested_head": "UNKNOWN"
+      }
+    },
+    {
+      "A": "NOT_EVALUATED: #401 chain accounting not admitted (#409 Q13)",
+      "A_detail": {
+        "source": "#401 not admitted",
+        "status": "NOT_EVALUATED"
+      },
+      "E": "MISSING_CHILD",
+      "V": "NOT_EVALUATED: no external source attestation; native verified_complete=0 is a constant",
+      "acceptance": "NOT_EVALUATED: no authorised acceptance-source reader; only the Owner accepts",
+      "candidate_matches": null,
+      "candidate_sha": null,
+      "child_attributed": false,
+      "child_denominator": null,
+      "claim": "NONE",
+      "claim_qualified": false,
+      "done_when": null,
+      "evidence": null,
+      "gaps": [
+        "native evidence MISSING_CHILD",
+        "no SELF-CHECK v1 companion found",
+        "original input UNKNOWN; no source-authenticated input identification",
+        "complete/partial golden UNKNOWN",
+        "benchmark/oracle UNKNOWN"
+      ],
+      "head_matches_candidate": null,
+      "implementation_crux": "UNKNOWN: source implementation crux not in ECO-02b read model",
+      "issue": null,
+      "native_E": "MISSING_CHILD",
+      "next": {
+        "action": "resolve the task's one child issue",
+        "actor": "coordinator",
+        "source": "MISSING_CHILD"
+      },
+      "observed_head": null,
+      "original_input": {
+        "attribution": "REPORTED_BY_AUTHOR",
+        "benchmark": "UNKNOWN",
+        "golden": "UNKNOWN",
+        "input": "UNKNOWN"
+      },
+      "outcome": "O2",
+      "owner_inputs": [],
+      "pending": [],
+      "pr": null,
+      "pr_attributed": false,
+      "pr_denominator": null,
+      "qualification_basis": "STRUCTURAL: author's declared fields only; prose not interpreted",
+      "source_age_minutes": null,
+      "source_history_hops": [],
+      "source_revisions": [],
+      "task_id": "V36-341-WP3",
+      "user_outcome": "UNKNOWN: original Owner outcome/amendments not in ECO-02b read model",
+      "verification_scope": {
+        "note": "SELF-CHECK is author-reported; native E is a source/head binding, not test validation",
+        "reported_done_when": null,
+        "run_verified": "NOT_EVALUATED",
+        "structural_self_check": "NOT_QUALIFIED",
+        "tested_head": "UNKNOWN"
+      }
+    },
+    {
+      "A": "NOT_EVALUATED: #401 chain accounting not admitted (#409 Q13)",
+      "A_detail": {
+        "source": "#401 not admitted",
+        "status": "NOT_EVALUATED"
+      },
+      "E": "MISSING_CHILD",
+      "V": "NOT_EVALUATED: no external source attestation; native verified_complete=0 is a constant",
+      "acceptance": "NOT_EVALUATED: no authorised acceptance-source reader; only the Owner accepts",
+      "candidate_matches": null,
+      "candidate_sha": null,
+      "child_attributed": false,
+      "child_denominator": null,
+      "claim": "NONE",
+      "claim_qualified": false,
+      "done_when": null,
+      "evidence": null,
+      "gaps": [
+        "native evidence MISSING_CHILD",
+        "no SELF-CHECK v1 companion found",
+        "original input UNKNOWN; no source-authenticated input identification",
+        "complete/partial golden UNKNOWN",
+        "benchmark/oracle UNKNOWN"
+      ],
+      "head_matches_candidate": null,
+      "implementation_crux": "UNKNOWN: source implementation crux not in ECO-02b read model",
+      "issue": null,
+      "native_E": "MISSING_CHILD",
+      "next": {
+        "action": "resolve the task's one child issue",
+        "actor": "coordinator",
+        "source": "MISSING_CHILD"
+      },
+      "observed_head": null,
+      "original_input": {
+        "attribution": "REPORTED_BY_AUTHOR",
+        "benchmark": "UNKNOWN",
+        "golden": "UNKNOWN",
+        "input": "UNKNOWN"
+      },
+      "outcome": "O3",
+      "owner_inputs": [],
+      "pending": [],
+      "pr": null,
+      "pr_attributed": false,
+      "pr_denominator": null,
+      "qualification_basis": "STRUCTURAL: author's declared fields only; prose not interpreted",
+      "source_age_minutes": null,
+      "source_history_hops": [],
+      "source_revisions": [],
+      "task_id": "V36-341-WP4",
+      "user_outcome": "UNKNOWN: original Owner outcome/amendments not in ECO-02b read model",
+      "verification_scope": {
+        "note": "SELF-CHECK is author-reported; native E is a source/head binding, not test validation",
+        "reported_done_when": null,
+        "run_verified": "NOT_EVALUATED",
+        "structural_self_check": "NOT_QUALIFIED",
+        "tested_head": "UNKNOWN"
+      }
+    },
+    {
+      "A": "NOT_EVALUATED: #401 chain accounting not admitted (#409 Q13)",
+      "A_detail": {
+        "source": "#401 not admitted",
+        "status": "NOT_EVALUATED"
+      },
+      "E": "MISSING_CHILD",
+      "V": "NOT_EVALUATED: no external source attestation; native verified_complete=0 is a constant",
+      "acceptance": "NOT_EVALUATED: no authorised acceptance-source reader; only the Owner accepts",
+      "candidate_matches": null,
+      "candidate_sha": null,
+      "child_attributed": false,
+      "child_denominator": null,
+      "claim": "NONE",
+      "claim_qualified": false,
+      "done_when": null,
+      "evidence": null,
+      "gaps": [
+        "native evidence MISSING_CHILD",
+        "no SELF-CHECK v1 companion found",
+        "original input UNKNOWN; no source-authenticated input identification",
+        "complete/partial golden UNKNOWN",
+        "benchmark/oracle UNKNOWN"
+      ],
+      "head_matches_candidate": null,
+      "implementation_crux": "UNKNOWN: source implementation crux not in ECO-02b read model",
+      "issue": null,
+      "native_E": "MISSING_CHILD",
+      "next": {
+        "action": "resolve the task's one child issue",
+        "actor": "coordinator",
+        "source": "MISSING_CHILD"
+      },
+      "observed_head": null,
+      "original_input": {
+        "attribution": "REPORTED_BY_AUTHOR",
+        "benchmark": "UNKNOWN",
+        "golden": "UNKNOWN",
+        "input": "UNKNOWN"
+      },
+      "outcome": "O5",
+      "owner_inputs": [],
+      "pending": [],
+      "pr": null,
+      "pr_attributed": false,
+      "pr_denominator": null,
+      "qualification_basis": "STRUCTURAL: author's declared fields only; prose not interpreted",
+      "source_age_minutes": null,
+      "source_history_hops": [],
+      "source_revisions": [],
+      "task_id": "V36-341-WP5",
+      "user_outcome": "UNKNOWN: original Owner outcome/amendments not in ECO-02b read model",
+      "verification_scope": {
+        "note": "SELF-CHECK is author-reported; native E is a source/head binding, not test validation",
+        "reported_done_when": null,
+        "run_verified": "NOT_EVALUATED",
+        "structural_self_check": "NOT_QUALIFIED",
+        "tested_head": "UNKNOWN"
+      }
+    },
+    {
+      "A": "NOT_EVALUATED: #401 chain accounting not admitted (#409 Q13)",
+      "A_detail": {
+        "source": "#401 not admitted",
+        "status": "NOT_EVALUATED"
+      },
+      "E": "MISSING_CHILD",
+      "V": "NOT_EVALUATED: no external source attestation; native verified_complete=0 is a constant",
+      "acceptance": "NOT_EVALUATED: no authorised acceptance-source reader; only the Owner accepts",
+      "candidate_matches": null,
+      "candidate_sha": null,
+      "child_attributed": false,
+      "child_denominator": null,
+      "claim": "NONE",
+      "claim_qualified": false,
+      "done_when": null,
+      "evidence": null,
+      "gaps": [
+        "native evidence MISSING_CHILD",
+        "no SELF-CHECK v1 companion found",
+        "original input UNKNOWN; no source-authenticated input identification",
+        "complete/partial golden UNKNOWN",
+        "benchmark/oracle UNKNOWN"
+      ],
+      "head_matches_candidate": null,
+      "implementation_crux": "UNKNOWN: source implementation crux not in ECO-02b read model",
+      "issue": null,
+      "native_E": "MISSING_CHILD",
+      "next": {
+        "action": "resolve the task's one child issue",
+        "actor": "coordinator",
+        "source": "MISSING_CHILD"
+      },
+      "observed_head": null,
+      "original_input": {
+        "attribution": "REPORTED_BY_AUTHOR",
+        "benchmark": "UNKNOWN",
+        "golden": "UNKNOWN",
+        "input": "UNKNOWN"
+      },
+      "outcome": "O5",
+      "owner_inputs": [],
+      "pending": [],
+      "pr": null,
+      "pr_attributed": false,
+      "pr_denominator": null,
+      "qualification_basis": "STRUCTURAL: author's declared fields only; prose not interpreted",
+      "source_age_minutes": null,
+      "source_history_hops": [],
+      "source_revisions": [],
+      "task_id": "V36-341-WP6",
+      "user_outcome": "UNKNOWN: original Owner outcome/amendments not in ECO-02b read model",
+      "verification_scope": {
+        "note": "SELF-CHECK is author-reported; native E is a source/head binding, not test validation",
+        "reported_done_when": null,
+        "run_verified": "NOT_EVALUATED",
+        "structural_self_check": "NOT_QUALIFIED",
+        "tested_head": "UNKNOWN"
+      }
+    },
+    {
+      "A": "NOT_EVALUATED: #401 chain accounting not admitted (#409 Q13)",
+      "A_detail": {
+        "source": "#401 not admitted",
+        "status": "NOT_EVALUATED"
+      },
+      "E": "MISSING_CHILD",
+      "V": "NOT_EVALUATED: no external source attestation; native verified_complete=0 is a constant",
+      "acceptance": "NOT_EVALUATED: no authorised acceptance-source reader; only the Owner accepts",
+      "candidate_matches": null,
+      "candidate_sha": null,
+      "child_attributed": false,
+      "child_denominator": null,
+      "claim": "NONE",
+      "claim_qualified": false,
+      "done_when": null,
+      "evidence": null,
+      "gaps": [
+        "native evidence MISSING_CHILD",
+        "no SELF-CHECK v1 companion found",
+        "original input UNKNOWN; no source-authenticated input identification",
+        "complete/partial golden UNKNOWN",
+        "benchmark/oracle UNKNOWN"
+      ],
+      "head_matches_candidate": null,
+      "implementation_crux": "UNKNOWN: source implementation crux not in ECO-02b read model",
+      "issue": null,
+      "native_E": "MISSING_CHILD",
+      "next": {
+        "action": "resolve the task's one child issue",
+        "actor": "coordinator",
+        "source": "MISSING_CHILD"
+      },
+      "observed_head": null,
+      "original_input": {
+        "attribution": "REPORTED_BY_AUTHOR",
+        "benchmark": "UNKNOWN",
+        "golden": "UNKNOWN",
+        "input": "UNKNOWN"
+      },
+      "outcome": "O5",
+      "owner_inputs": [],
+      "pending": [],
+      "pr": null,
+      "pr_attributed": false,
+      "pr_denominator": null,
+      "qualification_basis": "STRUCTURAL: author's declared fields only; prose not interpreted",
+      "source_age_minutes": null,
+      "source_history_hops": [],
+      "source_revisions": [],
+      "task_id": "V36-341-WP7",
+      "user_outcome": "UNKNOWN: original Owner outcome/amendments not in ECO-02b read model",
+      "verification_scope": {
+        "note": "SELF-CHECK is author-reported; native E is a source/head binding, not test validation",
+        "reported_done_when": null,
+        "run_verified": "NOT_EVALUATED",
+        "structural_self_check": "NOT_QUALIFIED",
+        "tested_head": "UNKNOWN"
+      }
+    }
+  ],
+  "schema": "v36.scoreboard/v1",
+  "source_cursor": {
+    "comment:9001": {
+      "body_sha256": "b39e8a27c92a56e506f51158bdfbcb54fe729373357157ea341887769fe1463c",
+      "issue": 345,
+      "read_at": "2026-10-17T12:00:00+04:00",
+      "status": "READ",
+      "updated_at": "2026-10-17T07:00:00Z",
+      "url": "https://github.com/reallakshman19/Common/issues/345#issuecomment-9001"
+    },
+    "comment:9002": {
+      "body_sha256": "998421de2f08d5d5796cd714dbfea4e97fdf99617b0b5c73ca0929d41937846d",
+      "issue": 345,
+      "read_at": "2026-10-17T12:00:00+04:00",
+      "status": "READ",
+      "updated_at": "2026-10-17T07:00:00Z",
+      "url": "https://github.com/reallakshman19/Common/issues/345#issuecomment-9002"
+    }
+  },
+  "title_note": "A title or this board is a projection of cited sources, not engineering truth.",
+  "totals": {
+    "E_current": 1,
+    "E_stale": 0,
+    "claims_qualified": 1,
+    "denominator": "selected tasks of this plan only",
+    "known_rows": 7,
+    "native_total_matches": true,
+    "note": "No cross-PR test-suite addition or acceptance inference.",
+    "partial": false,
+    "tasks": 7,
+    "zero_is_not_established": false
+  },
+  "unread_sources": []
+}
