@@ -1,7 +1,7 @@
 // Canonical Markdown thread codec. Sent packets are length-framed to preserve exact bytes.
 export const THREAD_ID=/^NN-\d{8}-\d{6}-[a-f0-9]{4}$/;
 const MODES=new Set(['ground','task','correction','evidence','direction','close','amendment','reply']);
-const CHAT=/(?:https?:\/\/[^\s<>"')\]]*(?:chatgpt\.com\/c\/|chat\.openai\.com|claude\.ai\/chat|gemini\.google\.com\/app|antigravity|poe\.com\/chat|\/conversation\/|\/chats?\/))/i;
+const CHAT=/(?:https?:\/\/(?:[\w-]+\.)*(?:chatgpt\.com|chat\.openai\.com|claude\.ai|gemini\.google\.com|poe\.com|character\.ai|copilot\.microsoft\.com|perplexity\.ai)(?:[/:?#]|$)|https?:\/\/[^\s<>"']*(?:antigravity|\/conversations?\/|\/chats?\/))/i;
 const clean=s=>typeof s==='string'&&s.length<90000;
 const line=s=>s.replace(/[\r\n]+/g,' ').trim();
 export function assertPublic(value) {
