@@ -96,3 +96,10 @@ test('profile JSON supports additional task types without fixed template names',
   const {db,r,n}=setup();db.profiles.profiles.Research=[{id:'sources',question:'Source grounded?',example:'Read original',evidence:'Link'}];
   r.profiles=['Research'];validate(db);assert.equal(m.checklist(db,r)[0].key,'Research:sources');
 });
+
+test('custom-only profile imports remain usable for newly created runs',()=>{
+  const {db,p}=setup();db.runs=[];db.events=[];
+  db.profiles={formatVersion:1,profiles:{Research:[{id:'source',question:'Source?',example:'Read it',evidence:'Link'}]}};
+  const r=m.newRun(db,p.id,'Custom profile','Use imported rules');
+  assert.deepEqual(r.profiles,['Research']);validate(db);
+});

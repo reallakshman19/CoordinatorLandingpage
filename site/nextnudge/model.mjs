@@ -24,7 +24,8 @@ export function newRun(db,projectId,title,aim) {
     throw Error('Select a project and enter a task title and aim.');
   }
   const r={id:id('NN',db),projectId,title:title.trim(),aim:aim.trim(),createdAt:now(),
-    archived:false,deleted:false,paused:false,chatId8:'',profiles:['Coding'],
+    archived:false,deleted:false,paused:false,chatId8:'',profiles:Object.hasOwn(db.profiles.profiles,'Coding')
+      ? ['Coding'] : [Object.keys(db.profiles.profiles)[0]],
     nodes:[],fixtures:emptyFixtures(),drafts:{}};
   db.runs.push(r);event(db,r,null,'RUN_CREATED',r.title);
   newStep(db,r,'Initial prompt',aim+'\nReply with your understanding and fill the On boarding fixtures.','new_requirement');
