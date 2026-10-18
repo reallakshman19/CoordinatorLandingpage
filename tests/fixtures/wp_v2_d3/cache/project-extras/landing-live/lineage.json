@@ -1,0 +1,14 @@
+[
+  {
+    "kind": "parent_issue",
+    "reference": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/21",
+    "repository": "reallakshman19/CoordinatorLandingpage",
+    "issue_number": 21,
+    "status": "AVAILABLE",
+    "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/21",
+    "title": "landing-live root intent · synthetic snapshot",
+    "body_excerpt": "Synthetic root intent at checkpoint: finish the existing planned release with source-first checks.",
+    "body_truncated": false,
+    "updated_at": "2026-10-17T20:55:00Z"
+  }
+]
