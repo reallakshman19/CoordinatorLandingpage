@@ -114,6 +114,32 @@ test('browser gzip packet roundtrips; narrow editor fallback activates over 7500
   assert.equal(s.prepared,await fingerprint(draft));
   assert.match(elements.get('#notice').textContent,/7,500-character URL limit/);
 });
+test('delta handles new and deleted IDs, changed runs, and optional profile updates',async()=>{
+  const db=structuredClone(base);
+  const removed=db.runs.shift().id;
+  db.runs[0].title+=' revised';
+  const newRun=structuredClone(db.runs[0]);
+  // Deterministically make a distinct schema-valid run and its node IDs.
+  const unique=i=>'NN-20261018-213000-'+String(i).padStart(4,'0');
+  newRun.id=unique(1);newRun.title='New independent run';
+  newRun.nodes=newRun.nodes.map((n,i)=>({...n,id:unique(i+2),parent:null}));
+  newRun.selected=newRun.nodes[0]?.id;
+  db.runs.push(newRun);
+  db.profiles.profiles.Extra=[];
+  event(db,null,null,'BULK_UPDATED','Upsert/delete/profile qualification.');
+  const p=await packetFor(db);
+  assert(p.delta.runs.deleted.includes(removed));
+  assert(Object.hasOwn(p.delta.runs.upsert,newRun.id));
+  assert(Object.hasOwn(p.delta,'profiles'));
+  assert.deepEqual(applyDelta(base,p),db);
+});
+test('late compare-and-swap conflict never reports SAVED',async()=>{
+  const h=harness();h.writeCurrent=async()=>{const e=Error('raced');e.status=409;throw e;};
+  const result=await applyIssue({issue:issue(await packetFor()),owner:'reallakshman19',...h});
+  assert.equal(result,'NEEDS RELOAD');
+  assert.match(h.comments[0],/changed during the commit/);
+  assert.equal(h.closes.length,1);
+});
 test('workflow does not interpolate GitHub issue text into any shell command',()=>{
   const workflow=fs.readFileSync(new URL('../.github/workflows/nextnudge-save.yml',import.meta.url),'utf8');
   const code=fs.readFileSync(new URL('../scripts/nextnudge_apply.mjs',import.meta.url),'utf8');
