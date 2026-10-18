@@ -360,7 +360,8 @@ jobs:
         with:
           name: wp1a-head-output
           path: |
-            nextnudge-head.log\n            wp1a-original.log
+            nextnudge-head.log
+            wp1a-original.log
             wp1a-head.log
             wp1a-browser.log
             wp2-head.log
