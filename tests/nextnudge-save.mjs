@@ -124,6 +124,8 @@ test('delta handles new and deleted IDs, changed runs, and optional profile upda
   newRun.id=unique(1);newRun.title='New independent run';
   newRun.nodes=newRun.nodes.map((n,i)=>({...n,id:unique(i+2),parent:null}));
   newRun.selected=newRun.nodes[0]?.id;
+  newRun.fixtures=Object.fromEntries(Object.keys(newRun.fixtures).map(key=>[key,[]]));
+  newRun.drafts={};
   db.runs.push(newRun);
   db.profiles.profiles.Extra=[];
   event(db,null,null,'BULK_UPDATED','Upsert/delete/profile qualification.');
