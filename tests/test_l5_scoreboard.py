@@ -68,6 +68,18 @@ class PinnedV36ScoreboardTests(unittest.TestCase):
             artifact.write_text('{"schema":"v36.scoreboard/v1","rows":[]}')
             self.assertEqual(project(Path(temp))["status"], "ERROR")
 
+    def test_windows_crlf_checkout_requires_exact_canonical_digest(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / ARTIFACT
+            path.parent.mkdir(parents=True)
+            authoritative = (ROOT / ARTIFACT).read_bytes().replace(b"\r\n", b"\n")
+            path.write_bytes(authoritative.replace(b"\n", b"\r\n"))
+            self.assertEqual(project(Path(temp))["status"], "SYNTHETIC_FIXTURE")
+            path.write_bytes(path.read_bytes().replace(b"V36-341-WP1", b"V36-341-XXX"))
+            result = project(Path(temp))
+            self.assertEqual(result["status"], "ERROR")
+            self.assertEqual(result["reason"], "artifact_sha256_mismatch")
+
     def test_title_only_fallback_is_not_evidence(self):
         with tempfile.TemporaryDirectory() as temp:
             result = project(Path(temp), ("[V3.6][O2][DONE] sample",))
