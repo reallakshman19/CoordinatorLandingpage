@@ -51,4 +51,10 @@ def finish_lineage(row, issue):
                title=issue.get("title") or "",
                issue_state=issue.get("state") or "UNKNOWN",
                updated_at=issue.get("updated_at"))
+    if row.get("kind") == "parent_issue" and isinstance(issue.get("body"), str):
+        # WP-L2(c) has already fetched this exact verified parent; never
+        # issue a second GET just to populate the cold-reader view.
+        body = issue["body"]
+        row["body_excerpt"] = body[:1600]
+        row["body_truncated"] = len(body) > 1600
     return row

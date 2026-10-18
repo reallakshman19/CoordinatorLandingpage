@@ -26,6 +26,16 @@ def record(project, filled):
         base.update({
             "lineage": [{"kind": "parent_issue", "status": "AVAILABLE",
                          "title": "Design the coordination relay", "url": LINK}],
+            "intent": {"status": "AVAILABLE", "text": "Root Owner purpose <unsafe>.",
+                       "source": LINK, "truncated": True},
+            "amendments": {"status": "AVAILABLE", "source": f"https://github.com/{CONTROL}/issues/1",
+                           "total_matching": 2, "truncated": False, "records": [
+                {"comment_id": 75, "text": "Owner correction for probe <img>",
+                 "source": f"https://github.com/{CONTROL}/issues/1#issuecomment-75",
+                 "superseded": False, "attribution": "ASSOCIATED_NOT_OWNER_PROOF"},
+                {"comment_id": 76, "text": "Superseded Owner amendment",
+                 "source": f"https://github.com/{CONTROL}/issues/1#issuecomment-76",
+                 "superseded": True, "attribution": "ASSOCIATED_NOT_OWNER_PROOF"}]},
             "registry": {"workflow": {"owner_words": "Preserve exact intent"},
                          "control": {"current_coordinator": {
                              "holder": "TeamCoordinator Agent", "verified": True,
@@ -123,6 +133,22 @@ def run(artifact):
                 page.wait_for_selector("#l4-understanding s a[href]", timeout=10000)
                 check("SUPERSEDED_STRUCK_WITH_SOURCE", bool(
                     page.locator("#l4-understanding s a[href]").count()))
+                text = page.locator("#l4-understanding").inner_text()
+                check("ROOT_INTENT_TEXT_WITH_TRUNCATION",
+                      "Root Owner purpose <unsafe>" in text and
+                      "truncated" in text.lower())
+                check("INBOX_AMENDMENT_TEXT_AND_SOURCE",
+                      "Owner correction for probe <img>" in text and
+                      bool(page.locator("#l4-understanding a[href*='issuecomment-75']").count()))
+                check("AMENDMENT_SUPERSEDED_STRUCK",
+                      bool(page.locator("#l4-understanding s a[href*='issuecomment-76']").count()))
+                check("INERT_INTENT_AND_AMENDMENT",
+                      not page.locator("#l4-understanding img").count())
+                page.goto(f"http://127.0.0.1:{server.server_address[1]}/"
+                          "index.html#understanding/blank", wait_until="networkidle")
+                check("MISSING_INBOX_REASON_VISIBLE",
+                      "UNKNOWN" in page.locator("#l4-understanding").inner_text()
+                      and "not fetched" in page.locator("#l4-understanding").inner_text().lower())
                 page.goto(f"http://127.0.0.1:{server.server_address[1]}/"
                           "index.html#people/probe", wait_until="networkidle")
                 check("OTM_AND_TC_TWO_ROLES",

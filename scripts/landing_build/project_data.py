@@ -188,7 +188,7 @@ def build_project_data(root: Path, project_name: str, registry: dict,
         'freshness_status': freshness,
         'liveness_observation_limit': LIVENESS_OBSERVATION_LIMIT,
         'published_at': None,
-        'stale_lease_count': sum(l.get('warning') == 'RETIRED_HOLDER' for l in leases),
+        'stale_lease_count': sum(l.get('warning') in ('RETIRED_HOLDER', 'UNVERIFIED_HOLDER') for l in leases),
         **project_additions(registry),
         'registry': {
             'protocol': registry.get('protocol', ''),
