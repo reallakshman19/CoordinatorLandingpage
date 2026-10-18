@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import {gzipSync} from 'node:zlib';
 import {createHash} from 'node:crypto';
 import {buildDelta,applyDelta,fingerprint,prepareIssueSave} from '../site/nextnudge/repository.mjs';
-import {applyIssue,ownerIssue,unpack} from '../scripts/nextnudge_apply.mjs';
+import {applyIssue,ownerIssue,unpack,sweepUnreceipted,SUPERSEDED_RECEIPT} from '../scripts/nextnudge_apply.mjs';
 import {event} from '../site/nextnudge/model.mjs';
 import {action} from '../site/nextnudge/actions.mjs';
 import {packet as chatPacket} from '../site/nextnudge/model.mjs';
@@ -200,6 +200,90 @@ test('late compare-and-swap conflict never reports SAVED',async()=>{
   assert.equal(result,'NEEDS RELOAD');
   assert.match(h.comments[0],/changed during the commit/);
   assert.equal(h.closes.length,1);
+});
+test('sweep receipts only older unreceipted owner saves, never current or newer pending',async()=>{
+  const owner='reallakshman19';
+  const candidate=(number,login=owner,labels=['nextnudge-save'])=>({
+    number,state:'open',user:{login},labels:labels.map(name=>({name}))
+  });
+  const items=[
+    candidate(1),candidate(2),candidate(3),candidate(4),candidate(5),
+    candidate(6,'outsider'),candidate(7,owner,['other']),candidate(8),
+    {...candidate(9),pull_request:{url:'pr'}},candidate(10),candidate(11),
+  ];
+  const comments=new Map([
+    [2,[{user:{login:'github-actions[bot]'},body:'SAVED: authentic commit'}]],
+    [3,[{user:{login:'github-actions[bot]'},body:'NEEDS RELOAD: stale blob'}]],
+    [4,[{user:{login:'github-actions[bot]'},body:'REJECTED: bad packet'}]],
+    [5,[{user:{login:'outsider'},body:'SAVED: spoofed receipt'}]],
+  ]);
+  const calls=[],receiptWrites=[],closes=[];
+  const fake={
+    owner,currentIssueNumber:10,
+    listOpenIssues:async page=>{calls.push('issues:'+page);
+      return page===1?items:[];},
+    listComments:async(number,page)=>{calls.push('comments:'+number+':'+page);
+      return page===1?(comments.get(number)||[]):[];},
+    commentIssue:async(number,body)=>{receiptWrites.push({number,body});
+      comments.set(number,[{user:{login:'github-actions[bot]'},body}]);},
+    closeIssue:async number=>{closes.push(number);const entry=items.find(x=>x.number===number);
+      entry.state='closed';}
+  };
+  assert.equal(await sweepUnreceipted(fake),2);
+  assert.deepEqual(receiptWrites.map(x=>x.number),[1,5]);
+  assert.deepEqual(closes,[1,5]);
+  assert(receiptWrites.every(x=>x.body===SUPERSEDED_RECEIPT));
+  assert.match(SUPERSEDED_RECEIPT,/^NEEDS RELOAD: this save was superseded before it ran\. Nothing was written\. Prepare a fresh save\.$/);
+  assert(!closes.includes(10),'current issue must not be closed');
+  assert(!closes.includes(11),'newer pending issue must not be closed');
+  assert(calls.includes('issues:2'));
+  assert.equal(await sweepUnreceipted(fake),0,'second sweep must be idempotent');
+  assert.deepEqual(closes,[1,5]);
+});
+test('sweep snapshots all open issue pages before closing, preventing skipped saves',async()=>{
+  const owner='reallakshman19';
+  const items=Array.from({length:120},(_,i)=>({
+    number:i+1,state:'open',user:{login:owner},labels:[{name:'nextnudge-save'}]
+  }));
+  const readPages=[],writes=[],closes=[];
+  const count=await sweepUnreceipted({
+    owner,currentIssueNumber:122,
+    listOpenIssues:async page=>{
+      readPages.push(page);
+      return items.filter(x=>x.state==='open').slice((page-1)*100,page*100);
+    },
+    listComments:async()=>[],
+    commentIssue:async(n,body)=>{writes.push(n);assert.equal(body,SUPERSEDED_RECEIPT);},
+    closeIssue:async n=>{closes.push(n);items[n-1].state='closed';}
+  });
+  assert.deepEqual(readPages,[1,2,3]);
+  assert.equal(count,120);
+  assert.equal(new Set(writes).size,120);
+  assert.deepEqual(closes,Array.from({length:120},(_,i)=>i+1));
+  assert.equal(items.filter(x=>x.state==='open').length,0);
+});
+test('sweep finds a receipt on later comment pages and leaves the issue untouched',async()=>{
+  const owner='reallakshman19',closed=[];
+  const count=await sweepUnreceipted({
+    owner,currentIssueNumber:4,
+    listOpenIssues:async page=>page===1?[{
+      number:3,state:'open',user:{login:owner},labels:['nextnudge-save']
+    }]:[],
+    listComments:async(_number,page)=>page===1?
+      [{user:{login:'other'},body:'A comment but not a receipt'}]:
+      page===2?[{user:{login:'github-actions[bot]'},body:'SAVED: r1'}]:[],
+    commentIssue:async()=>{throw Error('must not append a second receipt');},
+    closeIssue:async n=>closed.push(n)
+  });
+  assert.equal(count,0);
+  assert.deepEqual(closed,[]);
+});
+test('closed issue cannot write if superseded sweep closed it before its run starts',async()=>{
+  const packet=await packetFor(),h=harness();
+  assert.equal(await applyIssue({
+    issue:{...issue(packet),state:'closed'},owner:'reallakshman19',...h
+  }),'IGNORED');
+  assert.equal(h.writes.length+h.comments.length+h.closes.length,0);
 });
 test('workflow does not interpolate GitHub issue text into any shell command',()=>{
   const workflow=fs.readFileSync(new URL('../.github/workflows/nextnudge-save.yml',import.meta.url),'utf8');
