@@ -1,0 +1,24 @@
+{
+  "id": "NM-20261017-210000-a11a",
+  "project": "landing-live",
+  "class": "Dispatch",
+  "kind": "next_step",
+  "from": {
+    "role": "TeamCoordinator",
+    "id8": "11111111"
+  },
+  "to": {
+    "role": "implementer",
+    "id8": "6ad405cc"
+  },
+  "text": "SYNTHETIC D8 queued dispatch: continue the original launch scope before the later Owner correction.",
+  "basis": {
+    "evidence": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22",
+    "head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "registry_sha": "bcb60336fe713a3473303a0b0e8090ea8280c0cb"
+  },
+  "trigger": "GO",
+  "supersedes": null,
+  "evidence_format": "TASK EVIDENCE v2",
+  "created_at": "2026-10-17T21:00:00Z"
+}
