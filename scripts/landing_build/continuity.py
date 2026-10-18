@@ -4,6 +4,7 @@ Does not modify legacy work, monitoring or execution-authority lights.
 A capture observation is not proof that every off-platform Owner input exists.
 """
 from collections.abc import Mapping
+from landing_build.freshness import _utc_time
 
 ORDER = ("intent_linked", "originals_declared", "owner_input_captured",
          "lineage_verified", "head_fresh")
@@ -14,6 +15,51 @@ VALID_ORIGINAL = {"ORIGINAL", "SYNTHETIC", "PARTIAL", "MISSING"}
 def _item(state="UNKNOWN", source=None, reason=None, **additional):
     return {"state": state, "source": source,
             "reason": reason or "not_recorded", **additional}
+
+
+
+AMENDMENT_NOTICE = "amendment after checkpoint: reconcile before continuing"
+
+
+def assess_amendment_checkpoint(amendments, checkpoint):
+    """Compare bounded captured #1 records with a source-attested cycle.
+
+    A capture is not a checkpoint. Equal times do not prove a later cycle.
+    Never infer a newer checkpoint from wall-clock time or the build date.
+    """
+    if not isinstance(amendments, Mapping):
+        return {"status": "NOT_RECORDED", "markers": []}
+    source = amendments.get("source")
+    state, rows = amendments.get("status"), amendments.get("records")
+    if state == "NONE_FOUND" and rows == []:
+        return {"status": "NONE_FOUND", "markers": []}
+    if state != "AVAILABLE" or not isinstance(rows, list) or not rows:
+        return {"status": "UNKNOWN", "reason": "amendment_capture_unknown",
+                "source": source, "markers": []}
+    when = _utc_time(checkpoint)
+    pending, uncertain = [], []
+    for row in rows:
+        item = row if isinstance(row, Mapping) else {}
+        ts = _utc_time(item.get("created_at"))
+        if not ts or not when:
+            uncertain.append(item.get("source") or source)
+        elif ts >= when:  # A checkpoint must be strictly AFTER the change.
+            pending.append({"text": AMENDMENT_NOTICE,
+                            "source": item.get("source") or source,
+                            "created_at": item["created_at"],
+                            "checkpoint_at": checkpoint})
+    if pending:
+        pending.sort(key=lambda x: _utc_time(x["created_at"]))
+        return {"status": "UNRECONCILED", "checkpoint_at": checkpoint,
+                "source": pending[-1]["source"], "markers": pending}
+    if uncertain or amendments.get("truncated"):
+        return {"status": "UNKNOWN",
+                "reason": "amendment_or_checkpoint_time_unknown"
+                          if uncertain else "amendment_list_truncated",
+                "source": next((s for s in uncertain if s), source),
+                "checkpoint_at": checkpoint, "markers": []}
+    return {"status": "RECONCILED", "checkpoint_at": checkpoint,
+            "source": source, "markers": []}
 
 
 def derive_continuity(registry, project_view):
@@ -70,6 +116,19 @@ def derive_continuity(registry, project_view):
         owner = _item("OK", refs.get("inbox"), "no_capture_gap_observed")
     else:
         owner = _item(source=refs.get("inbox"), reason="owner_input_capture_unknown")
+
+    # A fetched amendment after the last completed coordinator cycle is
+    # not captured *by that checkpoint*. This overrides "source fetch OK".
+    check = assess_amendment_checkpoint(view.get("amendments"),
+                                        view.get("last_cycle_at"))
+    if check["status"] == "UNRECONCILED":
+        owner = _item("PROBLEM", check["source"], "post_checkpoint_owner_amendment",
+                      created_at=check["markers"][-1]["created_at"],
+                      checkpoint_at=check["checkpoint_at"],
+                      unreconciled=check["markers"])
+    elif check["status"] == "UNKNOWN" and owner["state"] != "PROBLEM":
+        owner = _item(source=check.get("source") or refs.get("inbox"),
+                      reason=check.get("reason") or "amendment_time_unknown")
 
     if not entries:
         ln = _item(reason="lineage_not_observed")
