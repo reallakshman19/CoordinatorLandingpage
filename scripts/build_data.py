@@ -280,6 +280,8 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             'child_progress': pd['child_progress'],
             'evidence_head_status': pd['evidence_head_status'],
             'next_move': pd['next_move'],
+            **({'v36_scoreboard': pd['v36_scoreboard']}
+               if 'v36_scoreboard' in pd else {}),
             'status_bar': status_by_project[pd['project']],
             'control': pd['registry']['control'],
             'workflow': pd['registry']['workflow'],
