@@ -2,7 +2,7 @@ import * as model from './model.mjs';
 import {migrate} from './migrate.mjs';
 import {validate,validateProfiles} from './schema.mjs';
 import {packet} from './model.mjs';
-import {prepareSave,readRepository,fingerprint,download} from './repository.mjs';
+import {prepareSave,prepareIssueSave,readRepository,fingerprint,download} from './repository.mjs';
 import {$,notice} from './util.mjs';
 export async function action(name,target,ctx) {
   const {s,run:r,node:n,save,render}=ctx;
@@ -17,12 +17,43 @@ export async function action(name,target,ctx) {
   if(name==='restore')return $('#restore-file').click();
   if(name==='import-profiles')return $('#profile-file').click();
   if(name==='export-profiles')return download(db.profiles);
-  if(name==='github-prepare') {
-    const prepared=await prepareSave(db,s.baseSha);
-    await navigator.clipboard.writeText(prepared.text);
+  async function manualEditor(prepared,reason='') {
     s.prepared=prepared.digest;save(false);
-    notice('Snapshot copied. Open the GitHub editor below, replace the JSON, review and commit. Then Verify GitHub save.');
-    $('#github-editor').hidden=false;return;
+    $('#github-editor').hidden=false;
+    try {
+      await navigator.clipboard.writeText(prepared.text);
+      notice(reason+'Snapshot copied. Open GitHub editor, replace JSON, commit, then verify.');
+    } catch {
+      const field=$('#github-manual-json');
+      field.hidden=false;field.value=prepared.text;
+      notice(reason+'Clipboard permission denied. Select and copy the JSON below manually, or use Export, then commit through GitHub editor.');
+    }
+  }
+  if(name==='github-prepare')return manualEditor(await prepareSave(db,s.baseSha));
+  if(name==='github-save') {
+    // Reserve a tab during the original click: async fetch would lose popup permission.
+    const popup=window.open('about:blank','_blank');
+    try {
+      const prepared=await prepareSave(db,s.baseSha);
+      let result;
+      try {result=await prepareIssueSave(db,prepared,s.baseSha);}
+      catch(e) {
+        if(!/manual GitHub editor|cannot gzip/.test(e.message))throw e;
+        popup?.close();await manualEditor(prepared,e.message+'. ');return;
+      }
+      if(result.url.length>7500) {
+        popup?.close();await manualEditor(prepared,'Save packet exceeds the 7,500-character URL limit. ');return;
+      }
+      s.prepared=prepared.digest;save(false);
+      if(popup) {
+        popup.opener=null;popup.location.replace(result.url);
+        notice('Review and Submit the prefilled GitHub issue. Wait for SAVED receipt, then Verify GitHub save.');
+      } else {
+        const link=$('#github-save-link');link.href=result.url;link.hidden=false;
+        notice('Popup blocked. Click the Save issue link, Submit on GitHub, then Verify GitHub save.');
+      }
+      return;
+    } catch(e) {popup?.close();throw e;}
   }
   if(name==='github-verify') {
     if(!s.prepared)throw Error('Prepare a snapshot before verifying its save.');

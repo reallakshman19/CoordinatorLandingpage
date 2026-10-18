@@ -10,8 +10,8 @@
 <div id="notice" role="status" aria-live="polite"></div>
 <section class="project-bar"><label>Project<select id="project-select" aria-label="Project"></select></label><button data-action="new-project">＋ Project</button>
 <label>NextNudge<select id="run-select" aria-label="NextNudge run"></select></label><button data-action="new-run" id="new-run">＋ NextNudge</button><label class="inline"><input id="show-archived" type="checkbox">Archived</label></section>
-<section class="sync-bar"><span id="save-state">Loading repository…</span><button data-action="github-prepare">Prepare GitHub update</button><button data-action="github-verify">Verify GitHub save</button><button data-action="github-reload">Reload GitHub</button>
-<a id="github-editor" hidden href="https://github.com/reallakshman19/CoordinatorLandingpage/edit/main/site/nextnudge-data/workbench.json" target="_blank" rel="noopener">Open GitHub editor ↗</a></section>
+<section class="sync-bar"><span id="save-state">Loading repository…</span><button class="primary" data-action="github-save">Save to GitHub</button><button data-action="github-prepare">Prepare GitHub update</button><button data-action="github-verify">Verify GitHub save</button><button data-action="github-reload">Reload GitHub</button>
+<a id="github-editor" hidden href="https://github.com/reallakshman19/CoordinatorLandingpage/edit/main/site/nextnudge-data/workbench.json" target="_blank" rel="noopener">Open GitHub editor ↗</a><a id="github-save-link" hidden target="_blank" rel="noopener noreferrer">Open prefilled Save issue ↗</a></section><textarea id="github-manual-json" hidden readonly aria-label="Prepared GitHub JSON for manual copy" rows="5"></textarea>
 <section class="run" id="task"><div id="run-info"></div><nav id="tabs" aria-label="NextNudge sections"></nav><div id="content"></div></section>
 <footer>Drafts are local until committed and verified in GitHub. No automatic sending, approvals or protocol dispatch. Private chat URLs stay on this device.</footer>
 </main>

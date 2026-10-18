@@ -169,6 +169,19 @@ jobs:
           set -o pipefail
           python -m unittest tests.test_timeline_extract tests.test_freshness_extract tests.test_evidence_parse_extract tests.test_lf_writers tests.test_l6_continuity tests.test_l6b_live_build tests.test_l5_scoreboard tests.test_v1_coldreader tests.test_v2_d3_amendment tests.test_v3_d8_recheck tests.test_v4_d5_retirement tests.test_v4_d5_n1 -v 2>&1 | tee extraction-seams-head.log
 
+      - name: Set up Node 22 for NextNudge qualification
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: NextNudge owner-save and manual fallback Node 22 tests
+        id: nextnudge_unit
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          node --test tests/nextnudge-*.mjs 2>&1 | tee nextnudge-head.log
+
       - name: Assemble benchmark-backed browser artifact (no live API)
         id: artifact
         continue-on-error: true
@@ -347,7 +360,7 @@ jobs:
         with:
           name: wp1a-head-output
           path: |
-            wp1a-original.log
+            nextnudge-head.log\n            wp1a-original.log
             wp1a-head.log
             wp1a-browser.log
             wp2-head.log
@@ -407,6 +420,7 @@ jobs:
           fi
           cat gate-negative.log
           echo "FINAL GATE SELF-TEST: injected failure -> exit 1 (REJECTED)"
+          require_success "NextNudge-owner-save" "${{ steps.nextnudge_unit.outcome }}"
           require_success "original-31" "${{ steps.original.outcome }}"
           require_success "WP1a-18-and-WP1b-F5-14" "${{ steps.wp1a.outcome }}"
           require_success "benchmark-artifact" "${{ steps.artifact.outcome }}"
