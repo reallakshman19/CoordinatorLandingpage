@@ -128,7 +128,7 @@
         "tests/test_wp16.py",
         "tests/wp16_browser_test.py"
       ],
-      "granted": "Owner decision recorded2026-10-17T15:34:08Z; TC projection recorded2026-10-17T15:41:51.000Z",
+      "granted": "Owner decision recorded 2026-10-17T15:34:08Z; TC projection recorded 2026-10-17T15:41:51.000Z",
       "authority_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6235839429",
       "delivery_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6235891170",
       "source_sha": "7db153a558911a1d9f66159509d6f4f5b0190bc6",
