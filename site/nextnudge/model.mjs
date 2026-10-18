@@ -76,7 +76,7 @@ export function markSent(db,r,n) {
   n.sentPacketSha256=n.copied.sha256||null;
   if(n.status==='ready')statusChange(db,r,n,'sent','Marked manually sent');
   event(db,r,n,'SENT','Owner records manual delivery; not independently verified.','',
-    {text:n.sentText,chatId8:r.chatId8,sentAt:n.sentAt});
+    {text:n.sentText,chatId8:r.chatId8,sentAt:n.sentAt,sha256:n.sentPacketSha256},r.sentBy||'Owner');
 }
 export function parseSavedLine(value) {
   const line=value.split(/\r?\n/).find(x=>/^SAVED-[A-Za-z0-9_-]+\b/.test(x.trim()))?.trim()||'';
@@ -100,7 +100,7 @@ export function reply(db,r,n,{by,text,proof='',repliedAt='',source='chat_words',
   if(source==='return_file') {
     const size=Number(returnBytes);
     if(!returnPath||returnPath.length>1000||/[\r\n]/.test(returnPath)||
-      !Number.isSafeInteger(size)||size<0||!/^[a-f0-9]{64}$/i.test(returnSha256))
+      returnBytes===''||!Number.isSafeInteger(size)||size<0||!/^[a-f0-9]{64}$/i.test(returnSha256))
       throw Error('Return file requires path, byte size and SHA-256.');
     returnFile={path:returnPath,bytes:size,sha256:returnSha256.toLowerCase()};
   }
@@ -124,7 +124,7 @@ export function accept(db,r,n,note='') {
   if(gaps.length&&!note.trim()) throw Error('Record a note to proceed with the listed gaps.');
   statusChange(db,r,n,'accepted',note);
   n.acceptance={note,at:now(),by:r.sentBy||'Owner',gaps};
-  event(db,r,n,'ACCEPTED',note,'',{gaps});
+  event(db,r,n,'ACCEPTED',note,'',{gaps},r.sentBy||'Owner');
   if(n.parent) {
     const p=r.nodes.find(x=>x.id===n.parent);
     if(children(r,p.id).every(c=>c.status==='accepted')) {
@@ -176,6 +176,7 @@ export function revertStatus(db,r,n,reason) {
     from==='submitted'&&!n.messages.length)
     throw Error('Reverting would contradict delivery or reply evidence.');
   const previous=n.status;n.status=from;
+  if(previous==='accepted')n.acceptance=null;
   event(db,r,n,'STATUS_REVERTED',reason,'',{from:previous,to:from,source:last.id},r.sentBy||'Owner');
 }
 export function waitingOn(r,at=Date.now()) {
