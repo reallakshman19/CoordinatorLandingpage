@@ -84,8 +84,9 @@ test('oversized decoded, malformed base64, and duplicate code blocks are rejecte
   assert.throws(()=>unpack(body(p)+'\n'+body(p)),/expected one/);
 });
 test('browser gzip packet roundtrips; narrow editor fallback activates over 7500 chars',async()=>{
-  const prepared={base,digest:await fingerprint(changed())};
-  const result=await prepareIssueSave(changed(),prepared,A);
+  const roundtrip=changed();
+  const prepared={base,digest:await fingerprint(roundtrip)};
+  const result=await prepareIssueSave(roundtrip,prepared,A);
   assert(result.url.startsWith('https://github.com/reallakshman19/CoordinatorLandingpage/issues/new?'));
   const parsed=new URL(result.url);
   assert.equal(parsed.searchParams.get('labels'),'nextnudge-save');
