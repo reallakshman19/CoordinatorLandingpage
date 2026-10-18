@@ -83,8 +83,9 @@ class PinnedV36ScoreboardTests(unittest.TestCase):
     def test_live_build_projects_and_no_github_api(self):
         with tempfile.TemporaryDirectory() as temp, mock.patch(
             "owner_json.github_provenance",
-            side_effect=AssertionError("gh api called by test")
-        ):
+            return_value={"sha": None, "author": None, "association": "UNKNOWN"}
+        ), mock.patch("owner_json.subprocess.run",
+                      side_effect=AssertionError("test attempted gh api")):
             output = Path(temp) / "data"
             build_all(ROOT, output, cache_dir=Path(temp) / "empty-cache")
             projects = {p["project"]: p for p in
