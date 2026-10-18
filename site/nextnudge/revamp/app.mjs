@@ -41,7 +41,7 @@ function renderThreads() {
     '<div class="archive"><details><summary>v2 Archive · read-only + Convert</summary>'+
     '<p>Original v2 database is retained unchanged. Historical statuses do not prove acceptance.</p>'+
     '<button data-action="archive-list">List v2 runs for conversion</button><div id="archive-runs"></div>'+
-    '<iframe title="Read-only historical NextNudge" src="v2.html" tabindex="-1" style="pointer-events:none"></iframe></details></div>'+
+    '<p><a href="v2.html" target="_blank" rel="noopener noreferrer">Open original v2 workbench (historical interface)</a></p></details></div>'+
     '<p><button data-action="load-id">Load existing GitHub thread by ID</button> '+
     '<button data-action="import">Import Markdown thread</button></p>';
 }
@@ -117,7 +117,12 @@ async function archiveList() {
   const response=await fetch('../nextnudge-data/workbench.json',{cache:'no-store'});
   if(!response.ok)throw Error('Archive unavailable');
   const db=await response.json();
-  $('#archive-runs').innerHTML=db.runs.map(r=>'<p>'+esc(r.title)+' <button data-convert="'+esc(r.id)+'">Convert</button></p>').join('');
+  $('#archive-runs').innerHTML=db.runs.map(r=>'<details><summary>'+esc(r.title)+
+    '</summary><p><strong>Historical aim:</strong> '+esc(r.aim)+'</p>'+
+    '<p>These statuses are historical claims, not proof of Owner acceptance.</p>'+
+    '<ol>'+r.nodes.map(n=>'<li><strong>'+esc(n.label)+'</strong> · historical '+esc(n.status)+
+    ' · '+esc((n.messages?.[0]?.text||'No reply').slice(0,300))+'</li>').join('')+'</ol>'+
+    '<button data-convert="'+esc(r.id)+'">Convert summary to a thread</button></details>').join('');
 }
 async function convert(id) {
   const response=await fetch('../nextnudge-data/workbench.json',{cache:'no-store'});
