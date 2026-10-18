@@ -74,7 +74,7 @@ export async function issueUrl(packet) {
   const b64=btoa(binary),fence=String.fromCharCode(96).repeat(3);
   const body='NextNudge v3 single-thread append (Owner review required).\n\n'+
     fence+'nextnudge-thread-save\n'+b64+'\n'+fence;
-  const url='https://github.com/'+REPO+'/issues/new?labels=nextnudge-thread-save&title='+
+  const url='https://github.com/'+REPO+'/issues/new?labels=nextnudge-save&title='+
     encodeURIComponent('NextNudge thread '+packet.id)+'&body='+encodeURIComponent(body);
   if(url.length>LIMIT)throw Error('Save URL '+url.length+' characters exceeds one-click limit '+LIMIT+'. Draft retained; split the next packet.');
   return url;
