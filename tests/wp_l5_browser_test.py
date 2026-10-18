@@ -70,6 +70,11 @@ def main(artifact):
                     "(v) => {const t=document.createElement('div');"
                     "renderV36Scoreboard(t,v);return t.querySelectorAll('img').length===0"
                     " && t.textContent.includes('<img src=x');}", xss))
+                check("LEGACY_TITLE_FALLBACK_LABELED", page.evaluate(
+                    "() => {const t=document.createElement('div');"
+                    "wp12ChildProgress(t,{status:'known',done:1,total:1,items:[]},"
+                    "'reallakshman19/Common');"
+                    "return t.textContent.includes('derived from title');}"))
                 check("NO_PAGE_ERRORS", not errors)
                 browser.close()
         finally:
