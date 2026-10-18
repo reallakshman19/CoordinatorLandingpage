@@ -7,6 +7,7 @@ import {buildDelta,applyDelta,fingerprint,prepareIssueSave} from '../site/nextnu
 import {applyIssue,ownerIssue,unpack} from '../scripts/nextnudge_apply.mjs';
 import {event} from '../site/nextnudge/model.mjs';
 import {action} from '../site/nextnudge/actions.mjs';
+import {packet as chatPacket} from '../site/nextnudge/model.mjs';
 
 const base=JSON.parse(fs.readFileSync(new URL('fixtures/nextnudge-issue97-pilot.json',import.meta.url),'utf8'));
 const A='a'.repeat(40),B='b'.repeat(40);
@@ -113,6 +114,64 @@ test('browser gzip packet roundtrips; narrow editor fallback activates over 7500
   assert.equal(copied,JSON.stringify(draft,null,2)+'\n');
   assert.equal(s.prepared,await fingerprint(draft));
   assert.match(elements.get('#notice').textContent,/7,500-character URL limit/);
+});
+test('rejecting clipboard exposes the exact read-only preselected chat packet and GitHub JSON',async()=>{
+  const elements=new Map();
+  globalThis.document={querySelector:q=>{
+    if(!elements.has(q))elements.set(q,{
+      hidden:true,readOnly:true,value:'',textContent:'',focused:0,selected:0,
+      focus(){this.focused++;},select(){this.selected++;}
+    });
+    return elements.get(q);
+  }};
+  Object.defineProperty(globalThis,'navigator',{
+    configurable:true,value:{clipboard:{writeText:async()=>{throw Error('Write permission denied');}}}
+  });
+  globalThis.fetch=async()=>({ok:true,json:async()=>({
+    sha:A,encoding:'base64',content:Buffer.from(JSON.stringify(base)).toString('base64')
+  })});
+  const db=structuredClone(base),r=db.runs[0],n=r.nodes[0];
+  const expectedChat=chatPacket(r,n);
+  const state={db,baseSha:A,prepared:null,dirty:true,conflict:false};
+  let saves=0,renders=0;
+  const ctx={s:state,run:r,node:n,save:()=>{saves++;},render:()=>{renders++;}};
+  await action('copy-step',{},ctx);
+  const field=elements.get('#chat-manual-packet');
+  assert.equal(field.value,expectedChat);
+  assert.equal(field.hidden,false);
+  assert.equal(field.readOnly,true);
+  assert.equal(field.focused,1);
+  assert.equal(field.selected,1);
+  assert.equal(elements.get('#chat-manual-select').hidden,false);
+  assert.equal(n.copied.text,expectedChat);
+  assert.match(elements.get('#notice').textContent,/Clipboard denied/);
+  assert.equal(saves,1);
+  assert.equal(renders,1);
+  await action('select-chat-packet',{},ctx);
+  assert.equal(field.selected,2);
+  assert.equal(field.value,expectedChat);
+
+  const exactJSON=JSON.stringify(db,null,2)+'\\n';
+  await action('github-prepare',{},ctx);
+  const githubField=elements.get('#github-manual-json');
+  assert.equal(githubField.value,exactJSON);
+  assert.equal(githubField.readOnly,true);
+  assert.equal(githubField.hidden,false);
+  assert.equal(githubField.focused,1);
+  assert.equal(githubField.selected,1);
+  assert.equal(elements.get('#github-manual-select').hidden,false);
+  assert.equal(state.prepared,await fingerprint(db));
+  assert.match(elements.get('#notice').textContent,/Clipboard permission denied/);
+  await action('select-github-json',{},ctx);
+  assert.equal(githubField.selected,2);
+  assert.equal(githubField.value,exactJSON);
+
+  const html=fs.readFileSync(new URL('../site/nextnudge/index.html',import.meta.url),'utf8');
+  for(const id of ['chat-manual-packet','github-manual-json']){
+    assert.match(html,new RegExp('<textarea[^>]+id="'+id+'"[^>]*readonly'));
+  }
+  assert.match(html,/data-action="select-chat-packet"/);
+  assert.match(html,/data-action="select-github-json"/);
 });
 test('delta handles new and deleted IDs, changed runs, and optional profile updates',async()=>{
   const db=structuredClone(base);
