@@ -166,7 +166,7 @@ test('rejecting clipboard exposes the exact read-only preselected chat packet an
   assert.equal(githubField.selected,2);
   assert.equal(githubField.value,exactJSON);
 
-  const html=fs.readFileSync(new URL('../site/nextnudge/index.html',import.meta.url),'utf8');
+  const html=fs.readFileSync(new URL('../site/nextnudge/v2.html',import.meta.url),'utf8');
   for(const id of ['chat-manual-packet','github-manual-json']){
     assert.match(html,new RegExp('<textarea[^>]+id="'+id+'"[^>]*readonly'));
   }
