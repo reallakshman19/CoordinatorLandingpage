@@ -88,6 +88,8 @@ class ColdReaderV1(unittest.TestCase):
         self.assertTrue(a["truncated"])
         self.assertEqual(a["total_matching"], 36)
         self.assertEqual(len(a["records"]), 25)
+        self.assertEqual(a["records"][0]["comment_id"], 111)
+        self.assertEqual(a["records"][-1]["comment_id"], 135)
 
     def test_retired_and_unverified_warning_both_counted(self):
         registry = {**REG, "agents": [{"role": "coder", "generation": 1,
