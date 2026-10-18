@@ -39,11 +39,12 @@ const mark=(kind,v)=>'<!-- nn3:'+kind+'\n'+JSON.stringify(v)+'\n-->';
 export function serialize(t) {
   validate(t);
   const {moves,...header}=t;
+  const shown=activeIntent(t);
   const result=['# '+line(t.title),'',mark('header',header),'',
-    '## Owner intent','',t.goal||'UNKNOWN','',
-    'Done-when: '+(t.doneWhen.length?t.doneWhen.map((x,i)=>'('+ (i+1)+') '+x).join(' · '):'UNKNOWN'),'',
-    'In scope: '+(t.inScope||'UNKNOWN'),'Out of scope: '+(t.outScope||'UNKNOWN'),
-    'Agent: '+(t.agent||'UNKNOWN'),'Owner constraint: '+(t.hold||'None'),'',
+    '## Owner intent','',shown.goal||'UNKNOWN','',
+    'Done-when: '+(shown.doneWhen.length?shown.doneWhen.map((x,i)=>'('+ (i+1)+') '+x).join(' · '):'UNKNOWN'),'',
+    'In scope: '+(shown.inScope||'UNKNOWN'),'Out of scope: '+(shown.outScope||'UNKNOWN'),
+    'Agent: '+(t.agent||'UNKNOWN'),'Owner constraint: '+(shown.hold||'None'),'',
     '## Moves'];
   for(const m of moves) {
     const {packet,...meta}=m;
@@ -102,7 +103,7 @@ export function archiveRun(run) {
   return validate(t);
 }
 export function currentState(t) {
-  if(t.hold)return 'Your move';
+  if(activeIntent(t).hold)return 'Your move';
   const last=t.moves.at(-1);
   if(last?.kind==='reply'&&t.moves.at(-2)?.kind==='close')return 'Done';
   return last?.delivery==='sent'&&last.kind!=='reply'?'Waiting on agent':'Your move';
