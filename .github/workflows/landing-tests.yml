@@ -167,7 +167,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          python -m unittest tests.test_timeline_extract tests.test_freshness_extract tests.test_evidence_parse_extract tests.test_lf_writers tests.test_l6_continuity tests.test_l6b_live_build tests.test_l5_scoreboard -v 2>&1 | tee extraction-seams-head.log
+          python -m unittest tests.test_timeline_extract tests.test_freshness_extract tests.test_evidence_parse_extract tests.test_lf_writers tests.test_l6_continuity tests.test_l6b_live_build tests.test_l5_scoreboard tests.test_v1_coldreader -v 2>&1 | tee extraction-seams-head.log
 
       - name: Assemble benchmark-backed browser artifact (no live API)
         id: artifact
@@ -2507,4 +2507,4 @@ jobs:
           PYTHONIOENCODING: utf-8
         run: |
           set -euo pipefail
-          python -m unittest tests.test_timeline_extract tests.test_freshness_extract tests.test_evidence_parse_extract tests.test_lf_writers tests.test_l6_continuity tests.test_l6b_live_build tests.test_l5_scoreboard -v
+          python -m unittest tests.test_timeline_extract tests.test_freshness_extract tests.test_evidence_parse_extract tests.test_lf_writers tests.test_l6_continuity tests.test_l6b_live_build tests.test_l5_scoreboard tests.test_v1_coldreader -v
