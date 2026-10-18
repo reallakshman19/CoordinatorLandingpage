@@ -48,9 +48,12 @@ def _amendments(project, inbox, fetched, control_repo):
         if not isinstance(body, str) or not marker.search(body):
             continue
         matching += 1
-        if (not isinstance(ident, int) or isinstance(ident, bool)
-                or ident <= 0 or len(records) >= MAX_AMENDMENTS):
+        if not isinstance(ident, int) or isinstance(ident, bool) or ident <= 0:
             continue
+        # GitHub returns comments oldest-first; a cold reader needs the
+        # latest corrections, while we disclose the omitted earlier count.
+        if len(records) >= MAX_AMENDMENTS:
+            records.pop(0)
         assoc = item.get("author_association")
         records.append({
             "comment_id": ident,
