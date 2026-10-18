@@ -4,7 +4,7 @@ import {pathToFileURL} from 'node:url';
 import {parse,assertPublic,THREAD_ID} from '../site/nextnudge/revamp/thread.mjs';
 import {applyDelta,ROOT} from '../site/nextnudge/revamp/save.mjs';
 const SHA=/^[0-9a-f]{40}$/;
-const OWNER_LABEL='nextnudge-thread-save';
+const OWNER_LABEL='nextnudge-save';
 export function ownerIssue(issue,owner) {
   return issue?.user?.login===owner && issue.state==='open'&&!issue.pull_request&&
     issue.labels?.some(l=>(typeof l==='string'?l:l.name)===OWNER_LABEL);
