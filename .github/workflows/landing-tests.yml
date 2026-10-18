@@ -167,7 +167,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          python -m unittest tests.test_timeline_extract tests.test_freshness_extract tests.test_evidence_parse_extract tests.test_lf_writers tests.test_l6_continuity tests.test_l6b_live_build tests.test_l5_scoreboard tests.test_v1_coldreader tests.test_v2_d3_amendment tests.test_v3_d8_recheck -v 2>&1 | tee extraction-seams-head.log
+          python -m unittest tests.test_timeline_extract tests.test_freshness_extract tests.test_evidence_parse_extract tests.test_lf_writers tests.test_l6_continuity tests.test_l6b_live_build tests.test_l5_scoreboard tests.test_v1_coldreader tests.test_v2_d3_amendment tests.test_v3_d8_recheck tests.test_v4_d5_retirement tests.test_v4_d5_n1 -v 2>&1 | tee extraction-seams-head.log
 
       - name: Assemble benchmark-backed browser artifact (no live API)
         id: artifact
@@ -202,7 +202,7 @@ jobs:
         run: |
           set -o pipefail
           python tests/browser_smoke_test.py _artifact 2>&1 | tee wp1a-browser.log
-          python tests/wp_l4_browser_test.py _artifact 2>&1 | tee wp-l4-browser.log && python tests/wp_v2_d3_browser_test.py _artifact 2>&1 | tee wp-v2-d3-browser.log
+          python tests/wp_l4_browser_test.py _artifact 2>&1 | tee wp-l4-browser.log && python tests/wp_v2_d3_browser_test.py _artifact 2>&1 | tee wp-v2-d3-browser.log && python tests/wp_v4_d5_browser_test.py _artifact 2>&1 | tee wp-v4-d5-browser.log
           python tests/wp_l6_browser_test.py _artifact 2>&1 | tee wp-l6-browser.log
           python tests/wp_l5_browser_test.py _artifact 2>&1 | tee wp-l5-browser.log
 
@@ -2507,4 +2507,4 @@ jobs:
           PYTHONIOENCODING: utf-8
         run: |
           set -euo pipefail
-          python -m unittest tests.test_timeline_extract tests.test_freshness_extract tests.test_evidence_parse_extract tests.test_lf_writers tests.test_l6_continuity tests.test_l6b_live_build tests.test_l5_scoreboard tests.test_v1_coldreader tests.test_v2_d3_amendment tests.test_v3_d8_recheck -v
+          python -m unittest tests.test_timeline_extract tests.test_freshness_extract tests.test_evidence_parse_extract tests.test_lf_writers tests.test_l6_continuity tests.test_l6b_live_build tests.test_l5_scoreboard tests.test_v1_coldreader tests.test_v2_d3_amendment tests.test_v3_d8_recheck tests.test_v4_d5_retirement tests.test_v4_d5_n1 -v

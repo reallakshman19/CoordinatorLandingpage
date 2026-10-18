@@ -8,7 +8,7 @@
 - **Built from:** Codex's S1 source reading (17 Oct 2026, 05:56–06:03 Dubai, main `23843c96ee142ea21577312b504d4ba6cb3f8fc8`). Corrections and the current state come from OwnerTeammember (17 Oct, after the S2 cold-reader test on #21 judged PARTIAL).
 - **Pins are history.** Re-check main, PR heads and the registry before acting on anything here.
 
-## 1. Current state (18 Oct 2026, 05:4x +04:00)
+## 1. Current state (18 Oct 2026; recheck live registry and merge receipts)
 
 **This section replaces the 17 Oct one, which is kept below as history (§1-old).**
 
@@ -30,10 +30,10 @@
   - CI hardening: #73 and #75.
   - Cold-reader fixes: #91.
   - The frozen fixture SHA is `0a7ebd12`. Since #73 it is the same on Windows and Linux ([#62 6239319934](https://github.com/reallakshman19/CoordinatorLandingpage/issues/62#issuecomment-6239319934)); the Windows CI job checks it.
-- **Verification (#62 §4):** results in [#55](https://github.com/reallakshman19/CoordinatorLandingpage/issues/55). The cold reader got 3/5 ANSWERED, and the gaps were then fixed in #91. Drill results: D1 PARTIAL (7/10), D2 PASS with a gap, D6 FAIL (fixed by markers), D9 PASS, D3 NOT_RUN. The live cases D4, D5, D7 and D8 are pending.
+- **Verification (#62 §4):** [#55](https://github.com/reallakshman19/CoordinatorLandingpage/issues/55). D1 PARTIAL (7/10), D2 PASS with a gap, D6 repaired, D9 PASS. D3 guard merged in #93; D8 read-only pre-send guard merged in #94. D5 TABLETOP PARTIAL (documented procedure, not enforced live): [#55 comment 6245399164](https://github.com/reallakshman19/CoordinatorLandingpage/issues/55#issuecomment-6245399164). Earlier D3 NOT_RUN wording below is superseded. The live cases D4, D5, D7 and D8 are pending.
 - **Not accepted:** nothing after WP0–WP9 is Owner-accepted.
 - **Missing:** no F3–F7 hashes, and no 1b from a successor.
-- **Next action:** finish the read-only drill (D3), then run the live drill cases with g5. Common is waiting on Owner live-step consent (ECO-05 write, ECO-06 and ECO-08 participation).
+- **Next action:** acting TeamCoordinator/OTM to independently review D5 retirement-guard [draft PR #96](https://github.com/reallakshman19/CoordinatorLandingpage/pull/96) at its final exact head and decide merge separately; live D5 HOLD-delivery and identity confirmation remain NOT_RUN. g4 `6ad36e4d` is retired with released leases; g5 `6ad405cc` is the successor and remains IDLE until a fresh scoped task. Remaining D4/D7 live drill work needs its own authority. Do not revive old g4 branches or accept its post-retirement work.
 
 ## 1-old. Current state (17 Oct 2026). SUPERSEDED by §1 above; kept as history
 

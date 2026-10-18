@@ -10,6 +10,7 @@ import tempfile
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
 import build_data
+from synthetic_historical_roster import historical_active_roster
 from browser_smoke_test import start_server,find_free_port
 
 REPO="reallakshman19/CoordinatorLandingpage"
@@ -38,6 +39,10 @@ def main():
                 (ROOT/"logs"/name/"registry.json").read_text())
         details=json.loads((project/"registry.json").read_text())
         agent=details["agents"][1]["chat_id8"]
+        # The synthetic GO is dated 16 Oct, before this historical
+        # participant's subsequent retirement; do not model a revived chat.
+        details=historical_active_roster(details, agent)
+        (project/"registry.json").write_text(json.dumps(details))
         (project/"moves").mkdir()
         candidate={
           "id":GO,"project":"landing-live","class":"Dispatch","kind":"next_step",

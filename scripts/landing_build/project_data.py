@@ -56,7 +56,11 @@ def build_project_data(root: Path, project_name: str, registry: dict,
         thread_data = threads.get(thread_num, {}) if thread_num else {}
         evidence = build_agent_evidence(
             thread_data, project_name, chat,
-            shared=thread_owners.get(thread_num, 0) > 1
+            shared=thread_owners.get(thread_num, 0) > 1,
+            retired=(project_name == 'landing-live' and
+                     (a.get('retired') is True or
+                      _wp10_agent_status(a.get('status')) == 'retired')),
+            retired_at=a.get('retired_at')
         )
 
         meter = _wp10_meter(a.get('handover_meter'))
@@ -68,6 +72,8 @@ def build_project_data(root: Path, project_name: str, registry: dict,
             'status': _wp10_agent_status(a.get('status')),
             'status_raw': a.get('status', ''),
             'retired': a.get('retired'),
+            **({'retired_at': a['retired_at']} if
+               project_name == 'landing-live' and a.get('retired_at') else {}),
             'handover_meter': meter,
             'chat_end_seen': a.get('chat_end_seen') is True,
             'chat_end_risk': ((meter is not None and meter >= 80)

@@ -13,6 +13,7 @@ import tempfile
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
 import build_data
+from synthetic_historical_roster import historical_active_roster
 from browser_smoke_test import start_server,find_free_port
 
 P="landing-live"
@@ -56,6 +57,8 @@ def main():
             p=root/"logs"/proj/"registry.json"
             p.parent.mkdir(parents=True,exist_ok=True)
             reg=json.loads((ROOT/"logs"/proj/"registry.json").read_text())
+            if proj == P:
+                reg=historical_active_roster(reg, "6ad0adca", "6ad1a045")
             p.write_text(json.dumps(reg))
         folder=root/"logs"/P/"moves"
         folder.mkdir()
