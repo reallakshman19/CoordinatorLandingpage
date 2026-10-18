@@ -134,5 +134,91 @@ class D3OwnerChangeAfterCheckpoint(unittest.TestCase):
             "post-checkpoint Owner scope change needing reconciliation.")
 
 
+    def test_05_later_recorded_checkpoint_clears_exact_amendment(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            reg, view, _, _, _ = build_snapshot(tmp)
+        view["last_cycle_at"] = "2026-10-17T21:16:00Z"
+        view["freshness_status"] = "RUNNING-observed"
+        view["source_health"] = {"status": "ok", "errors": []}
+        view.pop("unparsed_evidence", None)
+        view.pop("succession", None)
+        item = derive_continuity(reg, view)["inputs"]["owner_input_captured"]
+        self.assertEqual(item["state"], "OK")
+        self.assertNotEqual(item.get("reason"), "post_checkpoint_owner_amendment")
+
+    def test_06_missing_times_are_unknown_not_ok(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            reg, view, _, _, _ = build_snapshot(tmp)
+        view["freshness_status"] = "RUNNING-observed"
+        view["source_health"] = {"status": "ok", "errors": []}
+        view.pop("unparsed_evidence", None)
+        view.pop("succession", None)
+        cases = [
+            ({**view, "last_cycle_at": None}, "missing_checkpoint"),
+            ({**view, "amendments": {**view["amendments"],
+              "records": [{**view["amendments"]["records"][0],
+                            "created_at": None}]}}, "missing_created_at"),
+        ]
+        for altered, case in cases:
+            with self.subTest(case=case):
+                state = derive_continuity(reg, altered)
+                self.assertEqual(
+                    state["inputs"]["owner_input_captured"]["state"], "UNKNOWN")
+                self.assertNotEqual(state["light"], "green")
+
+    def test_07_all_unreconciled_records_source_linked(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            reg, view, _, _, _ = build_snapshot(tmp)
+        second_source = SOURCE.replace("990000001", "990000002")
+        additional = {**view["amendments"]["records"][0],
+                      "comment_id": 990000002,
+                      "source": second_source,
+                      "created_at": "2026-10-17T21:17:00Z"}
+        view["amendments"]["records"].append(additional)
+        view["source_health"] = {"status": "ok", "errors": []}
+        state = derive_continuity(reg, view)["inputs"]["owner_input_captured"]
+        self.assertEqual(state["state"], "PROBLEM")
+        self.assertEqual({entry["source"] for entry in state["unreconciled"]},
+                         {SOURCE, second_source})
+        self.assertEqual(state["source"], second_source)
+
+    def test_08_elapsed_wall_time_never_clears_amendment(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            reg, view, _, _, _ = build_snapshot(tmp)
+        view["freshness_status"] = "RUNNING-observed"
+        view["source_health"] = {"status": "ok", "errors": []}
+        view.pop("unparsed_evidence", None)
+        view.pop("succession", None)
+        self.assertEqual(
+            derive_continuity(reg, view)["inputs"]["owner_input_captured"]["state"],
+            "PROBLEM")
+        # No clock is passed to the pure continuity function; a new
+        # coordinator checkpoint after the amendment is the only clear path.
+
+    def test_09_project_marker_is_source_linked_and_non_authorizing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            _, project, summary, _, _ = build_snapshot(tmp)
+        marker = project.get("amendment_checkpoint", {})
+        self.assertEqual(marker.get("status"), "UNRECONCILED")
+        self.assertEqual(marker.get("checkpoint_at"), CHECKPOINT.isoformat())
+        rows = marker.get("markers", [])
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["source"], SOURCE)
+        self.assertEqual(rows[0]["created_at"], AMENDMENT.isoformat().replace(
+            "+00:00", "Z"))
+        self.assertEqual(rows[0]["text"],
+                         "amendment after checkpoint: reconcile before continuing")
+        self.assertEqual(summary.get("amendment_checkpoint"), marker)
+
+    def test_10_same_instant_is_not_later_checkpoint(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            reg, view, _, _, _ = build_snapshot(tmp)
+        view["last_cycle_at"] = AMENDMENT.isoformat().replace("+00:00", "Z")
+        view["source_health"] = {"status": "ok", "errors": []}
+        self.assertEqual(
+            derive_continuity(reg, view)["inputs"]["owner_input_captured"]["state"],
+            "PROBLEM")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
