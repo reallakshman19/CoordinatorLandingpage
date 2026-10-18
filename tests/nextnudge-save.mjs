@@ -229,16 +229,16 @@ test('sweep receipts only older unreceipted owner saves, never current or newer 
     closeIssue:async number=>{closes.push(number);const entry=items.find(x=>x.number===number);
       entry.state='closed';}
   };
-  assert.equal(await sweepUnreceipted(fake),2);
-  assert.deepEqual(receiptWrites.map(x=>x.number),[1,5]);
-  assert.deepEqual(closes,[1,5]);
+  assert.equal(await sweepUnreceipted(fake),3);
+  assert.deepEqual(receiptWrites.map(x=>x.number),[1,5,8]);
+  assert.deepEqual(closes,[1,5,8]);
   assert(receiptWrites.every(x=>x.body===SUPERSEDED_RECEIPT));
   assert.match(SUPERSEDED_RECEIPT,/^NEEDS RELOAD: this save was superseded before it ran\. Nothing was written\. Prepare a fresh save\.$/);
   assert(!closes.includes(10),'current issue must not be closed');
   assert(!closes.includes(11),'newer pending issue must not be closed');
   assert(calls.includes('issues:2'));
   assert.equal(await sweepUnreceipted(fake),0,'second sweep must be idempotent');
-  assert.deepEqual(closes,[1,5]);
+  assert.deepEqual(closes,[1,5,8]);
 });
 test('sweep snapshots all open issue pages before closing, preventing skipped saves',async()=>{
   const owner='reallakshman19';
