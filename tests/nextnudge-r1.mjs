@@ -83,7 +83,7 @@ test('append-only delta refuses changed history and stale header',()=>{
 test('one-click encoded issue URL is measured at actual length',async()=>{
   const x=example();x.moves.push(move());
   const packet=delta(x,null,null),url=await issueUrl(packet);
-  assert.ok(url.length<=7500);assert.match(url,/nextnudge-thread-save/);
+  assert.ok(url.length<=7500);assert.match(url,/nextnudge-save/);
   const db=JSON.parse(fs.readFileSync(new URL('workbench.json',root),'utf8'));
   const historical=db.runs.find(r=>r.id==='NN-20261018-171656-66d2');
   const realP2=historical.nodes.find(n=>n.id==='NN-20261018-181514-e812').sentText;
@@ -97,7 +97,7 @@ test('one-click encoded issue URL is measured at actual length',async()=>{
 test('fixture issue applies a real thread file, with owner guard and SHA rejection',async()=>{
   const x=example();x.moves.push(move());
   const p=delta(x,null,null),body='Owner submit\n'+encode(p);
-  const issue={user:{login:'reallakshman19'},state:'open',labels:[{name:'nextnudge-thread-save'}],body};
+  const issue={user:{login:'reallakshman19'},state:'open',labels:[{name:'nextnudge-save'}],body};
   assert.ok(ownerIssue(issue,'reallakshman19'));
   let saved=null,receipt='',closed=false;
   const harness={issue,owner:'reallakshman19',read:async()=>null,
@@ -118,7 +118,7 @@ test('all NextNudge R1 touched source files have at most 300 physical lines',()=
     'site/nextnudge/revamp/thread.mjs','site/nextnudge/revamp/save.mjs',
     'site/nextnudge/revamp/app.mjs','site/nextnudge/revamp/style.css',
     'scripts/nextnudge_thread_apply.mjs',
-    '.github/workflows/nextnudge-thread-save.yml','tests/nextnudge-r1.mjs'];
+    'scripts/nextnudge_apply.mjs','tests/nextnudge-r1.mjs'];
   for(const path of files){
     const lines=fs.readFileSync(new URL(path,root),'utf8').split('\n').length;
     assert.ok(lines<=300,path+' is '+lines+' lines');
