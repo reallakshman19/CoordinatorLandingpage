@@ -180,6 +180,7 @@ async function onAction(action,target) {
   if(action==='draft-decision'){
     if(i.hold)throw Error('Owner HOLD');
     const checks=[...document.querySelectorAll('.check')].map(q=>q.value),decision=v('decision');
+    state.checks=checks; // Retain selections when the proposed packet re-renders Reconcile.
     const id=freshId(),r=[...x.moves].reverse().find(m=>m.kind==='reply');
     state.reviewGap=v('gap');
     state.draft={id,...reconcile({checks,decision,reply:r?.returnLine||'UNKNOWN',gap:state.reviewGap,
