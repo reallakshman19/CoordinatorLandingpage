@@ -36,7 +36,7 @@
     {
       "alias": "L1 g4 Coder",
       "role": "coder",
-      "chat_id8": "6ad36e4d", "browser_observation": {"result": "UP", "checked_at": "2026-10-17T18:19:32Z", "source_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6238460824", "verified": true},
+      "chat_id8": "6ad36e4d", "retired_at": "2026-10-17T23:33:54Z", "retired_at_source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6243133548", "retired_at_basis": "retirement declaration comment created_at; real exhaustion time UNKNOWN", "browser_observation": {"result": "UP", "checked_at": "2026-10-17T18:19:32Z", "source_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6238460824", "verified": true},
       "status": "RETIRED 2026-10-18 03:3x (chat reached max length after WP-L6, PR #85); successor g5 6ad405cc. Previously: WP-L2(a) and WP16 bounded workpacks DELIVERED/MERGED; no act",
       "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64",
       "native_route": "chatgpt-browser",
@@ -69,7 +69,7 @@
       "alias": "Agent L1",
       "role": "implementer",
       "generation": 1,
-      "chat_id8": "6ad0adca",
+      "chat_id8": "6ad0adca", "retired_at": "2026-10-16T03:55:25Z", "retired_at_source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6207717760", "retired_at_basis": "retirement declaration comment created_at; real exhaustion time UNKNOWN",
       "status": "retired 2026-10-16 07:4x (chat fails to load; changeover on Owner 'you are authorized to answer this tab/task')",
       "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22",
       "onboarded": "2026-10-15T14:44+04:00 DELIVERED"
@@ -78,7 +78,7 @@
       "alias": "Agent L1",
       "role": "implementer",
       "generation": 2,
-      "chat_id8": "6ad1a045",
+      "chat_id8": "6ad1a045", "retired_at": "2026-10-16T23:39:52Z", "retired_at_source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6226735852", "retired_at_basis": "retirement declaration comment created_at; real exhaustion time UNKNOWN",
       "status": "retired 2026-10-17 03:39 +04 (chat reached ChatGPT maximum conversation length; no standby existed). 1a prepared by OwnerTeammember acting as G1: #22 6226735852, corrected by a later #22 comment. Historical g3 NOT_SELECTED superseded: qualified g3 01a149bf now has its own fresh bounded lease; old g2 stays retired",
       "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22",
       "handover": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6207718018",
