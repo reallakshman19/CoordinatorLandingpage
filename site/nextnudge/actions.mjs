@@ -16,6 +16,13 @@ function showManualCopy(fieldId,buttonId,text) {
   $(buttonId).hidden=false;
   selectManualCopy(fieldId);
 }
+export function downloadText(text,name,type='text/markdown;charset=utf-8') {
+  const href=URL.createObjectURL(new Blob([text],{type}));
+  const link=document.createElement('a');
+  link.href=href;link.download=name;link.click();
+  setTimeout(()=>URL.revokeObjectURL(href),1000);
+  return text;
+}
 export async function action(name,target,ctx) {
   const {s,run:r,node:n,save,render}=ctx;
   const db=s.db;
@@ -28,6 +35,15 @@ export async function action(name,target,ctx) {
   if(name==='phase'){s.phase=target.dataset.id;return render();}
   if(name==='select-step'){r.selected=target.dataset.id;return render();}
   if(name==='export')return download(db);
+  if(name==='run-summary') {
+    if(!r)throw Error('Choose a run first.');
+    return downloadText(JSON.stringify(await model.runSummary(db,r),null,2)+'\n',
+      r.id+'-summary.json','application/json;charset=utf-8');
+  }
+  if(name==='packet-file') {
+    if(!n||target.dataset.id!==n.id||r.selected!==n.id)throw Error('Selected step changed; select it again.');
+    return downloadText(packet(r,n),n.id+'.md');
+  }
   if(name==='restore')return $('#restore-file').click();
   if(name==='import-profiles')return $('#profile-file').click();
   if(name==='export-profiles')return download(db.profiles);
@@ -96,10 +112,26 @@ export async function action(name,target,ctx) {
       showManualCopy('#chat-manual-packet','#chat-manual-select',exact);
       notice('Clipboard denied. Exact chat packet selected below. Use Select all and copy manually, paste in the agent chat, then Mark sent.');
     }
-    model.copied(db,r,n,exact);
+    model.copied(db,r,n,exact,await model.fingerprintText(exact));
   }
-  if(name==='send-step')model.markSent(db,r,n);
-  if(name==='accept-step')model.accept(db,r,n,r.drafts[n.id]?.text||'');
+  if(name==='send-step') {
+    if(n.copied&&!n.copied.sha256)n.copied.sha256=await model.fingerprintText(n.copied.text);
+    model.markSent(db,r,n);
+  }
+  if(name==='accept-step') {
+    if(!n||!target.dataset.id||target.dataset.id!==n.id||r.selected!==n.id)
+      throw Error('Step selection changed. Review and accept the selected step only.');
+    const note=r.drafts[n.id]?.reviewNote||'';
+    model.accept(db,r,n,note);r.selected=n.id;s.tab='work';
+    if(r.drafts[n.id])r.drafts[n.id].reviewNote='';
+  }
+  if(name==='revert-status') {
+    if(!n||target.dataset.id!==n.id||r.selected!==n.id)throw Error('Step selection changed.');
+    const reason=prompt('Reason to revert the last status change (required):');
+    if(reason===null)return;
+    model.revertStatus(db,r,n,reason);
+    r.selected=n.id;s.tab='work';
+  }
   if(name==='correction') {
     const text=r.drafts[n.id]?.text||'';
     const child=model.correction(db,r,n,'Correction · '+n.label,text);r.selected=child.id;
