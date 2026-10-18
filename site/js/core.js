@@ -223,6 +223,8 @@ async function render() {
   });
 
   const app = $('app');
+  if (view === 'nextnudge' && !state.benchmarkMode &&
+      app.querySelector('#nextnudge-frame')) return;
   app.innerHTML = '<div class="loading"><span class="spinner"></span> Loading…</div>';
 
   // Ensure projects are loaded
@@ -242,6 +244,10 @@ async function render() {
     case 'agent': await renderAgent(app, arg1, arg2); break;
     case 'timeline': await renderTimeline(app, arg1); break;
     case 'next-moves': await renderNextMoves(app); break;
+    case 'nextnudge':
+      await (await import(new URL('nextnudge/host.mjs', document.baseURI)))
+        .renderNextNudge(app, state.benchmarkMode, LOADED_SITE_VERSION);
+      break;
     case 'status-bar': await renderStatusBar(app); break;
     case 'decision': await renderDecision(app, arg1, arg2); break;
     case 'owner-inputs': await renderOwnerInputs(app); break;
@@ -255,6 +261,10 @@ async function render() {
 // ── Home view ──────────────────────────────────────────────
 
 function init() {
+  const nudgeTab = el('button', 'nav-tab', 'NextNudge · Beta');
+  nudgeTab.dataset.view = 'nextnudge';
+  nudgeTab.setAttribute('role', 'tab');
+  $('nav-tabs').appendChild(nudgeTab);
   // Nav tab clicks
   document.querySelectorAll('.nav-tab').forEach(tab => {
     tab.addEventListener('click', () => {

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NextNudge Beta · Owner workbench</title>
+<link rel="stylesheet" href="style.css">
+</head><body>
+<header class="top"><a class="brand" href="#">↗ NextNudge <small>OWNER WORKBENCH</small></a>
+<span class="prototype">Beta · Standalone · manual delivery</span><button data-action="export">Export</button><button data-action="restore">Restore</button></header>
+<main><div class="intro"><div><span class="eyebrow">GROUND → INSTRUCT → RECONCILE</span><h1>Keep the intent in every step.</h1><p>Your coding-agent workbench. Independent of Coordinator protocol.</p></div></div>
+<div id="notice" role="status" aria-live="polite"></div>
+<section class="project-bar"><label>Project<select id="project-select" aria-label="Project"></select></label><button data-action="new-project">＋ Project</button>
+<label>NextNudge<select id="run-select" aria-label="NextNudge run"></select></label><button data-action="new-run" id="new-run">＋ NextNudge</button><label class="inline"><input id="show-archived" type="checkbox">Archived</label></section>
+<section class="sync-bar"><span id="save-state">Loading repository…</span><button data-action="github-prepare">Prepare GitHub update</button><button data-action="github-verify">Verify GitHub save</button><button data-action="github-reload">Reload GitHub</button>
+<a id="github-editor" hidden href="https://github.com/reallakshman19/CoordinatorLandingpage/edit/main/site/nextnudge-data/workbench.json" target="_blank" rel="noopener">Open GitHub editor ↗</a></section>
+<section class="run" id="task"><div id="run-info"></div><nav id="tabs" aria-label="NextNudge sections"></nav><div id="content"></div></section>
+<footer>Drafts are local until committed and verified in GitHub. No automatic sending, approvals or protocol dispatch. Private chat URLs stay on this device.</footer>
+</main>
+<input id="restore-file" type="file" accept="application/json" hidden><input id="profile-file" type="file" accept="application/json" hidden>
+<dialog id="create-dialog"><form id="create-form"><h2 id="create-title">Create</h2><label>Name / label<input name="name" required maxlength="300"></label><label id="create-detail">Aim / instruction<textarea name="detail"></textarea></label><div class="actions"><button type="button" id="close-dialog">Cancel</button><button class="primary">Create</button></div></form></dialog>
+<script type="module" src="app.mjs"></script>
+</body></html>

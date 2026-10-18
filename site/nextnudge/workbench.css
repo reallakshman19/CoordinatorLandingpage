@@ -1,0 +1,111 @@
+.workspace {
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  overflow:hidden
+}
+.stage-head {
+  padding:19px 24px;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px
+}
+.stage-head h2 {
+  font:700 17px Manrope,sans-serif;
+  margin:0
+}
+.stage-head small {
+  color:var(--muted);
+  font-size:11px;
+  display:block;
+  margin-top:5px
+}
+.conversation {
+  padding:22px 24px;
+  overflow:auto;
+  flex:1;
+  min-height:130px;
+  background:linear-gradient(180deg,#fff,#fcfcfa)
+}
+.lanes {
+  display:flex;
+  justify-content:space-between;
+  font-size:9px;
+  color:#8b958d;
+  letter-spacing:1.7px;
+  margin-bottom:18px
+}
+.message {
+  max-width:78%;
+  padding:15px 18px;
+  border-radius:10px;
+  background:#f1f3ef;
+  margin-bottom:16px;
+  border:1px solid #e3e7df
+}
+.message.instructor {
+  margin-left:auto;
+  background:#eef4e9;
+  border-color:#e1eadb
+}
+.message.review {
+  background:#fcf6e7;
+  border-color:#efe2c4
+}
+.message .by {
+  font-size:9px;
+  letter-spacing:1.1px;
+  font-weight:700;
+  color:#6e806a;
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:8px
+}
+.message .text {
+  white-space:pre-wrap;
+  font-size:13px;
+  line-height:1.65
+}
+.message a {
+  display:block;
+  font-size:11px;
+  margin-top:9px;
+  overflow-wrap:anywhere
+}
+.empty {
+  font-size:12px;
+  color:var(--muted);
+  padding:18px 0
+}
+.guide {
+  border-top:1px solid var(--line);
+  background:#fcfbf5;
+  padding:11px 24px;
+  font-size:12px;
+  max-height:190px;
+  overflow:auto
+}
+.guide summary {
+  cursor:pointer;
+  font-weight:600;
+  color:#6d714d
+}
+.guide .check {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:8px 0;
+  color:#65705c;
+  font-size:11px
+}
+.check select {
+  width:135px;
+  font-size:10px;
+  padding:5px
+}
+.guide p {
+  font-size:11px
+}

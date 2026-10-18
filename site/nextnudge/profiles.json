@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "profiles": {
+    "Quantitative": [
+      {"id":"units","question":"Are inputs, units and operating range explicit?","example":"Puppet: 450 mm soles to crown; exclude the hat.","evidence":"Dimension table or reference link"},
+      {"id":"calculation","question":"Does the result satisfy the quantitative constraint?","example":"Reconcile segment lengths to the agreed total.","evidence":"Calculation or measured result"}
+    ],
+    "Conceptual": [
+      {"id":"understanding","question":"Is prior understanding established?","example":"Ask the Grade 10 learner to explain what a zero product means.","evidence":"Learner's exact explanation"},
+      {"id":"transfer","question":"Can the idea be applied to an unfamiliar example?","example":"Change the quadratic factors and ask for independent reasoning.","evidence":"Attempted transfer question"}
+    ],
+    "Implementation": [
+      {"id":"behaviour","question":"Is expected behaviour explicit and observed?","example":"2D motion: compare t=1 s with (3, 5.1) metres.","evidence":"Actual execution output"},
+      {"id":"boundaries","question":"Have relevant boundaries and failure cases been checked?","example":"Check screen-axis conversion and negative-time behaviour.","evidence":"Boundary checks and unresolved failures"}
+    ],
+    "Coding": [
+      {"id":"redgreen","question":"Did the relevant check fail before and pass after the change?","example":"Record both source revisions and the same test command.","evidence":"Before/after test output or an honest NOT_RUN"},
+      {"id":"ci","question":"Were actual CI results read?","example":"Link the exact head's run and unresolved failures.","evidence":"CI run URL; not just a claim that CI is green"},
+      {"id":"scope","question":"Were protected paths and agreed scope preserved?","example":"Compare changed files with the task's allowed paths.","evidence":"Changed-file review"},
+      {"id":"review","question":"Was independent review recorded where needed?","example":"Separate author self-check from a non-author review.","evidence":"Review URL or UNKNOWN"}
+    ]
+  }
+}
