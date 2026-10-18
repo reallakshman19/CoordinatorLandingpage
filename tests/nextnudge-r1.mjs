@@ -189,6 +189,78 @@ test('Windows CRLF converts safely to LF and LF source preserves packet bytes',(
   assert.match(attrs,/site\/nextnudge-data\/threads\/\*\.md text eol=lf/);
 });
 
+
+test('FIX2 chat-host privacy: client and server refuse leaks but allow GitHub evidence',async()=>{
+  const refused=[
+    'chatgpt.com/c/x','claude.ai/chat/x',
+    'https%3A%2F%2Fchatgpt.com%2Fc%2Fx',
+    'aistudio.google.com/prompts/example',
+    '100% sure https%3A%2F%2Fchatgpt.com%2Fc%2Fx',
+    'https%3A%2F%2Fchatgpt.com%2Fc%2Fx 100%',
+    '50% confident https%253A%252F%252Fchatgpt.com%252Fc%252Fx',
+    'https://chatgpt.com/g/g-p-123-name/c/68f0',
+    'chatgpt.com/g/g-p-123-name/c/68f0',
+    'https://chat.openai.com/g/g-p-123-name/c/68f0',
+    'chat.openai.com/g/g-p-123-name/c/68f0',
+    'https://chatgpt.com/share/id',
+    'HTTPS://CHATGPT.COM/C/X',
+    'https://chatg\u200Bpt.com/c/x',
+    'https://chatgpt.com/\u200Bc/x',
+    'https://claude.ai/chat/x',
+    'https://gemini.google.com/app/x',
+    'https://aistudio.google.com/prompts/x',
+    'https://antigravity.google.com/chat/x',
+    'https://copilot.microsoft.com/chat/x',
+    'https://chat.mistral.ai/chat/x',
+    'https://grok.com/chat/x',
+    'https://chat.deepseek.com/chat/x'
+  ];
+  const allowed=[
+    'chatgpt.com',
+    'github.com/o/r/pull/1',
+    'https://github.com/o/r/blob/main/docs/chat/readme.md',
+    'https://github.com/o/r/blob/main/conversations/answer.md',
+    'https://github.com/o/r/blob/main/docs/antigravity-notes.md',
+    '100% sure'
+  ];
+  const header=example();delete header.moves;
+  const testItem=(field,value)=>({...move(),[field]:'Agent supplied: '+value});
+  const runServer=async item=>{
+    const p={v:3,id:ID,baseSha:null,expectedCount:0,header,moves:[item]};
+    const issue={user:{login:'reallakshman19'},state:'open',
+      labels:[{name:'nextnudge-save'}],body:'Owner review\n'+encode(p)};
+    let writes=0,receipt='';
+    const status=await applyIssue({issue,owner:'reallakshman19',
+      read:async()=>null,write:async()=>{writes++;},
+      comment:async v=>{receipt=v;},close:async()=>{}});
+    return {status,writes,receipt,body:issue.body};
+  };
+  for(const field of ['packet','digest']){
+    for(const value of refused){
+      const item=testItem(field,value);
+      assert.throws(()=>validate({...example(),moves:[item]}),/Private chat URL/,
+        'client '+field+' '+value);
+      const server=await runServer(item);
+      assert.throws(()=>unpack(server.body),/Private chat URL/,'unpack '+field+' '+value);
+      assert.equal(server.status,'REJECTED','server '+field+' '+value);
+      assert.equal(server.writes,0,'no saved private URL '+field+' '+value);
+    }
+    for(const value of allowed){
+      const item=testItem(field,value);
+      assert.doesNotThrow(()=>validate({...example(),moves:[item]}),'client '+field+' '+value);
+      const server=await runServer(item);
+      assert.doesNotThrow(()=>unpack(server.body),'unpack '+field+' '+value);
+      assert.equal(server.status,'SAVED','server '+field+' '+value);
+      assert.equal(server.writes,1,'GitHub evidence can be saved: '+value);
+    }
+  }
+});
+test('FIX2 Reconcile keeps selected check verdicts through redraw',()=>{
+  const app=fs.readFileSync(new URL('../site/nextnudge/revamp/app.mjs',import.meta.url),'utf8');
+  assert.match(app,/state\.checks=checks/);
+  assert.match(app,/\(state\.checks\[j\]\|\|'unknown'\)===v/);
+});
+
 test('all NextNudge R1 touched source files have at most 300 physical lines',()=>{
   const root=new URL('../',import.meta.url);
   const files=['site/nextnudge/index.html','site/nextnudge/v2.html',
