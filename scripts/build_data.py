@@ -46,6 +46,7 @@ from landing_build.owner_helpers import (
 )
 from landing_build.owner_inputs import build_owner_inputs
 from landing_build.benchmarks import load_benchmark, load_live_threads
+from landing_build.v36_scoreboard import scoreboard_project
 from landing_build import project_data as _project_data
 from landing_build.disagreement import project_disagreement
 from landing_build.evidence_parse import (
@@ -199,6 +200,10 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             now=datetime.now(timezone.utc))
         project_data['next_move'] = next_view
         project_data['is_benchmark'] = is_benchmark
+        if not is_benchmark:
+            v36 = scoreboard_project(root, project_name, registry, project_data)
+            if v36 is not None:
+                project_data['v36_scoreboard'] = v36
         project_data['benchmark_snapshot'] = (
             load_json(source_path / 'MANIFEST.json') or {}
         ).get('snapshot') if is_benchmark else None
