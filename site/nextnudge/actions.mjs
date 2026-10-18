@@ -4,9 +4,23 @@ import {validate,validateProfiles} from './schema.mjs';
 import {packet} from './model.mjs';
 import {prepareSave,prepareIssueSave,readRepository,fingerprint,download} from './repository.mjs';
 import {$,notice} from './util.mjs';
+function selectManualCopy(fieldId) {
+  const field=$(fieldId);
+  field.focus();
+  field.select();
+}
+function showManualCopy(fieldId,buttonId,text) {
+  const field=$(fieldId);
+  field.value=text;
+  field.hidden=false;
+  $(buttonId).hidden=false;
+  selectManualCopy(fieldId);
+}
 export async function action(name,target,ctx) {
   const {s,run:r,node:n,save,render}=ctx;
   const db=s.db;
+  if(name==='select-chat-packet')return selectManualCopy('#chat-manual-packet');
+  if(name==='select-github-json')return selectManualCopy('#github-manual-json');
   if(s.conflict&&!['export','tab','phase','select-step','github-reload'].includes(name)) {
     throw Error('Another tab changed this draft. Export your copy, then reload the page.');
   }
@@ -24,8 +38,7 @@ export async function action(name,target,ctx) {
       await navigator.clipboard.writeText(prepared.text);
       notice(reason+'Snapshot copied. Open GitHub editor, replace JSON, commit, then verify.');
     } catch {
-      const field=$('#github-manual-json');
-      field.hidden=false;field.value=prepared.text;
+      showManualCopy('#github-manual-json','#github-manual-select',prepared.text);
       notice(reason+'Clipboard permission denied. Select and copy the JSON below manually, or use Export, then commit through GitHub editor.');
     }
   }
@@ -72,8 +85,18 @@ export async function action(name,target,ctx) {
   if(name==='new-run'){openDialog('run');return;}
   if(name==='add-step'){model.editable(r);openDialog('step');return;}
   if(name==='copy-step') {
-    await navigator.clipboard.writeText(packet(r,n));model.copied(db,r,n,packet(r,n));
-    notice('Copied. Paste into the agent chat yourself, then Mark sent.');
+    model.editable(r,n);
+    const exact=packet(r,n);
+    try {
+      await navigator.clipboard.writeText(exact);
+      $('#chat-manual-packet').hidden=true;
+      $('#chat-manual-select').hidden=true;
+      notice('Copied. Paste into the agent chat yourself, then Mark sent.');
+    } catch {
+      showManualCopy('#chat-manual-packet','#chat-manual-select',exact);
+      notice('Clipboard denied. Exact chat packet selected below. Use Select all and copy manually, paste in the agent chat, then Mark sent.');
+    }
+    model.copied(db,r,n,exact);
   }
   if(name==='send-step')model.markSent(db,r,n);
   if(name==='accept-step')model.accept(db,r,n,r.drafts[n.id]?.text||'');
