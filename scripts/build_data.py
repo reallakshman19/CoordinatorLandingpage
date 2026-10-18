@@ -46,6 +46,7 @@ from landing_build.owner_helpers import (
 )
 from landing_build.owner_inputs import build_owner_inputs
 from landing_build.benchmarks import load_benchmark, load_live_threads
+from landing_build.project_intent import project_intake
 from landing_build.v36_scoreboard import scoreboard_project
 from landing_build import project_data as _project_data
 from landing_build.disagreement import project_disagreement
@@ -197,6 +198,7 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
         project_data['next_move'] = next_view
         project_data['is_benchmark'] = is_benchmark
         if not is_benchmark:
+            project_data.update(project_intake(project_name, registry, lineage_snapshot, inbox, (_cache / 'inbox-1.json').is_file(), owner_json.REPO))
             v36 = scoreboard_project(root, project_name, registry, project_data)
             if v36 is not None:
                 project_data['v36_scoreboard'] = v36
@@ -232,7 +234,6 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
                 'built_at': project_data['built_at'],
             }
         )
-
     # WP16 covers the entire selected registry roster, not just the older
     # dashboard's top-level agent projection. Both OT/TC views use this one file.
     status_bar = build_status_bar(
@@ -275,6 +276,7 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             'next_move': pd['next_move'],
             **({'v36_scoreboard': pd['v36_scoreboard']}
                if 'v36_scoreboard' in pd else {}),
+            **({k: pd[k] for k in ('intent', 'amendments')} if not pd['is_benchmark'] else {}),
             'status_bar': status_by_project[pd['project']],
             'control': pd['registry']['control'],
             'workflow': pd['registry']['workflow'],
@@ -305,7 +307,6 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             'benchmark_snapshot': pd['benchmark_snapshot'],
             'built_at': pd['built_at'],
         })
-
     save_json(out_dir / 'projects.json', summary)
     if not benchmark_dirs:
         registered = {pd['registry'].get('repository') for pd in all_projects
@@ -313,7 +314,6 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
         issue_rows = build_owner_inputs(owner_source, owner_capture,
                                         registered_repos=registered)
         save_json(out_dir / 'owner-inputs.json', issue_rows + verified_inputs)
-
     # Save full project detail files
     for pd in all_projects:
         pname = pd['project']
