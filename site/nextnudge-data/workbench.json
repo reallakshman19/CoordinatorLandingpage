@@ -1,6 +1,6 @@
 {
   "formatVersion": 2,
-  "revision": 48,
+  "revision": 53,
   "profiles": {
     "formatVersion": 1,
     "profiles": {
@@ -237,6 +237,14 @@
             "status": "RECORDED",
             "at": "2026-10-18T08:50:12.994Z",
             "by": "Owner"
+          },
+          {
+            "id": "GF-20261018-085436-4211",
+            "text": "Author-run validation: 17 Node tests PASS. The two dashboard navigation/poll-preservation assertions FAIL against base c83e1b3a and PASS against code basis 52043a3d. JS syntax checks pass. Browser QA NOT_RUN (Chromium absent); independent review and deployed GitHub save readback remain pending.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247920530",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:54:36.051Z",
+            "by": "Owner"
           }
         ],
         "6": [
@@ -302,10 +310,10 @@
         "1b": [
           {
             "id": "GF-20261018-085012-7f39",
-            "text": "PR not yet created at this checkpoint. Resolve after source publication.",
-            "url": "",
-            "status": "UNKNOWN",
-            "at": "2026-10-18T08:50:12.993Z",
+            "text": "Draft PR #100 contains the standalone NextNudge implementation. Code basis: 52043a3d6871f7eb55698762cae228d3746b4732. Merge and deployed readback remain pending.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/100",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:54:36.050Z",
             "by": "Owner"
           }
         ],
@@ -362,10 +370,10 @@
         "6b": [
           {
             "id": "GF-20261018-085012-ffba",
-            "text": "Create source-bound PR, run integration checks, obtain independent review, and verify deployed GitHub Pages after authorized merge.",
-            "url": "",
+            "text": "Draft PR #100 published. Remaining: exact-head CI result, independent review, authorized merge, browser QA and deployed snapshot readback.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/100",
             "status": "RECORDED",
-            "at": "2026-10-18T08:50:12.996Z",
+            "at": "2026-10-18T08:54:36.051Z",
             "by": "Owner"
           }
         ],
@@ -392,10 +400,10 @@
         "7b": [
           {
             "id": "GF-20261018-085012-e405",
-            "text": "Independent reviewer and production deployment are not yet available.",
-            "url": "",
+            "text": "Repository source is checkpointed. CI was observed queued/running for 52043a3d; no hosted PASS is claimed. Independent review and merge remain pending.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/actions/runs/39113211391",
             "status": "RECORDED",
-            "at": "2026-10-18T08:50:12.997Z",
+            "at": "2026-10-18T08:54:36.052Z",
             "by": "Owner"
           }
         ],
@@ -612,7 +620,25 @@
             }
           }
         ],
-        "1b": [],
+        "1b": [
+          {
+            "id": "GF-20261018-085436-8af5",
+            "text": "Draft PR #100 contains the standalone NextNudge implementation. Code basis: 52043a3d6871f7eb55698762cae228d3746b4732. Merge and deployed readback remain pending.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/100",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:54:36.053Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "1b",
+              "row": "GF-20261018-085012-7f39",
+              "rowAt": "2026-10-18T08:54:36.050Z",
+              "revision": 52,
+              "pulledAt": "2026-10-18T08:54:36.053Z"
+            }
+          }
+        ],
         "1c": [
           {
             "id": "GF-20261018-085013-b3bb",
@@ -1787,6 +1813,152 @@
           "by": "Owner"
         },
         "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085436-690f",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:54:36.051Z",
+      "proof": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/100",
+      "note": "1b",
+      "data": {
+        "before": {
+          "id": "GF-20261018-085012-7f39",
+          "text": "PR not yet created at this checkpoint. Resolve after source publication.",
+          "url": "",
+          "status": "UNKNOWN",
+          "at": "2026-10-18T08:50:12.993Z",
+          "by": "Owner"
+        },
+        "after": {
+          "id": "GF-20261018-085012-7f39",
+          "text": "Draft PR #100 contains the standalone NextNudge implementation. Code basis: 52043a3d6871f7eb55698762cae228d3746b4732. Merge and deployed readback remain pending.",
+          "url": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/100",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:54:36.050Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085436-742c",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:54:36.051Z",
+      "proof": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247920530",
+      "note": "5",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085436-4211",
+          "text": "Author-run validation: 17 Node tests PASS. The two dashboard navigation/poll-preservation assertions FAIL against base c83e1b3a and PASS against code basis 52043a3d. JS syntax checks pass. Browser QA NOT_RUN (Chromium absent); independent review and deployed GitHub save readback remain pending.",
+          "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247920530",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:54:36.051Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085436-c092",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:54:36.052Z",
+      "proof": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/100",
+      "note": "6b",
+      "data": {
+        "before": {
+          "id": "GF-20261018-085012-ffba",
+          "text": "Create source-bound PR, run integration checks, obtain independent review, and verify deployed GitHub Pages after authorized merge.",
+          "url": "",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.996Z",
+          "by": "Owner"
+        },
+        "after": {
+          "id": "GF-20261018-085012-ffba",
+          "text": "Draft PR #100 published. Remaining: exact-head CI result, independent review, authorized merge, browser QA and deployed snapshot readback.",
+          "url": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/100",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:54:36.051Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085436-e504",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:54:36.052Z",
+      "proof": "https://github.com/reallakshman19/CoordinatorLandingpage/actions/runs/39113211391",
+      "note": "7b",
+      "data": {
+        "before": {
+          "id": "GF-20261018-085012-e405",
+          "text": "Independent reviewer and production deployment are not yet available.",
+          "url": "",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.997Z",
+          "by": "Owner"
+        },
+        "after": {
+          "id": "GF-20261018-085012-e405",
+          "text": "Repository source is checkpointed. CI was observed queued/running for 52043a3d; no hosted PASS is claimed. Independent review and merge remain pending.",
+          "url": "https://github.com/reallakshman19/CoordinatorLandingpage/actions/runs/39113211391",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:54:36.052Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085436-fdd2",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085013-3e7b",
+      "step": null,
+      "state": "FIXTURES_PULLED",
+      "by": "Owner",
+      "at": "2026-10-18T08:54:36.053Z",
+      "proof": "",
+      "note": "1b",
+      "data": {
+        "sourceId": "NN-20261018-085012-215a",
+        "rows": [
+          {
+            "id": "GF-20261018-085436-8af5",
+            "text": "Draft PR #100 contains the standalone NextNudge implementation. Code basis: 52043a3d6871f7eb55698762cae228d3746b4732. Merge and deployed readback remain pending.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/100",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:54:36.053Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "1b",
+              "row": "GF-20261018-085012-7f39",
+              "rowAt": "2026-10-18T08:54:36.050Z",
+              "revision": 52,
+              "pulledAt": "2026-10-18T08:54:36.053Z"
+            }
+          }
+        ]
       }
     }
   ]

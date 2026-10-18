@@ -59,3 +59,27 @@ changes are isolated under site/nextnudge. No registry or NextMove engine change
 Run `node --test tests/nextnudge-*.mjs`.
 Browser QA is NOT_RUN: installed Playwright has no Chromium executable in this
 workspace. Independent review, CI and deployed Pages readback remain separate.
+
+## Published checkpoint and continuation
+
+PR: https://github.com/reallakshman19/CoordinatorLandingpage/pull/100 (draft).
+Code basis: 52043a3d6871f7eb55698762cae228d3746b4732. The following metadata
+checkpoint appends the real PR and validation facts to the pilot; no source
+behaviour changes are included in that checkpoint.
+
+17 Node checks PASS; baseline navigation/poll assertions produce 2 expected
+assertion failures on c83e1b3a and PASS on the code basis. GitHub CI was initially
+queued/running; no pending run is counted as PASS. Source files remain <=300
+physical lines; core 288 to 298. Event dispatch/render functions are cohesive
+handlers, with template markup included in spans; independent cohesion review
+is still pending, not inferred from the line limit.
+
+Pilot project: PRJ-20261018-085012-1225.
+Implementation run: NN-20261018-085012-215a.
+Successor-transfer rehearsal: NN-20261018-085013-3e7b.
+
+The browser GitHub save can be fully exercised only after the snapshot exists
+on main. Until then, the candidate's deployed-file fallback can show the pilot,
+but it explicitly reports that the GitHub base is unavailable. The initial
+private Sites prototype has not been silently replaced; this task delivers the
+repository integration.
