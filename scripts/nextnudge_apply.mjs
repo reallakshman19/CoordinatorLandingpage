@@ -40,12 +40,17 @@ const RECEIPT_AUTHOR='github-actions[bot]';
 export async function sweepUnreceipted({owner,currentIssueNumber,listOpenIssues,
   listComments,commentIssue,closeIssue}) {
   if(!Number.isSafeInteger(currentIssueNumber))throw Error('Missing current issue number');
-  let swept=0;
+  // Snapshot every page before closing anything: closing page-1 issues shifts
+  // offset-based pagination and would otherwise skip unreceipted page-2 issues.
+  const candidates=[];
   for(let page=1;;page++) {
     const issues=await listOpenIssues(page);
     if(!Array.isArray(issues))throw Error('Invalid open issue listing');
     if(!issues.length)break;
-    for(const candidate of issues) {
+    candidates.push(...issues);
+  }
+  let swept=0;
+  for(const candidate of candidates) {
       if(!ownerIssue(candidate,owner)||candidate.state!=='open'||
          !Number.isSafeInteger(candidate.number)||candidate.number>=currentIssueNumber)continue;
       let receipted=false;
@@ -60,7 +65,6 @@ export async function sweepUnreceipted({owner,currentIssueNumber,listOpenIssues,
       await commentIssue(candidate.number,SUPERSEDED_RECEIPT);
       await closeIssue(candidate.number);
       swept++;
-    }
   }
   return swept;
 }
