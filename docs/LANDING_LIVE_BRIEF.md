@@ -8,7 +8,34 @@
 - **Built from:** Codex's S1 source reading (17 Oct 2026, 05:56–06:03 Dubai, main `23843c96ee142ea21577312b504d4ba6cb3f8fc8`). Corrections and the current state come from OwnerTeammember (17 Oct, after the S2 cold-reader test on #21 judged PARTIAL).
 - **Pins are history.** Re-check main, PR heads and the registry before acting on anything here.
 
-## 1. Current state (17 Oct 2026)
+## 1. Current state (18 Oct 2026, 05:4x +04:00)
+
+**This section replaces the 17 Oct one, which is kept below as history (§1-old).**
+
+- **Aim:** unchanged. Owner words on #21 still apply: no Dash V2, no revamp and no core protocol change. The page is a view and never sends, approves or grants anything.
+- **People and authority:**
+  - The **Owner** is in charge.
+  - **OwnerTeammember is Claude**, and it is also **acting TeamCoordinator** since 17 Oct 20:3x ([#1 6236724626](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6236724626)). The Codex TeamCoordinator `01a142d0` has stood down, and its 2 landing timers were set to PAUSED by OTM on Owner authority ([#1 6237149165](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6237149165)). Whether that took effect is unverified.
+  - landing-live and Common #408/#409 are **non-critical**. OTM starts, approves and merges after an independent PASS ([#1 6236628630](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6236628630) and [#1 6238268372](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6238268372)). Merged is not accepted.
+- **HOLD:** **none for landing-live.** Common #408/#409 were also restarted ("in progress", [#1 6237405204](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6237405204)).
+- **Active implementer:** **L1 g5 `6ad405cc`**, a ChatGPT chat, which is the single landing-live tab. It took over from L1 g4 `6ad36e4d`, retired 18 Oct 03:3x when its chat was full ([#1 6243133548](https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6243133548)). Coding goes to ChatGPT only, with one tab per project.
+- **Code:** every #62 section 3 package is merged ([#62 6243871365](https://github.com/reallakshman19/CoordinatorLandingpage/issues/62#issuecomment-6243871365)).
+  - WP-L1 split: #67, #68, #72, #79, #80 and #81.
+  - WP-L2 intake: #65, #76, #77 and #78.
+  - WP-L3 schema and data: #82 and #83.
+  - WP-L4 views: #84.
+  - WP-L5 scoreboard (pinned SYNTHETIC artifact): #88 and #89.
+  - WP-L6 continuity: #85 and #86.
+  - WP-L7 coordinator, timer and browser: #69, #70 and #71.
+  - CI hardening: #73 and #75.
+  - Cold-reader fixes: #91.
+  - The frozen fixture SHA is `0a7ebd12`. Since #73 it is the same on Windows and Linux ([#62 6239319934](https://github.com/reallakshman19/CoordinatorLandingpage/issues/62#issuecomment-6239319934)); the Windows CI job checks it.
+- **Verification (#62 §4):** results in [#55](https://github.com/reallakshman19/CoordinatorLandingpage/issues/55). The cold reader got 3/5 ANSWERED, and the gaps were then fixed in #91. Drill results: D1 PARTIAL (7/10), D2 PASS with a gap, D6 FAIL (fixed by markers), D9 PASS, D3 NOT_RUN. The live cases D4, D5, D7 and D8 are pending.
+- **Not accepted:** nothing after WP0–WP9 is Owner-accepted.
+- **Missing:** no F3–F7 hashes, and no 1b from a successor.
+- **Next action:** finish the read-only drill (D3), then run the live drill cases with g5. Common is waiting on Owner live-step consent (ECO-05 write, ECO-06 and ECO-08 participation).
+
+## 1-old. Current state (17 Oct 2026). SUPERSEDED by §1 above; kept as history
 
 - **Aim:** keep the existing landing page and make evidence-backed, two-way, multi-project coordination live. Owner words on #21: no Dash V2, no revamp, no core protocol change. The page is a view. It never sends to chats, approves or grants anything.
 - **Code:** everything through WP18 + NM0 is merged. The last integration was [#50](https://github.com/reallakshman19/CoordinatorLandingpage/pull/50) → main `885d95b4c115b2eb5f0b47bdd80f8ae5d70bda12`, and no PR was open at the S1 read (this page itself arrives via PR #54). Later main commits change records only: registries, the reset, and these docs.
