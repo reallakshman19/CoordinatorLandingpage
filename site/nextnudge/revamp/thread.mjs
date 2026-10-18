@@ -1,19 +1,27 @@
 // Canonical Markdown thread codec. Sent packets are length-framed to preserve exact bytes.
 export const THREAD_ID=/^NN-\d{8}-\d{6}-[a-f0-9]{4}$/;
 const MODES=new Set(['ground','task','correction','evidence','direction','close','amendment','reply']);
-const CHAT=/(?:^|[^\w.-])(?:(?:https?:\/\/)?(?:[\w-]+\.)*(?:chatgpt\.com\/(?:c|share)\/|chat\.openai\.com\/(?:c|share)\/|claude\.ai\/chat\/|aistudio\.google\.com\/prompts\/|gemini\.google\.com\/app\/|poe\.com\/chat\/|character\.ai\/chat\/|copilot\.microsoft\.com\/chats?\/|perplexity\.ai\/search\/)|https?:\/\/[^\s<>"']*(?:antigravity|\/conversations?\/|\/chats?\/))/i;
+// Match chat-service hosts at a word/URL boundary, never a GitHub file-path segment.
+const CHAT=/(?:^|[\s"'(<[{])(?:https?:\/\/)?(?:www\.)?(?:(?:chatgpt\.com|chat\.openai\.com)\/(?:(?:c|share)\/|g\/[^\s/?"'<>]+\/c\/)|claude\.ai\/chat\/|gemini\.google\.com\/app\/|aistudio\.google\.com\/prompts\/|antigravity\.google\.com\/(?:chat|c|conversation|app)\/|copilot\.microsoft\.com\/chats?\/|chat\.mistral\.ai\/(?:chat|c)\/|grok\.com\/chat\/|chat\.deepseek\.com\/(?:a\/chat|chat|c)\/|poe\.com\/chat\/|character\.ai\/chat\/|perplexity\.ai\/search\/)/i;
+const ZW=/[\u200B-\u200D\u2060\uFEFF]/g;
+function decodeSafe(input) {
+  let s=input;
+  for(let pass=0;pass<3;pass++) {
+    const next=s.replace(/(?:%[0-9A-Fa-f]{2})+/g,seq=>{
+      try{return decodeURIComponent(seq);}
+      catch{return seq.replace(/%([0-9A-Fa-f]{2})/g,(_,hex)=>String.fromCharCode(parseInt(hex,16)));}
+    }).replace(ZW,'');
+    if(next===s)break;
+    s=next;
+  }
+  return s.replace(ZW,'');
+}
 const MARKER=/<!--\s*nn3:(?:header|move)\b/i;
 const clean=s=>typeof s==='string'&&s.length<90000;
 const line=s=>s.replace(/[\r\n]+/g,' ').trim();
 export function assertPublic(value) {
-  let scan=typeof value==='string'?value:JSON.stringify(value);
-  for(let depth=0;depth<4;depth++) {
-    if(CHAT.test(scan))throw Error('Private chat URL found. Keep conversation links on this device.');
-    let decoded;
-    try{decoded=decodeURIComponent(scan);}catch{break;}
-    if(decoded===scan)break;
-    scan=decoded;
-  }
+  const scan=decodeSafe(typeof value==='string'?value:JSON.stringify(value));
+  if(CHAT.test(scan))throw Error('Private chat URL found. Keep conversation links on this device.');
 }
 export function validate(t) {
   if(!t||t.version!==3||!THREAD_ID.test(t.id)||!clean(t.title)||!t.title.trim()||
