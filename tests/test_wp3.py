@@ -103,7 +103,6 @@ class BaseCompatibleWP3(unittest.TestCase):
 
     def test_wp3_running_deploys_do_not_share_legacy_pages_group(self):
         workflow=(ROOT/".github/workflows/deploy.yml").read_text()
-        self.assertEqual(content_writers,["nextnudge-save.yml"])
         self.assertIn("group: landing-live-single-publisher-",workflow)
         self.assertIn("cancel-in-progress: false",workflow)
         self.assertNotIn("cancel-in-progress: true",workflow)
@@ -205,6 +204,7 @@ class WP3Additional(unittest.TestCase):
             if path.name!="deploy.yml":
                 self.assertNotIn("uses: actions/deploy-pages@",content)
                 self.assertNotIn("uses: actions/upload-pages-artifact@",content)
+        self.assertEqual(content_writers,["nextnudge-save.yml"])
         self.assertIn("group: landing-live-single-publisher-",
                       (ROOT/".github/workflows/deploy.yml").read_text())
 
