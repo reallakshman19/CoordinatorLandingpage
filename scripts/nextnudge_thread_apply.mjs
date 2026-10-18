@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import {gunzipSync} from 'node:zlib';
 import {pathToFileURL} from 'node:url';
-import {parse,assertPublic,THREAD_ID} from '../site/nextnudge/revamp/thread.mjs';
+import {parse,serialize,assertPublic,THREAD_ID} from '../site/nextnudge/revamp/thread.mjs';
 import {applyDelta,ROOT} from '../site/nextnudge/revamp/save.mjs';
 const SHA=/^[0-9a-f]{40}$/;
 const OWNER_LABEL='nextnudge-save';
@@ -37,6 +37,9 @@ export async function applyIssue({issue,owner,read,write,comment,close}) {
       const source=file?parse(file.content):null;
       const markdown=applyDelta(source,packet);
       if(!markdown.startsWith('# ')||markdown.length>2000000)throw Error('Invalid thread output');
+      // Never persist a document the actual reader cannot fully reconstruct.
+      const rebuilt=parse(markdown);
+      if(serialize(rebuilt)!==markdown)throw Error('Thread Markdown does not round-trip');
       await write(ROOT+packet.id+'.md',markdown,file?.sha||null);
       result='SAVED';message='SAVED: '+ROOT+packet.id+'.md · appended '+packet.moves.length+' moves';
     }
