@@ -1,0 +1,1965 @@
+{
+  "formatVersion": 2,
+  "revision": 53,
+  "profiles": {
+    "formatVersion": 1,
+    "profiles": {
+      "Quantitative": [
+        {
+          "id": "units",
+          "question": "Are inputs, units and operating range explicit?",
+          "example": "Puppet: 450 mm soles to crown; exclude the hat.",
+          "evidence": "Dimension table or reference link"
+        },
+        {
+          "id": "calculation",
+          "question": "Does the result satisfy the quantitative constraint?",
+          "example": "Reconcile segment lengths to the agreed total.",
+          "evidence": "Calculation or measured result"
+        }
+      ],
+      "Conceptual": [
+        {
+          "id": "understanding",
+          "question": "Is prior understanding established?",
+          "example": "Ask the Grade 10 learner to explain what a zero product means.",
+          "evidence": "Learner's exact explanation"
+        },
+        {
+          "id": "transfer",
+          "question": "Can the idea be applied to an unfamiliar example?",
+          "example": "Change the quadratic factors and ask for independent reasoning.",
+          "evidence": "Attempted transfer question"
+        }
+      ],
+      "Implementation": [
+        {
+          "id": "behaviour",
+          "question": "Is expected behaviour explicit and observed?",
+          "example": "2D motion: compare t=1 s with (3, 5.1) metres.",
+          "evidence": "Actual execution output"
+        },
+        {
+          "id": "boundaries",
+          "question": "Have relevant boundaries and failure cases been checked?",
+          "example": "Check screen-axis conversion and negative-time behaviour.",
+          "evidence": "Boundary checks and unresolved failures"
+        }
+      ],
+      "Coding": [
+        {
+          "id": "redgreen",
+          "question": "Did the relevant check fail before and pass after the change?",
+          "example": "Record both source revisions and the same test command.",
+          "evidence": "Before/after test output or an honest NOT_RUN"
+        },
+        {
+          "id": "ci",
+          "question": "Were actual CI results read?",
+          "example": "Link the exact head's run and unresolved failures.",
+          "evidence": "CI run URL; not just a claim that CI is green"
+        },
+        {
+          "id": "scope",
+          "question": "Were protected paths and agreed scope preserved?",
+          "example": "Compare changed files with the task's allowed paths.",
+          "evidence": "Changed-file review"
+        },
+        {
+          "id": "review",
+          "question": "Was independent review recorded where needed?",
+          "example": "Separate author self-check from a non-author review.",
+          "evidence": "Review URL or UNKNOWN"
+        }
+      ]
+    }
+  },
+  "projects": [
+    {
+      "id": "PRJ-20261018-085012-1225",
+      "name": "CoordinatorLandingpage · NextNudge pilot #97",
+      "createdAt": "2026-10-18T08:50:12.992Z"
+    }
+  ],
+  "runs": [
+    {
+      "id": "NN-20261018-085012-215a",
+      "projectId": "PRJ-20261018-085012-1225",
+      "title": "#97 · Standalone NextNudge implementation",
+      "aim": "Implement the Owner’s standalone coding-agent workbench: grounding fixtures, traceable run IDs, editable ladders, manual delivery records and GitHub snapshots. No NextMove authority or automatic sends.",
+      "createdAt": "2026-10-18T08:50:12.992Z",
+      "archived": false,
+      "deleted": false,
+      "paused": false,
+      "chatId8": "",
+      "profiles": [
+        "Implementation",
+        "Coding"
+      ],
+      "nodes": [
+        {
+          "id": "NN-20261018-085012-feb5",
+          "label": "Initial prompt",
+          "instruction": "Implement the Owner’s standalone coding-agent workbench: grounding fixtures, traceable run IDs, editable ladders, manual delivery records and GitHub snapshots. No NextMove authority or automatic sends.\nReply with your understanding and fill the On boarding fixtures.",
+          "type": "new_requirement",
+          "parent": null,
+          "status": "ready",
+          "messages": [],
+          "checks": {},
+          "sentAt": null,
+          "copied": null,
+          "deleted": false
+        },
+        {
+          "id": "NN-20261018-085012-ca1e",
+          "label": "Grounding",
+          "instruction": "Confirm or correct understanding; record unresolved inputs.",
+          "type": "ground",
+          "parent": null,
+          "status": "ready",
+          "messages": [],
+          "checks": {},
+          "sentAt": null,
+          "copied": null,
+          "deleted": false
+        },
+        {
+          "id": "NN-20261018-085012-bc98",
+          "label": "Source reconciliation",
+          "instruction": "Inspect issue #97, current main, open PRs and the existing dashboard route. Record missing source material.",
+          "type": "next_step",
+          "parent": null,
+          "status": "submitted",
+          "messages": [
+            {
+              "by": "Agent",
+              "text": "Implementation checkpoint by the author: inspected #97 and current main c83e1b3a4ca297c321d446f888625295a3c1a3cc; observed no open PRs and no active registry leases. Implemented the standalone model and fixture transfer locally. The 10 rule tests passed. This is not an external chat delivery receipt; actual chat reply time is UNKNOWN.",
+              "proof": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247743663",
+              "at": "2026-10-18T08:50:12.999Z",
+              "recordedBy": "Owner",
+              "relayed": true,
+              "repliedAt": null,
+              "chatId8": null,
+              "ack": null
+            }
+          ],
+          "checks": {},
+          "sentAt": null,
+          "copied": null,
+          "deleted": false
+        },
+        {
+          "id": "NN-20261018-085012-95ed",
+          "label": "Grounding Fixtures implementation",
+          "instruction": "Implement all Owner-specified headings, editable items and traceable pulls from predecessor runs.",
+          "type": "next_step",
+          "parent": null,
+          "status": "ready",
+          "messages": [],
+          "checks": {},
+          "sentAt": null,
+          "copied": null,
+          "deleted": false
+        },
+        {
+          "id": "NN-20261018-085012-4e0b",
+          "label": "Midcycle reconciliation",
+          "instruction": "Reconcile current implementation against 1f, then 1a. Record known issues and the recovery plan.",
+          "type": "next_step",
+          "parent": null,
+          "status": "ready",
+          "messages": [],
+          "checks": {},
+          "sentAt": null,
+          "copied": null,
+          "deleted": false
+        },
+        {
+          "id": "NN-20261018-085012-795a",
+          "label": "Validation and handover",
+          "instruction": "Test instruction freezing, optional-evidence review, correction branches, import safety and GitHub conflicts. Prepare a source-bound PR.",
+          "type": "next_step",
+          "parent": null,
+          "status": "ready",
+          "messages": [],
+          "checks": {},
+          "sentAt": null,
+          "copied": null,
+          "deleted": false
+        }
+      ],
+      "fixtures": {
+        "1": [
+          {
+            "id": "GF-20261018-085012-9d59",
+            "text": "Public repository sources and the Owner’s current-session instructions. Private chat URLs are not part of this shared snapshot.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/tree/c83e1b3a4ca297c321d446f888625295a3c1a3cc",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:50:12.993Z",
+            "by": "Owner"
+          }
+        ],
+        "2": [
+          {
+            "id": "GF-20261018-085012-7dfe",
+            "text": "Create Grounding Fixtures and Nudge Protocol tabs, project/run lifecycle, editable ladders, sent snapshots, exact manual replies, append-only events, configurable checklists and a dedicated GitHub data directory.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247743663",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:50:12.994Z",
+            "by": "Owner"
+          }
+        ],
+        "3": [
+          {
+            "id": "GF-20261018-085012-7def",
+            "text": "No original golden workbench export supplied. Test fixtures are synthetic and clearly separated from this real issue pilot.",
+            "url": "",
+            "status": "UNKNOWN",
+            "at": "2026-10-18T08:50:12.994Z",
+            "by": "Owner"
+          }
+        ],
+        "4": [
+          {
+            "id": "GF-20261018-085012-b33e",
+            "text": "No performance benchmark or approved visual golden supplied. Do not infer either from passing unit tests.",
+            "url": "",
+            "status": "UNKNOWN",
+            "at": "2026-10-18T08:50:12.994Z",
+            "by": "Owner"
+          }
+        ],
+        "5": [
+          {
+            "id": "GF-20261018-085012-51ce",
+            "text": "Acceptance checks cover no future-step locks; correction re-review; frozen sends; safe restore; fixture provenance; browser drafts and GitHub SHA conflict handling. Browser, independent review and deployed readback are distinct checks.",
+            "url": "",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:50:12.994Z",
+            "by": "Owner"
+          },
+          {
+            "id": "GF-20261018-085436-4211",
+            "text": "Author-run validation: 17 Node tests PASS. The two dashboard navigation/poll-preservation assertions FAIL against base c83e1b3a and PASS against code basis 52043a3d. JS syntax checks pass. Browser QA NOT_RUN (Chromium absent); independent review and deployed GitHub save readback remain pending.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247920530",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:54:36.051Z",
+            "by": "Owner"
+          }
+        ],
+        "6": [
+          {
+            "id": "GF-20261018-085012-a595",
+            "text": "Against 1f: standalone modules are implemented locally. No coordinator dispatch code or workflow has been modified.",
+            "url": "",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:50:12.994Z",
+            "by": "Owner"
+          }
+        ],
+        "7": [
+          {
+            "id": "GF-20261018-085012-e687",
+            "text": "Against 1f then 1a: scope remains NextNudge-only. Canonical data path is site/nextnudge-data/workbench.json, with explicit user-reviewed GitHub commits.",
+            "url": "",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:50:12.996Z",
+            "by": "Owner"
+          }
+        ],
+        "8": [
+          {
+            "id": "GF-20261018-085012-f0b1",
+            "text": "Exit reconciliation remains OPEN pending PR, independent review and deployment. This record is a progress checkpoint, not final acceptance.",
+            "url": "",
+            "status": "UNKNOWN",
+            "at": "2026-10-18T08:50:12.997Z",
+            "by": "Owner"
+          }
+        ],
+        "9": [
+          {
+            "id": "GF-20261018-085012-a90a",
+            "text": "No successor has taken over. High-ROI suggestions must be written by the actual incoming agent or labelled as rehearsal.",
+            "url": "",
+            "status": "UNKNOWN",
+            "at": "2026-10-18T08:50:12.998Z",
+            "by": "Owner"
+          }
+        ],
+        "10": [
+          {
+            "id": "GF-20261018-085012-b940",
+            "text": "Future candidate: authenticated shared storage. Revisit only if manual GitHub snapshot review becomes burdensome; it must not introduce NextMove authority.",
+            "url": "",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:50:12.998Z",
+            "by": "Owner"
+          }
+        ],
+        "1a": [
+          {
+            "id": "GF-20261018-085012-31b5",
+            "text": "Owning implementation issue #97.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:50:12.993Z",
+            "by": "Owner"
+          }
+        ],
+        "1b": [
+          {
+            "id": "GF-20261018-085012-7f39",
+            "text": "Draft PR #100 contains the standalone NextNudge implementation. Code basis: 52043a3d6871f7eb55698762cae228d3746b4732. Merge and deployed readback remain pending.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/100",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:54:36.050Z",
+            "by": "Owner"
+          }
+        ],
+        "1c": [
+          {
+            "id": "GF-20261018-085012-8b61",
+            "text": "Original landing-page intent issue #21. NextNudge is a separate Owner workbench; it does not inherit NextMove dispatch authority.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/21",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:50:12.993Z",
+            "by": "Owner"
+          }
+        ],
+        "1d": [
+          {
+            "id": "GF-20261018-085012-a38a",
+            "text": "Implementation revision NN-R2 recorded on #97; no other roadmap update is claimed.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247743663",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:50:12.993Z",
+            "by": "Owner"
+          }
+        ],
+        "1e": [
+          {
+            "id": "GF-20261018-085012-ceb8",
+            "text": "Owner: “Our focus for this session is NextNudge only. we need to demonstration with a real pilot case.” Current-session instruction, 18 Oct 2026; publicly recorded scope in NN-R2.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247743663",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:50:12.994Z",
+            "by": "Owner"
+          }
+        ],
+        "1f": [
+          {
+            "id": "GF-20261018-085012-8ef1",
+            "text": "My task is to integrate a standalone Owner-operated workbench with dynamic steps and fixture continuity. NextMove integration, automatic messaging and protocol authority are outside scope.",
+            "url": "",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:50:12.994Z",
+            "by": "Owner"
+          }
+        ],
+        "6a": [
+          {
+            "id": "GF-20261018-085012-8e5e",
+            "text": "No local Chromium executable is available. Browser interaction and visual checks remain NOT_RUN.",
+            "url": "",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:50:12.995Z",
+            "by": "Owner"
+          }
+        ],
+        "6b": [
+          {
+            "id": "GF-20261018-085012-ffba",
+            "text": "Draft PR #100 published. Remaining: exact-head CI result, independent review, authorized merge, browser QA and deployed snapshot readback.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/100",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:54:36.051Z",
+            "by": "Owner"
+          }
+        ],
+        "6c": [
+          {
+            "id": "GF-20261018-085012-6aed",
+            "text": "Finish route/storage tests; checkpoint source; reconcile exact changed files and publish the PR.",
+            "url": "",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:50:12.996Z",
+            "by": "Owner"
+          }
+        ],
+        "7a": [
+          {
+            "id": "GF-20261018-085012-3731",
+            "text": "Actual agent chat is not supplied: chatId8 is empty, delivery/ACK is UNKNOWN. No fake SENT or ACK records are added.",
+            "url": "",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:50:12.996Z",
+            "by": "Owner"
+          }
+        ],
+        "7b": [
+          {
+            "id": "GF-20261018-085012-e405",
+            "text": "Repository source is checkpointed. CI was observed queued/running for 52043a3d; no hosted PASS is claimed. Independent review and merge remain pending.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/actions/runs/39113211391",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:54:36.052Z",
+            "by": "Owner"
+          }
+        ],
+        "7c": [
+          {
+            "id": "GF-20261018-085012-9b82",
+            "text": "Resume from #97 and the candidate branch. Read history and fixtures before continuing; recheck live main and pending PRs.",
+            "url": "",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:50:12.997Z",
+            "by": "Owner"
+          }
+        ],
+        "8a": [
+          {
+            "id": "GF-20261018-085012-1442",
+            "text": "Browser QA and shared-storage readback against merged main are pending.",
+            "url": "",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:50:12.997Z",
+            "by": "Owner"
+          }
+        ],
+        "8b": [
+          {
+            "id": "GF-20261018-085012-27e1",
+            "text": "Owner/reviewer: assess candidate; authorized merger: merge after required checks; then read back the deployed tab.",
+            "url": "",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:50:12.998Z",
+            "by": "Owner"
+          }
+        ],
+        "8c": [
+          {
+            "id": "GF-20261018-085012-331f",
+            "text": "Copying, sending, receiving a reply and accepting work are separate facts. A fixture copy must preserve provenance and remain subject to review.",
+            "url": "",
+            "status": "RECORDED",
+            "at": "2026-10-18T08:50:12.998Z",
+            "by": "Owner"
+          }
+        ]
+      },
+      "drafts": {}
+    },
+    {
+      "id": "NN-20261018-085013-3e7b",
+      "projectId": "PRJ-20261018-085012-1225",
+      "title": "#97 · Successor grounding rehearsal — unassigned",
+      "aim": "Demonstrate recoverable fixture transfer from the implementation run. No successor agent has been launched or qualified.",
+      "createdAt": "2026-10-18T08:50:13.000Z",
+      "archived": false,
+      "deleted": false,
+      "paused": false,
+      "chatId8": "",
+      "profiles": [
+        "Coding"
+      ],
+      "nodes": [
+        {
+          "id": "NN-20261018-085013-4186",
+          "label": "Initial prompt",
+          "instruction": "Demonstrate recoverable fixture transfer from the implementation run. No successor agent has been launched or qualified.\nReply with your understanding and fill the On boarding fixtures.",
+          "type": "new_requirement",
+          "parent": null,
+          "status": "ready",
+          "messages": [],
+          "checks": {},
+          "sentAt": null,
+          "copied": null,
+          "deleted": false
+        },
+        {
+          "id": "NN-20261018-085013-6367",
+          "label": "Grounding",
+          "instruction": "Confirm or correct understanding; record unresolved inputs.",
+          "type": "ground",
+          "parent": null,
+          "status": "ready",
+          "messages": [],
+          "checks": {},
+          "sentAt": null,
+          "copied": null,
+          "deleted": false
+        }
+      ],
+      "fixtures": {
+        "1": [
+          {
+            "id": "GF-20261018-085013-66ac",
+            "text": "Public repository sources and the Owner’s current-session instructions. Private chat URLs are not part of this shared snapshot.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/tree/c83e1b3a4ca297c321d446f888625295a3c1a3cc",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.001Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "1",
+              "row": "GF-20261018-085012-9d59",
+              "rowAt": "2026-10-18T08:50:12.993Z",
+              "revision": 37,
+              "pulledAt": "2026-10-18T08:50:13.001Z"
+            }
+          }
+        ],
+        "2": [
+          {
+            "id": "GF-20261018-085013-9a8a",
+            "text": "Create Grounding Fixtures and Nudge Protocol tabs, project/run lifecycle, editable ladders, sent snapshots, exact manual replies, append-only events, configurable checklists and a dedicated GitHub data directory.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247743663",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.003Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "2",
+              "row": "GF-20261018-085012-7dfe",
+              "rowAt": "2026-10-18T08:50:12.994Z",
+              "revision": 43,
+              "pulledAt": "2026-10-18T08:50:13.003Z"
+            }
+          }
+        ],
+        "3": [
+          {
+            "id": "GF-20261018-085013-3b8f",
+            "text": "No original golden workbench export supplied. Test fixtures are synthetic and clearly separated from this real issue pilot.",
+            "url": "",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.003Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "3",
+              "row": "GF-20261018-085012-7def",
+              "rowAt": "2026-10-18T08:50:12.994Z",
+              "revision": 44,
+              "pulledAt": "2026-10-18T08:50:13.003Z"
+            }
+          }
+        ],
+        "4": [
+          {
+            "id": "GF-20261018-085013-a479",
+            "text": "No performance benchmark or approved visual golden supplied. Do not infer either from passing unit tests.",
+            "url": "",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.003Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "4",
+              "row": "GF-20261018-085012-b33e",
+              "rowAt": "2026-10-18T08:50:12.994Z",
+              "revision": 45,
+              "pulledAt": "2026-10-18T08:50:13.003Z"
+            }
+          }
+        ],
+        "5": [
+          {
+            "id": "GF-20261018-085013-2b50",
+            "text": "Acceptance checks cover no future-step locks; correction re-review; frozen sends; safe restore; fixture provenance; browser drafts and GitHub SHA conflict handling. Browser, independent review and deployed readback are distinct checks.",
+            "url": "",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.004Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "5",
+              "row": "GF-20261018-085012-51ce",
+              "rowAt": "2026-10-18T08:50:12.994Z",
+              "revision": 46,
+              "pulledAt": "2026-10-18T08:50:13.004Z"
+            }
+          }
+        ],
+        "6": [],
+        "7": [],
+        "8": [],
+        "9": [
+          {
+            "id": "GF-20261018-085013-53ae",
+            "text": "Rehearsal only: review predecessor fixtures and unresolved checks before proposing changes. No actual successor contribution is claimed.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.004Z",
+            "by": "Owner"
+          }
+        ],
+        "10": [],
+        "1a": [
+          {
+            "id": "GF-20261018-085013-6010",
+            "text": "Owning implementation issue #97.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.001Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "1a",
+              "row": "GF-20261018-085012-31b5",
+              "rowAt": "2026-10-18T08:50:12.993Z",
+              "revision": 38,
+              "pulledAt": "2026-10-18T08:50:13.001Z"
+            }
+          }
+        ],
+        "1b": [
+          {
+            "id": "GF-20261018-085436-8af5",
+            "text": "Draft PR #100 contains the standalone NextNudge implementation. Code basis: 52043a3d6871f7eb55698762cae228d3746b4732. Merge and deployed readback remain pending.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/100",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:54:36.053Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "1b",
+              "row": "GF-20261018-085012-7f39",
+              "rowAt": "2026-10-18T08:54:36.050Z",
+              "revision": 52,
+              "pulledAt": "2026-10-18T08:54:36.053Z"
+            }
+          }
+        ],
+        "1c": [
+          {
+            "id": "GF-20261018-085013-b3bb",
+            "text": "Original landing-page intent issue #21. NextNudge is a separate Owner workbench; it does not inherit NextMove dispatch authority.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/21",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.001Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "1c",
+              "row": "GF-20261018-085012-8b61",
+              "rowAt": "2026-10-18T08:50:12.993Z",
+              "revision": 39,
+              "pulledAt": "2026-10-18T08:50:13.001Z"
+            }
+          }
+        ],
+        "1d": [
+          {
+            "id": "GF-20261018-085013-657f",
+            "text": "Implementation revision NN-R2 recorded on #97; no other roadmap update is claimed.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247743663",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.002Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "1d",
+              "row": "GF-20261018-085012-a38a",
+              "rowAt": "2026-10-18T08:50:12.993Z",
+              "revision": 40,
+              "pulledAt": "2026-10-18T08:50:13.002Z"
+            }
+          }
+        ],
+        "1e": [
+          {
+            "id": "GF-20261018-085013-74d3",
+            "text": "Owner: “Our focus for this session is NextNudge only. we need to demonstration with a real pilot case.” Current-session instruction, 18 Oct 2026; publicly recorded scope in NN-R2.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247743663",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.002Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "1e",
+              "row": "GF-20261018-085012-ceb8",
+              "rowAt": "2026-10-18T08:50:12.994Z",
+              "revision": 41,
+              "pulledAt": "2026-10-18T08:50:13.002Z"
+            }
+          }
+        ],
+        "1f": [
+          {
+            "id": "GF-20261018-085013-fbdd",
+            "text": "My task is to integrate a standalone Owner-operated workbench with dynamic steps and fixture continuity. NextMove integration, automatic messaging and protocol authority are outside scope.",
+            "url": "",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.002Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "1f",
+              "row": "GF-20261018-085012-8ef1",
+              "rowAt": "2026-10-18T08:50:12.994Z",
+              "revision": 42,
+              "pulledAt": "2026-10-18T08:50:13.002Z"
+            }
+          }
+        ],
+        "6a": [],
+        "6b": [],
+        "6c": [],
+        "7a": [],
+        "7b": [],
+        "7c": [],
+        "8a": [],
+        "8b": [],
+        "8c": []
+      },
+      "drafts": {}
+    }
+  ],
+  "events": [
+    {
+      "id": "EV-20261018-085012-a617",
+      "project": null,
+      "run": null,
+      "step": null,
+      "state": "PROJECT_CREATED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.992Z",
+      "proof": "",
+      "note": "CoordinatorLandingpage · NextNudge pilot #97",
+      "data": {
+        "id": "PRJ-20261018-085012-1225",
+        "name": "CoordinatorLandingpage · NextNudge pilot #97",
+        "createdAt": "2026-10-18T08:50:12.992Z"
+      }
+    },
+    {
+      "id": "EV-20261018-085012-2ddd",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "RUN_CREATED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.992Z",
+      "proof": "",
+      "note": "#97 · Standalone NextNudge implementation",
+      "data": null
+    },
+    {
+      "id": "EV-20261018-085012-7bc6",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": "NN-20261018-085012-feb5",
+      "state": "CREATED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.992Z",
+      "proof": "",
+      "note": "Initial prompt",
+      "data": null
+    },
+    {
+      "id": "EV-20261018-085012-f5e4",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": "NN-20261018-085012-ca1e",
+      "state": "CREATED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.992Z",
+      "proof": "",
+      "note": "Grounding",
+      "data": null
+    },
+    {
+      "id": "EV-20261018-085012-4195",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": "NN-20261018-085012-bc98",
+      "state": "CREATED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.992Z",
+      "proof": "",
+      "note": "Source reconciliation",
+      "data": null
+    },
+    {
+      "id": "EV-20261018-085012-a567",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": "NN-20261018-085012-95ed",
+      "state": "CREATED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.992Z",
+      "proof": "",
+      "note": "Grounding Fixtures implementation",
+      "data": null
+    },
+    {
+      "id": "EV-20261018-085012-2563",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": "NN-20261018-085012-4e0b",
+      "state": "CREATED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.992Z",
+      "proof": "",
+      "note": "Midcycle reconciliation",
+      "data": null
+    },
+    {
+      "id": "EV-20261018-085012-2792",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": "NN-20261018-085012-795a",
+      "state": "CREATED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.993Z",
+      "proof": "",
+      "note": "Validation and handover",
+      "data": null
+    },
+    {
+      "id": "EV-20261018-085012-62ed",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.993Z",
+      "proof": "https://github.com/reallakshman19/CoordinatorLandingpage/tree/c83e1b3a4ca297c321d446f888625295a3c1a3cc",
+      "note": "1",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-9d59",
+          "text": "Public repository sources and the Owner’s current-session instructions. Private chat URLs are not part of this shared snapshot.",
+          "url": "https://github.com/reallakshman19/CoordinatorLandingpage/tree/c83e1b3a4ca297c321d446f888625295a3c1a3cc",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.993Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-0fc3",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.993Z",
+      "proof": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97",
+      "note": "1a",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-31b5",
+          "text": "Owning implementation issue #97.",
+          "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.993Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-8dc1",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.993Z",
+      "proof": "",
+      "note": "1b",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-7f39",
+          "text": "PR not yet created at this checkpoint. Resolve after source publication.",
+          "url": "",
+          "status": "UNKNOWN",
+          "at": "2026-10-18T08:50:12.993Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-2efb",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.993Z",
+      "proof": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/21",
+      "note": "1c",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-8b61",
+          "text": "Original landing-page intent issue #21. NextNudge is a separate Owner workbench; it does not inherit NextMove dispatch authority.",
+          "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/21",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.993Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-c4f8",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.993Z",
+      "proof": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247743663",
+      "note": "1d",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-a38a",
+          "text": "Implementation revision NN-R2 recorded on #97; no other roadmap update is claimed.",
+          "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247743663",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.993Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-d0d1",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.994Z",
+      "proof": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247743663",
+      "note": "1e",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-ceb8",
+          "text": "Owner: “Our focus for this session is NextNudge only. we need to demonstration with a real pilot case.” Current-session instruction, 18 Oct 2026; publicly recorded scope in NN-R2.",
+          "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247743663",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.994Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-f5ef",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.994Z",
+      "proof": "",
+      "note": "1f",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-8ef1",
+          "text": "My task is to integrate a standalone Owner-operated workbench with dynamic steps and fixture continuity. NextMove integration, automatic messaging and protocol authority are outside scope.",
+          "url": "",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.994Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-5673",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.994Z",
+      "proof": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247743663",
+      "note": "2",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-7dfe",
+          "text": "Create Grounding Fixtures and Nudge Protocol tabs, project/run lifecycle, editable ladders, sent snapshots, exact manual replies, append-only events, configurable checklists and a dedicated GitHub data directory.",
+          "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247743663",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.994Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-0b41",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.994Z",
+      "proof": "",
+      "note": "3",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-7def",
+          "text": "No original golden workbench export supplied. Test fixtures are synthetic and clearly separated from this real issue pilot.",
+          "url": "",
+          "status": "UNKNOWN",
+          "at": "2026-10-18T08:50:12.994Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-1d8c",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.994Z",
+      "proof": "",
+      "note": "4",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-b33e",
+          "text": "No performance benchmark or approved visual golden supplied. Do not infer either from passing unit tests.",
+          "url": "",
+          "status": "UNKNOWN",
+          "at": "2026-10-18T08:50:12.994Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-c4b8",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.994Z",
+      "proof": "",
+      "note": "5",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-51ce",
+          "text": "Acceptance checks cover no future-step locks; correction re-review; frozen sends; safe restore; fixture provenance; browser drafts and GitHub SHA conflict handling. Browser, independent review and deployed readback are distinct checks.",
+          "url": "",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.994Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-6780",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.995Z",
+      "proof": "",
+      "note": "6",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-a595",
+          "text": "Against 1f: standalone modules are implemented locally. No coordinator dispatch code or workflow has been modified.",
+          "url": "",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.994Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-8a17",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.996Z",
+      "proof": "",
+      "note": "6a",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-8e5e",
+          "text": "No local Chromium executable is available. Browser interaction and visual checks remain NOT_RUN.",
+          "url": "",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.995Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-0afc",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.996Z",
+      "proof": "",
+      "note": "6b",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-ffba",
+          "text": "Create source-bound PR, run integration checks, obtain independent review, and verify deployed GitHub Pages after authorized merge.",
+          "url": "",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.996Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-548a",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.996Z",
+      "proof": "",
+      "note": "6c",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-6aed",
+          "text": "Finish route/storage tests; checkpoint source; reconcile exact changed files and publish the PR.",
+          "url": "",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.996Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-bcf2",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.996Z",
+      "proof": "",
+      "note": "7",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-e687",
+          "text": "Against 1f then 1a: scope remains NextNudge-only. Canonical data path is site/nextnudge-data/workbench.json, with explicit user-reviewed GitHub commits.",
+          "url": "",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.996Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-5a3e",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.997Z",
+      "proof": "",
+      "note": "7a",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-3731",
+          "text": "Actual agent chat is not supplied: chatId8 is empty, delivery/ACK is UNKNOWN. No fake SENT or ACK records are added.",
+          "url": "",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.996Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-ad44",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.997Z",
+      "proof": "",
+      "note": "7b",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-e405",
+          "text": "Independent reviewer and production deployment are not yet available.",
+          "url": "",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.997Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-ac8e",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.997Z",
+      "proof": "",
+      "note": "7c",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-9b82",
+          "text": "Resume from #97 and the candidate branch. Read history and fixtures before continuing; recheck live main and pending PRs.",
+          "url": "",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.997Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-c5fb",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.997Z",
+      "proof": "",
+      "note": "8",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-f0b1",
+          "text": "Exit reconciliation remains OPEN pending PR, independent review and deployment. This record is a progress checkpoint, not final acceptance.",
+          "url": "",
+          "status": "UNKNOWN",
+          "at": "2026-10-18T08:50:12.997Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-19c4",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.997Z",
+      "proof": "",
+      "note": "8a",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-1442",
+          "text": "Browser QA and shared-storage readback against merged main are pending.",
+          "url": "",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.997Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-ea43",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.998Z",
+      "proof": "",
+      "note": "8b",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-27e1",
+          "text": "Owner/reviewer: assess candidate; authorized merger: merge after required checks; then read back the deployed tab.",
+          "url": "",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.998Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-c4cd",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.998Z",
+      "proof": "",
+      "note": "8c",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-331f",
+          "text": "Copying, sending, receiving a reply and accepting work are separate facts. A fixture copy must preserve provenance and remain subject to review.",
+          "url": "",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.998Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-c1b5",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.998Z",
+      "proof": "",
+      "note": "9",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-a90a",
+          "text": "No successor has taken over. High-ROI suggestions must be written by the actual incoming agent or labelled as rehearsal.",
+          "url": "",
+          "status": "UNKNOWN",
+          "at": "2026-10-18T08:50:12.998Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-449e",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:12.999Z",
+      "proof": "",
+      "note": "10",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085012-b940",
+          "text": "Future candidate: authenticated shared storage. Revisit only if manual GitHub snapshot review becomes burdensome; it must not introduce NextMove authority.",
+          "url": "",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.998Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085012-674e",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": "NN-20261018-085012-bc98",
+      "state": "REPLY_RECORDED",
+      "by": "Agent",
+      "at": "2026-10-18T08:50:12.999Z",
+      "proof": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247743663",
+      "note": "Implementation checkpoint by the author: inspected #97 and current main c83e1b3a4ca297c321d446f888625295a3c1a3cc; observed no open PRs and no active registry leases. Implemented the standalone model and fixture transfer locally. The 10 rule tests passed. This is not an external chat delivery receipt; actual chat reply time is UNKNOWN.",
+      "data": {
+        "by": "Agent",
+        "text": "Implementation checkpoint by the author: inspected #97 and current main c83e1b3a4ca297c321d446f888625295a3c1a3cc; observed no open PRs and no active registry leases. Implemented the standalone model and fixture transfer locally. The 10 rule tests passed. This is not an external chat delivery receipt; actual chat reply time is UNKNOWN.",
+        "proof": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247743663",
+        "at": "2026-10-18T08:50:12.999Z",
+        "recordedBy": "Owner",
+        "relayed": true,
+        "repliedAt": null,
+        "chatId8": null,
+        "ack": null
+      }
+    },
+    {
+      "id": "EV-20261018-085013-c2c6",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085013-3e7b",
+      "step": null,
+      "state": "RUN_CREATED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:13.000Z",
+      "proof": "",
+      "note": "#97 · Successor grounding rehearsal — unassigned",
+      "data": null
+    },
+    {
+      "id": "EV-20261018-085013-02e0",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085013-3e7b",
+      "step": "NN-20261018-085013-4186",
+      "state": "CREATED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:13.000Z",
+      "proof": "",
+      "note": "Initial prompt",
+      "data": null
+    },
+    {
+      "id": "EV-20261018-085013-ce96",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085013-3e7b",
+      "step": "NN-20261018-085013-6367",
+      "state": "CREATED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:13.001Z",
+      "proof": "",
+      "note": "Grounding",
+      "data": null
+    },
+    {
+      "id": "EV-20261018-085013-299a",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085013-3e7b",
+      "step": null,
+      "state": "FIXTURES_PULLED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:13.001Z",
+      "proof": "",
+      "note": "1",
+      "data": {
+        "sourceId": "NN-20261018-085012-215a",
+        "rows": [
+          {
+            "id": "GF-20261018-085013-66ac",
+            "text": "Public repository sources and the Owner’s current-session instructions. Private chat URLs are not part of this shared snapshot.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/tree/c83e1b3a4ca297c321d446f888625295a3c1a3cc",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.001Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "1",
+              "row": "GF-20261018-085012-9d59",
+              "rowAt": "2026-10-18T08:50:12.993Z",
+              "revision": 37,
+              "pulledAt": "2026-10-18T08:50:13.001Z"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "EV-20261018-085013-96e5",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085013-3e7b",
+      "step": null,
+      "state": "FIXTURES_PULLED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:13.001Z",
+      "proof": "",
+      "note": "1a",
+      "data": {
+        "sourceId": "NN-20261018-085012-215a",
+        "rows": [
+          {
+            "id": "GF-20261018-085013-6010",
+            "text": "Owning implementation issue #97.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.001Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "1a",
+              "row": "GF-20261018-085012-31b5",
+              "rowAt": "2026-10-18T08:50:12.993Z",
+              "revision": 38,
+              "pulledAt": "2026-10-18T08:50:13.001Z"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "EV-20261018-085013-0a09",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085013-3e7b",
+      "step": null,
+      "state": "FIXTURES_PULLED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:13.002Z",
+      "proof": "",
+      "note": "1c",
+      "data": {
+        "sourceId": "NN-20261018-085012-215a",
+        "rows": [
+          {
+            "id": "GF-20261018-085013-b3bb",
+            "text": "Original landing-page intent issue #21. NextNudge is a separate Owner workbench; it does not inherit NextMove dispatch authority.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/21",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.001Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "1c",
+              "row": "GF-20261018-085012-8b61",
+              "rowAt": "2026-10-18T08:50:12.993Z",
+              "revision": 39,
+              "pulledAt": "2026-10-18T08:50:13.001Z"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "EV-20261018-085013-bddc",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085013-3e7b",
+      "step": null,
+      "state": "FIXTURES_PULLED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:13.002Z",
+      "proof": "",
+      "note": "1d",
+      "data": {
+        "sourceId": "NN-20261018-085012-215a",
+        "rows": [
+          {
+            "id": "GF-20261018-085013-657f",
+            "text": "Implementation revision NN-R2 recorded on #97; no other roadmap update is claimed.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247743663",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.002Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "1d",
+              "row": "GF-20261018-085012-a38a",
+              "rowAt": "2026-10-18T08:50:12.993Z",
+              "revision": 40,
+              "pulledAt": "2026-10-18T08:50:13.002Z"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "EV-20261018-085013-d21e",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085013-3e7b",
+      "step": null,
+      "state": "FIXTURES_PULLED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:13.002Z",
+      "proof": "",
+      "note": "1e",
+      "data": {
+        "sourceId": "NN-20261018-085012-215a",
+        "rows": [
+          {
+            "id": "GF-20261018-085013-74d3",
+            "text": "Owner: “Our focus for this session is NextNudge only. we need to demonstration with a real pilot case.” Current-session instruction, 18 Oct 2026; publicly recorded scope in NN-R2.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247743663",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.002Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "1e",
+              "row": "GF-20261018-085012-ceb8",
+              "rowAt": "2026-10-18T08:50:12.994Z",
+              "revision": 41,
+              "pulledAt": "2026-10-18T08:50:13.002Z"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "EV-20261018-085013-e1a3",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085013-3e7b",
+      "step": null,
+      "state": "FIXTURES_PULLED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:13.002Z",
+      "proof": "",
+      "note": "1f",
+      "data": {
+        "sourceId": "NN-20261018-085012-215a",
+        "rows": [
+          {
+            "id": "GF-20261018-085013-fbdd",
+            "text": "My task is to integrate a standalone Owner-operated workbench with dynamic steps and fixture continuity. NextMove integration, automatic messaging and protocol authority are outside scope.",
+            "url": "",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.002Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "1f",
+              "row": "GF-20261018-085012-8ef1",
+              "rowAt": "2026-10-18T08:50:12.994Z",
+              "revision": 42,
+              "pulledAt": "2026-10-18T08:50:13.002Z"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "EV-20261018-085013-4d04",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085013-3e7b",
+      "step": null,
+      "state": "FIXTURES_PULLED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:13.003Z",
+      "proof": "",
+      "note": "2",
+      "data": {
+        "sourceId": "NN-20261018-085012-215a",
+        "rows": [
+          {
+            "id": "GF-20261018-085013-9a8a",
+            "text": "Create Grounding Fixtures and Nudge Protocol tabs, project/run lifecycle, editable ladders, sent snapshots, exact manual replies, append-only events, configurable checklists and a dedicated GitHub data directory.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247743663",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.003Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "2",
+              "row": "GF-20261018-085012-7dfe",
+              "rowAt": "2026-10-18T08:50:12.994Z",
+              "revision": 43,
+              "pulledAt": "2026-10-18T08:50:13.003Z"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "EV-20261018-085013-e882",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085013-3e7b",
+      "step": null,
+      "state": "FIXTURES_PULLED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:13.003Z",
+      "proof": "",
+      "note": "3",
+      "data": {
+        "sourceId": "NN-20261018-085012-215a",
+        "rows": [
+          {
+            "id": "GF-20261018-085013-3b8f",
+            "text": "No original golden workbench export supplied. Test fixtures are synthetic and clearly separated from this real issue pilot.",
+            "url": "",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.003Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "3",
+              "row": "GF-20261018-085012-7def",
+              "rowAt": "2026-10-18T08:50:12.994Z",
+              "revision": 44,
+              "pulledAt": "2026-10-18T08:50:13.003Z"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "EV-20261018-085013-d60b",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085013-3e7b",
+      "step": null,
+      "state": "FIXTURES_PULLED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:13.003Z",
+      "proof": "",
+      "note": "4",
+      "data": {
+        "sourceId": "NN-20261018-085012-215a",
+        "rows": [
+          {
+            "id": "GF-20261018-085013-a479",
+            "text": "No performance benchmark or approved visual golden supplied. Do not infer either from passing unit tests.",
+            "url": "",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.003Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "4",
+              "row": "GF-20261018-085012-b33e",
+              "rowAt": "2026-10-18T08:50:12.994Z",
+              "revision": 45,
+              "pulledAt": "2026-10-18T08:50:13.003Z"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "EV-20261018-085013-5d5d",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085013-3e7b",
+      "step": null,
+      "state": "FIXTURES_PULLED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:13.004Z",
+      "proof": "",
+      "note": "5",
+      "data": {
+        "sourceId": "NN-20261018-085012-215a",
+        "rows": [
+          {
+            "id": "GF-20261018-085013-2b50",
+            "text": "Acceptance checks cover no future-step locks; correction re-review; frozen sends; safe restore; fixture provenance; browser drafts and GitHub SHA conflict handling. Browser, independent review and deployed readback are distinct checks.",
+            "url": "",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:50:13.004Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "5",
+              "row": "GF-20261018-085012-51ce",
+              "rowAt": "2026-10-18T08:50:12.994Z",
+              "revision": 46,
+              "pulledAt": "2026-10-18T08:50:13.004Z"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "EV-20261018-085013-7370",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085013-3e7b",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:50:13.004Z",
+      "proof": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97",
+      "note": "9",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085013-53ae",
+          "text": "Rehearsal only: review predecessor fixtures and unresolved checks before proposing changes. No actual successor contribution is claimed.",
+          "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97",
+          "status": "NEEDS_REVIEW",
+          "at": "2026-10-18T08:50:13.004Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085436-690f",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:54:36.051Z",
+      "proof": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/100",
+      "note": "1b",
+      "data": {
+        "before": {
+          "id": "GF-20261018-085012-7f39",
+          "text": "PR not yet created at this checkpoint. Resolve after source publication.",
+          "url": "",
+          "status": "UNKNOWN",
+          "at": "2026-10-18T08:50:12.993Z",
+          "by": "Owner"
+        },
+        "after": {
+          "id": "GF-20261018-085012-7f39",
+          "text": "Draft PR #100 contains the standalone NextNudge implementation. Code basis: 52043a3d6871f7eb55698762cae228d3746b4732. Merge and deployed readback remain pending.",
+          "url": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/100",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:54:36.050Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085436-742c",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:54:36.051Z",
+      "proof": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247920530",
+      "note": "5",
+      "data": {
+        "before": null,
+        "after": {
+          "id": "GF-20261018-085436-4211",
+          "text": "Author-run validation: 17 Node tests PASS. The two dashboard navigation/poll-preservation assertions FAIL against base c83e1b3a and PASS against code basis 52043a3d. JS syntax checks pass. Browser QA NOT_RUN (Chromium absent); independent review and deployed GitHub save readback remain pending.",
+          "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/97#issuecomment-6247920530",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:54:36.051Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085436-c092",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:54:36.052Z",
+      "proof": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/100",
+      "note": "6b",
+      "data": {
+        "before": {
+          "id": "GF-20261018-085012-ffba",
+          "text": "Create source-bound PR, run integration checks, obtain independent review, and verify deployed GitHub Pages after authorized merge.",
+          "url": "",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.996Z",
+          "by": "Owner"
+        },
+        "after": {
+          "id": "GF-20261018-085012-ffba",
+          "text": "Draft PR #100 published. Remaining: exact-head CI result, independent review, authorized merge, browser QA and deployed snapshot readback.",
+          "url": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/100",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:54:36.051Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085436-e504",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085012-215a",
+      "step": null,
+      "state": "FIXTURE_RECORDED",
+      "by": "Owner",
+      "at": "2026-10-18T08:54:36.052Z",
+      "proof": "https://github.com/reallakshman19/CoordinatorLandingpage/actions/runs/39113211391",
+      "note": "7b",
+      "data": {
+        "before": {
+          "id": "GF-20261018-085012-e405",
+          "text": "Independent reviewer and production deployment are not yet available.",
+          "url": "",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:50:12.997Z",
+          "by": "Owner"
+        },
+        "after": {
+          "id": "GF-20261018-085012-e405",
+          "text": "Repository source is checkpointed. CI was observed queued/running for 52043a3d; no hosted PASS is claimed. Independent review and merge remain pending.",
+          "url": "https://github.com/reallakshman19/CoordinatorLandingpage/actions/runs/39113211391",
+          "status": "RECORDED",
+          "at": "2026-10-18T08:54:36.052Z",
+          "by": "Owner"
+        },
+        "approvalNote": ""
+      }
+    },
+    {
+      "id": "EV-20261018-085436-fdd2",
+      "project": "PRJ-20261018-085012-1225",
+      "run": "NN-20261018-085013-3e7b",
+      "step": null,
+      "state": "FIXTURES_PULLED",
+      "by": "Owner",
+      "at": "2026-10-18T08:54:36.053Z",
+      "proof": "",
+      "note": "1b",
+      "data": {
+        "sourceId": "NN-20261018-085012-215a",
+        "rows": [
+          {
+            "id": "GF-20261018-085436-8af5",
+            "text": "Draft PR #100 contains the standalone NextNudge implementation. Code basis: 52043a3d6871f7eb55698762cae228d3746b4732. Merge and deployed readback remain pending.",
+            "url": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/100",
+            "status": "NEEDS_REVIEW",
+            "at": "2026-10-18T08:54:36.053Z",
+            "by": "Owner",
+            "source": {
+              "project": "PRJ-20261018-085012-1225",
+              "run": "NN-20261018-085012-215a",
+              "heading": "1b",
+              "row": "GF-20261018-085012-7f39",
+              "rowAt": "2026-10-18T08:54:36.050Z",
+              "revision": 52,
+              "pulledAt": "2026-10-18T08:54:36.053Z"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
