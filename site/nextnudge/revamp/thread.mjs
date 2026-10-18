@@ -1,12 +1,19 @@
 // Canonical Markdown thread codec. Sent packets are length-framed to preserve exact bytes.
 export const THREAD_ID=/^NN-\d{8}-\d{6}-[a-f0-9]{4}$/;
 const MODES=new Set(['ground','task','correction','evidence','direction','close','amendment','reply']);
-const CHAT=/(?:https?:\/\/(?:[\w-]+\.)*(?:chatgpt\.com|chat\.openai\.com|claude\.ai|gemini\.google\.com|poe\.com|character\.ai|copilot\.microsoft\.com|perplexity\.ai)(?:[/:?#]|$)|https?:\/\/[^\s<>"']*(?:antigravity|\/conversations?\/|\/chats?\/))/i;
+const CHAT=/(?:^|[^\w.-])(?:(?:https?:\/\/)?(?:[\w-]+\.)*(?:chatgpt\.com\/(?:c|share)\/|chat\.openai\.com\/(?:c|share)\/|claude\.ai\/chat\/|aistudio\.google\.com\/prompts\/|gemini\.google\.com\/app\/|poe\.com\/chat\/|character\.ai\/chat\/|copilot\.microsoft\.com\/chats?\/|perplexity\.ai\/search\/)|https?:\/\/[^\s<>"']*(?:antigravity|\/conversations?\/|\/chats?\/))/i;
+const MARKER=/<!--\s*nn3:(?:header|move)\b/i;
 const clean=s=>typeof s==='string'&&s.length<90000;
 const line=s=>s.replace(/[\r\n]+/g,' ').trim();
 export function assertPublic(value) {
-  const scan=typeof value==='string'?value:JSON.stringify(value);
-  if(CHAT.test(scan))throw Error('Private chat URL found. Keep conversation links on this device.');
+  let scan=typeof value==='string'?value:JSON.stringify(value);
+  for(let depth=0;depth<4;depth++) {
+    if(CHAT.test(scan))throw Error('Private chat URL found. Keep conversation links on this device.');
+    let decoded;
+    try{decoded=decodeURIComponent(scan);}catch{break;}
+    if(decoded===scan)break;
+    scan=decoded;
+  }
 }
 export function validate(t) {
   if(!t||t.version!==3||!THREAD_ID.test(t.id)||!clean(t.title)||!t.title.trim()||
@@ -21,6 +28,7 @@ export function validate(t) {
        !clean(m.digest)||!clean(m.evidence)||!clean(m.gap)||!clean(m.decision)||
        !clean(m.archive)||!clean(m.note))throw Error('Invalid move');
     ids.add(m.id);
+    if(MARKER.test(m.packet))throw Error('Reserved thread metadata marker in packet');
     if(m.delivery==='sent'&&!m.packet&&!m.archive)throw Error('Sent move requires exact packet or archive reference');
     if(m.archive&&!m.archive.startsWith('site/nextnudge-data/workbench.json#'))throw Error('Invalid archive reference');
   }
@@ -64,6 +72,9 @@ function metadata(text,kind) {
 }
 export function parse(source) {
   if(typeof source!=='string'||source.length>2_000_000)throw Error('Invalid Markdown size');
+  // Git's Windows checkout can turn the outer Markdown framing into CRLF.
+  // Leave original LF-framed packet bytes unchanged.
+  if(source.includes('<!-- nn3:header\r\n'))source=source.replace(/\r\n/g,'\n');
   const heads=metadata(source,'header');
   if(heads.length!==1)throw Error('Thread header missing or duplicated');
   const h=heads[0].value;
@@ -105,8 +116,17 @@ export function archiveRun(run) {
 export function currentState(t) {
   if(activeIntent(t).hold)return 'Your move';
   const last=t.moves.at(-1);
-  if(last?.kind==='reply'&&t.moves.at(-2)?.kind==='close')return 'Done';
+  if(last?.kind==='reply'&&t.moves.at(-2)?.kind==='close'&&closureMet(t,t.moves.at(-2)))return 'Done';
   return last?.delivery==='sent'&&last.kind!=='reply'?'Waiting on agent':'Your move';
+}
+export function closureMet(t,move) {
+  if(move?.kind!=='close'||!move.note?.startsWith('OWNER_CLOSE_CHECKS:'))return false;
+  try{
+    const {criteria,checks}=JSON.parse(move.note.slice('OWNER_CLOSE_CHECKS:'.length));
+    const expected=activeIntent(t).doneWhen;
+    return expected.length>0&&JSON.stringify(criteria)===JSON.stringify(expected)&&
+      Array.isArray(checks)&&checks.length===expected.length&&checks.every(x=>x==='met');
+  }catch{return false;}
 }
 export function activeIntent(t) {
   const last=[...t.moves].reverse().find(m=>m.kind==='amendment'&&m.note.startsWith('OWNER_INTENT_CHANGE:'));
@@ -115,7 +135,8 @@ export function activeIntent(t) {
 }
 export function reconcile({checks,reply,decision,gap='',nudgeId,goal,criteria=[],agent='',method=''}) {
   if(!['continue','correct','request evidence','change direction','close'].includes(decision))throw Error('Choose a decision');
-  if(!Array.isArray(checks)||checks.some(x=>!['met','not met','unknown'].includes(x)))throw Error('Invalid checks');
+  if(!Array.isArray(checks)||checks.length!==criteria.length||
+     checks.some(x=>!['met','not met','unknown'].includes(x)))throw Error('Invalid checks');
   const missing=criteria.filter((x,i)=>checks[i]!=='met');
   const negatives=criteria.filter((x,i)=>checks[i]==='not met');
   const unknown=criteria.filter((x,i)=>checks[i]==='unknown');
@@ -139,5 +160,6 @@ export function reconcile({checks,reply,decision,gap='',nudgeId,goal,criteria=[]
     'COMPLETE covers this bounded task only, not the Owner outcome.',
     'Start your reply with ACK '+nudgeId+'.'].filter(Boolean).join('\n');
   assertPublic(packet);
-  return {kind,packet,gap:explanation};
+  return {kind,packet,gap:explanation,
+    ...(decision==='close'?{closure:{criteria:[...criteria],checks:[...checks]}}:{})};
 }
