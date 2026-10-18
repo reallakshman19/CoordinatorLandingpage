@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import {prepareSave,fingerprint,readRepository} from '../site/nextnudge/repository.mjs';
 import {validate} from '../site/nextnudge/schema.mjs';
 import {migrate} from '../site/nextnudge/migrate.mjs';
-const db=JSON.parse(fs.readFileSync(new URL('../site/nextnudge-data/workbench.json',import.meta.url)));
+const db=JSON.parse(fs.readFileSync(new URL('fixtures/nextnudge-issue97-pilot.json',import.meta.url)));
 function remote(value,sha='a'.repeat(40)) {
   return {ok:true,json:async()=>({sha,encoding:'base64',content:Buffer.from(JSON.stringify(value)).toString('base64')})};
 }
@@ -39,4 +39,9 @@ test('legacy migration removes future locks and preserves honest unknown times',
   assert.equal(migrated.runs[0].nodes[0].sentAt,null);
   old.runs[0].nodes[0].id='x" onclick="alert(1)';
   assert.throws(()=>migrate(old,db.profiles));
+});
+
+test('live repository data is schema-valid without pinning mutable run or event counts',()=>{
+  const live=JSON.parse(fs.readFileSync(new URL('../site/nextnudge-data/workbench.json',import.meta.url)));
+  assert.equal(validate(live),live);
 });
