@@ -151,7 +151,7 @@ test('rejecting clipboard exposes the exact read-only preselected chat packet an
   assert.equal(field.selected,2);
   assert.equal(field.value,expectedChat);
 
-  const exactJSON=JSON.stringify(db,null,2)+'\\n';
+  const exactJSON=JSON.stringify(db,null,2)+'\n';
   await action('github-prepare',{},ctx);
   const githubField=elements.get('#github-manual-json');
   assert.equal(githubField.value,exactJSON);
