@@ -103,6 +103,12 @@ def checked_context(api, branch, move_id, registry_sha, now):
         raise ClaimRefused("move_source_invalid")
     if move.get("basis", {}).get("registry_sha") != reg_sha:
         raise ClaimRefused("move_basis_stale")
+    for side, label in (("from", "sender"), ("to", "recipient")):
+        actor = move.get(side)
+        reason = next_move.eligibility_reason(
+            registry, actor.get("id8") if isinstance(actor, dict) else None)
+        if reason:
+            raise ClaimRefused(label + "_" + reason)
     try:
         ledger = _optional_contents(api, "logs/landing-live/moves.jsonl", branch)
     except ClaimRefused:

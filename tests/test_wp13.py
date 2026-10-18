@@ -12,6 +12,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
 import next_move as nm
 import build_data
+from tests.synthetic_historical_roster import historical_active_roster
 
 NOW=datetime(2026,10,16,16,0,tzinfo=timezone.utc)
 SHA="a"*40
@@ -254,6 +255,7 @@ class WP13PinnedBase(unittest.TestCase):
         project=root/"logs"/"landing-live"
         project.mkdir(parents=True)
         reg=json.loads((ROOT/"logs"/"landing-live"/"registry.json").read_text())
+        reg=historical_active_roster(reg, "6ad1a045")
         (project/"registry.json").write_text(json.dumps(reg))
         move_dir=project/"moves"
         move_dir.mkdir()

@@ -1,8 +1,9 @@
 """STATUS v2 and per-agent recorded evidence helpers."""
 import re
+from landing_build.retirement_guard import countable_evidence
 STATUS_RE = re.compile(
     r'STATUS v2\s*·\s*(?P<role>[^·]+?)\s*·\s*chat\s+(?:(?P<chat>[0-9a-f]{8})|n/a(?:\s+\([^)\n]*\))?)\s*·\s*working on\s+(?P<task>[^·]+?)\s*·\s*next\s+(?P<next>[^·]+?)\s*·\s*blocker\s+(?P<blocker>[^\n·]+)',
-    re.MULTILINE
+    re.MULTILINE | re.IGNORECASE
 )
 
 SUPERSEDED_RE = re.compile(
@@ -18,7 +19,8 @@ from landing_build.evidence_parse import (
 )
 
 def build_agent_evidence(thread: dict, project: str | None = None,
-                         chat_id8: str | None = None, shared: bool = False) -> list:
+                         chat_id8: str | None = None, shared: bool = False,
+                         retired: bool = False, retired_at: str | None = None) -> list:
     """Build a list of evidence blocks (with interleaved verdicts) from a thread."""
     items = []
     for c in thread.get('comments', []):
@@ -36,7 +38,16 @@ def build_agent_evidence(thread: dict, project: str | None = None,
             rep = re.search(r'replaces #(\d+)', body, re.IGNORECASE)
             if rep:
                 ev['replaces'] = int(rep.group(1))
-            items.append({'type': 'evidence', **ev})
+            entry = {'type': 'evidence', **ev}
+            if retired:
+                if countable_evidence(
+                        {'status': 'retired', 'retired_at': retired_at}, ts):
+                    entry.update(eligibility='ELIGIBLE', counts_for_go=True)
+                else:
+                    entry.update(eligibility='INELIGIBLE',
+                                 eligibility_reason='retired_actor_post',
+                                 counts_for_go=False)
+            items.append(entry)
             continue
 
         verd = parse_verdict(body, cid, ts)
@@ -57,7 +68,7 @@ def build_agent_evidence(thread: dict, project: str | None = None,
                 'comment_id': cid,
                 'ts': ts,
                 'role': sm.group('role').strip(),
-                'chat_id8': sm.group('chat'),
+                'chat_id8': sm.group('chat').casefold() if sm.group('chat') else None,
                 'task': sm.group('task').strip(),
                 'next': sm.group('next').strip(),
                 'blocker': sm.group('blocker').strip(),

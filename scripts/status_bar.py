@@ -6,6 +6,7 @@ records, including retirement history and conflicting identity declarations.
 """
 from datetime import datetime, timedelta, timezone
 import re
+from landing_build.retirement_guard import eligibility_reason, lease_released
 from landing_build.continuity import derive_continuity
 
 PROJECT_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$")
@@ -135,7 +136,7 @@ def normalize_roster(registry):
         key = f"{project}/workstream:{stream}/instance:{kind}:{index}"
         role = str(entry.get("role") or "unknown")
         state = str(entry.get("status") or entry.get("state") or "unknown")
-        retired = bool(entry.get("retired")) or state.lower().startswith("retired")
+        retired = bool(entry.get("retired")) or state.strip().casefold().startswith("retired")
         standby = kind == "standby" or "standby" in state.lower()
         record = {
             "key": key, "project": project,
@@ -200,9 +201,16 @@ def _authority(registry, row, now, uem):
         return {"state": "waiting", "reason": "standby_not_execution_authority"}
     if row.get("material_release") is False:
         return {"state": "blocked", "reason": "material_release_not_granted"}
+    # A released lease in *either* source list blocks even if _lease()
+    # finds no eligible grant in its preferred writer_leases collection.
+    if (row["instance_id8"] and
+            eligibility_reason(registry, row["instance_id8"]) == "lease_released"):
+        return {"state": "blocked", "reason": "writer_lease_released"}
     lease = _lease(registry, row)
     if not isinstance(lease, dict):
         return {"state": "unknown", "reason": "execution_grant_not_verified"}
+    if lease_released(lease):
+        return {"state": "blocked", "reason": "writer_lease_released"}
     recorded = lease.get("state", "")
     if any(token in str(recorded).upper() for token in ("RETIRED", "FROZEN", "STOP", "HOLD")):
         return {"state": "blocked", "reason": "writer_lease_not_active"}

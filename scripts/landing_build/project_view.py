@@ -82,7 +82,7 @@ def _wp10_decision_label(item):
 
 
 def _wp10_agent_status(value):
-    text = str(value or '').lower()
+    text = str(value or '').strip().casefold()
     for status in ('retired', 'standby', 'active', 'hold'):
         if text.startswith(status):
             return status

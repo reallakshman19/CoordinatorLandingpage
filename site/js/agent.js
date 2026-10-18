@@ -82,8 +82,13 @@ async function renderAgent(app, projectName, id8) {
     badges.appendChild(el('span', 'badge badge-grey', `gen ${agent.generation}`));
   }
 
-  // Action buttons
-  if (state.benchmarkMode || (state.projects.find(p => p.project === projectName)?.repository !== REPO &&
+  // A retired instance is read-only even if this project's input form exists.
+  const retiredInstance = agent.status === 'retired' || agent.retired === true;
+  if (retiredInstance) {
+    $('agent-action-buttons').style.display = 'none';
+    badges.appendChild(el('span', 'badge badge-red wp-v4-retired',
+      'RETIRED · Ground/Suggest unavailable'));
+  } else if (state.benchmarkMode || (state.projects.find(p => p.project === projectName)?.repository !== REPO &&
       !state.projects.find(p => p.project === projectName)?.is_benchmark &&
       !state.projects.find(p => p.project === projectName)?.benchmark_snapshot)) {
     $('agent-action-buttons').style.display = 'none';
@@ -127,6 +132,10 @@ async function renderAgent(app, projectName, id8) {
       header.appendChild(seq);
       header.appendChild(task);
       header.appendChild(statusBadge);
+      if (item.eligibility === 'INELIGIBLE') {
+        header.appendChild(el('span', 'badge badge-red wp-v4-ineligible',
+          'INELIGIBLE · retired agent · no GO/acceptance'));
+      }
       header.appendChild(el('span', 'badge badge-grey wp12-evidence-hosting',
         wp12HasHostedRun(item, owningRepo) ? 'hosted CI link claimed' : 'local only'));
       header.appendChild(ts);

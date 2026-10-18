@@ -14,6 +14,7 @@ import build_data
 import next_move
 from landing_build.continuity import assess_amendment_checkpoint
 from landing_build.project_intent import _amendments
+from landing_build.retirement_guard import return_recommendations
 
 SCHEMA = "next_move_evaluator.v1"
 PROJECT = "landing-live"
@@ -245,6 +246,7 @@ def evaluate(registry, view, agents, threads, now, actor, registry_sha,
     return {"schema": SCHEMA, "project": PROJECT, "repository": REPO,
             "at": now.isoformat(), "registry_sha": registry_sha,
             "read_only": True, "may_send": False,
+            "recommendations": return_recommendations(registry, threads),
             "pre_send_recheck": recheck, "pre_send_rechecks": checks,
             "heartbeat_proposal": {"state": "EVALUATED", "at": now.isoformat(),
                                    "by": actor},

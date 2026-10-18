@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import re
 
+from landing_build.retirement_guard import eligibility_reason, countable_evidence
 
 ID = re.compile(r"^NM-\d{8}-\d{6}-[0-9a-f]{4}$")
 ID8 = re.compile(r"^[0-9a-f]{8}$")
@@ -191,6 +192,12 @@ def validate_records(registry, raw_moves, rows, claims, now=None):
     for filename, value in sorted(raw_moves.items()):
         faults = schema(value, project, filename)
         if isinstance(value, dict):
+            for side, label in (("from", "sender"), ("to", "recipient")):
+                who = value.get(side)
+                reason = eligibility_reason(registry, who.get("id8") if isinstance(who, dict) else None)
+                if reason:
+                    faults.append(label + "_" + reason)
+        if isinstance(value, dict):
             mid = value.get("id")
             if mid in by_id:
                 faults.append("duplicate_move_id")
@@ -242,6 +249,8 @@ def validate_records(registry, raw_moves, rows, claims, now=None):
             state, at = row.get("state"), stamp(row.get("at"))
             if not at or (last_ts and at < last_ts) or not actor(row.get("by")):
                 problem = "transition_actor_or_timestamp_invalid"; break
+            if (reason := eligibility_reason(registry, row["by"]["id8"])):
+                problem = "transition_actor_" + reason; break
             if state not in FLOW.get(item["state"], set()):
                 problem = "transition_forbidden"; break
             if item["class"] == "Notice" and state == "APPROVED":
@@ -334,6 +343,7 @@ def task_cycle(agents, threads, moves, project, now=None):
     go = max(starts, key=lambda m: m["created_at"])
     since = stamp(go["created_at"])
     ids = {a.get("chat_id8") for a in agents}
+    by_agent = {a.get("chat_id8"): a for a in agents}
     issue_nums = {a.get("evidence_thread_num") for a in agents}
     # Import once per count, never inside the per-comment loop.
     from build_data import parse_task_evidence
@@ -349,7 +359,9 @@ def task_cycle(agents, threads, moves, project, now=None):
                 block = None
             if (block and block["project"] == project and block["chat_id8"] in ids
                     and stamp(row.get("created_at")) and
-                    stamp(row["created_at"]) >= since):
+                    stamp(row["created_at"]) >= since
+                    and countable_evidence(by_agent.get(block["chat_id8"], {}),
+                                           row["created_at"])):
                 seen[(thread.get("repository"), number, row.get("id"))] = stamp(
                     row["created_at"])
     n = len(seen)
@@ -488,6 +500,8 @@ def validate_input_request(registry, record, moves, provenance):
     found = next((m for m in moves if m.get("id") == move_id), None)
     if not found or found.get("state") != "PUBLISHED":
         return {"valid": False, "reason": "move_not_waiting_approval"}
+    if isinstance(by, dict) and (reason := eligibility_reason(registry, by.get("id8"))):
+        return {"valid": False, "reason": "approval_actor_" + reason}
     row = {"by": by, "grant_ref": payload.get("grant_ref")}
     problem, self_approved = _approval(found, row, criticality(registry), registry)
     if problem:

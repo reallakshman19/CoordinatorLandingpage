@@ -24,7 +24,7 @@ def scrub_chat_url(text: str) -> str:
 
 EVIDENCE_RE = re.compile(
     r'TASK EVIDENCE v2\s*·\s*(?P<project>[^·]+?)\s*·\s*(?P<role>[^·]+?)\s*·\s*chat\s+(?:(?P<chat>[0-9a-f]{8})|n/a(?:\s+\([^)\n]*\))?)\s*·\s*#(?P<seq>\d+)\s*·\s*(?P<ts>[^\n]+)',
-    re.MULTILINE
+    re.MULTILINE | re.IGNORECASE
 )
 
 
@@ -81,7 +81,7 @@ def parse_task_evidence(comment_body: str, comment_id: int, comment_ts: str) -> 
         'ts': comment_ts,
         'project': m.group('project').strip(),
         'role': m.group('role').strip(),
-        'chat_id8': m.group('chat'),
+        'chat_id8': m.group('chat').casefold() if m.group('chat') else None,
         'seq': int(m.group('seq')),
         'header_ts': m.group('ts').strip(),
         'task': field('Task'),
