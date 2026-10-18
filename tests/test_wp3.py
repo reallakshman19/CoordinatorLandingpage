@@ -109,6 +109,7 @@ class BaseCompatibleWP3(unittest.TestCase):
         self.assertIn("issues: write",nextnudge)
         self.assertNotIn("pages: write",nextnudge)
         self.assertIn("cancel-in-progress: false",nextnudge)
+        self.assertEqual(content_writers,["nextnudge-save.yml"])
         self.assertIn("group: landing-live-single-publisher-",workflow)
         self.assertIn("cancel-in-progress: false",workflow)
         self.assertNotIn("cancel-in-progress: true",workflow)
@@ -199,8 +200,24 @@ class WP3Additional(unittest.TestCase):
         self.assertEqual({p.name for p in workflows},
                          {"blank.yml","deploy.yml","landing-tests.yml","ultra-economy-tests.yml",
                           "nextnudge-save.yml"})
+        content_writers=[]
         for path in workflows:
             content=path.read_text()
+            if re.search(r'^\s*contents:\s*write\s*
+            self.assertIsNone(
+                re.search(r'^\s*group:\s*["\x27]?pages["\x27]?\s*$',
+                          content,re.MULTILINE),path.name)
+            if path.name!="deploy.yml":
+                self.assertNotIn("uses: actions/deploy-pages@",content)
+                self.assertNotIn("uses: actions/upload-pages-artifact@",content)
+        self.assertIn("group: landing-live-single-publisher-",
+                      (ROOT/".github/workflows/deploy.yml").read_text())
+
+
+if __name__=="__main__":
+    unittest.main(verbosity=2)
+,content,re.MULTILINE):
+                content_writers.append(path.name)
             self.assertIsNone(
                 re.search(r'^\s*group:\s*["\x27]?pages["\x27]?\s*$',
                           content,re.MULTILINE),path.name)
