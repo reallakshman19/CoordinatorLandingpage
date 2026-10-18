@@ -31,8 +31,41 @@ export function unpack(body) {
      !packet.delta||typeof packet.delta!=='object')throw Error('packet header is invalid');
   return packet;
 }
+// Only a prior, unreceipted Owner save can be superseded here. Newer issue
+// numbers may still be queued, so a running save must never close them.
+export const SUPERSEDED_RECEIPT=
+  'NEEDS RELOAD: this save was superseded before it ran. Nothing was written. Prepare a fresh save.';
+const RECEIPT=/^(?:SAVED:|NEEDS RELOAD:|REJECTED:)/;
+const RECEIPT_AUTHOR='github-actions[bot]';
+export async function sweepUnreceipted({owner,currentIssueNumber,listOpenIssues,
+  listComments,commentIssue,closeIssue}) {
+  if(!Number.isSafeInteger(currentIssueNumber))throw Error('Missing current issue number');
+  let swept=0;
+  for(let page=1;;page++) {
+    const issues=await listOpenIssues(page);
+    if(!Array.isArray(issues))throw Error('Invalid open issue listing');
+    if(!issues.length)break;
+    for(const candidate of issues) {
+      if(!ownerIssue(candidate,owner)||candidate.state!=='open'||
+         !Number.isSafeInteger(candidate.number)||candidate.number>=currentIssueNumber)continue;
+      let receipted=false;
+      for(let commentPage=1;;commentPage++) {
+        const comments=await listComments(candidate.number,commentPage);
+        if(!Array.isArray(comments))throw Error('Invalid issue comments');
+        if(comments.some(c=>c.user?.login===RECEIPT_AUTHOR &&
+          RECEIPT.test(c.body||''))) {receipted=true;break;}
+        if(!comments.length)break;
+      }
+      if(receipted)continue;
+      await commentIssue(candidate.number,SUPERSEDED_RECEIPT);
+      await closeIssue(candidate.number);
+      swept++;
+    }
+  }
+  return swept;
+}
 export async function applyIssue({issue,owner,readCurrent,writeCurrent,comment,close}) {
-  if(!ownerIssue(issue,owner))return 'IGNORED';
+  if(!ownerIssue(issue,owner)||issue.state==='closed')return 'IGNORED';
   let receipt,kind='REJECTED';
   try {
     const packet=unpack(issue.body);
@@ -101,6 +134,18 @@ export async function main() {
     comment:async(body)=>{await api('issues/'+number+'/comments',{method:'POST',body:JSON.stringify({body})});},
     close:async()=>{await api('issues/'+number,{method:'PATCH',body:JSON.stringify({state:'closed'})});}
   });
+  if(status!=='IGNORED') {
+    const swept=await sweepUnreceipted({
+      owner:repoOwner,currentIssueNumber:number,
+      listOpenIssues:page=>api('issues?state=open&labels=nextnudge-save&sort=created&direction=asc&per_page=100&page='+page),
+      listComments:(issueNo,page)=>api('issues/'+issueNo+'/comments?per_page=100&page='+page),
+      commentIssue:(issueNo,body)=>api('issues/'+issueNo+'/comments',{
+        method:'POST',body:JSON.stringify({body})}),
+      closeIssue:issueNo=>api('issues/'+issueNo,{
+        method:'PATCH',body:JSON.stringify({state:'closed'})})
+    });
+    console.log('Superseded older unreceipted Owner saves:',swept);
+  }
   console.log('NextNudge save result:',status);
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href) {
