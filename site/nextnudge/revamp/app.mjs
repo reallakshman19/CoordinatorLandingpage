@@ -62,7 +62,7 @@ function renderThread() {
     (hold?'<p class="hold">HOLD: '+esc(i.hold)+' — no further packets may be sent until the Owner changes this constraint.</p>':
       '<div class="actions"><button data-action="compose-ground">Ground</button>'+
       '<button data-action="compose-task">Task</button>'+
-      '<button data-action="compose-correction">Correction</button><button data-action="compose-close">Close</button>'+
+      '<button data-action="compose-correction">Correction</button><button data-action="review">Close via Reconcile</button>'+
       '<button data-action="review">Reconcile</button></div>')+
     '<label>Private chat link (device only) <input id="chat" type="url" placeholder="https://..." value="'+esc(chatLink(x.id))+'"></label>'+
     '<button data-action="save-chat">Keep link on device</button>'+
@@ -170,6 +170,7 @@ async function onAction(action,target) {
     append(m);return;
   }
   if(action.startsWith('compose-')) {
+    if(action==='compose-close'){state.view='review';state.draft=null;return render();}
     if(i.hold)throw Error('Owner HOLD prevents new packet');
     const kind=action.slice(8),id=freshId();
     state.draft={id,kind,packet:packet(id,kind,'Write one observable deliverable; name the source and return proof.')};
@@ -193,8 +194,15 @@ async function onAction(action,target) {
       catch {$('#fallback').hidden=false;$('#fallback').value=text;$('#fallback').select();notice('Clipboard denied; use selected manual-copy text.');}
       return;
     }
+    if(state.draft.kind==='close'){
+      const proof=state.draft.closure;
+      if(!proof||!i.doneWhen.length||JSON.stringify(proof.criteria)!==JSON.stringify(i.doneWhen)||
+         proof.checks.length!==i.doneWhen.length||!proof.checks.every(c=>c==='met'))
+        throw Error('Close requires Reconcile with every Owner done-when Met');
+    }
     if(!confirm('Confirm you manually sent this exact packet to the agent.'))return;
     const m=emptyMove(state.draft.id,state.draft.kind);m.packet=text;m.delivery='sent';m.decision=state.draft.kind;
+    if(m.kind==='close')m.note='OWNER_CLOSE_CHECKS:'+JSON.stringify(state.draft.closure);
     m.gap=state.draft.gap||'';append(m);return;
   }
   if(action==='github-save') {
