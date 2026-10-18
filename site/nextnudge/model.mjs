@@ -1,5 +1,4 @@
 import {id,now,utc,safeURL} from './identity.mjs';
-import {fingerprint} from './repository.mjs';
 import {emptyFixtures,fixtureChange,pullFixtures} from './fixtures.mjs';
 export const STATES=['ready','sent','submitted','accepted','revision'];
 export const TYPES=['new_requirement','ground','next_step','course_correction'];
@@ -65,8 +64,8 @@ export function statusChange(db,r,n,to,note='',by=r.sentBy||'Owner') {
   const from=n.status;n.status=to;
   event(db,r,n,'STATUS_CHANGED',note,'',{from,to},by);
 }
-export function copied(db,r,n,text) {
-  editable(r,n);n.copied={text,at:now()};event(db,r,n,'COPIED','Copied for manual delivery; not sent.');
+export function copied(db,r,n,text,sha256=null) {
+  editable(r,n);n.copied={text,at:now(),sha256};event(db,r,n,'COPIED','Copied for manual delivery; not sent.');
 }
 export function markSent(db,r,n) {
   editable(r,n);
