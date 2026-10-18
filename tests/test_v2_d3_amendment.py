@@ -75,9 +75,9 @@ class D3OwnerChangeAfterCheckpoint(unittest.TestCase):
         # may legitimately evolve, so comparing its bytes to this historical
         # snapshot would create a false regression. Git checkout CRLF is
         # tolerated only when its canonical LF blob matches the pinned SHA.
-        canonical = fixture.replace(b"\\r\\n", b"\\n")
+        canonical = fixture.replace(b"\r\n", b"\n")
         blob = hashlib.sha1(
-            b"blob " + str(len(canonical)).encode("ascii") + b"\\0" + canonical
+            b"blob " + str(len(canonical)).encode("ascii") + b"\0" + canonical
         ).hexdigest()
         self.assertEqual(blob, "bcb60336fe713a3473303a0b0e8090ea8280c0cb")
         with tempfile.TemporaryDirectory() as temp:
