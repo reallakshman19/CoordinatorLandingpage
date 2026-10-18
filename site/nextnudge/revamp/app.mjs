@@ -41,7 +41,7 @@ function renderThreads() {
     '<div class="archive"><details><summary>v2 Archive · read-only + Convert</summary>'+
     '<p>Original v2 database is retained unchanged. Historical statuses do not prove acceptance.</p>'+
     '<button data-action="archive-list">List v2 runs for conversion</button><div id="archive-runs"></div>'+
-    '<iframe title="Read-only historical NextNudge" src="v2.html"></iframe></details></div>'+
+    '<iframe title="Read-only historical NextNudge" src="v2.html" tabindex="-1" style="pointer-events:none"></iframe></details></div>'+
     '<p><button data-action="load-id">Load existing GitHub thread by ID</button> '+
     '<button data-action="import">Import Markdown thread</button></p>';
 }
