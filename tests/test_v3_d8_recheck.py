@@ -69,7 +69,8 @@ def evaluate_scenario(root, registry, sha, projection, view, agents, threads):
     with mock.patch("subprocess.run",
                     side_effect=AssertionError("evaluator attempted network/chat send")):
         return evaluator.evaluate(registry, view, agents, threads, AT, COORDINATOR,
-                                  sha, published=projection["next_move"], root=root)
+                                  sha, published=projection["next_move"], root=root,
+                                  amendment_checkpoint=projection.get("amendment_checkpoint"))
 
 
 class D8OwnerCorrectionInvalidatesQueuedMove(unittest.TestCase):
@@ -170,6 +171,131 @@ class D8OwnerCorrectionInvalidatesQueuedMove(unittest.TestCase):
             report = evaluate_scenario(root, reg, sha, proj, view, agents, threads)
             gate = report.get("pre_send_recheck") or {}
             self.assertNotEqual(gate.get("reason"), "unreconciled_owner_amendment")
+            self.assertEqual(gate.get("status"), "CLEAR")
+            self.assertEqual(gate.get("move_id"), MID)
+
+
+    def test_07_approved_not_yet_claimed_move_is_blocked(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root, _, _, reg, sha, proj, view, agents, threads = scenario(temp)
+            move, = view["moves"]
+            move["state"] = "APPROVED"
+            move["history"] = [x for x in move["history"]
+                               if x["state"] == "APPROVED"]
+            gate = evaluate_scenario(root, reg, sha, proj, view, agents,
+                                     threads)["pre_send_recheck"]
+            self.assertEqual(gate["status"], "BLOCKED")
+            self.assertEqual(gate["move_id"], MID)
+            self.assertEqual(gate["source"], SOURCE)
+            self.assertEqual(gate["amendment_at"], CORRECTED_AT)
+
+    def test_08_unreconciled_amendment_before_claim_is_not_d8_stale(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root, _, _, reg, sha, proj, view, agents, threads = scenario(temp)
+            # Still after the 21:00 checkpoint, but before CLAIMED at 21:02.
+            marker = proj["amendment_checkpoint"]["markers"][0]
+            marker["created_at"] = "2026-10-17T21:01:30Z"
+            gate = evaluate_scenario(root, reg, sha, proj, view, agents,
+                                     threads)["pre_send_recheck"]
+            self.assertEqual(gate["status"], "CLEAR")
+
+    def test_09_missing_amendment_timestamp_blocks_as_unknown(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root, _, _, reg, sha, proj, view, agents, threads = scenario(temp)
+            marker = proj["amendment_checkpoint"]["markers"][0]
+            marker["created_at"] = None
+            gate = evaluate_scenario(root, reg, sha, proj, view, agents,
+                                     threads)["pre_send_recheck"]
+            self.assertEqual(gate["status"], "UNKNOWN")
+            self.assertEqual(gate["source"], SOURCE)
+            self.assertEqual(gate["move_id"], MID)
+
+    def test_10_unknown_checkpoint_or_missing_context_fails_closed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root, _, _, reg, sha, proj, view, agents, threads = scenario(temp)
+            for amended in ({"status": "UNKNOWN", "reason": "amendment_time_unknown",
+                             "source": SOURCE, "markers": []},
+                            None, {}, {"status": "NOT_RECORDED", "markers": []}):
+                with self.subTest(marker=amended):
+                    proj["amendment_checkpoint"] = amended
+                    report = evaluate_scenario(root, reg, sha, proj, view, agents, threads)
+                    gate = report["pre_send_recheck"]
+                    self.assertEqual(gate["status"], "UNKNOWN")
+                    self.assertNotEqual(gate["status"], "CLEAR")
+
+    def test_11_cli_projection_guard_blocks_and_never_writes(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root, cache, out, _, _, _, _, _, _ = scenario(temp)
+            ledger = root / "logs" / PROJECT / "moves.jsonl"
+            saved = ledger.read_bytes()
+            with mock.patch("subprocess.run", side_effect=AssertionError("network attempted")):
+                with redirect_stdout(io.StringIO()):
+                    report = evaluator.main([
+                        "--root", str(root), "--cache-dir", str(cache),
+                        "--projection", str(out / f"project-{PROJECT}.json"),
+                        "--actor-role", "TeamCoordinator", "--actor-id8", "11111111",
+                        "--at", AT.isoformat()])
+            gate = report["pre_send_recheck"]
+            self.assertEqual(gate["status"], "BLOCKED")
+            self.assertEqual(gate["source"], SOURCE)
+            self.assertEqual(gate["move_id"], MID)
+            self.assertEqual(ledger.read_bytes(), saved)
+            self.assertFalse(report["may_send"])
+
+    def test_12_cli_fallback_uses_cache_only_when_projection_absent(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root, cache, out, _, _, proj, _, _, _ = scenario(temp)
+            data = out / f"project-{PROJECT}.json"
+            proj.pop("amendment_checkpoint")
+            data.write_text(json.dumps(proj))
+            ledger = root / "logs" / PROJECT / "moves.jsonl"
+            saved = ledger.read_bytes()
+            with mock.patch("subprocess.run", side_effect=AssertionError("network attempted")):
+                with redirect_stdout(io.StringIO()):
+                    report = evaluator.main([
+                        "--root", str(root), "--cache-dir", str(cache),
+                        "--projection", str(data),
+                        "--actor-role", "TeamCoordinator", "--actor-id8", "11111111",
+                        "--at", AT.isoformat()])
+            gate = report["pre_send_recheck"]
+            self.assertEqual(gate["status"], "BLOCKED")
+            self.assertEqual(gate["source"], SOURCE)
+            self.assertEqual(ledger.read_bytes(), saved)
+
+    def test_13_cli_missing_projection_and_missing_cache_unknown(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root, cache, out, _, _, proj, _, _, _ = scenario(temp)
+            data = out / f"project-{PROJECT}.json"
+            proj.pop("amendment_checkpoint")
+            data.write_text(json.dumps(proj))
+            (cache / "inbox-1.json").unlink()
+            with mock.patch("subprocess.run", side_effect=AssertionError("network attempted")):
+                with redirect_stdout(io.StringIO()):
+                    report = evaluator.main([
+                        "--root", str(root), "--cache-dir", str(cache),
+                        "--projection", str(data),
+                        "--actor-role", "TeamCoordinator", "--actor-id8", "11111111",
+                        "--at", AT.isoformat()])
+            self.assertEqual(report["pre_send_recheck"]["status"], "UNKNOWN")
+
+    def test_14_newer_qualified_checkpoint_clears_unreconciled_flag(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root, _, _, reg, sha, proj, view, agents, threads = scenario(temp)
+            proj["amendment_checkpoint"] = {"status": "RECONCILED",
+                "checkpoint_at": "2026-10-17T21:17:00Z", "markers": []}
+            gate = evaluate_scenario(root, reg, sha, proj, view, agents,
+                                     threads)["pre_send_recheck"]
+            self.assertEqual(gate["status"], "CLEAR")
+
+    def test_15_source_projection_pins_no_generic_readonly_shortcut(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root, _, _, reg, sha, proj, view, agents, threads = scenario(temp)
+            result = evaluate_scenario(root, reg, sha, proj, view, agents, threads)
+            self.assertEqual(result["pre_send_recheck"]["status"], "BLOCKED")
+            self.assertEqual(result["pre_send_recheck"]["reason"],
+                             "unreconciled_owner_amendment")
+            self.assertFalse(result["may_send"])
+            self.assertEqual(result.get("moves"), None)
 
 
 if __name__ == "__main__":
