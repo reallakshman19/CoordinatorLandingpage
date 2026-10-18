@@ -23,7 +23,7 @@ function dashboard() {
 }
 test('dashboard navigation registers NextNudge',async()=>{
   const h=dashboard();vm.runInContext('render=async()=>{}; init();',h.context);
-  assert(h.nav.children.some(n=>n.dataset.view==='nextnudge'&&n.textContent==='NextNudge'));
+  assert(h.nav.children.some(n=>n.dataset.view==='nextnudge'&&n.textContent==='NextNudge · Beta'));
 });
 test('dashboard refresh preserves an existing NextNudge frame and draft DOM',async()=>{
   const h=dashboard();await vm.runInContext('render()',h.context);assert.equal(h.clears(),0);

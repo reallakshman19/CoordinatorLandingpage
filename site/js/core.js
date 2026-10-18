@@ -261,7 +261,7 @@ async function render() {
 // ── Home view ──────────────────────────────────────────────
 
 function init() {
-  const nudgeTab = el('button', 'nav-tab', 'NextNudge');
+  const nudgeTab = el('button', 'nav-tab', 'NextNudge · Beta');
   nudgeTab.dataset.view = 'nextnudge';
   nudgeTab.setAttribute('role', 'tab');
   $('nav-tabs').appendChild(nudgeTab);
