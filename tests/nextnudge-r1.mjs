@@ -71,6 +71,11 @@ test('no private chat URL can be persisted, even if pasted in reply or packet',(
   assert.doesNotThrow(()=>assertPublic(x));
   x.moves[0].packet='https://claude.ai/chat/abc';
   assert.throws(()=>validate(x),/Private chat URL/);
+  for(const secret of ['https://chatgpt.com/share/secret','https://gemini.google.com/app/secret',
+    'https://claude.ai/chat/secret','https://poe.com/chat/secret']) {
+    x.moves[0].packet=secret;
+    assert.throws(()=>validate(x),/Private chat URL/,secret);
+  }
 });
 test('append-only delta refuses changed history and stale header',()=>{
   const old=example(),next=structuredClone(old);
