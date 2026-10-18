@@ -75,11 +75,17 @@ class D3OwnerChangeAfterCheckpoint(unittest.TestCase):
         # may legitimately evolve, so comparing its bytes to this historical
         # snapshot would create a false regression. Git checkout CRLF is
         # tolerated only when its canonical LF blob matches the pinned SHA.
-        canonical = fixture.replace(b"\r\n", b"\n")
-        blob = hashlib.sha1(
-            b"blob " + str(len(canonical)).encode("ascii") + b"\0" + canonical
-        ).hexdigest()
-        self.assertEqual(blob, "bcb60336fe713a3473303a0b0e8090ea8280c0cb")
+        def git_blob(data):
+            return hashlib.sha1(
+                b"blob " + str(len(data)).encode("ascii") + b"\0" + data
+            ).hexdigest()
+        pinned = "bcb60336fe713a3473303a0b0e8090ea8280c0cb"
+        blob = git_blob(fixture)
+        if blob != pinned:
+            # Only normalize a checkout conversion when it reproduces the
+            # *original* Git blob exactly; never silently rewrite the oracle.
+            blob = git_blob(fixture.replace(b"\r\n", b"\n"))
+        self.assertEqual(blob, pinned, "D3 fixture drift from copied Git blob")
         with tempfile.TemporaryDirectory() as temp:
             root, _, _ = prepared_snapshot(temp)
             self.assertEqual(
