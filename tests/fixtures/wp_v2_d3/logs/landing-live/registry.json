@@ -1,0 +1,240 @@
+{
+  "project": "landing-live",
+  "protocol": "Team protocol v3.2 (protocol/TEAM_PROTOCOL.md; adopted 17 Oct, #63 07cec2d1, Owner #1 6233626616)",
+  "repository": "reallakshman19/CoordinatorLandingpage",
+  "criticality": "normal",
+  "criticality_owner_words": "landing normal, proceed implementation (Owner, 16 Oct ~19:4x)",
+  "next_move": {"pilot": true, "approval_required": true, "spec": "protocol/NEXT_MOVE_v1.md", "owner_words": "review cycle is over. start planning and implement."},
+  "parent_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/21",
+  "updated": "2026-10-17T16:08:05Z",
+  "updated_by": "TC01a142d0; actual bounded workpack closure after provider merges, no roadmap closure or next-slice release",
+  "originals": [{"name": "F1 grade9-pilot frozen fixture", "path": "benchmarks/grade9-pilot-2026-10-15/MANIFEST.json", "sha": "06baec0edbc5dafafd8c679b0ca83f427adaa5a0", "sha256": "e7682d2aba0fe1a3ce0480977b62b44cf1b5c4e16418370824f2a252036ed562", "class": "ORIGINAL", "custody": "committed in repo; never edited; source docs/ROUTE_MAP.md Originals"}, {"name": "F2 imo-ab-test frozen fixture", "path": "benchmarks/imo-ab-test-2026-10-15/MANIFEST.json", "sha": "3cff580437e611bfc618b7865ce7a9a53f3dc597", "sha256": "62a2f28ac89f81487377a4af7f444b430ac341856c9e1bf558118b44ac6f5d41", "class": "PARTIAL", "custody": "committed in repo; no events.jsonl, provenance reconstructed (docs/ROUTE_MAP.md)"}],
+  "improvements": [{"id": "IMP-01", "title": "Existing page, core authority, native evidence, F1/F2 original fixtures", "author": "Owner #21", "disposition": "KEEP", "reason": "Preserves product baseline and causal proof", "revisit_if": "Material new Owner outcome", "implemented_in": null, "observed_result": null, "retain": true}, {"id": "IMP-02", "title": "Truthful receipt trace, stale/unknown boundary, generation attribution, one publisher", "author": "g1", "disposition": "ADOPTED", "reason": "Prevents false live/handled and wrong-agent conclusions", "revisit_if": "Regression/source/head change", "implemented_in": "WP-L2(b) PR #76 (unparsed evidence visible); WP-L7 PR #69-#71", "observed_result": null, "retain": true}, {"id": "IMP-03", "title": "JSON page feedback replaces Google Form/issue-first flow", "author": "Owner WP7/WP9", "disposition": "ADOPTED", "reason": "Fewer relays; real committed source and receipts", "revisit_if": "Genuine failure of chosen route", "implemented_in": null, "observed_result": null, "retain": true}, {"id": "IMP-04", "title": "Next Move approval/delivery states and evaluator (pilot scope)", "author": "OTM/TC plus reviews", "disposition": "ADOPTED", "reason": "Auditable who/why/authority; no automatic send", "revisit_if": "First authorized round trip", "implemented_in": null, "observed_result": null, "retain": true}, {"id": "IMP-05", "title": "Status bar three dimensions and UEM guard code (code only)", "author": "Owner WP16-18 GO, g2", "disposition": "ADOPTED", "reason": "Coverage/work/monitoring/authority kept separate", "revisit_if": "Source-backed active instance and reviewed grants", "implemented_in": null, "observed_result": null, "retain": true}, {"id": "IMP-06", "title": "Registry/handover/history index coherence", "author": "Q4/Q5", "disposition": "PROPOSED", "reason": "Prevents successor reconstructing stale state", "revisit_if": "OTM/Owner authorizes source publication", "implemented_in": null, "observed_result": null, "retain": false}, {"id": "IMP-07", "title": "Visible foreign-source rejection note", "author": "final independent review", "disposition": "ADOPTED", "reason": "Explain fail-closed missing agents", "revisit_if": "Next authorized maintenance unit", "implemented_in": "WP-L2(c) PR #77 (FOREIGN_REPOSITORY shown)", "observed_result": "foreign refs shown as FOREIGN_REPOSITORY, not dropped", "retain": true}, {"id": "IMP-08", "title": "Disposition of abbreviated END/unavailable-timer note", "author": "brief 2.6", "disposition": "PROPOSED", "reason": "Avoid wrong guide interpretation", "revisit_if": "Documentation scope approved", "implemented_in": null, "observed_result": null, "retain": false}, {"id": "IMP-09", "title": "Live UEM one-cycle pilot", "author": "WP18 runbook/Q5", "disposition": "PARKED", "reason": "Code success never opts a project in", "revisit_if": "Explicit Owner registry words and grants", "implemented_in": null, "observed_result": null, "retain": false}, {"id": "IMP-10", "title": "GitHub-pull task delivery", "author": "Owner", "disposition": "PARKED", "reason": "Decision reserved until after pilot", "revisit_if": "Pilot evidence and Owner decision", "implemented_in": null, "observed_result": null, "retain": false}, {"id": "IMP-11", "title": "Agent timer", "author": "Owner", "disposition": "PARKED", "reason": "One watcher selected; no native agent task proof", "revisit_if": "Owner exception plus fire and cancel proof", "implemented_in": null, "observed_result": null, "retain": false}, {"id": "IMP-12", "title": "Protocol freeze/v3 rollout and broad P1-P3", "author": "Owner", "disposition": "PARKED", "reason": "TEAM_PROTOCOL v2.3 remains final candidate", "revisit_if": "Owner readiness words", "implemented_in": null, "observed_result": null, "retain": false}, {"id": "IMP-13", "title": "Dash V2/new backend/database/replacement UI", "author": "Owner #21", "disposition": "REJECTED", "reason": "Duplicates architecture", "revisit_if": "Explicit Owner reversal", "implemented_in": null, "observed_result": null, "retain": false}, {"id": "IMP-14", "title": "Google Form/CSV first idea", "author": "superseded Owner WP7", "disposition": "REJECTED", "reason": "json-webpage route chosen", "revisit_if": "New evidence/Owner reversal", "implemented_in": null, "observed_result": null, "retain": false}],
+  "improvements_source": "docs/LANDING_LIVE_BRIEF.md section 2.6; filled by OwnerTeammember 18 Oct (#62 WP-L3 done-when)",
+  "control": {
+    "epoch": 2,
+    "current_coordinator": {"holder": "OwnerTeammember (Claude, acting TeamCoordinator; Codex TC 01a142d0 stood down)", "mode": "ACTING", "epoch": 2, "control_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6236724626", "effective_at": "2026-10-17T16:30:00Z", "verified": true},
+    "coordinator": "Codex (TeamCoordinator; onboarded in CL#16)",
+    "owner_words": "You will be Ownerteammember ... | Another Codex agent who is already on board in the landing page | (selected) Same Codex.",
+    "since": "2026-10-17T15:08+04:00",
+    "control_post": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187632",
+    "hold": null, "hold_history": [{"since":"2026-10-17 (Owner chat, Claude session bd6b17ad)","owner_words":"Hold. Stay read-in, do nothing until I say.","scope":"all projects","lifted_for":["phase 0 role-change records (\"proceed\")","P1 may start with the plan (\"go\" -> \"ok\")","landing-live operations (\"Approved\", #1 6233547571)"],"still_held":"nothing for landing-live; handover-master and v36-continuity stay held","source":"https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187495","lifts_on":"Owner words","landing_live_status":"operations lifted; TeamCoordinator acts after installing its graded skill (#16 6233544709)","new_agent_approved":"one landing implementer L1 g3 for P1 (\"ok\", #1 6233547571)","projection_corrected_at":"2026-10-17T16:39:48.000+04:00","lifted_for_this_project":"landing-live only; Owner #1/6233547571 and direct current first-workpack release #1/6233960298","lifted_source":"https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233547571","other_projects":"Common408/409 remain on their existing HOLDs; this landing registry does not lift them"},{"since": "2026-10-17T04:1x+04:00", "owner_words": "HOLD", "scope": "operational: no chat sends or coordinator cycles; read-only work and Owner-requested record/doc fixes allowed", "lifts_on": "Owner words (e.g. resume)", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6229575580", "previous": null, "lifted": "2026-10-17T09:09+04:00", "lifted_words": "No HOLD, continue"}],
+    "known_gap": "no independent checker inside the team; C15 needs an Owner-named checker",
+    "history": [{"epoch": 1, "coordinator": "Claude session (dual role with OwnerTeammember)", "owner_words": "read this issue .../issues/21 . improvise, lauch a new agent in your tab. you will be teamcoodinator and ownerteammember", "since": "2026-10-15T14:42+04:00", "control_post": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6190161629", "ended": "2026-10-17T15:08+04:00"}]
+  },
+  "roles": {"owner_teammember": "Claude session (role only; no sends to agent chats)", "team_coordinator": "Codex (TeamCoordinator epoch2); graded coordinator-protocol3.40.0 installed; landing-live-only operations resumed under #1 6233547571", "oracle": "Claude, acting Oracle (Owner: \"for now you step in shoes of oracle, authorized. oracle will review later\"); advice tagged [ORACLE · acting] to the TeamCoordinator only; source https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233265443", "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233187495"},
+  "workflow": {
+    "loop": [
+      "Coder6ad36e4d native evidence to #64, or TC unchanged NOT_POSTED relay; 01a149bf read-only history retained; predecessor #22",
+      "coordinator checks against GitHub",
+      "GO / FIX / HOLD",
+      "next slice"
+    ],
+    "current": "WP-L2(a) and WP16 bounded deliveries CLOSED: PR66 merged253feb9f then PR65 integrated/tested a737b697 and mergede7d975e4. Actual provider records and38/38 CI verified; e7 result tree equals tested a737 tree. OTM's local PR66 integration claim named6911892, actual merge parent8e065e4f includes later TC registry-only record; subsequent tested a737 incorporates253 and that parent. Historical claims preserved with this limitation. Coder6ad36e4d has no active product work/lease, read-only pending fresh scoped release. #62 broader roadmap OPEN; Common408/409 held; UEM parked.", "previous": "WP0-WP4 merged (#24-#28); next WP5 + F7 Owner round trip"
+  },
+  "agents": [{"alias": "L1 g5 Coder", "role": "coder", "chat_id8": "6ad405cc", "generation": 5, "status": "ACTIVE: WP-L6b (PR #86)", "native_route": "chatgpt-browser", "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/62", "assignment_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6243133548", "authority_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6236628630", "predecessor": "L1 g4 6ad36e4d (retired 2026-10-18 03:3x, chat full)", "timer": "NOT_ARMED"}, 
+    {
+      "alias": "L1 g4 Coder",
+      "role": "coder",
+      "chat_id8": "6ad36e4d", "browser_observation": {"result": "UP", "checked_at": "2026-10-17T18:19:32Z", "source_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6238460824", "verified": true},
+      "status": "RETIRED 2026-10-18 03:3x (chat reached max length after WP-L6, PR #85); successor g5 6ad405cc. Previously: WP-L2(a) and WP16 bounded workpacks DELIVERED/MERGED; no act",
+      "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64",
+      "native_route": "chatgpt-browser",
+      "instance_sha256": null,
+      "instance_identity_state": "Owner-designated id8 only; full private canonical URL/provider tab identity NOT_CAPTURED by TC; not derived from truncated id8",
+      "assignment_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6234121974",
+      "authority_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6235839429",
+      "direction_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233973647",
+      "execution_mode": "read_only",
+      "branch": "codex/landing-wp16-registry-roster-6ad36e4d",
+      "branch_state": "WP16 PR66 merged253feb9f; WP-L2(a) PR65 updated by OTM to a737b697 and merged e7d975e4; historical author branches/evidence retained",
+      "workpack_gate": "Both bounded implementation deliveries closed; no automatic next code slice, own HOLD or acceptance inferred. Fresh scoped release/lease required for further product work; current activity read-only/reference only.",
+      "onboarded": "First-workpack own source-bound TASK EVIDENCEv2/A14 published PR65/6234321102 and6234308430. WP16 own PR66 description names role/source/scope/RED plan; canonical WP16 plan/evidence NOT_YET_SEEN, not inherited completion.; WP16 actual unchanged attributed TASK EVIDENCE#3 relay62/6236023710 and own A14 PR66/6235967572 now published. These do not grant a next slice.",
+      "delivery_owner": "TC epoch2 owns further sends. Owner-approved OTM stand-in sent WP16 once (#1/6235891170); exception does not authorize future OTM sends. NEVER resend.",
+      "delivery_receipt": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6235891170",
+      "delivery_state": "SENT_TO_CHAT — attributed OTM stand-in receipt; source-bound own PR66 observed; native chat verification NOT_RUN",
+      "delivery_capability": "TC guarded ChatGPT-browser route NOT_RUN/UNVERIFIED; private full route/identity and native safety checks needed before any later send, no automatic fallback",
+      "publication_scope": "Own source-bound TASK EVIDENCEv2/STATUSv2 and A14 on #64; shared issue filters by actualid8/task/provider evidence identity",
+      "publication_capability": "EXERCISED via own PR65 TASK EVIDENCEv2/A14. PR66 source-bound description observed; registered own-issue route64 and attributed unchanged NOT_POSTED relay retained.",
+      "independent_reviewer": "Claude/OTM non-author review-routing owner; fresh exact-head engineering verdict still required, not Oracle advice",
+      "timer": "NOT_ARMED",
+      "generation": 4,
+      "previous_workpack": "PR65/479de09d7711e90d3b7a9a26f790ab26683a8ae5; Owner6234248920 superseded local StageA with connector authoring/hosted CI; source-bound report6234321102, non-author verdict6234361985. No automatic next slice.",
+      "current_pr": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/66",
+      "current_evidence": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/62#issuecomment-6236023710",
+      "current_non_author_verdict": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/66#issuecomment-6236009468",
+      "completed_workpacks": "WP16: report6236023710, non-author PASS6236009468, merge253feb9f74f194cda0e32aef67f5a16c9bd27ab8. WP-L2(a): author report6234321102 at479de09d, authorized OTM integration a737b6972fffdd4595d2ff64def2a4a66adabf11, actual38/38 CI, mergee7d975e4892b2b934ba73591c0090e4a81ae0681 with identical tested/result tree."
+    },
+    {
+      "alias": "Agent L1",
+      "role": "implementer",
+      "generation": 1,
+      "chat_id8": "6ad0adca",
+      "status": "retired 2026-10-16 07:4x (chat fails to load; changeover on Owner 'you are authorized to answer this tab/task')",
+      "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22",
+      "onboarded": "2026-10-15T14:44+04:00 DELIVERED"
+    },
+    {
+      "alias": "Agent L1",
+      "role": "implementer",
+      "generation": 2,
+      "chat_id8": "6ad1a045",
+      "status": "retired 2026-10-17 03:39 +04 (chat reached ChatGPT maximum conversation length; no standby existed). 1a prepared by OwnerTeammember acting as G1: #22 6226735852, corrected by a later #22 comment. Historical g3 NOT_SELECTED superseded: qualified g3 01a149bf now has its own fresh bounded lease; old g2 stays retired",
+      "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22",
+      "handover": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6207718018",
+      "onboarded": "2026-10-16T07:49+04:00 DELIVERED"
+    },
+    {
+      "alias": "Agent L1",
+      "role": "implementer",
+      "generation": 3,
+      "chat_id8": "01a149bf",
+      "status": "read-only — FTC-066; not the Owner-designated Coder, no first-workpack writer lease or product execution. Qualified1b/final2 history retained; prior Coder question superseded by Owner-selected6ad36e4d",
+      "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64",
+      "native_route": "codex-local",
+      "instance_sha256": "22730a77de353748ba751af60370f964764abc0f3cb359d33e11e0d8d913ea0c",
+      "assignment_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64",
+      "authority_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6234070001",
+      "handover": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233973647",
+      "handover_detail": {
+        "method": "BuddyRunner1.7",
+        "key": "landing-live-L1-g2-to-g3",
+        "phase": "2_CLOSED",
+        "phase2": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233973647",
+        "qualification": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233814152",
+        "oracle_advice": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233814426",
+        "phase1b": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233766025",
+        "phase1b_sha256": "89d8945b06958a3079f3cdcfadce34d736e0bd86b91758d8154cca315e398de9",
+        "qualification_request": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233774751",
+        "predecessor": "6ad1a045",
+        "phase1a": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6226735852",
+        "correction": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6229302006"
+      },
+      "execution_mode": "read_only",
+      "workpack_gate": "No clone/tests/code or product writes; former first-workpack Coder assignment withdrawn by FTC-066. Only read-only/reference role; new Coder is6ad36e4d",
+      "workpack_pickup_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6234004873",
+      "independent_reviewer": "Claude/OwnerTeammember, non-author review-routing owner; actual fresh exact-head engineering verdict pending, not the Oracle advice",
+      "onboarded": "Native1b QUALIFIED and final2 CLOSED as history; current role READ_ONLY, Coder assignment superseded, no lease",
+      "branch": "codex/landing-p1-chat-na-01a149bf",
+      "branch_state": "WITHDRAWN_NOT_CREATED; reserved01a149bf branch has no current writer grant",
+      "timer": "NOT_ARMED"
+    }
+  ],
+  "leases": [
+    {
+      "holder": "L1 g4 Coder6ad36e4d",
+      "branches": "codex/landing-wp16-registry-roster-6ad36e4d",
+      "paths": [
+        "tests/test_wp16.py",
+        "tests/wp16_browser_test.py"
+      ],
+      "granted": "Owner decision recorded 2026-10-17T15:34:08Z; TC projection recorded 2026-10-17T15:41:51.000Z",
+      "authority_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6235839429",
+      "delivery_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6235891170",
+      "source_sha": "7db153a558911a1d9f66159509d6f4f5b0190bc6",
+      "workpack": "#62 WP16 registry-derived roster fix, separate PR66",
+      "conditions": "Exact two tests only; derive global roster expectations from registry, retain pinned historical negative controls. RED-first then GREEN with actual execution proof, OTM non-author review. No production/module/workflow edit or automatic next slice. TC records applicability, not test execution or acceptance. Canonical own-task plan/SELF-CHECK/evidence remains required; PR description is a claim, not completed evidence.",
+      "independent_reviewer": "Claude/OTM non-author review; actual exact-head verdict required",
+      "ends_on": "Bounded WP16 candidate/report or Owner revocation/HOLD; no merge authority from this lease",
+      "observed_checkpoint": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/66/commits/d6c6093353a3c278fab2a42a49553c05d0151546",
+      "released": "2026-10-17T15:49:33Z",
+      "release_reason": "Bounded WP16 candidate/report end-condition satisfied by actual TASK EVIDENCE#3 relay6236023710 atGREENfcd7a46a. Readiness and authorized merge disposition are separate; no automatic product continuation."
+    },
+    {
+      "holder": "Coder6ad36e4d",
+      "branches": "codex/landing-p1-chat-na-6ad36e4d",
+      "paths": [
+        "scripts/build_data.py",
+        "tests/test_chat_na.py"
+      ],
+      "granted": "2026-10-17T16:55:29.000+04:00",
+      "authority_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6234070001",
+      "handover_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233973647",
+      "incumbent_stop_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6234004873",
+      "source_sha": "10970e956e7f7256676a33519f672507b774b905",
+      "source_parser_blob": "1bb4dd3cb7e10f036d65c633ecc8c567af3b0401",
+      "workpack": "#62 G1/WP-L2(a): CAPABILITY → conditional CHAT_NA",
+      "conditions": "Exclusive. First clean clone/current exact head and unchanged suites, NO product/tracked edits. If PASS, only EVIDENCE_RE/STATUS_RE two regexes no net growth plus new test. Any wider production edit or failed capability stops affected work; report precise gap. No broad split or Common work. New Coder actual own-instance source/task grounding and StageA PASS required before StageB; no inherited native01a149bf qualification. Owner's first package already delivered, not resent.",
+      "independent_reviewer": "Claude/OTM non-author review-routing owner; fresh exact-head verdict required before merge",
+      "ends_on": "First workpack candidate/report or Owner revocation/HOLD; no automatic next slice or lifetime expansion",
+      "remap_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6234121974",
+      "delivery_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6234094738",
+      "inherited_product_basis": "1a982c5a9a68df56f182ce3ce2e1e54da794c549",
+      "remapped_from": "AgentL1g3 01a149bf exact first-workpack lease only, prior grant retained as released history",
+      "released": "2026-10-17T15:41:51.000Z",
+      "release_reason": "First-workpack candidate/report end-condition satisfied by PR65 own report6234321102; WP16 is separately bounded, not continuation of original two-path lease.",
+      "owner_method_amendment_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6234248920"
+    },
+    {
+      "holder": "Agent L1 g3 01a149bf",
+      "branches": "codex/landing-p1-chat-na-01a149bf",
+      "paths": [
+        "scripts/build_data.py",
+        "tests/test_chat_na.py"
+      ],
+      "granted": "2026-10-17T16:39:48.000+04:00",
+      "authority_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233960298",
+      "handover_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/64#issuecomment-6233973647",
+      "incumbent_stop_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/22#issuecomment-6229302006",
+      "source_sha": "1a982c5a9a68df56f182ce3ce2e1e54da794c549",
+      "source_parser_blob": "1bb4dd3cb7e10f036d65c633ecc8c567af3b0401",
+      "workpack": "#62 G1/WP-L2(a): CAPABILITY → conditional CHAT_NA",
+      "conditions": "Exclusive. First clean clone/current exact head and unchanged suites, NO product/tracked edits. If PASS, only EVIDENCE_RE/STATUS_RE two regexes no net growth plus new test. Any wider production edit or failed capability stops affected work; report precise gap. No broad split or Common work.",
+      "independent_reviewer": "Claude/OTM non-author review-routing owner; fresh exact-head verdict required before merge",
+      "ends_on": "First workpack candidate/report or Owner revocation/HOLD; no automatic next slice or lifetime expansion",
+      "released": "2026-10-17T16:55:29.000+04:00",
+      "release_reason": "Owner FTC-066/067 remaps Coder to6ad36e4d; native01a149bf remains read-only, no product work performed per native report",
+      "superseded_by": "Coder6ad36e4d / codex/landing-p1-chat-na-6ad36e4d"
+    },
+    {
+      "holder": "Agent L1 g2",
+      "branches": "l1/*",
+      "paths": [
+        "scripts/*",
+        "site/*",
+        ".github/workflows/*",
+        "tests/**",
+        ".github/ISSUE_TEMPLATE/owner-input.yml"
+      ],
+      "granted": "2026-10-15T14:42+04:00",
+      "note": "WP0 is read-only; writes start only after GO in #22",
+      "remapped": "2026-10-16 changeover (§19 rule 20)", "released": "2026-10-17T03:39+04:00 holder chat ended; no current writer; a successor needs a fresh remap under §19 rule 20 and Owner/OTM words"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "OWNER-CODER-6ad36e4d-WP-L2a",
+      "owner_words": "coder: ChatGPT chat6ad36e4d (Owner designation recorded by OTM); paste it now (first package stand-in only)",
+      "source_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6234070001",
+      "delivery_exception_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6234077939",
+      "delivery_receipt": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6234094738",
+      "direct_instruction": "Owner explicitly instructed TC in current session to implement FTC-066/067, same two paths/stages/new branch and all further delivery",
+      "recorded_at": "2026-10-17T16:55:29.000+04:00",
+      "scope": "#62 WP-L2(a) only;01a149bf read-only; no counter/lifetime/scope reset; Common408/409 HOLD"
+    },
+    {
+      "id": "OWNER-P1-CHAT-NA-FIRST-WORKPACK",
+      "owner_words": "As G1, publish final phase 2 on #64 once, then release only the first workpack to L1 g3 under its fresh lease: a no-write clone-and-test capability check, then the \"chat n/a\" parser fix. Record in #1.",
+      "at": "2026-10-17T16:39:48.000+04:00",
+      "event_time": "Owner message time not exposed; this is actual TC record time",
+      "scope": "Existing L1 g3 only, #62 G1/WP-L2(a), exact staged lease above; no other grant renewed",
+      "source_ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6233960298"
+    },
+    {
+      "id": "MERGE-STANDING",
+      "owner_words": "go ahead. merge approved further.",
+      "at": "2026-10-15T18:0x+04:00",
+      "scope": "landing-live PRs after independent C1 PASS or verified FIX at exact head; revocable"
+    }
+  ],
+  "status_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/30",
+  "status_comment": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/30#issuecomment-6194870889",
+  "auto_response": [
+    {
+      "scope": "landing-live (all routine gates)",
+      "allowed": "yes",
+      "until": "forever",
+      "owner_words": "authorised for auto response for ever"
+    }
+  ]
+}

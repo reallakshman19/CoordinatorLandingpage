@@ -1,0 +1,15 @@
+{
+  "number": 30,
+  "repository": "reallakshman19/CoordinatorLandingpage",
+  "html_url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/30",
+  "title": "landing-live coordinator checkpoint · synthetic snapshot",
+  "comments": [
+    {
+      "id": 990000000,
+      "created_at": "2026-10-17T21:00:00Z",
+      "updated_at": "2026-10-17T21:00:00Z",
+      "author_association": "OWNER",
+      "body": "COORDINATOR RECEIPT · landing-live · epoch 2 · 2026-10-17T21:00:00Z\nCoordinator last completed cycle: 2026-10-17T21:00:00Z\n[SYNTHETIC D3 CHECKPOINT — NOT LIVE]"
+    }
+  ]
+}

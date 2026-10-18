@@ -198,7 +198,7 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
         project_data['next_move'] = next_view
         project_data['is_benchmark'] = is_benchmark
         if not is_benchmark:
-            project_data.update(project_intake(project_name, registry, lineage_snapshot, inbox, (_cache / 'inbox-1.json').is_file(), owner_json.REPO))
+            project_data.update(project_intake(project_name, registry, lineage_snapshot, inbox, (_cache / 'inbox-1.json').is_file(), owner_json.REPO, project_data.get('last_cycle_at')))
             v36 = scoreboard_project(root, project_name, registry, project_data)
             if v36 is not None:
                 project_data['v36_scoreboard'] = v36
@@ -276,7 +276,7 @@ def build_all(root: Path, out_dir: Path, benchmark_dirs: list[Path] | None = Non
             'next_move': pd['next_move'],
             **({'v36_scoreboard': pd['v36_scoreboard']}
                if 'v36_scoreboard' in pd else {}),
-            **({k: pd[k] for k in ('intent', 'amendments')} if not pd['is_benchmark'] else {}),
+            **({k: pd[k] for k in ('intent', 'amendments', 'amendment_checkpoint')} if not pd['is_benchmark'] else {}),
             'status_bar': status_by_project[pd['project']],
             'control': pd['registry']['control'],
             'workflow': pd['registry']['workflow'],

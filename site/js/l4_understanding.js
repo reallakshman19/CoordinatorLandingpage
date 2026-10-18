@@ -52,6 +52,26 @@ async function renderL4Understanding(app, name) {
       ' of ' + String(sourceAmendments.total_matching || 'UNKNOWN') + ' matching records'));
   }
   box.appendChild(inbox);
+  const checkpoint = p.amendment_checkpoint || detail.amendment_checkpoint;
+  if (checkpoint?.status === 'UNRECONCILED') {
+    const warning = el('section', 'l4-checkpoint-alert');
+    warning.appendChild(el('strong', '', 'UNRECONCILED · Owner amendment after checkpoint'));
+    for (const item of (checkpoint.markers || [])) {
+      const row = el('div', 'l4-checkpoint-row');
+      row.appendChild(el('p', '', String(item.text || 'UNKNOWN')));
+      l4Line(row, 'Amendment time', item.created_at);
+      l4Line(row, 'Latest completed checkpoint', item.checkpoint_at);
+      l4Link(row, 'Reconcile this amendment source', item.source, REPO);
+      warning.appendChild(row);
+    }
+    box.appendChild(warning);
+  } else if (checkpoint?.status === 'UNKNOWN') {
+    const warning = el('section', 'l4-checkpoint-alert');
+    l4Unknown(warning, 'Amendment/checkpoint reconciliation');
+    l4Line(warning, 'Reason', checkpoint.reason);
+    l4Link(warning, 'Unverified source', checkpoint.source, REPO);
+    box.appendChild(warning);
+  }
   const intent = reg.workflow?.owner_words || p.workflow?.owner_words;
   if (l4Known(intent)) l4Line(box, 'Recorded Owner/workflow intent', intent);
   else l4Unknown(box, 'Owner intent');
