@@ -5,6 +5,7 @@ accept an unrelated 30-minute freshness timeout as detecting the Owner change.
 """
 from datetime import datetime, timezone
 import json
+import hashlib
 from pathlib import Path
 import shutil
 import sys
@@ -67,9 +68,30 @@ def source_linked_stale(project, status):
 
 class D3OwnerChangeAfterCheckpoint(unittest.TestCase):
     def test_01_registry_is_a_copy_and_cached_sources_are_temporally_ordered(self):
-        source = (ROOT / "logs" / PROJECT / "registry.json").read_bytes()
-        self.assertEqual((FIXTURE / "logs" / PROJECT / "registry.json").read_bytes(),
-                         source, "D3 must not amend the real registry")
+        real_path = ROOT / "logs" / PROJECT / "registry.json"
+        real_before = real_path.read_bytes()
+        fixture = (FIXTURE / "logs" / PROJECT / "registry.json").read_bytes()
+        # The immutable source blob is the custody oracle. The live registry
+        # may legitimately evolve, so comparing its bytes to this historical
+        # snapshot would create a false regression. Git checkout CRLF is
+        # tolerated only when its canonical LF blob matches the pinned SHA.
+        def git_blob(data):
+            return hashlib.sha1(
+                b"blob " + str(len(data)).encode("ascii") + b"\0" + data
+            ).hexdigest()
+        pinned = "bcb60336fe713a3473303a0b0e8090ea8280c0cb"
+        blob = git_blob(fixture)
+        if blob != pinned:
+            # Only normalize a checkout conversion when it reproduces the
+            # *original* Git blob exactly; never silently rewrite the oracle.
+            blob = git_blob(fixture.replace(b"\r\n", b"\n"))
+        self.assertEqual(blob, pinned, "D3 fixture drift from copied Git blob")
+        with tempfile.TemporaryDirectory() as temp:
+            root, _, _ = prepared_snapshot(temp)
+            self.assertEqual(
+                (root / "logs" / PROJECT / "registry.json").read_bytes(), fixture)
+        self.assertEqual(real_path.read_bytes(), real_before,
+                         "D3 fixture test must never edit the real registry")
         inbox = json.loads((FIXTURE / "cache" / "inbox-1.json").read_text())
         self.assertEqual(len(inbox), 1)
         self.assertEqual(inbox[0]["id"], AMENDMENT_ID)

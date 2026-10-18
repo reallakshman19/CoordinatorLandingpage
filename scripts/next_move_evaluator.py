@@ -12,6 +12,8 @@ import sys
 
 import build_data
 import next_move
+from landing_build.continuity import assess_amendment_checkpoint
+from landing_build.project_intent import _amendments
 
 SCHEMA = "next_move_evaluator.v1"
 PROJECT = "landing-live"
@@ -143,8 +145,70 @@ def _eligible_signal(registry, agents, threads, view, now, root=None):
     return triggers
 
 
+def _pre_send_recheck(view, amendment_checkpoint):
+    """D8: read-only, source-bound check of pending dispatches before send.
+
+    Project capture being read-only is not a recheck. The caller supplies the
+    already projected D3 checkpoint; neither this check nor evaluate() fetches.
+    """
+    moves = [m for m in view.get("moves", []) if isinstance(m, dict)
+             and m.get("class") == "Dispatch"
+             and m.get("state") in ("CLAIMED", "APPROVED")]
+    if not moves:
+        return {"status": "NOT_APPLICABLE", "reason": "no_pre_send_move"}, []
+    check = amendment_checkpoint if isinstance(amendment_checkpoint, dict) else {}
+    state = check.get("status")
+    checks = []
+    for move in moves:
+        move_id = move.get("id")
+        entry = {"move_id": move_id, "move": move_id,
+                 "status": "UNKNOWN", "reason": "amendment_context_unknown",
+                 "source": check.get("source"), "amendment_at": None}
+        transitions = [row for row in move.get("history", [])
+                       if isinstance(row, dict) and
+                       row.get("state") == move.get("state")]
+        claim_at = next_move.stamp(transitions[-1].get("at")) if transitions else None
+        if claim_at is None:
+            entry["reason"] = "approval_or_claim_time_unknown"
+        elif state in ("NONE_FOUND", "RECONCILED"):
+            entry.update(status="CLEAR", reason="no_new_unreconciled_amendment")
+        elif state == "UNRECONCILED":
+            records = check.get("markers")
+            if not isinstance(records, list) or not records:
+                entry["reason"] = "unreconciled_records_unknown"
+            else:
+                later, unknown = [], []
+                for row in records:
+                    if not isinstance(row, dict):
+                        unknown.append({"source": check.get("source")})
+                        continue
+                    created = next_move.stamp(row.get("created_at"))
+                    if created is None:
+                        unknown.append(row)
+                    elif created > claim_at:
+                        later.append((created, row))
+                if later:
+                    created, latest = max(later, key=lambda pair: pair[0])
+                    entry.update(status="BLOCKED",
+                                 reason="unreconciled_owner_amendment",
+                                 source=latest.get("source") or check.get("source"),
+                                 amendment_at=latest.get("created_at"))
+                elif unknown:
+                    entry.update(reason="amendment_time_unknown",
+                                 source=unknown[0].get("source") or check.get("source"))
+                else:
+                    entry.update(status="CLEAR", reason="no_amendment_newer_than_move")
+        elif state == "UNKNOWN":
+            entry["reason"] = check.get("reason") or "amendment_time_unknown"
+        checks.append(entry)
+    # A proven block outranks unknown, which outranks a clear. All candidates
+    # remain available for independent inspection, not just the first move.
+    rank = {"BLOCKED": 0, "UNKNOWN": 1, "CLEAR": 2}
+    return min(checks, key=lambda row: rank[row["status"]]), checks
+
+
 def evaluate(registry, view, agents, threads, now, actor, registry_sha,
-             published=None, root=None):
+             published=None, root=None, amendment_checkpoint=None):
     if (registry.get("project") != PROJECT or registry.get("repository") != REPO
             or not (registry.get("next_move") or {}).get("pilot")):
         raise ValueError("WP15 is restricted to the registered landing-live pilot")
@@ -177,9 +241,11 @@ def evaluate(registry, view, agents, threads, now, actor, registry_sha,
         notices.append({"signal": signal, "kind": kind, "source_at": source_at,
                         "detail": detail, "status": status})
     observed = snapshot(view)
+    recheck, checks = _pre_send_recheck(view, amendment_checkpoint)
     return {"schema": SCHEMA, "project": PROJECT, "repository": REPO,
             "at": now.isoformat(), "registry_sha": registry_sha,
             "read_only": True, "may_send": False,
+            "pre_send_recheck": recheck, "pre_send_rechecks": checks,
             "heartbeat_proposal": {"state": "EVALUATED", "at": now.isoformat(),
                                    "by": actor},
             "heartbeat_committed": False,
@@ -241,9 +307,20 @@ def main(argv=None):
                  and a["evidence_head_status"].get("current_head")}
     latest = next_move.load_project_moves(root / "logs" / PROJECT, raw, agents, threads,
             now=at, registry_sha=sha, evidence_heads=own_heads)
+    if "amendment_checkpoint" in projection:
+        # A present projection is the authoritative captured D3 snapshot.
+        amendment_checkpoint = projection["amendment_checkpoint"]
+    else:
+        # Older project projections have no D3 field. Reuse only locally
+        # captured #1 comments; absence/error stays UNKNOWN, never CLEAR.
+        inbox = next_move.load(cache / "inbox-1.json")
+        amended = _amendments(PROJECT, inbox, isinstance(inbox, list), REPO)
+        amendment_checkpoint = assess_amendment_checkpoint(
+            amended, projection.get("last_cycle_at"))
     report = evaluate(raw, latest, agents, threads, at,
                       {"role":opts.actor_role, "id8":opts.actor_id8}, sha,
-                      projection.get("next_move"), root=root)
+                      projection.get("next_move"), root=root,
+                      amendment_checkpoint=amendment_checkpoint)
     encoded = json.dumps(report, indent=2, ensure_ascii=False, sort_keys=True)
     if opts.output:
         opts.output.parent.mkdir(parents=True, exist_ok=True)
