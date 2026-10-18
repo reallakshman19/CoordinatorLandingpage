@@ -84,7 +84,13 @@ test('one-click encoded issue URL is measured at actual length',async()=>{
   const x=example();x.moves.push(move());
   const packet=delta(x,null,null),url=await issueUrl(packet);
   assert.ok(url.length<=7500);assert.match(url,/nextnudge-thread-save/);
-  console.log('MAX_SAVE_URL_CHARS='+url.length);
+  const db=JSON.parse(fs.readFileSync(new URL('workbench.json',root),'utf8'));
+  const historical=db.runs.find(r=>r.id==='NN-20261018-171656-66d2');
+  const realP2=historical.nodes.find(n=>n.id==='NN-20261018-181514-e812').sentText;
+  const large=example();large.moves.push(move(M,'task',realP2));
+  const actual=await issueUrl(delta(large,null,null));
+  assert.ok(actual.length<=7500,'Actual pilot packet does not fit one-click save');
+  console.log('MAX_SAVE_URL_CHARS='+Math.max(url.length,actual.length));
   const body=decodeURIComponent(url.split('&body=')[1]);
   assert.equal(unpack(body).id,ID);
 });
