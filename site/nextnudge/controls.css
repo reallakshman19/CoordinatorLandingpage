@@ -1,0 +1,201 @@
+.composer {
+  border-top:1px solid var(--line);
+  padding:13px 24px;
+  background:white
+}
+.composer-top {
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:8px;
+  font-size:10px;
+  color:var(--muted)
+}
+.composer-top select {
+  width:auto;
+  font-size:10px;
+  padding:3px 7px
+}
+.composer textarea {
+  font-size:12px;
+  min-height:65px;
+  max-height:130px
+}
+.composer input {
+  font-size:11px;
+  margin-top:6px;
+  padding:6px 9px
+}
+.actions {
+  display:flex;
+  gap:7px;
+  align-items:center;
+  margin-top:9px;
+  flex-wrap:wrap
+}
+.actions button {
+  font-size:11px;
+  padding:7px 11px
+}
+.actions .primary {
+  margin-left:auto
+}
+.save {
+  font-size:10px;
+  color:var(--muted)
+}
+footer {
+  text-align:center;
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.6;
+  padding:8px 0 20px
+}
+#notice:not(:empty) {
+  padding:12px 15px;
+  background:#fff0cf;
+  border:1px solid #e8d2a7;
+  border-radius:8px;
+  margin-bottom:16px
+}
+dialog {
+  border:1px solid var(--line);
+  border-radius:15px;
+  width:min(440px,92vw);
+  padding:28px;
+  color:inherit
+}
+dialog::backdrop {
+  background:#233c3066
+}
+dialog h2 {
+  font:700 22px Manrope,sans-serif;
+  margin:12px 0 24px
+}
+.protocol-options {
+  display:flex;
+  gap:10px
+}
+.protocol-options label {
+  font-weight:400
+}
+.protocol-options input {
+  width:auto;
+  margin-right:5px
+}
+.prepare {
+  padding:22px;
+  overflow:auto
+}
+.prepare label {
+  margin-bottom:16px
+}
+.prepare .hint {
+  font-size:11px
+}
+.locked-card {
+  text-align:center;
+  margin:30px;
+  padding:25px;
+  background:#f4f6f0;
+  border-radius:12px;
+  color:#788575
+}
+
+@media(max-width:850px) {
+  main {
+  padding:24px 16px
+}
+.top {
+  padding:0 16px
+}
+.brand small,.prototype {
+  display:none
+}
+.top>button {
+  margin-left:auto
+}
+h1 {
+  font-size:25px
+}
+.workbench {
+  grid-template-columns:170px minmax(0,1fr)
+}
+.context {
+  padding-left:22px
+}
+.message {
+  max-width:94%
+}
+.conversation,.composer,.stage-head,.guide {
+  padding-left:15px;
+  padding-right:15px
+}
+.run-meta {
+  display:none
+}
+.intro p {
+  font-size:12px
+}
+.step {
+  font-size:11px
+}
+
+}
+
+@media(max-width:560px) {
+  .workbench {
+  display:flex;
+  flex-direction:column;
+  height:780px
+}
+.tree {
+  max-height:140px;
+  border-bottom:1px solid var(--line);
+  border-right:0;
+  padding:8px;
+  flex-shrink:0
+}
+.tree h3,.legend {
+  display:none
+}
+.step {
+  display:inline-flex;
+  width:auto;
+  margin:2px;
+  font-size:10px;
+  padding:7px
+}
+.step.child {
+  width:auto;
+  margin-left:5px
+}
+.workspace {
+  flex:1
+}
+.intro {
+  gap:10px
+}
+.intro h1 {
+  font-size:23px
+}
+.intro>button {
+  white-space:nowrap
+}
+.run>summary {
+  padding:16px 12px;
+  gap:7px
+}
+.run-title {
+  font-size:13px
+}
+.context {
+  padding:0 15px 13px
+}
+.toolbar .view {
+  margin-left:0
+}
+.check {
+  flex-wrap:wrap
+}
+
+}
