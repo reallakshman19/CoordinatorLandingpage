@@ -49,6 +49,11 @@ def run(artifact):
                           "(nodes)=>nodes.map(n=>n.href).join(' ')" ))
                 check("D3_NOT_ERASED_BY_OLD_INTENT", "synthetic root intent" not in content.lower()
                       or CHANGED_INTENT in content)
+                check("D3_RECONCILE_MARKER_VISIBLE",
+                      "amendment after checkpoint: reconcile before continuing"
+                      in content)
+                check("D3_RECONCILE_MARKER_SOURCE_LINKED", bool(
+                    view.locator(".l4-checkpoint-alert a[href='" + SOURCE + "']").count()))
                 check("D3_NO_BROWSER_ERRORS", not errors)
                 browser.close()
         finally:
