@@ -1,6 +1,6 @@
 // Canonical Markdown thread codec. Sent packets are length-framed to preserve exact bytes.
 export const THREAD_ID=/^NN-\d{8}-\d{6}-[a-f0-9]{4}$/;
-const MODES=new Set(['ground','task','correction','evidence','direction','close','amendment']);
+const MODES=new Set(['ground','task','correction','evidence','direction','close','amendment','reply']);
 const CHAT=/(?:https?:\/\/[^\s<>"')\]]*(?:chatgpt\.com\/c\/|chat\.openai\.com|claude\.ai\/chat|gemini\.google\.com\/app|antigravity|poe\.com\/chat|\/conversation\/|\/chats?\/))/i;
 const clean=s=>typeof s==='string'&&s.length<90000;
 const line=s=>s.replace(/[\r\n]+/g,' ').trim();
@@ -104,8 +104,13 @@ export function archiveRun(run) {
 export function currentState(t) {
   if(t.hold)return 'Your move';
   const last=t.moves.at(-1);
-  if(last?.kind==='close'&&last.delivery==='sent'&&last.returnLine)return 'Done';
-  return last?.delivery==='sent'&&!last.returnLine?'Waiting on agent':'Your move';
+  if(last?.kind==='reply'&&t.moves.at(-2)?.kind==='close')return 'Done';
+  return last?.delivery==='sent'&&last.kind!=='reply'?'Waiting on agent':'Your move';
+}
+export function activeIntent(t) {
+  const last=[...t.moves].reverse().find(m=>m.kind==='amendment'&&m.note.startsWith('OWNER_INTENT_CHANGE:'));
+  if(!last)return {goal:t.goal,doneWhen:t.doneWhen,inScope:t.inScope,outScope:t.outScope,hold:t.hold};
+  try{return {...t,...JSON.parse(last.note.slice('OWNER_INTENT_CHANGE:'.length))};}catch{return t;}
 }
 export function reconcile({checks,reply,decision,gap='',nudgeId,goal,criteria=[],agent='',method=''}) {
   if(!['continue','correct','request evidence','change direction','close'].includes(decision))throw Error('Choose a decision');
