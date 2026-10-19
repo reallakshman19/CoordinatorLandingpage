@@ -3,7 +3,7 @@ export const THREAD_ID=/^NN-\d{8}-\d{6}-[a-f0-9]{4}$/;
 const MODES=new Set(['ground','task','correction','evidence','direction','close','amendment','reply']);
 // Match the service HOST token, regardless of message punctuation or real newlines.
 // A plain domain mention (no path/query/fragment) is not a conversation link.
-const CHAT=/(?<![a-z0-9-])(?:[a-z0-9-]+\.)*(?:chatgpt\.com|chat\.openai\.com|claude\.ai|gemini\.google\.com|aistudio\.google\.com|antigravity\.google\.com|copilot\.microsoft\.com|chat\.mistral\.ai|grok\.com|chat\.deepseek\.com|poe\.com|character\.ai|perplexity\.ai)(?::\d+)?(?=[/?#])/;
+const CHAT=/(?<![a-z0-9-])(?:chatgpt\.com|chat\.openai\.com|claude\.ai|gemini\.google\.com|aistudio\.google\.com|antigravity\.google\.com|copilot\.microsoft\.com|chat\.mistral\.ai|grok\.com|chat\.deepseek\.com|poe\.com|character\.ai|perplexity\.ai)(?::\d+)?(?=[/?#])/;
 const ZW=/[\u200B-\u200D\u2060\uFEFF]/g;
 function decodeSafe(input) {
   let s=input;
