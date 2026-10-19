@@ -3,8 +3,12 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>
   ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 export function ackTag(packet) {
-  const tags=[...packet.matchAll(/(?:^|\r?\n)[ \t]*(?:Start your reply with[ \t]+)?ACK[ \t]+([A-Za-z0-9][A-Za-z0-9_-]*(?:\.[A-Za-z0-9_-]+)*)(?=[\s.,;:!?)]|$)/g)]
-    .map(m=>m[1]);
+  const tag='([A-Za-z0-9][A-Za-z0-9_-]*(?:\\.[A-Za-z0-9_-]+)*)';
+  const directive=new RegExp('\\\\b(?:start your reply with|reply with|begin with)\\\\s+ACK\\\\s+'+tag,'i');
+  const lineTag=new RegExp('^\\\\s*(?:[-*]\\\\s*)?ACK\\\\s+'+tag+'(?=[\\\\s.,;:!?)]|$)','i');
+  const tags=packet.split(/\\r?\\n/).map(line=>{
+    const m=directive.exec(line)||lineTag.exec(line);return m?.[1]||null;
+  }).filter(Boolean);
   if(new Set(tags).size>1)throw Error('Conflicting ACK tags in pasted packet');
   return tags[0]||null;
 }
