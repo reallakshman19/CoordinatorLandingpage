@@ -19,6 +19,9 @@ const draft={id:M,kind:'task',packet:'',gap:'',requiresTask:false};
 test('R2 G1: ACK tag from pasted packet becomes the move id, exact packet survives',()=>{
   const x=make(),p='Designed prompt\nStart your reply with ACK NLM-P3.\nEnd';
   assert.equal(ackTag(p),'NLM-P3');
+  assert.equal(ackTag('- Start your reply with ACK NLM-P4.'),'NLM-P4');
+  assert.equal(ackTag('Reply with ACK NLM-P5'),'NLM-P5');
+  assert.equal(ackTag('ACK NLM-P6'),'NLM-P6');
   const m=sentMove(x,draft,p);assert.equal(m.id,'NLM-P3');
   x.moves.push(m);
   const y=parse(serialize(x));
