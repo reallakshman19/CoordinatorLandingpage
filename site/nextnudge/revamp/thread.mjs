@@ -174,6 +174,7 @@ export function reconcile({checks,reply,decision,gap='',nudgeId,goal,criteria=[]
   let kind={continue:'task',correct:'correction','request evidence':'evidence','change direction':'direction',close:'close'}[decision];
   const packet=['[Owner · NextNudge '+nudgeId+']','Intent: '+goal,
     'Agent: '+agent,'Move: '+decision,
+    'Observed checks: Not met: '+(negatives.join(' | ')||'None')+'; UNKNOWN: '+(unknown.join(' | ')||'None'),
     'Observed gap:\n'+gap,
     'One bounded task:\n',
     'Authoritative inputs: '+(reply||'UNKNOWN'),
