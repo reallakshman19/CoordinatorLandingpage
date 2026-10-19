@@ -19,7 +19,7 @@ function decodeSafe(input) {
   return s.replace(ZW,'');
 }
 const MARKER=/<!--\s*nn3:(?:header|move)\b/i;
-const clean=s=>typeof s==='string'&&s.length<90000;
+const clean=s=>typeof s==='string'&&s.length<=90000;
 const line=s=>s.replace(/[\r\n]+/g,' ').trim();
 // Scan STRING VALUES, not JSON.stringify: JSON escapes newlines and hides host boundaries.
 // This common validator runs in the browser and in the authenticated issue applier.
