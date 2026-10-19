@@ -1,13 +1,13 @@
 import {activeAgent,activeIntent,currentState} from './thread.mjs';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-export function packet(id,kind,body,i) {
+export function packet(id,kind,body,i,options={}) {
   const common=['[Owner · NextNudge '+id+']','Owner intent: '+i.goal,
     'Owner done-when: '+(i.doneWhen.join(' | ')||'UNKNOWN — ask Owner'),
     'In scope: '+i.inScope,'Out of scope: '+i.outScope,
     'Uncertainty: report UNKNOWN; never substitute an assumption.',
     'COMPLETE describes this bounded task, not Owner-outcome acceptance.'];
   const prefix=kind==='task'?'Purpose:\n'+i.goal+'\nOne bounded task:\n'+body+
-    '\nAuthoritative inputs:\nUNKNOWN\nBoundaries:\n'+i.inScope+'\nSuccess criteria:\n'+(i.doneWhen.join(' | ')||'UNKNOWN')+
+    '\nAuthoritative inputs:\n'+(options.inputs||'UNKNOWN')+'\nBoundaries:\n'+(options.boundaries??i.inScope)+'\nSuccess criteria:\n'+(options.success||i.doneWhen.join(' | ')||'UNKNOWN')+
     '\nUncertainty handling:\nState missing facts and blocked actions.\nEvidence and continuation:\nReturn artifacts, limits and next feasible action.':
     kind==='ground'?'Restate the Owner intent and done-when in your own words. State your first step and unknowns.\n'+body:
     kind==='correction'?'Quote the incorrect claim, identify the input interpretation, give the redo scope.\n'+body:
