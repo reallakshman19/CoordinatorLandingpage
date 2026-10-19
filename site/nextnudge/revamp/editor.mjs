@@ -1,4 +1,4 @@
-import {MOVE_ID,freshId} from './thread.mjs';
+import {MOVE_ID,freshId,activeIntent} from './thread.mjs';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>
   ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -21,8 +21,10 @@ export function sentMove(thread,draft,packet) {
     throw Error('One bounded task is blank. Fill it before recording a sent packet.');
   if(draft.kind==='close'){
     const proof=draft.closure;
-    if(!proof||!thread.doneWhen&&!proof.criteria?.length||
-      !proof?.checks?.length||!proof.checks.every(c=>c==='met'))
+    const criteria=activeIntent(thread).doneWhen;
+    if(!proof||!criteria.length||JSON.stringify(proof.criteria)!==JSON.stringify(criteria)||
+      !Array.isArray(proof.checks)||proof.checks.length!==criteria.length||
+      !proof.checks.every(c=>c==='met'))
       throw Error('Close requires Reconcile with every Owner done-when Met');
   }
   return {id,kind:draft.kind,delivery:'sent',packet,returnLine:'',digest:'',
