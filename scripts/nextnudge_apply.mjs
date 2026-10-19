@@ -51,7 +51,8 @@ export async function sweepUnreceipted({owner,currentIssueNumber,listOpenIssues,
   }
   let swept=0;
   for(const candidate of candidates) {
-      if(!ownerIssue(candidate,owner)||candidate.state!=='open'||
+      if(/```nextnudge-thread-save\s*\n/.test(candidate.body||'')||
+         !ownerIssue(candidate,owner)||candidate.state!=='open'||
          !Number.isSafeInteger(candidate.number)||candidate.number>=currentIssueNumber)continue;
       let receipted=false;
       for(let commentPage=1;;commentPage++) {
@@ -116,6 +117,10 @@ async function api(path,options={}) {
 }
 export async function main() {
   const event=JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH,'utf8'));
+  if(/```nextnudge-thread-save\s*\n/.test(event.issue?.body||'')) {
+    const thread=await import('./nextnudge_thread_apply.mjs');
+    return thread.main();
+  }
   const number=event.issue?.number;
   if(!Number.isSafeInteger(number))throw Error('Missing issue number');
   const repoOwner=process.env.GITHUB_REPOSITORY.split('/')[0];
