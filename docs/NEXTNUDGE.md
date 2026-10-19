@@ -1,85 +1,71 @@
-# NextNudge — #97, implementation revision NN-R2
+# NextNudge — current thread workbench
 
-Owner-operated standalone workbench. NextMove remains separate. The UI does
-not grant protocol authority, approve merges, claim agents or automatically
-send messages. Governing task: https://github.com/reallakshman19/CoordinatorLandingpage/issues/97
+Owner-operated steering: **Thread → Grounding Fixtures → bounded nudge → actual return → Reconcile**.
+The Owner accepts and controls merge. The app does not infer approval from an ACK.
 
-## Structure
+## Ground once, update when meaning changes
+The current v3 thread has a Grounding Fixtures tab. It reuses the original headings:
+inputs and issues/PRs, roadmap and Owner intent, task understanding, specification,
+goldens, benchmarks, test criteria, midcycle/exit reconciliation and successor lessons.
+All fields are optional; blank means UNKNOWN.
 
-- `site/js/core.js`: navigation, hash-route mount and polling preservation.
-- `site/nextnudge/host.mjs`: same-origin iframe isolation; benchmark entry blocked.
-- `site/nextnudge/model.mjs`: actions, correction gates and append-only events.
-- `fixtures.mjs`: headings, edits, append-only fields and provenance transfers.
-- `schema.mjs`: import validation, including strict IDs, URLs and acyclic trees.
-- `repository.mjs` / `storage.mjs`: GitHub readback and explicit save preparation;
-  local drafts are never labelled committed merely because they were copied.
-- `workspace.mjs`, `prepare.mjs`, `fixture-view.mjs`, `protocol.mjs`: independent views.
-- `site/nextnudge-data/workbench.json`: canonical shared project/run snapshot.
+Type notes and source links, then **Save grounding** once. One meaningful save adds
+one snapshot; typing and unchanged saves add no history entries. Earlier snapshots
+and exact sent packets remain in append-only history. Copy grounding includes the
+visible draft. Browser drafts survive navigation; Save to GitHub makes the thread
+durable. Private chat links stay device-only; shared thread text is public.
 
-No runtime packages, external fonts, new workflow or second publisher.
-The existing Pages publisher copies the self-hosted assets and snapshot.
+The older v2 ladder remains available as an archive. Its log engine, timers and
+per-field records are not reintroduced.
 
-## Data and delivery
+## Send and fetch through GitHub
+A composer offers a named agent and target issue number. **Send via GitHub…**
+prepares an Owner request using the existing `nextnudge-save` issue workflow.
+The Owner reviews/submits that issue. The action posts the exact packet with
+`TO: agent`, records its comment URL, and appends the sent move. Preparing the
+request is not proof that delivery occurred. Compare with GitHub after the receipt.
 
-Project/run/step IDs are stable. All future steps are available. Sent or answered
-instructions are frozen; corrections retain their parent relationship. Resolving
-children requires a separate parent review. Evidence remains optional; gaps need
-a note. Checklist profiles are versioned configurable JSON.
+**Fetch GitHub return…** finds an actual comment whose first nonempty line has
+the expected primary `ACK move-id` and whose `FROM: agent` matches the target.
+It retains the full reply and comment URL. That identity line is a recorded agent
+claim, not independent authentication or engineering acceptance.
 
-Copy does not send. Mark sent is an Owner-recorded claim with exact message text,
-destination id8 and timestamp; it is not independent proof. Relayed Agent replies
-retain exact text, recorded UTC time, and a separate actual reply time or null.
-A matching ACK is recorded, never manufactured. Chat URLs are device-only because
-this repository is public; they are excluded from shared snapshots.
+The existing workflow token supports this repository's issues only. Unsupported
+repositories are refused; no broad cross-repository token is added. No new
+workflow, polling service, automatic acceptance or coordinator registry is installed.
 
-GitHub edit flow: prepare snapshot (checks base blob SHA), copy JSON, open GitHub
-editor, review/paste/commit manually, then verify content readback. A changed base
-refuses save preparation. Browser tabs warn on concurrent draft changes. GitHub
-credentials are not stored in the app and no automatic API writes occur.
+Saves use the expected blob SHA. If posting succeeds but recording fails, the
+receipt says DELIVERED_NOT_RECORDED. Retry the same packet ID; an exact delivery
+marker recovers the posted comment without sending twice. Changed retry content
+is refused. Queued thread actions are excluded from legacy snapshot sweeps.
 
-Delete is a tombstone: working-list entries disappear; source/history remains.
-Copies from earlier headings retain project/run/row/revision/time provenance and
-start NEEDS_REVIEW. Roadmap edits need an Owner-approved update basis; Owner intent
-and future-improvement headings append rather than overwrite.
+## Authenticated-host CLI
+`node scripts/nextnudge_agent_bridge.mjs CONFIG.json` uses the same transport
+functions. It emits NEXTNUDGE_RPC JSON for listComments/postComment. An authorized
+host executes those operations with its GitHub connector, then supplies one JSON
+response with the matching id, ok and value. No token enters the CLI.
 
-## Real pilot and limits
+CONFIG names the operation, source threadFile, observed Git blob baseSha, output,
+and either move + target or moveId. A successful result writes the updated thread
+and an existing-format Owner save request. Publish and read back that save before
+claiming durable recording. The CLI can pilot a candidate without browser control;
+this does not verify a deployed browser journey.
 
-The pilot is this issue #97, using inspected public repository facts and actual
-local rule-test results. The second run demonstrates predecessor fixture pulls;
-it is explicitly an unassigned handover rehearsal, not a launched successor.
-No actual chat delivery, independent review, acceptance or production deployment
-is claimed. Original golden export and performance benchmark are UNKNOWN.
+## Status and drafts
+Waiting is derived from sent moves without a subsequent matching reply.
+Late/unmatched replies do not answer a newer task. Done requires supported Owner
+close checks and a return linked to that exact close move; older outstanding tasks
+remain visible. Composer and grounding drafts are stored separately per thread.
 
-Base: c83e1b3a4ca297c321d446f888625295a3c1a3cc. No active lease or open PR at review.
-Current branch: codex/nextnudge-tab-97. Shared changes: core.js only; other source
-changes are isolated under site/nextnudge. No registry or NextMove engine changes.
+A direct thread link uses `nextnudge/index.html?thread=NN-...`.
+The current guidance link points to Common/skills/agent-work on main. The executing
+agent records the actual revision read and follows the project's selected mode.
 
-## Verification
+## Verification and continuation
+Run `node --test tests/nextnudge-*.mjs`. Tests include the UI form handlers,
+history/privacy checks, wrong/late ACKs, stale bases, unauthorized requests, failed
+record/retry recovery and exact named-agent returns. Model/DOM-harness tests do
+not establish real-browser or live-provider execution.
 
-Run `node --test tests/nextnudge-*.mjs`.
-Browser QA is NOT_RUN: installed Playwright has no Chromium executable in this
-workspace. Independent review, CI and deployed Pages readback remain separate.
-
-## Published checkpoint and continuation
-
-PR: https://github.com/reallakshman19/CoordinatorLandingpage/pull/100 (draft).
-Code basis: 52043a3d6871f7eb55698762cae228d3746b4732. The following metadata
-checkpoint appends the real PR and validation facts to the pilot; no source
-behaviour changes are included in that checkpoint.
-
-17 Node checks PASS; baseline navigation/poll assertions produce 2 expected
-assertion failures on c83e1b3a and PASS on the code basis. GitHub CI was initially
-queued/running; no pending run is counted as PASS. Source files remain <=300
-physical lines; core 288 to 298. Event dispatch/render functions are cohesive
-handlers, with template markup included in spans; independent cohesion review
-is still pending, not inferred from the line limit.
-
-Pilot project: PRJ-20261018-085012-1225.
-Implementation run: NN-20261018-085012-215a.
-Successor-transfer rehearsal: NN-20261018-085013-3e7b.
-
-The browser GitHub save can be fully exercised only after the snapshot exists
-on main. Until then, the candidate's deployed-file fallback can show the pilot,
-but it explicitly reports that the GitHub base is unavailable. The initial
-private Sites prototype has not been silently replaced; this task delivers the
-repository integration.
+Current repair and source-bound setup: [#110](https://github.com/reallakshman19/CoordinatorLandingpage/issues/110).
+The original prototype remains unchanged. Work report: [NEXTNUDGE_110_WORKREPORT.md](NEXTNUDGE_110_WORKREPORT.md).

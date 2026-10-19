@@ -1,4 +1,5 @@
 import {freshId,activeAgent,assertPublic,MOVE_ID} from './thread.mjs';
+import {pendingMoves} from './status.mjs';
 export const LABELS=['UNKNOWN','INDEPENDENT','SELF-ASSESSED','NOT BLIND'];
 const tag='([A-Za-z0-9][A-Za-z0-9_-]*(?:\\.[A-Za-z0-9_-]+)*)';
 const ACK=new RegExp('\\bACK[ \\t]+'+tag+'(?=[^A-Za-z0-9._-]|$)','g');
@@ -22,7 +23,7 @@ export function makeReply(thread,text,{label='UNKNOWN',id=freshId(),evidence=''}
   if(!LABELS.includes(label))throw Error('Choose a reply assessment label');
   assertPublic(text);
   const tags=replyAcks(text);
-  const matched=thread.moves.some(m=>m.id===tags.primary);
+  const matched=thread.moves.some(m=>m.id===tags.primary&&m.delivery==='sent'&&m.kind!=='reply');
   const last=thread.moves.filter(m=>m.delivery==='sent').at(-1);
   const lines=text.split(/\r?\n/);
   const line=lines.find(z=>/\bACK\b|\bSAVED\b/.test(z))||lines[0];
@@ -38,8 +39,7 @@ export function replyLabel(move){return move.label||'UNKNOWN';}
 export function moveRole(move){return move.role||'worker';}
 export function moveAgent(thread,move){return move.agent||activeAgent(thread)||'UNKNOWN';}
 export function openMoves(thread) {
-  return thread.moves.filter((m,i)=>m.delivery==='sent'&&m.kind!=='reply'&&
-    !thread.moves.slice(i+1).some(r=>r.kind==='reply'&&r.answers===m.id));
+  return pendingMoves(thread);
 }
 export function openAgents(thread){
   const opens=openMoves(thread);

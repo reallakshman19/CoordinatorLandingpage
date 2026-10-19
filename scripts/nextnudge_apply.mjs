@@ -51,7 +51,7 @@ export async function sweepUnreceipted({owner,currentIssueNumber,listOpenIssues,
   }
   let swept=0;
   for(const candidate of candidates) {
-      if(/```nextnudge-thread-save\s*\n/.test(candidate.body||'')||
+      if(/```nextnudge-thread-(?:save|action)\s*\n/.test(candidate.body||'')||
          !ownerIssue(candidate,owner)||candidate.state!=='open'||
          !Number.isSafeInteger(candidate.number)||candidate.number>=currentIssueNumber)continue;
       let receipted=false;
@@ -117,6 +117,10 @@ async function api(path,options={}) {
 }
 export async function main() {
   const event=JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH,'utf8'));
+  if(/```nextnudge-thread-action\s*\n/.test(event.issue?.body||'')) {
+    const action=await import('./nextnudge_action_apply.mjs');
+    return action.main();
+  }
   if(/```nextnudge-thread-save\s*\n/.test(event.issue?.body||'')) {
     const thread=await import('./nextnudge_thread_apply.mjs');
     return thread.main();
