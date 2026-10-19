@@ -1,7 +1,8 @@
-import {newThread,freshId,parse,serialize,archiveRun,currentState,reconcile,activeIntent,validate,assertPublic} from './thread.mjs';
+import {newThread,freshId,parse,serialize,archiveRun,currentState,reconcile,activeIntent,activeAgent,validate,assertPublic} from './thread.mjs';
+import {sentMove,amendValues,agentChange,ownerForm,agentForm,sentForm} from './editor.mjs';
 import {localThreads,persist,chatLink,readRemote,prepareSave,exportThread} from './save.mjs';
 const NLM='NN-20261018-171656-66d2';
-const state={threads:localThreads(),active:null,view:'threads',draft:null,checks:{},lastReply:'',message:''};
+const state={threads:localThreads(),active:null,view:'threads',draft:null,editor:null,checks:{},lastReply:'',message:''};
 const $=q=>document.querySelector(q);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const v=id=>$('#'+id)?.value||'';
@@ -36,7 +37,7 @@ function renderThreads() {
     '<label>Agent <input name="agent" placeholder="Agent or UNKNOWN"></label>'+
     '<button type="submit">Create thread</button></form>'+
     '<div class="thread-list">'+rows.map(x=>'<button data-open="'+esc(x.id)+'" class="thread-row">'+
-      '<strong>'+esc(x.title)+'</strong><span>'+esc(x.agent||'UNKNOWN')+' · '+esc(currentState(x))+
+      '<strong>'+esc(x.title)+'</strong><span>'+esc(activeAgent(x)||'UNKNOWN')+' · '+esc(currentState(x))+
       (activeIntent(x).hold?' · '+esc(activeIntent(x).hold):'')+'</span></button>').join('')+'</div>'+
     '<div class="archive"><details><summary>v2 Archive · read-only + Convert</summary>'+
     '<p>Original v2 database is retained unchanged. Historical statuses do not prove acceptance.</p>'+
@@ -53,8 +54,9 @@ function renderThread() {
     '<section class="intent"><strong>📌 Owner Intent</strong><p>'+esc(i.goal||'UNKNOWN')+'</p>'+
     '<p><strong>Done-when:</strong> '+(i.doneWhen.length?i.doneWhen.map((c,j)=>(j+1)+'. '+esc(c)).join(' · '):'UNKNOWN — Owner must define')+'</p>'+
     '<p><strong>Scope:</strong> '+esc(i.inScope||'UNKNOWN')+' · <strong>Out:</strong> '+esc(i.outScope||'UNKNOWN')+'</p>'+
-    '<p><strong>Agent:</strong> '+esc(x.agent||'UNKNOWN')+' · <strong>Owner constraint:</strong> '+esc(i.hold||'None')+'</p>'+
-    '<button data-action="owner-edit">Owner: amend intent / checks / HOLD</button></section>'+
+    '<p><strong>Agent:</strong> '+esc(activeAgent(x)||'UNKNOWN')+' · <strong>Owner constraint:</strong> '+esc(i.hold||'None')+'</p>'+
+    '<button data-action="owner-edit">Owner: amend intent / checks / HOLD</button> '+
+    '<button data-action="agent-edit">Change agent</button></section><section id="editor"></section>'+ 
     '<details><summary>Earlier moves ('+older.length+')</summary>'+older.map(m=>'<p><strong>'+esc(m.kind)+
       '</strong> '+esc(m.id)+' · '+esc(m.returnLine||m.note||'No reply')+'</p>').join('')+'</details>'+
     '<section class="current"><h3>Current move · '+esc(currentState(x))+'</h3>'+
@@ -76,6 +78,8 @@ function renderThread() {
     '<a id="save-link" target="_blank" rel="noopener noreferrer" hidden>Open prepared save issue</a>'+
     '<button data-action="reload">Compare with GitHub</button>'+
     '<p>Owner-only issue submission, expected SHA, rejected saves keep this draft.</p></section>';
+  if(state.editor==='owner')$('#editor').innerHTML=ownerForm(i);
+  if(state.editor==='agent')$('#editor').innerHTML=agentForm(activeAgent(x));
   if(state.draft)renderComposer();
 }
 function renderComposer() {
@@ -87,6 +91,7 @@ function renderComposer() {
     '<button data-action="copy-packet">Copy exact packet</button> '+
     '<button data-action="record-sent">Record manually sent packet</button>'+
     '<label>Manual copy fallback<textarea id="fallback" readonly hidden rows="8"></textarea></label>';
+  if(state.editor==='send')$('#composer').insertAdjacentHTML('beforeend',sentForm());
 }
 function renderReview() {
   const x=t(),i=intent(),reply=[...x.moves].reverse().find(m=>m.kind==='reply');
@@ -112,7 +117,7 @@ function render() {
   else if(state.view==='thread')renderThread();
   else renderReview();
 }
-function append(move) {const x=t();x.moves.push(move);put(x);state.draft=null;render();}
+function append(move) {const x=t();x.moves.push(move);put(x);state.draft=null;state.editor=null;render();}
 async function archiveList() {
   const response=await fetch('../nextnudge-data/workbench.json',{cache:'no-store'});
   if(!response.ok)throw Error('Archive unavailable');
@@ -134,8 +139,8 @@ async function convert(id) {
 }
 async function onAction(action,target) {
   const x=t(),i=x?intent():null;
-  if(action==='back'){state.view='threads';state.draft=null;return render();}
-  if(action==='thread'){state.view='thread';state.draft=null;return render();}
+  if(action==='back'){state.view='threads';state.draft=null;state.editor=null;return render();}
+  if(action==='thread'){state.view='thread';state.draft=null;state.editor=null;return render();}
   if(action==='export')return exportThread(x);
   if(action==='archive-list')return archiveList();
   if(action==='load-id') {
@@ -147,18 +152,10 @@ async function onAction(action,target) {
   if(action==='import')return $('#import-file').click();
   if(action==='save-chat'){chatLink(x.id,v('chat'));return notice('Private chat link kept on this device only.');}
   if(action==='convert')return convert(target.dataset.convert);
-  if(action==='owner-edit') {
-    if(!confirm('Owner decision required: amend the authoritative intent?'))return;
-    const goal=prompt('Owner goal',i.goal);if(goal===null)return;
-    const criteria=prompt('Done-when: at most 5 checks, one per line. Blank = UNKNOWN.',i.doneWhen.join('\n'));if(criteria===null)return;
-    const hold=prompt('Owner constraint / HOLD (blank to release)',i.hold);if(hold===null)return;
-    const next={goal,doneWhen:criteria.split('\n').map(s=>s.trim()).filter(Boolean),
-      inScope:i.inScope,outScope:i.outScope,hold};
-    if(next.doneWhen.length>5)throw Error('At most five checks');
-    const m=emptyMove(freshId(),'amendment');
-    m.note='OWNER_INTENT_CHANGE:'+JSON.stringify(next);
-    append(m);return;
+  if(action==='owner-edit'||action==='agent-edit') {
+    state.editor=action==='owner-edit'?'owner':'agent';render();return;
   }
+  if(action==='cancel-edit'){state.editor=null;return render();}
   if(action==='note') {if(!v('note').trim())throw Error('Enter a note');
     const m=emptyMove(freshId(),'amendment');m.note=new Date().toISOString().slice(0,10)+': '+v('note');append(m);return;}
   if(action==='record-reply'){
@@ -174,9 +171,9 @@ async function onAction(action,target) {
     if(i.hold)throw Error('Owner HOLD prevents new packet');
     const kind=action.slice(8),id=freshId();
     state.draft={id,kind,packet:packet(id,kind,'Write one observable deliverable; name the source and return proof.')};
-    render();return;
+    state.editor=null;render();return;
   }
-  if(action==='review'){state.view='review';state.draft=null;return render();}
+  if(action==='review'){state.view='review';state.draft=null;state.editor=null;return render();}
   if(action==='draft-decision'){
     if(i.hold)throw Error('Owner HOLD');
     const checks=[...document.querySelectorAll('.check')].map(q=>q.value),decision=v('decision');
@@ -184,27 +181,19 @@ async function onAction(action,target) {
     const id=freshId(),r=[...x.moves].reverse().find(m=>m.kind==='reply');
     state.reviewGap=v('gap');
     state.draft={id,...reconcile({checks,decision,reply:r?.returnLine||'UNKNOWN',gap:state.reviewGap,
-      nudgeId:id,goal:i.goal,criteria:i.doneWhen,agent:x.agent})};
+      nudgeId:id,goal:i.goal,criteria:i.doneWhen,agent:activeAgent(x)}),requiresTask:true};
     render();return;
   }
   if(action==='copy-packet'||action==='record-sent'){
-    if(i.hold)throw Error('Owner HOLD');const text=v('packet')||state.draft?.packet;
+    if(i.hold)throw Error('Owner HOLD');
+    const text=v('packet')||state.draft?.packet;
     if(!text)throw Error('No packet');assertPublic(text);state.draft.packet=text;
     if(action==='copy-packet'){
       try{await navigator.clipboard.writeText(text);notice('Packet copied. Copy does not imply sending.');}
       catch {$('#fallback').hidden=false;$('#fallback').value=text;$('#fallback').select();notice('Clipboard denied; use selected manual-copy text.');}
       return;
     }
-    if(state.draft.kind==='close'){
-      const proof=state.draft.closure;
-      if(!proof||!i.doneWhen.length||JSON.stringify(proof.criteria)!==JSON.stringify(i.doneWhen)||
-         proof.checks.length!==i.doneWhen.length||!proof.checks.every(c=>c==='met'))
-        throw Error('Close requires Reconcile with every Owner done-when Met');
-    }
-    if(!confirm('Confirm you manually sent this exact packet to the agent.'))return;
-    const m=emptyMove(state.draft.id,state.draft.kind);m.packet=text;m.delivery='sent';m.decision=state.draft.kind;
-    if(m.kind==='close')m.note='OWNER_CLOSE_CHECKS:'+JSON.stringify(state.draft.closure);
-    m.gap=state.draft.gap||'';append(m);return;
+    state.editor='send';renderComposer();return;
   }
   if(action==='github-save') {
     // Open within the click before async fetch; never clear local state until verified.
@@ -231,10 +220,40 @@ document.addEventListener('click',e=>{
   onAction(action,target).catch(err=>notice(err.message));
 });
 document.addEventListener('submit',e=>{
-  if(e.target.id!=='new-thread')return;e.preventDefault();
-  try{const form=new FormData(e.target);
-    const x=newThread({title:form.get('title').trim(),goal:form.get('goal').trim(),agent:form.get('agent').trim()});
-    put(x);state.view='thread';render();
+  const form=e.target;if(!['new-thread','owner-amend','agent-change','sent-confirm'].includes(form.id))return;
+  e.preventDefault();
+  try{
+    const values=new FormData(form);
+    if(form.id==='new-thread'){
+      const x=newThread({title:values.get('title').trim(),goal:values.get('goal').trim(),agent:values.get('agent').trim()});
+      put(x);state.view='thread';render();return;
+    }
+    if(form.id==='owner-amend'){
+      if(values.get('approved')!=='on')throw Error('Explicit Owner confirmation required');
+      const next=amendValues(Object.fromEntries(values));
+      const m=emptyMove(freshId(),'amendment');m.note='OWNER_INTENT_CHANGE:'+JSON.stringify(next);
+      append(m);return;
+    }
+    if(form.id==='agent-change'){
+      const m=agentChange(values.get('agent'));
+      chatLink(t().id,'');append(m);
+      notice('Agent changed. Add the new private chat link for this agent.');return;
+    }
+    if(form.id==='sent-confirm'){
+      if(values.get('approved')!=='on')throw Error('Explicit Owner confirmation required');
+      if(intent().hold)throw Error('Owner HOLD prevents sending');
+      const text=v('packet')||state.draft?.packet;
+      assertPublic(text);
+      const move=sentMove(t(),state.draft,text);
+      const i=intent();
+      if(move.kind==='close'){
+        const proof=state.draft.closure;
+        if(!proof||!i.doneWhen.length||JSON.stringify(proof.criteria)!==JSON.stringify(i.doneWhen)||
+          proof.checks.length!==i.doneWhen.length||!proof.checks.every(c=>c==='met'))
+          throw Error('Close requires Reconcile with every Owner done-when Met');
+      }
+      append(move);
+    }
   }catch(err){notice(err.message);}
 });
 $('#import-file').addEventListener('change',async e=>{
