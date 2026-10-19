@@ -54,7 +54,9 @@ export function validate(t) {
     if(m.also_acks!==undefined&&(!Array.isArray(m.also_acks)||m.also_acks.length>30||
        m.also_acks.some(a=>!clean(a)||!MOVE_ID.test(a))))throw Error('Invalid also_acks');
     for(const field of ['override_note','agent','replyText','text','createdAt','names'])
-      if(m[field]!==undefined&&(!clean(m[field])||(field==='agent'&&m[field].length>200)))
+      if(m[field]!==undefined&&(!clean(m[field])||(field==='agent'&&m[field].length>200)||
+        (field==='override_note'&&m[field].length>3000)||(field==='createdAt'&&m[field].length>64)||
+        (field==='names'&&!MOVE_ID.test(m[field]))))
         throw Error('Invalid '+field);
     if(m.role!==undefined&&!['worker','generator','judge'].includes(m.role))throw Error('Invalid role');
     if(m.label!==undefined&&!['UNKNOWN','INDEPENDENT','SELF-ASSESSED','NOT BLIND'].includes(m.label))throw Error('Invalid label');
