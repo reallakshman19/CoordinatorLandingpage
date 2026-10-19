@@ -74,7 +74,7 @@ export function serialize(t) {
     '## Owner intent','',shown.goal||'UNKNOWN','',
     'Done-when: '+(shown.doneWhen.length?shown.doneWhen.map((x,i)=>'('+ (i+1)+') '+x).join(' · '):'UNKNOWN'),'',
     'In scope: '+(shown.inScope||'UNKNOWN'),'Out of scope: '+(shown.outScope||'UNKNOWN'),
-    'Agent: '+(t.agent||'UNKNOWN'),'Owner constraint: '+(shown.hold||'None'),'',
+    'Agent: '+(activeAgent(t)||'UNKNOWN'),'Owner constraint: '+(shown.hold||'None'),'',
     '## Moves'];
   for(const m of moves) {
     const {packet,...meta}=m;
