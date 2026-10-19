@@ -87,7 +87,7 @@ test('R3 G8: label defaults UNKNOWN, round-trips, and rejects invalid labels',()
   const old={...makeReply(x,'ACK TASK-1',{id:'OLD-R'}).move};
   delete old.label;assert.equal(replyLabel(old),'UNKNOWN');
   for(const label of ['UNKNOWN','INDEPENDENT','SELF-ASSESSED','NOT BLIND']){
-    const m=makeReply(x,'ACK TASK-1',{id:'REPLY-'+label,label}).move;
+    const m=makeReply(x,'ACK TASK-1',{id:'REPLY-'+label.replace(/ /g,'-'),label}).move;
     assert.equal(m.label,label);
     assert.equal(parse(serialize({...x,moves:[...x.moves,m]})).moves.at(-1).label,label);
   }
