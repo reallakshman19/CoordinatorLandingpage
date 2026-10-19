@@ -1,32 +1,74 @@
 # NextNudge distinct workspaces — implementation record
 
-Owner request (2026-10-20 Dubai): each tab needs unique UI, fields to save and link, and real functionality. Fix the code directly.
-Base: `99db602e9ed7d6f63a110e13ca0450f552c4d355`; branch: `fix/nextnudge-distinct-workspaces`.
-This continues #110 after merged #112 and #116; #105's legacy-v2 work remains separate.
+**Status:** Functional implementation checked; visual/browser interaction limits remain.
+**REPORT_BASIS_HEAD:** `f162a54a63f787d53795cba2e9b3f6ea6142fc57`. Report-only successors do not change the tested implementation.
+**Base:** `99db602e9ed7d6f63a110e13ca0450f552c4d355`; branch `fix/nextnudge-distinct-workspaces`; [PR #117](https://github.com/reallakshman19/CoordinatorLandingpage/pull/117).
+**Authority:** Owner explicitly requested unique tabs, fields to save/link and direct code changes on 2026-10-20 (Dubai).
+This continues #110 after merged #112/#116; #105's legacy-v2 work remains separate. No AGENTS.md/master index exists in this base tree.
+Standard software work in Owner-selected standalone mode; this is a disclosed producer/self-review, not independent visual acceptance.
 
-## Bounded acceptance
-- W1: Ground, Task, Correction and Reconcile have distinct field sets, own save actions and tab links.
-- W2: Task/Correction can select an immutable saved Ground version; Correction/Reconcile select actual recorded exchanges. Source URLs are usable links.
-- W3: Fields and editable packet drafts survive tab navigation/reload independently per thread and workspace.
-- W4: Typing creates no history; each meaningful save adds one append-only snapshot; unchanged saves add none; storage failures preserve recoverable work.
-- W5: Packet content comes from the selected fields/references; stale fields, HOLD, private chat URLs and invalid closure cannot bypass existing protections.
-- W6: Preserve existing data, sent bytes, ACK linkage, native Owner acceptance and GitHub save/transport; report real evidence and browser limits.
+## Task targets and result
+These targets interpret the Owner's words; they are not a fabricated native confirmed-criteria freeze.
+- W1: Ground, Task, Correction and Reconcile have distinct fields, own Save/Build actions and tab links. PASS in app-action/form-output tests.
+- W2: Task/Correction can select an immutable saved Ground ID; Correction/Reconcile select real recorded exchanges. Source URLs are rendered as working anchors. PASS in model and rendered-output checks.
+- W3: Fields and editable packets restore independently per thread/tab, including manual packet edits. PASS in navigation/reload-storage harnesses.
+- W4: Typing adds no history; meaningful saves add one version, unchanged saves add none; failed writes retain recoverable fields and committed history. PASS.
+- W5: Packets use entered fields and selected references; stale fields/Owner context, private chat URLs, missing correction targets, HOLD and invalid closure are rejected. Changing review targets resets verdicts. PASS.
+- W6: Original packet/schema, delivery, privacy, storage-retry and ACK/acceptance tests remain green. Fresh real-browser observation is NOT_RUN, so complete visual/deployed-flow qualification is not claimed.
 
-## Architecture
-One shared canonical thread, with workspace snapshots carried as versioned amendment notes. Each mode owns its fields and save history. Local drafts are separately keyed by thread/mode.
-Ground captures source links, orientation and existing Grounding Fixtures; Task links an exact saved Ground ID and specifies task/deliverable/check; Correction links a recorded exchange and specifies observed/expected/redo/preserve; Reconcile links a response and saves criteria/verdicts/decision independently.
-The shared packet renderer and transport remain below those distinct forms.
-This is standard software implementation in Owner-selected standalone mode, not a new coordinator/qualification exercise.
+## Implemented architecture
+One canonical thread, with versioned `WORKSPACE_V1:` amendment notes and the existing shared transport/history.
+- Ground: repository, issue, PR, roadmap, other sources, context, unknowns and first step. Saved Grounding Fixtures are captured with the version.
+- Task: linked Ground version, one bounded task, deliverable, task success check, boundaries and additional sources.
+- Correction: selected recorded instruction/response, observed error, expected result, redo scope, preserved scope and optional Ground/evidence.
+- Reconcile: selected response, current criterion basis, verdicts, evidence, gap, decision and next instruction. Save is not acceptance; existing close proof stays mandatory.
+Browser fields/packet drafts use independent thread/mode keys. Explicit saves create one immutable version; typing creates no manual log records.
+All four tabs expose saved-version publication through the existing Owner-submitted GitHub request and a direct tab URL.
+Unknown/missing context remains visible; source links are free text, not restrictive URL-only fields.
 
-## Current checkpoint
-Core model, views, per-mode draft storage and behavioral harness are prepared; app routing is not wired yet.
-Baseline full suite: 99/99 pass.
-Before wiring: `node --test tests/nextnudge-*.mjs`: 109 tests, 104 pass, five UI-routing behavior failures, no errors/skips.
-The five failures distinguish the old generic composer flow from the requested workspaces. Core model tests already pass.
-This RED checkpoint contains prepared modules as well as tests; it is not described as a test-only commit.
+The app no longer routes the three actions into an automatic generic packet.
+Packet freshness includes meaningful Owner fields and agent identity, not the whole mutable history.
+Owner amendments cannot recursively embed thread history in context snapshots.
+Selecting another response resets verdicts through the native input/change sequence.
+Legacy freeform packets are retained and clearly labelled when restored; new workspace packets remain separately recoverable.
 
-Next: wire app actions/rendering, source links and form submissions; style the distinct forms, rerun all tests, inspect the exact remote candidate and CI.
-Visual/browser interaction verification is currently NOT_RUN: the cloud browser cannot reach the local preview (connection refused), and Opera exposes no click/type surface.
-Local production-handler tests do not substitute for screenshots or visual QA.
-No canonical thread, workflow, native acceptance rule or legacy-v2 mutation is authorized in this patch.
-No merge/deployment has been performed.
+## Execution evidence
+Environment: Node v24.19.0/Linux. Command: `node --test tests/nextnudge-*.mjs`.
+- Base applicable suite: **99/99 pass**.
+- Functional-wiring RED checkpoint `12d01f8b8a409b2fc8a300252ade49ac78c0fa1f`: **109 total, 104 pass, 5 behavioral route failures, 0 skip**. Prepared model/view modules existed, but the legacy app did not route actions into the workspaces. This was not a test-only commit.
+- Implementation basis above: **114/114 pass, 0 fail, 0 skip**. Includes fifteen new workspace checks and all ninety-nine previous checks.
+- `python3 -m py_compile scripts/verify_nextnudge_workspaces.py`: PASS (syntax only).
+- Exact-head remote CI and file parity are retained in the PR status/description after readback; local PASS is not reported as remote execution.
+
+The new tests invoke actual app action functions, workspace form handlers, production snapshot persistence, Markdown round-trip and renderer output with a lightweight DOM witness.
+These are LOCAL_EXECUTION/IMPLEMENTATION_COUPLED regression observations. They establish functional distinctions and counterexamples, not browser layout/accessibility compliance.
+Three older source-location assertions were updated to assess actual navigation, persisted verdict rendering and selected-response labels in their new consumers; original behavior assertions were retained/replaced with observable checks, not bypassed with dummy text.
+
+## Browser evidence boundary
+The cloud browser could not reach the local HTTP preview (ERR_CONNECTION_REFUSED). The supported shared-file preview was rejected because browser URL policy permits only HTTP(S). No bypass/alternate execution was used.
+The optional repeatable browser checker is committed as `scripts/verify_nextnudge_workspaces.py`.
+It serves the real source locally, imports the existing public pilot thread into an isolated profile, exercises all four workspaces and captures desktop/mobile images. It does not post or submit to GitHub.
+The checker has **NOT_RUN** here; no screenshot or browser PASS is fabricated.
+Its Python syntax compilation is recorded separately above.
+
+## Changed-file ledger and preservation
+Production: app.mjs (routes/shared composer), screens.mjs (formatter options), grounding.mjs (shared navigation), move-view.mjs (workspace summaries), style.css (tab/form layouts and contrast), five workspace modules (model, draft store, navigation, view, UI controller).
+Tests: nextnudge-workspaces.mjs plus navigation/verdict/assessment updates in nextnudge-grounding-pilot.mjs, nextnudge-r1.mjs and nextnudge-r3-seal.mjs.
+Supporting: docs/NEXTNUDGE.md, this report and the optional browser checker.
+Touched production modules remain below 300 physical lines: app 271, workspace model 128, UI controller 106, view 79, draft store 21, navigation 10, style 88.
+No canonical thread/data, workflows, numerical converter, registry, native acceptance rule or legacy-v2 code changed.
+
+## SELF-CHECK v1 — PARTIAL
+Basis: Owner's direct revamp request; candidate implementation f162a54a63f787d53795cba2e9b3f6ea6142fc57; source #110 and the preceding screenshot/functional findings.
+Native label/plan/confirmed-criteria identity is NOT_AVAILABLE; native standalone tools exclude this coordination repository. No native approved label, DONE receipt or optional-helper success is invented.
+- SC_INTENT: MET for implemented fields, separate saves and actual source-linked packet workflows.
+- SC_INPUTS: MET for current base/source and explicit task interpretation; UI screenshot exposure is disclosed.
+- SC_SCOPE: MET; changed-file ledger and preserved authorities above.
+- SC_FLOW: PARTIAL; production route/form/output and persisted-state consumers executed; real browser is NOT_RUN.
+- SC_TESTS: MET for applicable logic regressions; five wrong-route counterexamples and fifteen new checks; browser checker NOT_RUN explicitly limits the claim.
+- SC_CODE: MET; shared canonical store/formatter/transport retained, modules bounded, old generic action path replaced.
+- SC_PENDING: PARTIAL for overall visual/deployed qualification; Owner/available local browser should run the retained checker and inspect the forms. Merge/acceptance remains Owner-controlled.
+- SC_FRESHNESS: bound to implementation SHA above; metadata-only successors and remote check state remain separate.
+W1–W5 supported by executable functional checks; W6 partial because browser/deployed-route proof is absent.
+Proposed claim: code implemented and functionally checked; full visual/product acceptance remains PARTIAL.
+Native eight-line completed-task receipt NOT_POSTED. ChatGPT Work activity/BuddyRunner recording is exempt.
