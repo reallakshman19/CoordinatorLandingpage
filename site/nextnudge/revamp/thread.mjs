@@ -174,8 +174,8 @@ export function reconcile({checks,reply,decision,gap='',nudgeId,goal,criteria=[]
   let kind={continue:'task',correct:'correction','request evidence':'evidence','change direction':'direction',close:'close'}[decision];
   const packet=['[Owner · NextNudge '+nudgeId+']','Intent: '+goal,
     'Agent: '+agent,'Move: '+decision,
-    'Observed gap:\\n'+gap,
-    'One bounded task:\\n',
+    'Observed gap:\n'+gap,
+    'One bounded task:\n',
     'Authoritative inputs: '+(reply||'UNKNOWN'),
     'Boundaries: preserve Owner scope and HOLD; no unassigned edits.',
     'Success criteria: '+(criteria.length?criteria.join(' | '):'UNKNOWN — ask Owner'),
@@ -183,7 +183,7 @@ export function reconcile({checks,reply,decision,gap='',nudgeId,goal,criteria=[]
     'Evidence and continuation: return actual result, source and next feasible action.',
     method?'GUIDED method: '+method:'',
     'COMPLETE covers this bounded task only, not the Owner outcome.',
-    'Start your reply with ACK '+nudgeId+'.'].filter(Boolean).join('\\n');
+    'Start your reply with ACK '+nudgeId+'.'].filter(Boolean).join('\n');
   assertPublic(packet);
   return {kind,packet,gap,
     ...(decision==='close'?{closure:{criteria:[...criteria],checks:[...checks]}}:{})};
