@@ -16,13 +16,16 @@ export function boundedTaskFilled(packet) {
   const section=packet.match(/(?:^|\r?\n)One bounded task:[ \t]*([\s\S]*?)(?=\r?\n(?:Authoritative inputs|Boundaries|Success criteria|Uncertainty handling):|$)/);
   return !!section&&!!section[1].trim();
 }
-export function sentMove(thread,draft,packet) {
+export function sentMove(thread,draft,packet,{override_note='',role='worker',agent=''}={}) {
   if(typeof packet!=='string'||!packet.trim())throw Error('Empty sent packet');
   const id=ackTag(packet)||draft.id||freshId();
   if(!MOVE_ID.test(id))throw Error('Invalid ACK move tag');
   if(thread.moves.some(m=>m.id===id))throw Error('Duplicate ACK tag; cannot reuse an existing move ID');
-  if(draft.requiresTask&&!boundedTaskFilled(packet))
-    throw Error('One bounded task is blank. Fill it before recording a sent packet.');
+  if(!['worker','generator','judge'].includes(role))throw Error('Invalid role');
+  if(typeof agent!=='string'||agent.length>200)throw Error('Invalid agent');
+  if(typeof override_note!=='string'||override_note.length>3000)throw Error('Invalid override note');
+  if(draft.requiresTask&&!boundedTaskFilled(packet)&&!override_note.trim())
+    throw Error('One bounded task is blank. Fill it or record an explicit override note.');
   if(draft.kind==='close'){
     const proof=draft.closure;
     const criteria=activeIntent(thread).doneWhen;
@@ -32,7 +35,8 @@ export function sentMove(thread,draft,packet) {
       throw Error('Close requires Reconcile with every Owner done-when Met');
   }
   return {id,kind:draft.kind,delivery:'sent',packet,returnLine:'',digest:'',
-    evidence:'',gap:draft.gap||'',decision:draft.kind,archive:'',
+    evidence:'',gap:draft.gap||'',decision:draft.kind,archive:'',role,agent,
+    ...(override_note.trim()?{override_note}:{}),
     note:draft.kind==='close'?'OWNER_CLOSE_CHECKS:'+JSON.stringify(draft.closure):''};
 }
 export function amendValues(values){
@@ -67,8 +71,12 @@ export function agentForm(agent){
     '<p>After saving, the device-only chat URL will be cleared. Enter the new agent chat link.</p>'+
     '<button type="submit">Save new agent</button> <button type="button" data-action="cancel-edit">Cancel</button></form>';
 }
-export function sentForm(){
-  return '<form id="sent-confirm"><label><input type="checkbox" name="approved" required>'+
+export function sentForm(agent=''){
+  return '<form id="sent-confirm"><label>Role<select name="role">'+
+    ['worker','generator','judge'].map(v=>'<option value="'+v+'">'+v+'</option>').join('')+
+    '</select></label><label>Agent<input name="agent" maxlength="200" value="'+esc(agent)+'"></label>'+
+    '<label>Blank-task override note (optional)<textarea name="override_note" maxlength="3000"></textarea></label>'+
+    '<label><input type="checkbox" name="approved" required>'+
     ' I confirm this exact packet was manually sent to the agent.</label>'+
     '<button type="submit">Save sent packet</button> <button type="button" data-action="cancel-edit">Cancel</button></form>';
 }

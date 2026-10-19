@@ -1,6 +1,6 @@
 // Canonical Markdown thread codec. Sent packets are length-framed to preserve exact bytes.
 export const THREAD_ID=/^NN-\d{8}-\d{6}-[a-f0-9]{4}$/;
-const MODES=new Set(['ground','task','correction','evidence','direction','close','amendment','reply','agent']);
+const MODES=new Set(['ground','task','correction','evidence','direction','close','amendment','reply','agent','sealed']);
 export const MOVE_ID=/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 // Match the service HOST token, regardless of message punctuation or real newlines.
 // A plain domain mention (no path/query/fragment) is not a conversation link.
@@ -19,7 +19,7 @@ function decodeSafe(input) {
   return s.replace(ZW,'');
 }
 const MARKER=/<!--\s*nn3:(?:header|move)\b/i;
-const clean=s=>typeof s==='string'&&s.length<90000;
+const clean=s=>typeof s==='string'&&s.length<=90000;
 const line=s=>s.replace(/[\r\n]+/g,' ').trim();
 // Scan STRING VALUES, not JSON.stringify: JSON escapes newlines and hides host boundaries.
 // This common validator runs in the browser and in the authenticated issue applier.
@@ -49,10 +49,28 @@ export function validate(t) {
        !['draft','sent'].includes(m.delivery)||!clean(m.packet)||!clean(m.returnLine)||
        !clean(m.digest)||!clean(m.evidence)||!clean(m.gap)||!clean(m.decision)||
        !clean(m.archive)||!clean(m.note))throw Error('Invalid move');
-    ids.add(m.id);
     if(MARKER.test(m.packet))throw Error('Reserved thread metadata marker in packet');
+    if(m.answers!==undefined&&(!clean(m.answers)||!MOVE_ID.test(m.answers)))throw Error('Invalid answers');
+    if(m.also_acks!==undefined&&(!Array.isArray(m.also_acks)||m.also_acks.length>30||
+       m.also_acks.some(a=>!clean(a)||!MOVE_ID.test(a))))throw Error('Invalid also_acks');
+    for(const field of ['override_note','agent','replyText','text','createdAt','names'])
+      if(m[field]!==undefined&&(!clean(m[field])||(field==='agent'&&m[field].length>200)||
+        (field==='override_note'&&m[field].length>3000)||(field==='createdAt'&&m[field].length>64)||
+        (field==='names'&&!MOVE_ID.test(m[field]))))
+        throw Error('Invalid '+field);
+    if(m.role!==undefined&&!['worker','generator','judge'].includes(m.role))throw Error('Invalid role');
+    if(m.label!==undefined&&!['UNKNOWN','INDEPENDENT','SELF-ASSESSED','NOT BLIND'].includes(m.label))throw Error('Invalid label');
+    if(m.sha256!==undefined&&(typeof m.sha256!=='string'||!(/^[0-9a-f]{64}$/.test(m.sha256))))
+      throw Error('Invalid sealed hash');
+    if(m.kind==='sealed') {
+      if(!m.text||!m.createdAt||!/^\d{4}-\d\d-\d\dT/.test(m.createdAt)||
+        !m.sha256||!MOVE_ID.test(m.names)||!ids.has(m.names)||m.names===m.id||
+        m.delivery!=='draft'||['packet','returnLine','digest','evidence','gap','decision','archive','note'].some(k=>m[k]!==''))
+        throw Error('Invalid sealed note');
+    }
     if(m.delivery==='sent'&&!m.packet&&!m.archive)throw Error('Sent move requires exact packet or archive reference');
     if(m.archive&&!m.archive.startsWith('site/nextnudge-data/workbench.json#'))throw Error('Invalid archive reference');
+    ids.add(m.id);
   }
   assertPublic(t);
   return t;
@@ -137,7 +155,7 @@ export function archiveRun(run) {
 }
 export function currentState(t) {
   if(activeIntent(t).hold)return 'Your move';
-  const relevant=t.moves.filter(m=>m.kind!=='agent'&&
+  const relevant=t.moves.filter(m=>m.kind!=='agent'&&m.kind!=='sealed'&&
     !(m.kind==='amendment'&&!m.note.startsWith('OWNER_INTENT_CHANGE:')));
   const last=relevant.at(-1);
   if(last?.kind==='reply'&&relevant.at(-2)?.kind==='close'&&closureMet(t,relevant.at(-2)))return 'Done';

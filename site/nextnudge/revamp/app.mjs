@@ -1,5 +1,11 @@
 import {newThread,freshId,parse,serialize,archiveRun,currentState,reconcile,activeIntent,activeAgent,validate,assertPublic} from './thread.mjs';
 import {sentMove,amendValues,agentChange,ownerForm,agentForm,sentForm} from './editor.mjs';
+import {packet as packetTemplate,threadsMarkup} from './screens.mjs';
+import {makeReply,replyLabel,openAgents} from './reply.mjs';
+import {makeSeal,sealForm} from './seal.mjs';
+import {moveMarkup} from './move-view.mjs';
+import {askInline} from '../inline-question.mjs';
+const packet=(id,kind,body)=>packetTemplate(id,kind,body,intent());
 import {localThreads,persist,chatLink,readRemote,prepareSave,exportThread} from './save.mjs';
 const NLM='NN-20261018-171656-66d2';
 const state={threads:localThreads(),active:null,view:'threads',draft:null,editor:null,checks:{},lastReply:'',message:''};
@@ -14,38 +20,7 @@ const emptyMove=(id,kind)=>({id,kind,delivery:'draft',packet:'',returnLine:'',di
 function put(thread) {
   validate(thread);state.threads[thread.id]=thread;persist(thread);state.active=thread.id;
 }
-function packet(id,kind,body) {
-  const i=intent();
-  const common=['[Owner · NextNudge '+id+']','Owner intent: '+i.goal,
-    'Owner done-when: '+(i.doneWhen.join(' | ')||'UNKNOWN — ask Owner'),
-    'In scope: '+i.inScope,'Out of scope: '+i.outScope,
-    'Uncertainty: report UNKNOWN; never substitute an assumption.',
-    'COMPLETE describes this bounded task, not Owner-outcome acceptance.'];
-  const prefix=kind==='task'?'Purpose:\n'+i.goal+'\nOne bounded task:\n'+body+
-    '\nAuthoritative inputs:\nUNKNOWN\nBoundaries:\n'+i.inScope+'\nSuccess criteria:\n'+(i.doneWhen.join(' | ')||'UNKNOWN')+
-    '\nUncertainty handling:\nState missing facts and blocked actions.\nEvidence and continuation:\nReturn artifacts, limits and next feasible action.':
-    kind==='ground'?'Restate the Owner intent and done-when in your own words. State your first step and unknowns.\n'+body:
-    kind==='correction'?'Quote the incorrect claim, identify the input interpretation, give the redo scope.\n'+body:
-    kind==='close'?'The Owner outcome checks were verified. Return the final PR/file/comment pointer.\n'+body:body;
-  return [...common,prefix,'Start your reply with ACK '+id+'.'].join('\n\n');
-}
-function renderThreads() {
-  const rows=Object.values(state.threads).sort((a,b)=>b.id.localeCompare(a.id));
-  $('#panel').innerHTML='<h2>Threads</h2><p>One intent, one current move. Drafts stay on this device.</p>'+
-    '<form id="new-thread"><label>Intent title <input name="title" required maxlength="120"></label>'+
-    '<label>Owner goal, in their words <textarea name="goal" required></textarea></label>'+
-    '<label>Agent <input name="agent" placeholder="Agent or UNKNOWN"></label>'+
-    '<button type="submit">Create thread</button></form>'+
-    '<div class="thread-list">'+rows.map(x=>'<button data-open="'+esc(x.id)+'" class="thread-row">'+
-      '<strong>'+esc(x.title)+'</strong><span>'+esc(activeAgent(x)||'UNKNOWN')+' · '+esc(currentState(x))+
-      (activeIntent(x).hold?' · '+esc(activeIntent(x).hold):'')+'</span></button>').join('')+'</div>'+
-    '<div class="archive"><details><summary>v2 Archive · read-only + Convert</summary>'+
-    '<p>Original v2 database is retained unchanged. Historical statuses do not prove acceptance.</p>'+
-    '<button data-action="archive-list">List v2 runs for conversion</button><div id="archive-runs"></div>'+
-    '<p><a href="v2.html" target="_blank" rel="noopener noreferrer">Open original v2 workbench (historical interface)</a></p></details></div>'+
-    '<p><button data-action="load-id">Load existing GitHub thread by ID</button> '+
-    '<button data-action="import">Import Markdown thread</button></p>';
-}
+function renderThreads(){ $('#panel').innerHTML=threadsMarkup(state.threads); }
 function renderThread() {
   const x=t(),i=intent(),last=x.moves.at(-1),hold=!!i.hold;
   const older=x.moves.slice(0,-1);
@@ -54,13 +29,12 @@ function renderThread() {
     '<section class="intent"><strong>📌 Owner Intent</strong><p>'+esc(i.goal||'UNKNOWN')+'</p>'+
     '<p><strong>Done-when:</strong> '+(i.doneWhen.length?i.doneWhen.map((c,j)=>(j+1)+'. '+esc(c)).join(' · '):'UNKNOWN — Owner must define')+'</p>'+
     '<p><strong>Scope:</strong> '+esc(i.inScope||'UNKNOWN')+' · <strong>Out:</strong> '+esc(i.outScope||'UNKNOWN')+'</p>'+
-    '<p><strong>Agent:</strong> '+esc(activeAgent(x)||'UNKNOWN')+' · <strong>Owner constraint:</strong> '+esc(i.hold||'None')+'</p>'+
+    '<p><strong>Agent:</strong> '+esc(activeAgent(x)||'UNKNOWN')+' · <strong>Open agents:</strong> '+esc(openAgents(x).join(' · '))+' · <strong>Owner constraint:</strong> '+esc(i.hold||'None')+'</p>'+ 
     '<button data-action="owner-edit">Owner: amend intent / checks / HOLD</button> '+
     '<button data-action="agent-edit">Change agent</button></section><section id="editor"></section>'+ 
-    '<details><summary>Earlier moves ('+older.length+')</summary>'+older.map(m=>'<p><strong>'+esc(m.kind)+
-      '</strong> '+esc(m.id)+' · '+esc(m.returnLine||m.note||'No reply')+'</p>').join('')+'</details>'+
+    '<details><summary>Earlier moves ('+older.length+')</summary>'+older.map(m=>moveMarkup(x,m,esc)).join('')+'</details>'+ 
     '<section class="current"><h3>Current move · '+esc(currentState(x))+'</h3>'+
-    (last?'<p>Last: '+esc(last.kind)+' · '+esc(last.id)+' · '+esc(last.returnLine||last.note||'Awaiting reply')+'</p>':'<p>No nudge sent yet.</p>')+
+    (last?moveMarkup(x,last,esc):'<p>No nudge sent yet.</p>')+
     (hold?'<p class="hold">HOLD: '+esc(i.hold)+' — no further packets may be sent until the Owner changes this constraint.</p>':
       '<div class="actions"><button data-action="compose-ground">Ground</button>'+
       '<button data-action="compose-task">Task</button>'+
@@ -68,9 +42,11 @@ function renderThread() {
       '<button data-action="review">Reconcile</button></div>')+
     '<label>Private chat link (device only) <input id="chat" type="url" placeholder="https://..." value="'+esc(chatLink(x.id))+'"></label>'+
     '<button data-action="save-chat">Keep link on device</button>'+
-    '<label>Paste agent reply or return line <textarea id="reply" rows="5" placeholder="ACK ... SAVED ..."></textarea></label>'+
+    '<label>Paste agent reply or return line <textarea id="reply" rows="10" maxlength="90000" placeholder="ACK ... SAVED ..."></textarea></label>'+ 
     '<label>Public evidence URL (optional) <input id="evidence" placeholder="https://github.com/..."></label>'+
-    '<button data-action="record-reply">Record return digest</button>'+
+    '<label>Result label<select id="reply-label">'+['UNKNOWN','INDEPENDENT','SELF-ASSESSED','NOT BLIND'].map(v=>'<option>'+v+'</option>').join('')+'</select></label>'+ 
+    '<button data-action="record-reply">Record return digest</button> '+
+    '<button data-action="seal-open">Sealed note</button><section id="seal-host"></section>'+ 
     '<label>Free-form dated note (no reopening gate) <input id="note" placeholder="Short note"></label>'+
     '<button data-action="note">Add note</button></section>'+
     '<section id="composer"></section>'+
@@ -80,6 +56,7 @@ function renderThread() {
     '<p>Owner-only issue submission, expected SHA, rejected saves keep this draft.</p></section>';
   if(state.editor==='owner')$('#editor').innerHTML=ownerForm(i);
   if(state.editor==='agent')$('#editor').innerHTML=agentForm(activeAgent(x));
+  if(state.editor==='seal')$('#seal-host').innerHTML=sealForm(x,esc);
   if(state.draft)renderComposer();
 }
 function renderComposer() {
@@ -91,7 +68,7 @@ function renderComposer() {
     '<button data-action="copy-packet">Copy exact packet</button> '+
     '<button data-action="record-sent">Record manually sent packet</button>'+
     '<label>Manual copy fallback<textarea id="fallback" readonly hidden rows="8"></textarea></label>';
-  if(state.editor==='send')$('#composer').insertAdjacentHTML('beforeend',sentForm());
+  if(state.editor==='send')$('#composer').insertAdjacentHTML('beforeend',sentForm(activeAgent(t())));
 }
 function renderReview() {
   const x=t(),i=intent(),reply=[...x.moves].reverse().find(m=>m.kind==='reply');
@@ -99,7 +76,7 @@ function renderReview() {
     '<section class="intent"><strong>Owner outcome</strong><p>'+esc(i.goal)+'</p>'+
     '<p>Task COMPLETE never accepts this outcome.</p></section>'+
     '<div class="review-grid"><section><h3>Agent claim and evidence</h3><pre>'+esc(reply?.returnLine||'No reply yet')+'</pre>'+
-    '<p>'+esc(reply?.digest||'UNKNOWN')+'</p><p>'+esc(reply?.evidence||'Evidence UNKNOWN')+'</p>'+
+    '<p>Assessment: '+esc(replyLabel(reply||{}))+'</p><p>'+esc(reply?.digest||'UNKNOWN')+'</p><p>'+esc(reply?.evidence||'Evidence UNKNOWN')+'</p>'+ 
     '<label>Observed gap or needed evidence<textarea id="gap">'+esc(state.reviewGap||'')+'</textarea></label></section>'+
     '<section><h3>Owner done-when (independent of task)</h3>'+
     (i.doneWhen.length?i.doneWhen.map((q,j)=>'<label>'+esc(q)+'<select class="check" data-check="'+j+'">'+
@@ -133,7 +110,7 @@ async function convert(id) {
   const response=await fetch('../nextnudge-data/workbench.json',{cache:'no-store'});
   const db=await response.json(),run=db.runs.find(r=>r.id===id);
   if(!run)throw Error('Archived run not found');
-  if(state.threads[id]&&!confirm('Replace local draft of converted run?'))return;
+  if(state.threads[id]&&!(await askInline({title:'Replace converted thread',message:'This replaces your local draft.',accept:'Replace'})).ok)return;
   const x=archiveRun(run);
   put(x);state.view='thread';render();
 }
@@ -144,9 +121,10 @@ async function onAction(action,target) {
   if(action==='export')return exportThread(x);
   if(action==='archive-list')return archiveList();
   if(action==='load-id') {
-    const id=prompt('Existing NextNudge thread ID:');if(!id)return;
+    const input=await askInline({title:'Load thread',label:'NextNudge thread ID',accept:'Load'});
+    if(!input.ok)return;const id=input.value;
     const remote=await readRemote(id);if(!remote.thread)throw Error('Not found');
-    if(state.threads[id]&&!confirm('Replace local draft with GitHub version?'))return;
+    if(state.threads[id]&&!(await askInline({title:'Replace local thread',message:'Replace this device draft with the GitHub version?',accept:'Replace'})).ok)return;
     put(remote.thread);state.view='thread';return render();
   }
   if(action==='import')return $('#import-file').click();
@@ -156,15 +134,14 @@ async function onAction(action,target) {
     state.editor=action==='owner-edit'?'owner':'agent';render();return;
   }
   if(action==='cancel-edit'){state.editor=null;return render();}
+  if(action==='seal-open'){state.editor='seal';return render();}
   if(action==='note') {if(!v('note').trim())throw Error('Enter a note');
     const m=emptyMove(freshId(),'amendment');m.note=new Date().toISOString().slice(0,10)+': '+v('note');append(m);return;}
   if(action==='record-reply'){
-    const text=v('reply');if(!text.trim())throw Error('Paste a reply');
-    assertPublic(text);
-    const evidence=v('evidence');if(evidence&&!/^https:\/\/github\.com\//.test(evidence))throw Error('Only public GitHub evidence links can be persisted');
-    const m=emptyMove(freshId(),'reply');m.returnLine=text.split(/\r?\n/).find(z=>/\bACK\b|\bSAVED\b/.test(z))?.slice(0,300)||text.split(/\r?\n/)[0].slice(0,300);
-    m.digest=text.slice(0,300);m.evidence=evidence;m.note='Reply recorded against '+(x.moves.filter(m=>m.delivery==='sent').at(-1)?.id||'UNKNOWN');
-    append(m);return;
+    const text=v('reply'),evidence=v('evidence');
+    if(evidence&&!/^https:\/\/github\.com\//.test(evidence))throw Error('Only public GitHub evidence links can be persisted');
+    const {move,warnings}=makeReply(x,text,{label:v('reply-label')||'UNKNOWN',evidence});
+    append(move);if(warnings.length)notice(warnings.join('; '));return;
   }
   if(action.startsWith('compose-')) {
     if(action==='compose-close'){state.view='review';state.draft=null;return render();}
@@ -209,7 +186,7 @@ async function onAction(action,target) {
   if(action==='reload') {
     const result=await readRemote(x.id);
     if(!result.thread)return notice('No GitHub file yet. Local draft retained.');
-    if(!confirm('Replace this device draft with GitHub? Cancel to keep it.'))return;
+    if(!(await askInline({title:'Reload from GitHub',message:'Replace local draft with GitHub content?',accept:'Replace'})).ok)return;
     put(result.thread);return render();
   }
 }
@@ -219,8 +196,8 @@ document.addEventListener('click',e=>{
   if(action==='open'){state.active=target.dataset.open;state.view='thread';state.draft=null;render();return;}
   onAction(action,target).catch(err=>notice(err.message));
 });
-document.addEventListener('submit',e=>{
-  const form=e.target;if(!['new-thread','owner-amend','agent-change','sent-confirm'].includes(form.id))return;
+document.addEventListener('submit',async e=>{
+  const form=e.target;if(!['new-thread','owner-amend','agent-change','sent-confirm','seal-form'].includes(form.id))return;
   e.preventDefault();
   try{
     const values=new FormData(form);
@@ -239,12 +216,17 @@ document.addEventListener('submit',e=>{
       chatLink(t().id,'');append(m);
       notice('Agent changed. Add the new private chat link for this agent.');return;
     }
+    if(form.id==='seal-form'){
+      const move=await makeSeal(t(),{text:values.get('text'),names:values.get('names')});
+      append(move);return;
+    }
     if(form.id==='sent-confirm'){
       if(values.get('approved')!=='on')throw Error('Explicit Owner confirmation required');
       if(intent().hold)throw Error('Owner HOLD prevents sending');
       const text=v('packet')||state.draft?.packet;
       assertPublic(text);
-      const move=sentMove(t(),state.draft,text);
+      const move=sentMove(t(),state.draft,text,{role:values.get('role')||'worker',
+        agent:values.get('agent')||activeAgent(t()),override_note:values.get('override_note')||''});
       const i=intent();
       if(move.kind==='close'){
         const proof=state.draft.closure;

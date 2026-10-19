@@ -4,6 +4,7 @@ import {validate,validateProfiles} from './schema.mjs';
 import {packet} from './model.mjs';
 import {prepareSave,prepareIssueSave,readRepository,fingerprint,download} from './repository.mjs';
 import {$,notice} from './util.mjs';
+import {askInline} from './inline-question.mjs';
 function selectManualCopy(fieldId) {
   const field=$(fieldId);
   field.focus();
@@ -76,7 +77,7 @@ export async function action(name,target,ctx) {
     render();notice(s.dirty?'Prepared snapshot verified; newer browser changes remain unsaved.':'GitHub snapshot verified.');return;
   }
   if(name==='github-reload') {
-    if(s.dirty&&!confirm('Replace this browser draft with GitHub? Export it first if needed.'))return;
+    if(s.dirty&&!(await askInline({title:'Reload from GitHub',message:'Replace this browser draft? Export your changes first.',accept:'Replace draft'})).ok)return;
     const remote=await readRepository();s.db=remote.db;s.baseSha=remote.sha;s.dirty=false;
     s.prepared=null;s.conflict=false;save(false);render();return;
   }
@@ -106,12 +107,12 @@ export async function action(name,target,ctx) {
   }
   if(name==='pause'||name==='archive')model.lifecycle(db,r,name);
   if(name==='delete-run') {
-    if(!confirm('Delete this run from the working list? Its history remains in the snapshot.'))return;
+    if(!(await askInline({title:'Delete run',message:'Remove from working list? History remains in snapshot.',accept:'Delete run',danger:true})).ok)return;
     model.lifecycle(db,r,'delete');s.runId=null;
   }
   if(name==='delete-step')model.removeStep(db,r,r.nodes.find(x=>x.id===target.dataset.id));
   if(name==='delete-fixture') {
-    if(!confirm('Remove this item from the current heading? History is retained.'))return;
+    if(!(await askInline({title:'Remove fixture',message:'Remove this item? History is retained.',accept:'Remove',danger:true})).ok)return;
     model.removeFixture(db,r,target.dataset.key,target.dataset.id);
   }
   if(name==='pull-fixtures') {
@@ -139,7 +140,7 @@ export async function importFile(file,kind,ctx) {
     model.event(s.db,null,null,'PROFILES_IMPORTED','', '',{before,after:value});
   } else {
     const imported=migrate(value,s.db.profiles);
-    if(!confirm('Replace local data with this backup? Export current work first. GitHub is unchanged.'))return;
+    if(!(await askInline({title:'Restore backup',message:'Replace local data? Export current work first; GitHub is unchanged.',accept:'Restore',danger:true})).ok)return;
     s.db=imported;s.runId=null;s.projectId=null;s.prepared=null;
     model.event(s.db,null,null,'BACKUP_RESTORED','Imported claims are not verified proof.');
   }
