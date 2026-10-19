@@ -8,7 +8,8 @@ import {delta} from '../site/nextnudge/revamp/save.mjs';
 import {sendNudge,fetchReturn} from '../site/nextnudge/revamp/transport.mjs';
 const config=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
 const before=parse(fs.readFileSync(config.threadFile,'utf8'));
-const thread=structuredClone(before),input=readline.createInterface({input:process.stdin});
+if(process.stdin.isTTY)process.stdin.setRawMode(true);
+const thread=structuredClone(before),input=readline.createInterface({input:process.stdin,terminal:false});
 let pending=null,sequence=0;
 input.on('line',line=>{
   if(!pending)return;
@@ -36,4 +37,4 @@ try{
       output:config.output,saveRequest:config.output+'.save.txt',limit:'Publish and read back the Owner save before claiming durable recording.'}));
   }else console.log('NEXTNUDGE_RESULT '+JSON.stringify({status:'WAITING',limit:'No new matching named-agent return.'}));
 }catch(e){console.error('NEXTNUDGE_ERROR '+e.message);process.exitCode=1;}
-finally{input.close();}
+finally{input.close();if(process.stdin.isTTY)process.stdin.setRawMode(false);}
