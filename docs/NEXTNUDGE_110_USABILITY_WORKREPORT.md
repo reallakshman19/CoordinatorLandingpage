@@ -1,6 +1,6 @@
 # NextNudge UI Usability Repair (#110) — Work Report
 
-**Status:** Storage-safety correction in progress; preceding UI evidence retained below.  
+**Status:** Storage-safety correction locally checked; overall UI evidence limits retained below.  
 **Task / Source:** [Issue #110](https://github.com/reallakshman19/CoordinatorLandingpage/issues/110) · continuation from merged [PR #112](https://github.com/reallakshman19/CoordinatorLandingpage/pull/112).  
 **Baseline Tested Commit:** `2a70ffcaaa79c3759474dfef5b9d37a6a5ac5cbe` (`origin/main`).  
 **Reviewed PR Head:** `9ed52101ecea27f2ce3e911b726c00a29fb24222`.  
@@ -10,22 +10,53 @@
 
 ## Current storage-safety correction
 
+**Recovery:** HANDOVER_READINESS=READY; WRITE_ALLOWED for this bounded correction; self-review is SELF-ASSESSED.
+**REPORT_BASIS_HEAD:** `8f0708068867d8373bd492b9469f9f1a679f32af`; later report-only commits do not change the tested implementation.
+**Main checked:** `2a70ffcaaa79c3759474dfef5b9d37a6a5ac5cbe`.
 Owner authorized this agent to fix and proceed directly on PR #116 on 2026-10-20 (Dubai).
 Incoming implementation: `1c47e0b0183fba015fd6aff045e17d95654948fd`.
-This is standard software work in standalone mode, with no new agent role or qualification exam.
-No applicable AGENTS.md/master index exists in the current tree. Open PR #105 concerns the legacy interface; this patch targets v3 snapshot storage only.
+Common guidance read at `32fc40940c862bf33f86d74f2dd8167bb39c09aa`, standalone mode. ChatGPT Work activity/BuddyRunner recording is exempt.
+This is standard software work; no new agent role or qualification exam is required.
+No applicable AGENTS.md/master index exists in the current tree. Open PR #105 concerns the legacy interface; this correction changes v3 snapshot storage.
 
-The snapshot must persist before live history changes or the device draft is removed.
-Tests exercise the actual app append function, production persistence and grounding handlers; DOM rendering is a lightweight witness, not a browser test.
-Baseline `node --test tests/nextnudge-*.mjs`: 94 tests, 94 pass, 0 fail, 0 skip.
-The new five-case regression on unchanged production: 99 tests, 94 pass, 5 behavioral failures, 0 skip.
-Cases cover successful backup ordering, failed-write reload recovery, retry idempotence, cleanup failure after commit, and normalized unchanged-save feedback.
-The old assertion requiring draft deletion before append has been replaced with a rendered-state assertion.
+### Implemented result
+- `persistMove` builds and validates a proposed thread without mutating the active history, persists it, then returns it for live-state commit.
+- Grounding draft cleanup happens after successful snapshot persistence.
+- Snapshot write failure leaves previous live/persisted history and the recoverable draft intact. A retry commits exactly once.
+- Cleanup failure leaves the committed snapshot plus a redundant draft and reports both facts; retry adds no duplicate.
+- Draft-vs-snapshot feedback compares normalized text and all saved/draft keys. An unchanged save refreshes the banner without a history entry.
+- The test assertion requiring deletion before append was replaced with a rendered-state check.
 
-Next: persist a proposed immutable snapshot, commit live state only after success, then clean the redundant draft; run the complete suite and inspect exact-head CI.
-Schema, packets, HOLD, reply correlation, privacy, canonical thread data and workflows remain outside this correction.
-The historical browser results below are agent-reported; their script/screenshots have not been supplied in the PR. Fresh interactive verification remains NOT_RUN for this agent.
-Native label/helper use is NOT_RUN: the standalone tooling explicitly excludes this coordination repository; no accepted label or native DONE receipt is fabricated.
+### Reproducible evidence
+Baseline command: `node --test tests/nextnudge-*.mjs`: 94 tests, 94 pass, 0 fail, 0 skip.
+Test-only RED commit: `4a14caed168f76614c8498c8cfe019c59989c17f`: 99 tests, 94 pass, 5 behavioral failures, 0 skip.
+Implementation basis above: same command, **99 tests, 99 pass, 0 fail, 0 skip** on Node v24.19.0/Linux.
+The five new cases are in `tests/nextnudge-storage-116.mjs`; they execute the actual app append function, real persistence and grounding handlers.
+The DOM is a lightweight rendering witness: these results are LOCAL_EXECUTION/IMPLEMENTATION_COUPLED, not an independent browser review.
+All required NextNudge test inputs were materialized from exact matching Git blobs; this is a source materialization, not a local Git checkout at the remote commit.
+Physical line counts: app.mjs 299, features.mjs 114, save.mjs 100.
+Remote exact-head CI is observed separately in the PR status; local PASS does not imply CI PASS.
+
+### Scope and continuation
+This correction changes app.mjs, features.mjs, save.mjs, two test files and this report. The earlier agent's UI contributions remain.
+No schema, packets, HOLD, reply matching, privacy, canonical thread data, workflow or legacy-v2 changes.
+Next: inspect exact-head CI and retain its actual result on the PR; Owner controls merge and acceptance.
+Historical browser observations below are agent-reported. The browser script/screenshots were not supplied in this PR.
+Fresh interactive verification is NOT_RUN for this agent because the available browser surfaces cannot execute this app's candidate interactions.
+
+### SELF-CHECK v1 (PARTIAL; source-bound)
+Basis: Owner's direct fix instruction and preceding storage findings; candidate implementation 8f0708068867d8373bd492b9469f9f1a679f32af; label/plan/native confirmed criteria NOT_AVAILABLE.
+Native label/helper use is NOT_RUN: standalone tooling explicitly excludes this coordination repository. No accepted label or native DONE receipt is fabricated.
+- SC_INTENT: MET for the bounded storage repair; reload and retry preserve the Owner's work.
+- SC_INPUTS: MET for reviewed candidate, Git blobs and real production consumers; synthetic storage failure injection is disclosed.
+- SC_SCOPE: MET; exact correction paths and unchanged authorities listed above.
+- SC_FLOW: PARTIAL; production handlers and reload from persisted bytes exercised; actual browser route remains NOT_RUN here.
+- SC_TESTS: MET for bounded storage cases; all five distinguish the bad candidate from the fix, and full suite passes.
+- SC_CODE: MET; persist-before-live-commit is one reused boundary, no duplicate storage engine; touched production files stay below 300 lines.
+- SC_PENDING: PARTIAL for overall UI assignment; browser artifacts/verification remain outstanding, and Owner merge/acceptance is separate.
+- SC_FRESHNESS: MET against the implementation basis; report-only successors are explicitly distinguished.
+Task targets ST1 successful save, ST2 failed-write recovery, ST3 retry, ST4 cleanup failure, ST5 unchanged-save feedback: all supported by the five executable regressions. These identifiers describe the bounded repair; they do not invent an Owner-confirmed native criteria freeze.
+Proposed claim: storage regression corrected and locally checked; overall UI task remains PARTIAL. Native eight-line completed-task receipt NOT_POSTED.
 
 ## 1. Resolved Owner Review Findings (preceding agent's record)
 
