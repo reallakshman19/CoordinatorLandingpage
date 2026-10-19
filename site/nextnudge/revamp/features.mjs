@@ -13,7 +13,7 @@ function groundingValues(form){
 }
 export function renderGrounding(thread){
   const draft=drafts()[thread.id];
-  return groundingPanel(thread,draft||readGrounding(thread));
+  return groundingPanel(thread,draft||readGrounding(thread),!!draft);
 }
 export function restoreDraft(thread){return restoreComposer(thread.id);}
 export function composerExtras(thread,draft){
@@ -50,14 +50,26 @@ async function prepareDelivery(action,ctx){
     notice('Review and submit the Owner request. Delivery is not yet confirmed; compare with GitHub after the workflow receipt.');
   }catch(e){win?.close();throw e;}
 }
+const setGroundingStatus=msg=>{
+  if(typeof document?.querySelectorAll==='function'){
+    document.querySelectorAll('.grounding-status').forEach(el=>{el.textContent=msg;});
+  }
+};
 export async function featureAction(action,ctx){
   if(action==='grounding'){ctx.state.view='grounding';ctx.render();return true;}
   if(action==='copy-grounding'){
     const thread=ctx.t(),preview=groundingMove(thread,groundingValues($('#grounding-form')));
     const text=groundingText(preview?{...thread,moves:[...thread.moves,preview]}:thread);
-    try{await navigator.clipboard.writeText(text);ctx.notice('Grounding copied. Copy does not send.');}
-    catch{const box=document.createElement('textarea');box.value=text;box.readOnly=true;
-      $('#grounding-form').appendChild(box);box.select();ctx.notice('Use the selected manual-copy text.');}
+    try{
+      await navigator.clipboard.writeText(text);
+      setGroundingStatus('Grounding copied.');
+      ctx.notice('Grounding copied. Copy does not send.');
+    }catch{
+      const box=document.createElement('textarea');box.value=text;box.readOnly=true;
+      $('#grounding-form')?.appendChild(box);box.select();
+      setGroundingStatus('Use manual copy text below.');
+      ctx.notice('Use the selected manual-copy text.');
+    }
     return true;
   }
   if(['send-github','fetch-github'].includes(action)){await prepareDelivery(action,ctx);return true;}
@@ -82,7 +94,9 @@ export function installFeatures(ctx){
       const rows=drafts();delete rows[thread.id];
       if(move)ctx.append(move);
       localStorage.setItem(DRAFTS,JSON.stringify(rows));
-      ctx.notice(move?'Grounding saved locally as one update. Save to GitHub for durable sharing.':'Grounding unchanged; no history entry added.');
-    }catch(e){ctx.notice(e.message);}
+      const msg=move?'Grounding saved locally as one update. Save to GitHub for durable sharing.':'Grounding unchanged; no history entry added.';
+      setGroundingStatus(msg);
+      ctx.notice(msg);
+    }catch(e){setGroundingStatus(e.message);ctx.notice(e.message);}
   });
 }
