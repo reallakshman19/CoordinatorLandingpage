@@ -6,7 +6,7 @@ export function ackTag(packet) {
   const tag='([A-Za-z0-9][A-Za-z0-9_-]*(?:\\.[A-Za-z0-9_-]+)*)';
   const directive=new RegExp('\\b(?:start your reply with|reply with|begin with)\\s+ACK\\s+'+tag,'i');
   const lineTag=new RegExp('^\\s*(?:[-*]\\s*)?ACK\\s+'+tag+'(?=[\\s.,;:!?)]|$)','i');
-  const tags=packet.split(/\\r?\\n/).map(line=>{
+  const tags=packet.split(/\r?\n/).map(line=>{
     const m=directive.exec(line)||lineTag.exec(line);return m?.[1]||null;
   }).filter(Boolean);
   if(new Set(tags).size>1)throw Error('Conflicting ACK tags in pasted packet');
