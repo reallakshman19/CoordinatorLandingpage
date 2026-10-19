@@ -16,6 +16,11 @@ export function persist(thread) {
   const rows=localThreads();rows[thread.id]=thread;
   localStorage.setItem(LOCAL,JSON.stringify(rows));
 }
+export function persistMove(thread,move) {
+  const next={...thread,moves:[...thread.moves,move]};
+  persist(next);
+  return next;
+}
 export function chatLink(id,url) {
   safeId(id);
   const links=JSON.parse(localStorage.getItem(PRIVATE)||'{}');

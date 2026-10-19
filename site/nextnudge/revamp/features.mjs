@@ -13,7 +13,8 @@ function groundingValues(form){
 }
 export function renderGrounding(thread){
   const draft=drafts()[thread.id],saved=readGrounding(thread);
-  const isDiff=draft&&Object.keys(draft).some(k=>(draft[k]||'')!==(saved[k]||''));
+  const keys=new Set([...Object.keys(draft||{}),...Object.keys(saved)]);
+  const isDiff=draft&&[...keys].some(k=>String(draft[k]||'').trim()!==(saved[k]||''));
   return groundingPanel(thread,draft||saved,isDiff);
 }
 export function restoreDraft(thread){return restoreComposer(thread.id);}
@@ -97,12 +98,16 @@ export function installFeatures(ctx){
     if(event.target.id!=='grounding-form')return;event.preventDefault();
     try{
       const thread=ctx.t(),vals=groundingValues(event.target),move=groundingMove(thread,vals);
-      const rows=drafts();delete rows[thread.id];
-      localStorage.setItem(DRAFTS,JSON.stringify(rows));
       if(move)ctx.append(move);
+      let cleanup='';
+      try{
+        const rows=drafts();delete rows[thread.id];
+        localStorage.setItem(DRAFTS,JSON.stringify(rows));
+      }catch(e){cleanup=' Draft backup retained; cleanup failed: '+e.message+'.';}
+      if(!move)ctx.render();
       const msg=move?'Grounding saved locally as one update. Save to GitHub for durable sharing.':'Grounding unchanged; no history entry added.';
-      setGroundingStatus(msg);
-      ctx.notice(msg);
+      setGroundingStatus(msg+cleanup);
+      ctx.notice(msg+cleanup);
     }catch(e){setGroundingStatus(e.message);ctx.notice(e.message);}
   });
 }

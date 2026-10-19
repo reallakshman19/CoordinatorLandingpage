@@ -6,7 +6,7 @@ import {makeSeal,sealForm} from './seal.mjs';
 import {moveMarkup} from './move-view.mjs';
 import {askInline} from '../inline-question.mjs';
 const packet=(id,kind,body)=>packetTemplate(id,kind,body,intent());
-import {localThreads,persist,chatLink,readRemote,prepareSave,exportThread} from './save.mjs';
+import {localThreads,persist,persistMove,chatLink,readRemote,prepareSave,exportThread} from './save.mjs';
 import {featureAction,installFeatures,renderGrounding,restoreDraft,composerExtras,returnControls} from './features.mjs';
 import {clearComposer} from './composer.mjs';
 const NLM='NN-20261018-171656-66d2';
@@ -119,7 +119,12 @@ function render() {
   else if(state.view==='thread')renderThread();
   else renderReview();
 }
-function append(move) {const x=t();x.moves.push(move);put(x);if(move.delivery==='sent')clearComposer(x.id);state.draft=null;state.editor=null;render();}
+function append(move) {
+  const x=persistMove(t(),move);
+  state.threads[x.id]=x;state.active=x.id;
+  if(move.delivery==='sent')clearComposer(x.id);
+  state.draft=null;state.editor=null;render();
+}
 async function archiveList() {
   const response=await fetch('../nextnudge-data/workbench.json',{cache:'no-store'});
   if(!response.ok)throw Error('Archive unavailable');
