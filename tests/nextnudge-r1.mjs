@@ -52,7 +52,7 @@ test('Not met quotes the gap; Unknown requests evidence, never correction',()=>{
 });
 test('thread outcome and task completion are independent',()=>{
   const x=example();x.moves.push(move());assert.equal(currentState(x),'Waiting on agent');
-  x.moves.push({...move('NN-20261019-010103-ff55','reply',''),delivery:'draft',returnLine:'COMPLETE task only'});
+  x.moves.push({...move('NN-20261019-010103-ff55','reply',''),delivery:'draft',returnLine:'COMPLETE task only',answers:x.moves[0].id});
   assert.equal(currentState(x),'Your move');
 });
 test('Owner amendment does not erase original intent or modify earlier packets',()=>{
@@ -122,7 +122,7 @@ test('Close is a Reconcile-only decision; Unknown and Not met never show Done',(
   const x=example(),criteria=x.doneWhen;
   const close=(checks,note)=>({...move(M,'close','Close packet'),note:
     'OWNER_CLOSE_CHECKS:'+JSON.stringify({criteria,checks})});
-  const reply={...move('NN-20261019-010103-ff55','reply',''),delivery:'draft',returnLine:'ACK completed'};
+  const reply={...move('NN-20261019-010103-ff55','reply',''),delivery:'draft',returnLine:'ACK '+M,answers:M};
   const page=fs.readFileSync(new URL('../site/nextnudge/revamp/app.mjs',import.meta.url),'utf8');
   assert.doesNotMatch(page,/data-action="compose-close"/);
   assert.match(page,/Close via Reconcile/);

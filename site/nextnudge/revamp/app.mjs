@@ -7,6 +7,8 @@ import {moveMarkup} from './move-view.mjs';
 import {askInline} from '../inline-question.mjs';
 const packet=(id,kind,body)=>packetTemplate(id,kind,body,intent());
 import {localThreads,persist,chatLink,readRemote,prepareSave,exportThread} from './save.mjs';
+import {featureAction,installFeatures,renderGrounding,restoreDraft,composerExtras,returnControls} from './features.mjs';
+import {clearComposer} from './composer.mjs';
 const NLM='NN-20261018-171656-66d2';
 const state={threads:localThreads(),active:null,view:'threads',draft:null,editor:null,checks:{},lastReply:'',message:''};
 const $=q=>document.querySelector(q);
@@ -23,9 +25,11 @@ function put(thread) {
 function renderThreads(){ $('#panel').innerHTML=threadsMarkup(state.threads); }
 function renderThread() {
   const x=t(),i=intent(),last=x.moves.at(-1),hold=!!i.hold;
+  if(!state.draft){const saved=restoreDraft(x);if(saved&&!x.moves.some(m=>m.id===saved.id))state.draft=saved;}
   const older=x.moves.slice(0,-1);
   $('#panel').innerHTML='<div class="heading"><button data-action="back">← Threads</button><h2>'+esc(x.title)+'</h2>'+
     '<button data-action="export">Export Markdown</button></div>'+
+    '<nav aria-label="Thread sections"><button data-action="thread" aria-current="page">Thread</button> <button data-action="grounding">Grounding Fixtures</button></nav>'+
     '<section class="intent"><strong>📌 Owner Intent</strong><p>'+esc(i.goal||'UNKNOWN')+'</p>'+
     '<p><strong>Done-when:</strong> '+(i.doneWhen.length?i.doneWhen.map((c,j)=>(j+1)+'. '+esc(c)).join(' · '):'UNKNOWN — Owner must define')+'</p>'+
     '<p><strong>Scope:</strong> '+esc(i.inScope||'UNKNOWN')+' · <strong>Out:</strong> '+esc(i.outScope||'UNKNOWN')+'</p>'+
@@ -49,7 +53,7 @@ function renderThread() {
     '<button data-action="seal-open">Sealed note</button><section id="seal-host"></section>'+ 
     '<label>Free-form dated note (no reopening gate) <input id="note" placeholder="Short note"></label>'+
     '<button data-action="note">Add note</button></section>'+
-    '<section id="composer"></section>'+
+    returnControls(x)+'<section id="composer"></section>'+
     '<section class="save"><button data-action="github-save">One-click GitHub save · append only</button>'+
     '<a id="save-link" target="_blank" rel="noopener noreferrer" hidden>Open prepared save issue</a>'+
     '<button data-action="reload">Compare with GitHub</button>'+
@@ -62,12 +66,12 @@ function renderThread() {
 function renderComposer() {
   const d=state.draft;if(!d)return;
   $('#composer').innerHTML='<h3>Draft '+esc(d.kind)+' · '+esc(d.id)+'</h3>'+
-    '<p>Based on <a target="_blank" rel="noopener noreferrer" href="https://github.com/reallakshman19/Common/tree/2ce2a2aa/skills/nudge-designer">Nudge Designer @2ce2a2aa</a>.</p>'+
+    '<p>Guidance: <a target="_blank" rel="noopener noreferrer" href="https://github.com/reallakshman19/Common/tree/main/skills/agent-work">current agent-work</a>. Follow the project’s selected standalone protocol and record the revision read.</p>'+
     '<label>Exact packet to copy / edit<textarea id="packet" rows="14">'+esc(d.packet)+'</textarea></label>'+
     '<p class="small">Pre-send: one task · intent quoted · observable result · ACK return line · unknowns allowed.</p>'+
     '<button data-action="copy-packet">Copy exact packet</button> '+
     '<button data-action="record-sent">Record manually sent packet</button>'+
-    '<label>Manual copy fallback<textarea id="fallback" readonly hidden rows="8"></textarea></label>';
+    '<label>Manual copy fallback<textarea id="fallback" readonly hidden rows="8"></textarea></label>'+composerExtras(t(),d);
   if(state.editor==='send')$('#composer').insertAdjacentHTML('beforeend',sentForm(activeAgent(t())));
 }
 function renderReview() {
@@ -91,10 +95,11 @@ function renderReview() {
 function render() {
   $('#notice').textContent=state.message;
   if(state.view==='threads')renderThreads();
+  else if(state.view==='grounding')$('#panel').innerHTML=renderGrounding(t());
   else if(state.view==='thread')renderThread();
   else renderReview();
 }
-function append(move) {const x=t();x.moves.push(move);put(x);state.draft=null;state.editor=null;render();}
+function append(move) {const x=t();x.moves.push(move);put(x);if(move.delivery==='sent')clearComposer(x.id);state.draft=null;state.editor=null;render();}
 async function archiveList() {
   const response=await fetch('../nextnudge-data/workbench.json',{cache:'no-store'});
   if(!response.ok)throw Error('Archive unavailable');
@@ -115,6 +120,7 @@ async function convert(id) {
   put(x);state.view='thread';render();
 }
 async function onAction(action,target) {
+  if(await featureAction(action,{state,t,append,render,notice}))return;
   const x=t(),i=x?intent():null;
   if(action==='back'){state.view='threads';state.draft=null;state.editor=null;return render();}
   if(action==='thread'){state.view='thread';state.draft=null;state.editor=null;return render();}
@@ -248,6 +254,13 @@ async function init(){
     try{const r=await fetch('../nextnudge-data/threads/'+NLM+'.md');
       if(r.ok){const seed=parse(await r.text());put(seed);}}catch{}
   }
+  const requested=new URLSearchParams(window.location.search).get('thread');
+  if(requested){
+    try{if(!state.threads[requested]){const remote=await readRemote(requested);if(remote.thread)put(remote.thread);}
+      if(state.threads[requested]){state.active=requested;state.view='thread';return render();}
+    }catch(e){notice(e.message);}
+  }
   state.view='threads';render();
 }
+installFeatures({state,t,append,render,notice});
 init();

@@ -1,5 +1,6 @@
 import {summary,replyWarnings,replyAcks} from './reply.mjs';
 import {sealHtml} from './seal.mjs';
+import {groundingSummary} from './grounding.mjs';
 export function moveMarkup(thread,move,esc) {
   if(move.kind==='sealed')return sealHtml(thread,move,esc);
   const first=move.kind==='reply'?replyAcks(move.replyText||move.returnLine||'').primary:'';
@@ -7,6 +8,6 @@ export function moveMarkup(thread,move,esc) {
     !first||!!move.answers):[];
   const info=summary(move,thread);
   return '<div class="move-summary"><strong>'+esc(info)+'</strong> · '+
-    esc(move.returnLine||move.note||'No reply')+
+    esc(move.returnLine||groundingSummary(move)||(move.note?.startsWith('GITHUB_SEND_V1:')?'GitHub delivery recorded':move.note)||'No reply')+
     warnings.map(w=>'<p class="hold">'+esc(w)+'</p>').join('')+'</div>';
 }

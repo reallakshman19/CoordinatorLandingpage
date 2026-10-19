@@ -78,7 +78,7 @@ test('R2 G4: agent changes and free notes do not change Waiting on agent',()=>{
   assert.equal(currentState(x),'Waiting on agent');
   assert.equal(parse(serialize(x)).moves.at(-2).kind,'agent');
   assert.equal(activeAgent(parse(serialize(x))),'Second agent');
-  x.moves.push({...move('NN-20261019-111115-eeee','reply','draft'),returnLine:'ACK task done'});
+  x.moves.push({...move('NN-20261019-111115-eeee','reply','draft'),returnLine:'ACK '+x.moves[0].id,answers:x.moves[0].id});
   assert.equal(currentState(x),'Your move');
   const app=fs.readFileSync(new URL('../site/nextnudge/revamp/app.mjs',import.meta.url),'utf8');
   assert.match(app,/chatLink\(t\(\)\.id,''\)/);

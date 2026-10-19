@@ -1,4 +1,5 @@
 // Canonical Markdown thread codec. Sent packets are length-framed to preserve exact bytes.
+import {pendingMoves,answered} from './status.mjs';
 export const THREAD_ID=/^NN-\d{8}-\d{6}-[a-f0-9]{4}$/;
 const MODES=new Set(['ground','task','correction','evidence','direction','close','amendment','reply','agent','sealed']);
 export const MOVE_ID=/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
@@ -155,11 +156,11 @@ export function archiveRun(run) {
 }
 export function currentState(t) {
   if(activeIntent(t).hold)return 'Your move';
+  if(pendingMoves(t).length)return 'Waiting on agent';
   const relevant=t.moves.filter(m=>m.kind!=='agent'&&m.kind!=='sealed'&&
     !(m.kind==='amendment'&&!m.note.startsWith('OWNER_INTENT_CHANGE:')));
-  const last=relevant.at(-1);
-  if(last?.kind==='reply'&&relevant.at(-2)?.kind==='close'&&closureMet(t,relevant.at(-2)))return 'Done';
-  return last?.delivery==='sent'&&last.kind!=='reply'?'Waiting on agent':'Your move';
+  const last=relevant.filter(m=>m.kind!=='reply').at(-1);
+  return last?.kind==='close'&&closureMet(t,last)&&answered(t,last)?'Done':'Your move';
 }
 export function closureMet(t,move) {
   if(move?.kind!=='close'||!move.note?.startsWith('OWNER_CLOSE_CHECKS:'))return false;
