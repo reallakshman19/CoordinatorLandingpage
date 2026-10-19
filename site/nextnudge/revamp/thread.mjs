@@ -1,6 +1,7 @@
 // Canonical Markdown thread codec. Sent packets are length-framed to preserve exact bytes.
 export const THREAD_ID=/^NN-\d{8}-\d{6}-[a-f0-9]{4}$/;
-const MODES=new Set(['ground','task','correction','evidence','direction','close','amendment','reply']);
+const MODES=new Set(['ground','task','correction','evidence','direction','close','amendment','reply','agent']);
+export const MOVE_ID=/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 // Match the service HOST token, regardless of message punctuation or real newlines.
 // A plain domain mention (no path/query/fragment) is not a conversation link.
 const CHAT=/(?<![a-z0-9-])(?:chatgpt\.com|chat\.openai\.com|claude\.ai|gemini\.google\.com|aistudio\.google\.com|antigravity\.google\.com|copilot\.microsoft\.com|chat\.mistral\.ai|grok\.com|chat\.deepseek\.com|poe\.com|character\.ai|perplexity\.ai)(?::\d+)?(?=[/?#])/;
@@ -44,7 +45,7 @@ export function validate(t) {
     throw Error('Invalid thread intent or limits');
   const ids=new Set();
   for(const m of t.moves) {
-    if(!THREAD_ID.test(m.id)||ids.has(m.id)||!MODES.has(m.kind)||
+    if(!MOVE_ID.test(m.id)||ids.has(m.id)||!MODES.has(m.kind)||
        !['draft','sent'].includes(m.delivery)||!clean(m.packet)||!clean(m.returnLine)||
        !clean(m.digest)||!clean(m.evidence)||!clean(m.gap)||!clean(m.decision)||
        !clean(m.archive)||!clean(m.note))throw Error('Invalid move');
@@ -136,8 +137,10 @@ export function archiveRun(run) {
 }
 export function currentState(t) {
   if(activeIntent(t).hold)return 'Your move';
-  const last=t.moves.at(-1);
-  if(last?.kind==='reply'&&t.moves.at(-2)?.kind==='close'&&closureMet(t,t.moves.at(-2)))return 'Done';
+  const relevant=t.moves.filter(m=>m.kind!=='agent'&&
+    !(m.kind==='amendment'&&!m.note.startsWith('OWNER_INTENT_CHANGE:')));
+  const last=relevant.at(-1);
+  if(last?.kind==='reply'&&relevant.at(-2)?.kind==='close'&&closureMet(t,relevant.at(-2)))return 'Done';
   return last?.delivery==='sent'&&last.kind!=='reply'?'Waiting on agent':'Your move';
 }
 export function closureMet(t,move) {
@@ -148,6 +151,10 @@ export function closureMet(t,move) {
     return expected.length>0&&JSON.stringify(criteria)===JSON.stringify(expected)&&
       Array.isArray(checks)&&checks.length===expected.length&&checks.every(x=>x==='met');
   }catch{return false;}
+}
+export function activeAgent(t) {
+  const last=[...t.moves].reverse().find(m=>m.kind==='agent'&&m.note.startsWith('AGENT_CHANGE:'));
+  return last?last.note.slice('AGENT_CHANGE:'.length):t.agent;
 }
 export function activeIntent(t) {
   const last=[...t.moves].reverse().find(m=>m.kind==='amendment'&&m.note.startsWith('OWNER_INTENT_CHANGE:'));
@@ -165,22 +172,19 @@ export function reconcile({checks,reply,decision,gap='',nudgeId,goal,criteria=[]
   if(decision==='correct'&&!negatives.length&&!gap)throw Error('Name the observed gap for correction');
   if(decision==='request evidence'&&!unknown.length&&!gap)throw Error('Name missing evidence');
   let kind={continue:'task',correct:'correction','request evidence':'evidence','change direction':'direction',close:'close'}[decision];
-  const explanation=decision==='correct'?'Correct these observed gaps: '+[...negatives,gap].filter(Boolean).join('; '):
-    decision==='request evidence'?'Provide evidence for these UNKNOWNs: '+[...unknown,gap].filter(Boolean).join('; '):
-    decision==='close'?'Provide the final artifact or issue pointer; do not infer Owner approval from task COMPLETE.':
-    decision==='change direction'?'Propose revised direction; Owner retains approval. '+gap:
-    'Continue one bounded task, preserving the Owner outcome. '+gap;
   const packet=['[Owner · NextNudge '+nudgeId+']','Intent: '+goal,
-    'Agent: '+agent,'Move: '+decision,'Purpose: '+goal,
-    'One bounded task: '+explanation,'Authoritative inputs: '+(reply||'UNKNOWN'),
+    'Agent: '+agent,'Move: '+decision,
+    'Observed gap:\\n'+gap,
+    'One bounded task:\\n',
+    'Authoritative inputs: '+(reply||'UNKNOWN'),
     'Boundaries: preserve Owner scope and HOLD; no unassigned edits.',
     'Success criteria: '+(criteria.length?criteria.join(' | '):'UNKNOWN — ask Owner'),
     'Uncertainty handling: UNKNOWN must be stated, not assumed.',
     'Evidence and continuation: return actual result, source and next feasible action.',
     method?'GUIDED method: '+method:'',
     'COMPLETE covers this bounded task only, not the Owner outcome.',
-    'Start your reply with ACK '+nudgeId+'.'].filter(Boolean).join('\n');
+    'Start your reply with ACK '+nudgeId+'.'].filter(Boolean).join('\\n');
   assertPublic(packet);
-  return {kind,packet,gap:explanation,
+  return {kind,packet,gap,
     ...(decision==='close'?{closure:{criteria:[...criteria],checks:[...checks]}}:{})};
 }
