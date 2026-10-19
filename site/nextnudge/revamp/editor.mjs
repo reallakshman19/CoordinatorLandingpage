@@ -3,7 +3,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>
   ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 export function ackTag(packet) {
-  const tags=[...packet.matchAll(/\bACK[ \t]+([A-Za-z0-9][A-Za-z0-9_-]*(?:\.[A-Za-z0-9_-]+)*)(?=[\s.,;:!?)]|$)/g)]
+  const tags=[...packet.matchAll(/(?:^|\r?\n)[ \t]*(?:Start your reply with[ \t]+)?ACK[ \t]+([A-Za-z0-9][A-Za-z0-9_-]*(?:\.[A-Za-z0-9_-]+)*)(?=[\s.,;:!?)]|$)/g)]
     .map(m=>m[1]);
   if(new Set(tags).size>1)throw Error('Conflicting ACK tags in pasted packet');
   return tags[0]||null;
