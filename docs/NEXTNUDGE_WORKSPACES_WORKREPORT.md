@@ -1,7 +1,7 @@
 # NextNudge distinct workspaces — implementation record
 
 **Status:** Functional implementation checked; visual/browser interaction limits remain.
-**REPORT_BASIS_HEAD:** `f162a54a63f787d53795cba2e9b3f6ea6142fc57`. Report-only successors do not change the tested implementation.
+**REPORT_BASIS_HEAD:** `f6f42af9ded7288dfbfae0cf915f8cb5b9e5241c`. Report-only successors do not change the tested implementation.
 **Base:** `99db602e9ed7d6f63a110e13ca0450f552c4d355`; branch `fix/nextnudge-distinct-workspaces`; [PR #117](https://github.com/reallakshman19/CoordinatorLandingpage/pull/117).
 **Authority:** Owner explicitly requested unique tabs, fields to save/link and direct code changes on 2026-10-20 (Dubai).
 This continues #110 after merged #112/#116; #105's legacy-v2 work remains separate. No AGENTS.md/master index exists in this base tree.
@@ -13,7 +13,7 @@ These targets interpret the Owner's words; they are not a fabricated native conf
 - W2: Task/Correction can select an immutable saved Ground ID; Correction/Reconcile select real recorded exchanges. Source URLs are rendered as working anchors. PASS in model and rendered-output checks.
 - W3: Fields and editable packets restore independently per thread/tab, including manual packet edits. PASS in navigation/reload-storage harnesses.
 - W4: Typing adds no history; meaningful saves add one version, unchanged saves add none; failed writes retain recoverable fields and committed history. PASS.
-- W5: Packets use entered fields and selected references; stale fields/Owner context, private chat URLs, missing correction targets, HOLD and invalid closure are rejected. Changing review targets resets verdicts. PASS.
+- W5: Packets use entered fields and selected references; stale fields/Owner context, private chat URLs, missing correction targets, HOLD and invalid closure are rejected. Changing review targets resets verdicts. Validation errors stay beside the active controls and keep the last valid packet. PASS.
 - W6: Original packet/schema, delivery, privacy, storage-retry and ACK/acceptance tests remain green. Fresh real-browser observation is NOT_RUN, so complete visual/deployed-flow qualification is not claimed.
 
 ## Implemented architecture
@@ -36,7 +36,7 @@ Legacy freeform packets are retained and clearly labelled when restored; new wor
 Environment: Node v24.19.0/Linux. Command: `node --test tests/nextnudge-*.mjs`.
 - Base applicable suite: **99/99 pass**.
 - Functional-wiring RED checkpoint `12d01f8b8a409b2fc8a300252ade49ac78c0fa1f`: **109 total, 104 pass, 5 behavioral route failures, 0 skip**. Prepared model/view modules existed, but the legacy app did not route actions into the workspaces. This was not a test-only commit.
-- Implementation basis above: **114/114 pass, 0 fail, 0 skip**. Includes fifteen new workspace checks and all ninety-nine previous checks.
+- Implementation basis above: **115/115 pass, 0 fail, 0 skip**. Includes sixteen new workspace checks and all ninety-nine previous checks.
 - `python3 -m py_compile scripts/verify_nextnudge_workspaces.py`: PASS (syntax only).
 - Exact-head remote CI and file parity are retained in the PR status/description after readback; local PASS is not reported as remote execution.
 
@@ -55,17 +55,17 @@ Its Python syntax compilation is recorded separately above.
 Production: app.mjs (routes/shared composer), screens.mjs (formatter options), grounding.mjs (shared navigation), move-view.mjs (workspace summaries), style.css (tab/form layouts and contrast), five workspace modules (model, draft store, navigation, view, UI controller).
 Tests: nextnudge-workspaces.mjs plus navigation/verdict/assessment updates in nextnudge-grounding-pilot.mjs, nextnudge-r1.mjs and nextnudge-r3-seal.mjs.
 Supporting: docs/NEXTNUDGE.md, this report and the optional browser checker.
-Touched production modules remain below 300 physical lines: app 271, workspace model 128, UI controller 106, view 79, draft store 21, navigation 10, style 88.
+Touched production modules remain below 300 physical lines: app 271, workspace model 128, UI controller 113, view 80, draft store 21, navigation 10, style 88.
 No canonical thread/data, workflows, numerical converter, registry, native acceptance rule or legacy-v2 code changed.
 
 ## SELF-CHECK v1 — PARTIAL
-Basis: Owner's direct revamp request; candidate implementation f162a54a63f787d53795cba2e9b3f6ea6142fc57; source #110 and the preceding screenshot/functional findings.
+Basis: Owner's direct revamp request; candidate implementation f6f42af9ded7288dfbfae0cf915f8cb5b9e5241c; source #110 and the preceding screenshot/functional findings.
 Native label/plan/confirmed-criteria identity is NOT_AVAILABLE; native standalone tools exclude this coordination repository. No native approved label, DONE receipt or optional-helper success is invented.
 - SC_INTENT: MET for implemented fields, separate saves and actual source-linked packet workflows.
 - SC_INPUTS: MET for current base/source and explicit task interpretation; UI screenshot exposure is disclosed.
 - SC_SCOPE: MET; changed-file ledger and preserved authorities above.
 - SC_FLOW: PARTIAL; production route/form/output and persisted-state consumers executed; real browser is NOT_RUN.
-- SC_TESTS: MET for applicable logic regressions; five wrong-route counterexamples and fifteen new checks; browser checker NOT_RUN explicitly limits the claim.
+- SC_TESTS: MET for applicable logic regressions; five wrong-route counterexamples and sixteen new checks; browser checker NOT_RUN explicitly limits the claim.
 - SC_CODE: MET; shared canonical store/formatter/transport retained, modules bounded, old generic action path replaced.
 - SC_PENDING: PARTIAL for overall visual/deployed qualification; Owner/available local browser should run the retained checker and inspect the forms. Merge/acceptance remains Owner-controlled.
 - SC_FRESHNESS: bound to implementation SHA above; metadata-only successors and remote check state remain separate.
