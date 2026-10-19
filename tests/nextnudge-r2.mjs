@@ -109,7 +109,7 @@ test('R2 G6: five multiline done-when checks round-trip; sixth refused and forms
   assert.match(sentForm(),/Save sent packet/);
   x.moves.push({...move(M,'amendment','draft'),
     note:'OWNER_INTENT_CHANGE:'+JSON.stringify(next)});
-  assert.deepEqual(activeIntent(parse(serialize(x)).doneWhen),checks);
+  assert.deepEqual(activeIntent(parse(serialize(x))).doneWhen,checks);
   assert.throws(()=>amendValues({...next,checks:[...checks,'Sixth'].join('\n')}),/At most five/);
   const app=fs.readFileSync(new URL('../site/nextnudge/revamp/app.mjs',import.meta.url),'utf8');
   assert.doesNotMatch(app,/prompt\('Owner goal'|confirm\('Confirm you manually sent/);
