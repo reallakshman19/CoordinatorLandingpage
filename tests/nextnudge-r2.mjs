@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import {gzipSync} from 'node:zlib';
+import {applyIssue} from '../scripts/nextnudge_thread_apply.mjs';
 import {newThread,parse,serialize,currentState,activeIntent,activeAgent,
   reconcile,validate} from '../site/nextnudge/revamp/thread.mjs';
 import {ackTag,boundedTaskFilled,sentMove,amendValues,agentChange,
@@ -114,6 +116,29 @@ test('R2 G6: five multiline done-when checks round-trip; sixth refused and forms
   assert.match(app,/form.id==='owner-amend'/);
   assert.match(app,/form.id==='sent-confirm'/);
   assert.match(app,/values.get\('approved'\)/);
+});
+test('R2 G5+G6: real owner-only GitHub issue save retains scope/out and five newline criteria',async()=>{
+  const x=make(),criteria=['One','Two','Three','Four','Five'];
+  const next=amendValues({goal:'Amended intent',checks:criteria.join('\n'),
+    inScope:'Updated in scope',outScope:'Updated out of scope',hold:''});
+  x.moves.push({...move(M,'amendment','draft'),
+    note:'OWNER_INTENT_CHANGE:'+JSON.stringify(next)});
+  const {moves,...header}=x;
+  const payload={v:3,id:ID,baseSha:null,expectedCount:0,header,moves};
+  const tick=String.fromCharCode(96).repeat(3);
+  const body='Approved save\n'+tick+'nextnudge-thread-save\n'+
+    gzipSync(JSON.stringify(payload)).toString('base64')+'\n'+tick;
+  let saved='',receipt='';
+  const issue={user:{login:'reallakshman19'},state:'open',
+    labels:[{name:'nextnudge-save'}],body};
+  const status=await applyIssue({issue,owner:'reallakshman19',read:async()=>null,
+    write:async(_,text)=>{saved=text;},comment:async s=>{receipt=s;},close:async()=>{}});
+  assert.equal(status,'SAVED');assert.match(receipt,/SAVED:/);
+  const y=parse(saved),intent=activeIntent(y);
+  assert.deepEqual(intent.doneWhen,criteria);
+  assert.equal(intent.inScope,'Updated in scope');
+  assert.equal(intent.outScope,'Updated out of scope');
+  assert.equal(y.inScope,'Audit only','original frozen thread header stays unchanged');
 });
 test('R2 preserves original seed, byte exactness, and existing browser model schema',()=>{
   const md=fs.readFileSync(new URL('../site/nextnudge-data/threads/NN-20261018-171656-66d2.md',import.meta.url),'utf8');
