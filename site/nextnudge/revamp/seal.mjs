@@ -12,7 +12,7 @@ export async function makeSeal(thread,{text,names,id=freshId(),date=new Date()})
 }
 export function sealUnlocked(thread,seal){
   const idx=thread.moves.findIndex(m=>m.id===seal.id);
-  return idx>=0&&thread.moves.slice(idx+1).some(m=>m.kind==='reply'&&m.answers===seal.names);
+  return idx>=0&&thread.moves.some(m=>m.kind==='reply'&&m.answers===seal.names);
 }
 export function sealHtml(thread,move,esc) {
   const tip='<p>Do not put sensitive text in a sealed note. The text is public in the thread file.</p>';
