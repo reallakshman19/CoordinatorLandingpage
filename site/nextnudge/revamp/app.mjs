@@ -52,7 +52,7 @@ function renderThread() {
     '<label>Public evidence URL (optional) <input id="evidence" placeholder="https://github.com/..."></label>'+
     '<label>Result label<select id="reply-label">'+['UNKNOWN','INDEPENDENT','SELF-ASSESSED','NOT BLIND'].map(v=>'<option>'+v+'</option>').join('')+'</select></label>'+ 
     '<button data-action="record-reply">Record return digest</button></details>'+
-    '<details class="thread-utilities"><summary>Utilities & Notes (private chat, dated note, sealed note)</summary>'+
+    '<details class="thread-utilities"'+(state.editor==='seal'?' open':'')+'><summary>Utilities & Notes (private chat, dated note, sealed note)</summary>'+
     '<label>Private chat link (device only) <input id="chat" type="url" placeholder="https://..." value="'+esc(chatLink(x.id))+'"></label>'+
     '<button data-action="save-chat">Keep link on device</button>'+
     '<label>Free-form dated note (no reopening gate) <input id="note" placeholder="Short note"></label>'+
@@ -64,7 +64,13 @@ function renderThread() {
     '<p>Owner-only issue submission, expected SHA, rejected saves keep this draft.</p></section>';
   if(state.editor==='owner')$('#editor').innerHTML=ownerForm(i);
   if(state.editor==='agent')$('#editor').innerHTML=agentForm(activeAgent(x));
-  if(state.editor==='seal')$('#seal-host').innerHTML=sealForm(x,esc);
+  if(state.editor==='seal'){
+    const host=$('#seal-host');if(host){
+      host.innerHTML=sealForm(x,esc);
+      const target=host.querySelector('textarea,select');if(target){target.focus();
+        target.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest'});}
+    }
+  }
   if(state.draft)renderComposer();
 }
 function focusComposer(){
@@ -81,8 +87,9 @@ function renderComposer() {
     '<p>Guidance: <a target="_blank" rel="noopener noreferrer" href="https://github.com/reallakshman19/Common/tree/main/skills/agent-work">current agent-work</a>. Follow the project’s selected standalone protocol and record the revision read.</p>'+
     '<label>Exact packet to copy / edit<textarea id="packet" rows="14">'+esc(d.packet)+'</textarea></label>'+
     '<p class="small">Pre-send: one task · intent quoted · observable result · ACK return line · unknowns allowed.</p>'+
-    '<button data-action="copy-packet" class="primary">Copy exact packet</button> '+
-    '<button data-action="record-sent">Record manually sent packet</button>'+
+    '<div class="composer-actions"><button data-action="copy-packet" class="primary">Copy exact packet</button> '+
+    '<button data-action="record-sent">Record manually sent packet</button> '+
+    '<span id="packet-status" class="packet-status" role="status" aria-live="polite"></span></div>'+
     '<label id="fallback-box" hidden>Manual copy fallback<textarea id="fallback" readonly hidden rows="8"></textarea></label>'+composerExtras(t(),d);
   if(state.editor==='send')$('#composer').insertAdjacentHTML('beforeend',sentForm(activeAgent(t())));
   focusComposer();
@@ -185,8 +192,15 @@ async function onAction(action,target) {
     const text=v('packet')||state.draft?.packet;
     if(!text)throw Error('No packet');assertPublic(text);state.draft.packet=text;
     if(action==='copy-packet'){
-      try{await navigator.clipboard.writeText(text);notice('Packet copied. Copy does not imply sending.');}
-      catch {$('#fallback').hidden=false;$('#fallback').value=text;$('#fallback').select();notice('Clipboard denied; use selected manual-copy text.');}
+      const setPacketStatus=s=>{const el=$('#packet-status');if(el)el.textContent=s;};
+      try{
+        await navigator.clipboard.writeText(text);
+        setPacketStatus('Packet copied. Copy does not send.');notice('Exact packet copied to clipboard. Copy does not imply sending.');
+      }catch{
+        const fb=$('#fallback'),box=$('#fallback-box');if(box)box.hidden=false;
+        if(fb){fb.hidden=false;fb.value=text;fb.focus();fb.select();}
+        setPacketStatus('Clipboard denied; use selected manual fallback below.');notice('Clipboard denied; use selected manual-copy text below.');
+      }
       return;
     }
     state.editor='send';renderComposer();return;

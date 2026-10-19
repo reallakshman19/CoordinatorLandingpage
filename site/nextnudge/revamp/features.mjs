@@ -12,8 +12,9 @@ function groundingValues(form){
     .map(([key,value])=>[key.slice(7),value]));
 }
 export function renderGrounding(thread){
-  const draft=drafts()[thread.id];
-  return groundingPanel(thread,draft||readGrounding(thread),!!draft);
+  const draft=drafts()[thread.id],saved=readGrounding(thread);
+  const isDiff=draft&&Object.keys(draft).some(k=>(draft[k]||'')!==(saved[k]||''));
+  return groundingPanel(thread,draft||saved,isDiff);
 }
 export function restoreDraft(thread){return restoreComposer(thread.id);}
 export function composerExtras(thread,draft){
@@ -80,20 +81,25 @@ export function installFeatures(ctx){
     try{
       if(event.target.id==='packet'&&ctx.state.draft){
         ctx.state.draft.packet=event.target.value;rememberComposer(ctx.t().id,ctx.state.draft);
+        const st=$('#packet-status');if(st)st.textContent='';
       }
       if(event.target.closest('#grounding-form')){
         const rows=drafts();rows[ctx.t().id]=groundingValues($('#grounding-form'));
         localStorage.setItem(DRAFTS,JSON.stringify(rows));
+        setGroundingStatus('Unsaved device draft');
       }
-    }catch(e){ctx.notice('Browser draft storage failed: '+e.message+'. Copy/export before leaving.');}
+    }catch(e){
+      setGroundingStatus('Draft storage failed: '+e.message);
+      ctx.notice('Browser draft storage failed: '+e.message+'. Copy/export before leaving.');
+    }
   });
   document.addEventListener('submit',event=>{
     if(event.target.id!=='grounding-form')return;event.preventDefault();
     try{
-      const thread=ctx.t(),move=groundingMove(thread,groundingValues(event.target));
+      const thread=ctx.t(),vals=groundingValues(event.target),move=groundingMove(thread,vals);
       const rows=drafts();delete rows[thread.id];
-      if(move)ctx.append(move);
       localStorage.setItem(DRAFTS,JSON.stringify(rows));
+      if(move)ctx.append(move);
       const msg=move?'Grounding saved locally as one update. Save to GitHub for durable sharing.':'Grounding unchanged; no history entry added.';
       setGroundingStatus(msg);
       ctx.notice(msg);

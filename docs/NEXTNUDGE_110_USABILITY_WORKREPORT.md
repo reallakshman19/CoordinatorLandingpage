@@ -1,88 +1,114 @@
 # NextNudge UI Usability Repair (#110) — Work Report
 
-**Status:** Completed & Validated (Draft PR Candidate).  
+**Status:** Completed & Validated (Draft PR #116 Candidate).  
 **Task / Source:** [Issue #110](https://github.com/reallakshman19/CoordinatorLandingpage/issues/110) · continuation from merged [PR #112](https://github.com/reallakshman19/CoordinatorLandingpage/pull/112).  
 **Baseline Tested Commit:** `2a70ffcaaa79c3759474dfef5b9d37a6a5ac5cbe` (`origin/main`).  
-**Working Branch:** `fix/nextnudge-ui-usability-110`.  
+**Reviewed PR Head:** `9ed52101ecea27f2ce3e911b726c00a29fb24222`.  
+**Working Branch:** `fix/nextnudge-ui-usability-110` on existing draft [PR #116](https://github.com/reallakshman19/CoordinatorLandingpage/pull/116).  
 
 ---
 
-## 1. Summary of Usability Repairs
+## 1. Resolved Owner Review Findings
 
-### A. Intent Card Normal Flow & Hierarchy (Eliminated Sticky Overlap)
-- **Problem:** `.intent` was styled with `position: sticky; top: 0; z-index: 2` and unbounded height (~280px–360px). When scrolling into the Composer or navigating to the Reconcile two-column grid, the sticky card severely occluded active form elements, check verdicts, and draft buttons.
+### 1. Clipboard Failure & Complete Fallback Unhiding
+- **Root Cause:** When `navigator.clipboard.writeText` threw or was denied, the catch handler set `$('#fallback').hidden = false`, but its parent container `<label id="fallback-box" hidden>` remained hidden. Because `[hidden] { display: none !important; }` protects HTML hidden elements, the entire fallback remained invisible to the user.
 - **Repair:**
-  - Removed `position: sticky` in `site/nextnudge/revamp/style.css`; set normal document flow with clean borders and contrast.
-  - Formatted Owner Intent to prominently display the Owner **Goal**, active **Agent**, and **HOLD** constraint.
-  - Placed secondary criteria (Scope and Done-When) inside an accessible native `<details class="intent-details">` disclosure without truncating text or restricting heights.
-  - In Reconcile view, the 2-column grid and decision buttons are now 100% visible and un-occluded.
+  - In `app.mjs`, the catch handler now explicitly unhides both `#fallback-box` (`box.hidden = false`) and `#fallback` (`fb.hidden = false`).
+  - Sets exact packet text into `#fallback`, moves focus to the element (`fb.focus()`), and selects the full text range (`fb.select()`) for immediate manual copying.
+  - Updates `#packet-status` to `'Clipboard denied; use selected manual fallback below.'`.
 
-### B. Discoverable Composition & Natural Focus Management
-- **Problem:** Opening the composer appended `#composer` after all utility and save sections (~1000px below the fold), leaving the Owner stranded with no visible feedback or unexplained viewport jumps.
+### 2. Grounding State Feedback & Draft Cleanup
+- **Root Cause:** In `features.mjs`, `ctx.append(move)` was invoked before `localStorage.setItem(DRAFTS, JSON.stringify(rows))` removed the draft. Because `ctx.append` synchronously calls `render()`, `renderGrounding()` observed the lingering draft in localStorage and rendered `(Unsaved device draft restored)` right after a successful save. Furthermore, subsequent keystrokes did not clear the prior save confirmation.
 - **Repair:**
-  - Relocated `<section id="composer"></section>` in `site/nextnudge/revamp/app.mjs` directly below the steering `.actions` row (`Task`, `Ground`, `Correction`, `Reconcile`).
-  - Added focused keyboard navigation (`focusComposer()`) that focuses `#packet` immediately on opening and aligns the element smoothly into view if out of viewport bounds.
-  - Added `@media (prefers-reduced-motion: reduce)` support (`scroll-behavior: auto !important`).
+  - `renderGrounding()` now compares the draft against `readGrounding(thread)`: `isDiff = draft && Object.keys(draft).some(k => (draft[k]||'') !== (saved[k]||''))`. Only genuinely differing drafts trigger `hasDraft`.
+  - In the `submit` handler, the draft entry is deleted from localStorage **before** calling `ctx.append(move)`. Upon re-render, zero unsaved draft exists, so `(Unsaved device draft restored)` is eliminated.
+  - The inline `.grounding-status` elements immediately report `'Grounding saved locally as one update. Save to GitHub for durable sharing.'`.
+  - The `input` handler immediately updates `.grounding-status` to `'Unsaved device draft'` on the first subsequent keystroke, replacing the stale saved message.
+  - Storage errors (e.g. quota limits) are caught and reported inline: `Draft storage failed: <message>`.
+  - Duplicate/unchanged saves add zero moves to thread history and report `'Grounding unchanged; no history entry added.'`.
 
-### C. Repair of Hidden Controls & Empty State Hosts
-- **Problem:** A blanket CSS rule `input, textarea, select { display: block; width: 100%; }` unintentionally overrode the HTML `hidden` attribute on `<input id="import-file" hidden>`, rendering an untriggered file upload button. Conversely, globally hiding `section:empty` caused dynamic hosts to fail unpredictably.
+### 3. Sealed Notes Click Journey & Focus
+- **Root Cause:** Clicking `<button data-action="seal-open">Sealed note</button>` set `state.editor = 'seal'` and re-rendered the thread. However, `<details class="thread-utilities">` re-rendered without the `open` attribute, immediately closing and occluding the `#seal-host` form that the user had just requested.
 - **Repair:**
-  - Added explicit `[hidden] { display: none !important; }` in `style.css`.
-  - Scoped empty-host hiding strictly to identified dynamic targets: `#editor:empty, #seal-host:empty, #composer:empty { display: none; }`.
-  - Wrapped manual clipboard fallback inside `<label id="fallback-box" hidden>` and ensured explicit clipboard failure unhides both `#fallback-box` and `#fallback`. Verified `$('#import-file').click()` correctly opens file picker on demand.
+  - `renderThread()` dynamically sets `<details class="thread-utilities" ${state.editor==='seal'?' open':''}>`.
+  - When `state.editor === 'seal'`, the form target is focused and scrolled smoothly into view:
+    `host.querySelector('textarea,select')?.focus()`.
+  - Tested the complete click journey from collapsed utilities to active form and cancel.
 
-### D. Action Hierarchy & Clutter Reduction
-- **Problem:** Duplicate buttons ("Close via Reconcile" appeared twice: once in the steering row and once in the status card). Primary steering actions blended into secondary utilities. Manual reply JSON dominated the screen.
+### 4. Dark Appearance Contrast Correction
+- **Root Cause:** Utility and manual-reply summaries had light-mode text color `#2e4c4d` without a dark-mode override, rendering `#2e4c4d` against `#1e3035` (~1.48:1 contrast, failing WCAG AA).
 - **Repair:**
-  - Removed the duplicate "Close via Reconcile" button while preserving `title="Close via Reconcile"` on the primary `Reconcile` button (maintaining 100% compatibility with string assertion tests).
-  - Elevated primary steering actions (`Task`, `Save grounding`, `Copy exact packet`, `One-click GitHub save`) with `button.primary` styling.
-  - Collapsed raw manual reply submission into an accessible `<details class="fallback-reply">` with clear labeling indicating it is an emergency fallback for offline/manual delivery.
-  - Grouped private chat links, manual notes, and sealed note controls under `<details class="thread-utilities">`.
-  - Styled `HOLD` constraints with a conspicuous amber alert card (`role="alert"`) that remains clearly visible.
+  - In `style.css`, light-mode summary text is styled with `#183f45` against `#f8faf9` (measured **10.91:1** contrast).
+  - In `@media (prefers-color-scheme: dark)`, `.fallback-reply summary, .thread-utilities summary` is styled with `#a5f3fc` against `#1e3035` (measured **11.00:1** contrast, exceeding WCAG AAA).
+  - Status indicators use `#166534` in light mode and `#86efac` in dark mode.
 
-### E. Simplified Grounding Fixtures
-- **Problem:** Grounding Fixtures required scrolling through 25 full 3-row textareas to reach the lone "Save grounding" and "Copy grounding" buttons at the bottom. Link-heavy items took up excessive vertical space.
+### 5. Truthful Composer Feedback
 - **Repair:**
-  - Retained all 25 original headings and optional free-text semantics (no restrictive `type=url` or input replacements).
-  - Transformed link-heavy headings (`1a` GitHub issue, `1b` Pull request, `1c` Governing parent issues, `1d` Roadmap issue) into compact single-line vertically resizable textareas (`rows="1"` with `.compact-textarea`).
-  - Provided static dual `Save grounding` and `Copy grounding for agent` action bars at **both top and bottom** of the form.
-  - Added accessible inline status indicators (`.grounding-status` with `role="status"` and `aria-live="polite"`) right next to the active buttons, clearly reporting local save and copy actions.
-  - Added clear explanatory guidance explicitly distinguishing device drafts (typing), local snapshots (Save grounding), and public GitHub publication (One-click GitHub save).
+  - Added an accessible status element `<span id="packet-status" class="packet-status" role="status" aria-live="polite"></span>` beside the composer buttons.
+  - On copy success: displays `'Packet copied. Copy does not send.'` to ensure copy is never confused with transmission or delivery.
+  - On copy failure: displays `'Clipboard denied; use selected manual fallback below.'`.
+  - Typing in `#packet` immediately clears any stale copy status message.
 
 ---
 
-## 2. Source Line Count Verification
+## 2. Source Line Count Verification (< 300 Physical Lines)
 
-Per project constraints, all touched R1/R3 modules must stay under 300 physical lines:
+All touched modules strictly respect the project's physical line constraint:
 
-| File | Physical Lines | Status |
-|---|---|---|
-| `site/nextnudge/revamp/app.mjs` | 280 | PASS (< 300) |
-| `site/nextnudge/revamp/features.mjs` | 103 | PASS (< 300) |
-| `site/nextnudge/revamp/grounding.mjs` | 60 | PASS (< 300) |
-| `site/nextnudge/revamp/style.css` | 59 | PASS (< 300) |
-
----
-
-## 3. Test & Verification Ledger
-
-| Suite / Check | Result | Details |
-|---|---|---|
-| `tests/nextnudge-r1.mjs` | PASS (16/16) | NLM seed, byte exactness, gap quotes, intent amendment, privacy filter, CAS delta, Reconcile checks, 300-line limits. |
-| `tests/nextnudge-grounding-ui.mjs` | PASS (2/2) | All 25 headings optional textareas, HTML escaping, single submit save, zero per-keystroke history, private link rejection. |
-| `tests/nextnudge-actions.mjs` | PASS (8/8) | Unauthorized/closed request guards, path safety, stale SHA prevention, retry recovery, receipt ingestion. |
-| `tests/nextnudge-fix3.mjs` | PASS (4/4) | Cross-product URL and privacy scanning under 250ms without catastrophic backtracking. |
-| `tests/nextnudge-save.mjs` | PASS (14/14) | Gzip roundtrip, CAS validation, issue URL limits, 14-move thread integrity. |
-| Full test runner (`tests/nextnudge-*.mjs`) | PASS (85/85 passed, 1 skipped) | 86 total test cases executed. 1 test skipped in `tests/nextnudge-repository.mjs` (unrelated live repository read). |
-| Native Browser Dialogs Check | PASS (33/33 files) | Zero `prompt()` or `confirm()` occurrences across all `.mjs` and `.html` files in `site/nextnudge/`. |
-| Headless Chrome Interactive Suite (1280×800) | PASS | No intent overlap (`position: static`), Composer placed directly below actions, `#packet` focused, hidden controls remain hidden. |
-| Mobile Viewport Suite (390×844) | PASS | Responsive, Intent card fits viewport, dual grounding actions accessible without scrolling 25 items. |
-| Dark Mode Accessibility | PASS | High contrast text, legible borders, styled primary buttons. |
+| File | Physical Lines | Limit | Status |
+|---|---|---|---|
+| `site/nextnudge/revamp/app.mjs` | 294 | <= 300 | PASS |
+| `site/nextnudge/revamp/features.mjs` | 109 | <= 300 | PASS |
+| `site/nextnudge/revamp/grounding.mjs` | 60 | <= 300 | PASS |
+| `site/nextnudge/revamp/style.css` | 60 | <= 300 | PASS |
 
 ---
 
-## 4. Remaining NOT_RUN Checks
+## 3. Validation Ledger
 
-1. **Merge to Main:** NOT_RUN (per boundary constraints; pending Owner review of Draft PR).
-2. **Production GitHub Pages Deployment:** NOT_RUN (must follow authorized merge).
-3. **Live GitHub Issue Submission via Browser:** NOT_RUN (simulated via authoritative tests; public GitHub thread was not modified).
+### Authoritative Local Test Suite
+Executed command:
+```powershell
+node --test tests/nextnudge-*.mjs
+```
+**Results:**
+- **Total Tests Run:** 94
+- **Passed:** 93
+- **Failed:** 0
+- **Skipped:** 1 (`tests/nextnudge-repository.mjs` line 48: live repository network query, intentionally skipped when not online/configured)
+- **Suite Breakdown:**
+  - `tests/nextnudge-ui-repair-116.mjs`: **PASS (4/4)** (dedicated regression tests covering all 5 Owner findings)
+  - `tests/nextnudge-r1.mjs`: **PASS (16/16)** (NLM seed, CAS delta, checks, 300-line limits)
+  - `tests/nextnudge-grounding-ui.mjs`: **PASS (2/2)** (25 textareas, escaping, single save, no per-keystroke history)
+  - `tests/nextnudge-actions.mjs`: **PASS (8/8)** (closed/unauthorized request guards, retry idempotence)
+  - `tests/nextnudge-save.mjs`: **PASS (14/14)** (gzip, CAS validation, limits, delta)
+  - `tests/nextnudge-fix3.mjs`: **PASS (4/4)** (privacy scanner without catastrophic backtracking)
+  - `tests/nextnudge-r3-reply.mjs`: **PASS (8/8)** (ACK linking, BOM preservation, labels)
+  - `tests/nextnudge-r3-seal.mjs`: **PASS (4/4)** (cross-platform `fileURLToPath` scan, SHA vector, unlocked states)
+  - `tests/nextnudge-rules.mjs`: **PASS (18/18)** (ladder rules, append-only provenance, schema)
+  - `tests/nextnudge-bridge.mjs`: **PASS (4/4)** (bridge serialization and restore)
+  - `tests/nextnudge-grounding-pilot.mjs`: **PASS (1/1)** (pilot qualification)
+  - `tests/nextnudge-host.mjs`: **PASS (4/4)** (host isolation)
+  - `tests/nextnudge-r2.mjs`: **PASS (6/6)** (R2 byte exactness)
+
+### Headless Chrome Interactive Browser Verification
+Executed script:
+```powershell
+node scratch/verify_after.mjs
+```
+- **Sealed Note Journey:** `detailsOpen: true`, `sealHostVisible: true`, `formPresent: true`, `isFocusedInForm: true`.
+- **Composer Success Feedback:** `Packet copied. Copy does not send.`; status cleared on packet editing.
+- **Clipboard Failure Fallback:** With `navigator.clipboard.writeText` rejecting, `#fallback-box` display is `block`, `#fallback` display is `block`, text is populated, focused, and selected (`selectionStart: 0, selectionEnd: text.length`), and status reports `'Clipboard denied; use selected manual fallback below.'`.
+- **Grounding Feedback Cycle:** Typing shows `'Unsaved device draft'`; save clears draft from storage and removes `(Unsaved device draft restored)` banner; second edit immediately switches back to `'Unsaved device draft'`; unchanged save reports `'Grounding unchanged; no history entry added.'`.
+- **Contrast Ratios:**
+  - Light mode summary: **10.91:1** (`rgb(24, 63, 69)` on `rgb(248, 250, 249)`).
+  - Dark mode summary: **11.00:1** (`rgb(165, 243, 252)` on `rgb(30, 48, 53)`).
+- **Mobile Viewport:** Responsive and un-clipped at 390×844.
+
+---
+
+## 4. Boundaries & Remaining NOT_RUN Checks
+
+- **Merge to Main:** `NOT_RUN` (governed by standalone mode boundaries; awaits Owner review).
+- **Production Deployment to GitHub Pages:** `NOT_RUN` (governed by boundary; follows authorized merge).
+- **Live GitHub Issue Submission:** `NOT_RUN` (verified via authoritative CAS tests; no artificial test issues created on public tracker).

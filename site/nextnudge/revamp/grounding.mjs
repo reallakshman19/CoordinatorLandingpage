@@ -41,10 +41,10 @@ export function groundingPanel(thread,values=readGrounding(thread),hasDraft=fals
   const actionsBar='<div class="grounding-actions">'+
     '<button type="submit" class="primary">Save grounding</button> '+
     '<button type="button" data-action="copy-grounding">Copy grounding for agent</button> '+
-    '<span class="grounding-status" role="status" aria-live="polite"></span></div>';
+    '<span class="grounding-status" role="status" aria-live="polite">'+(hasDraft?'Unsaved device draft restored':'')+'</span></div>';
   return '<div class="heading"><button data-action="thread">← Thread</button><h2>Grounding Fixtures</h2></div>'+
     '<nav aria-label="Thread sections"><button data-action="thread">Thread</button> <button data-action="grounding" aria-current="page">Grounding Fixtures</button></nav>'+
-    '<p>Keep reusable context here. Blank means UNKNOWN. Edits stay on this device while typing. &quot;Save grounding&quot; creates one local snapshot in thread history. Publish to GitHub on Thread page.'+(hasDraft?' <strong>(Unsaved device draft restored)</strong>':'')+'</p>'+
+    '<p>Keep reusable context here. Blank means UNKNOWN. Edits stay on this device while typing. &quot;Save grounding&quot; creates one local snapshot in thread history. Publish to GitHub on Thread page.'+(hasDraft?' <strong class="draft-indicator">(Unsaved device draft restored)</strong>':'')+'</p>'+
     '<form id="grounding-form">'+actionsBar+Object.entries(PHASES).map(([phase,label])=>
       '<details'+(phase==='onboarding'?' open':'')+'><summary>'+esc(label)+'</summary>'+
       HEADINGS.filter(([p])=>p===phase).map(([,key,title])=>
