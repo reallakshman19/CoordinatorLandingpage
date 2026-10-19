@@ -1,5 +1,5 @@
 import {activeIntent} from './thread.mjs';
-import {workspaceEntries,savedWorkspace,responseTargets} from './workspace.mjs';
+import {workspaceEntries,savedWorkspace,responseTargets,workspaceBasis} from './workspace.mjs';
 import {workspaceNav,TITLES} from './workspace-nav.mjs';
 import {replyLabel} from './reply.mjs';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -64,6 +64,7 @@ function reviewFields(thread,v){
 }
 export function workspaceView(thread,mode,v,draft){
   const saved=savedWorkspace(thread,mode),i=activeIntent(thread);
+  const stale=draft?.workspaceMode&&draft.workspaceBasis!==workspaceBasis(thread,mode,v);
   const content={ground:groundFields,task:taskFields,correction:correctionFields,reconcile:reviewFields}[mode];
   return '<div class="heading"><button data-action="thread">← Overview</button><h2>'+esc(thread.title)+'</h2></div>'+workspaceNav(mode)+
     '<section class="workspace workspace-'+mode+'"><div class="workspace-heading"><div><p class="eyebrow">'+esc(descriptions[mode])+'</p>'+
@@ -74,5 +75,5 @@ export function workspaceView(thread,mode,v,draft){
     '<span id="workspace-status" role="status" aria-live="polite">'+(saved?'Saved version '+esc(saved.id):'No saved '+TITLES[mode]+' version yet')+'</span></div></form>'+
     '<p class="small">Typing keeps a separate device draft for this tab. Save records one meaningful version locally. Unchanged saves add nothing to history.</p>'+
     '<button data-action="github-save">Publish saved versions to GitHub…</button><p class="small">Device drafts are excluded until you save them. Review and submit the prepared Owner request to publish.</p>'+
-    '<p id="workspace-packet-note" role="status">'+(draft&&!draft.workspaceMode?'An earlier freeform packet is preserved below. Build a new packet to use these workspace fields.':'')+'</p><section id="composer"></section></section>';
+    '<p id="workspace-packet-note" role="status">'+(stale?'Fields or Owner context changed. Build an updated packet before delivery.':draft&&!draft.workspaceMode?'An earlier freeform packet is preserved below. Build a new packet to use these workspace fields.':'')+'</p><section id="composer"></section></section>';
 }

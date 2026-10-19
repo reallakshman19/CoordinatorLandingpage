@@ -96,6 +96,19 @@ test('Workspace UI: saving fields preserves an edited packet and does not make u
     assert.equal(h.state.draft.id,id);assert.match(h.state.draft.packet,/Owner manual refinement/);
   }finally{h.restore();}
 });
+test('Workspace UI: invalid builds report the active form error and preserve the last valid packet',async()=>{
+  const h=harness();try{
+    await h.run('workspace-task');await h.run('workspace-build');
+    assert.match(h.message(),/Packet not built: Enter one bounded task/);
+    assert.equal(h.state.draft,null);
+    Object.assign(h.state.workspaceValues,{task:'Inspect source',deliverable:'Report',success:'Input and result identified'});
+    await h.run('workspace-build');const id=h.state.draft.id;
+    h.state.workspaceValues.deliverable='';h.input();await h.run('workspace-build');
+    assert.match(h.message(),/Packet not built: Enter the deliverable/);
+    assert.equal(h.state.draft.id,id);
+    assert.throws(()=>checkWorkspacePacket(h.ctx),/updated packet/);
+  }finally{h.restore();}
+});
 test('Workspace UI: a failed snapshot save retains fields and the last committed thread for reload',async()=>{
   const h=harness();try{
     await h.run('workspace-ground');h.state.workspaceValues.brief='Keep recoverable context';h.input();

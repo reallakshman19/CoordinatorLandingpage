@@ -53,14 +53,21 @@ export async function workspaceAction(action,ctx){
   if(['thread','back','grounding'].includes(action)){
     saveDevice(ctx);if(action!=='grounding')tabURL(ctx,null);
   }
-  if(['copy-packet','record-sent','send-github'].includes(action))checkWorkspacePacket(ctx);
+  if(['copy-packet','record-sent','send-github'].includes(action)){
+    try{checkWorkspacePacket(ctx);}catch(e){
+      status(ctx,e.message);const el=$('#packet-status');if(el)el.textContent=e.message;throw e;
+    }
+  }
   if(action==='workspace-build'){
-    ctx.state.workspaceValues=formValues(ctx);
-    const draft=buildWorkspacePacket(ctx.t(),ctx.state.workspaceMode,ctx.state.workspaceValues);
-    writeWorkspaceDraft(ctx.t().id,ctx.state.workspaceMode,{values:ctx.state.workspaceValues,draft});
-    ctx.state.draft=draft;ctx.render();
-    $('#packet')?.focus();$('#packet')?.scrollIntoView({block:'nearest'});
-    status(ctx,'Packet prepared on this device. Copying does not send it.');return true;
+    try{
+      ctx.state.workspaceValues=formValues(ctx);
+      const draft=buildWorkspacePacket(ctx.t(),ctx.state.workspaceMode,ctx.state.workspaceValues);
+      writeWorkspaceDraft(ctx.t().id,ctx.state.workspaceMode,{values:ctx.state.workspaceValues,draft});
+      ctx.state.draft=draft;ctx.render();
+      $('#packet')?.focus();$('#packet')?.scrollIntoView({block:'nearest'});
+      status(ctx,'Packet prepared on this device. Copying does not send it.');
+    }catch(e){status(ctx,'Packet not built: '+e.message);}
+    return true;
   }
   return false;
 }
