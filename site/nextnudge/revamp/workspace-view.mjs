@@ -1,6 +1,7 @@
 import {activeIntent} from './thread.mjs';
 import {workspaceEntries,savedWorkspace,responseTargets} from './workspace.mjs';
 import {workspaceNav,TITLES} from './workspace-nav.mjs';
+import {replyLabel} from './reply.mjs';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const labels={ground:'Save Ground context',task:'Save Task',correction:'Save Correction',reconcile:'Save Review'};
 const builds={ground:'Build grounding brief',task:'Build task packet',correction:'Build correction packet',reconcile:'Build next instruction'};
@@ -30,6 +31,7 @@ function responseLink(thread,mode,v){
       '<option value="'+esc(x.id)+'"'+(x.id===v.target?' selected':'')+'>'+esc(x.kind+' · '+x.id)+'</option>').join('')+'</select></label>'+
     (!targets.length?'<p class="workspace-empty">No recorded '+(mode==='reconcile'?'response':'instruction or response')+' yet. Record the actual exchange in Overview before building this packet.</p>':'')+
     (selected?'<p>Linked ID: <strong>'+esc(selected.id)+'</strong>'+(selected.answers?' · Answers '+esc(selected.answers):'')+'</p>'+
+      (mode==='reconcile'?'<p>Assessment: '+esc(replyLabel(selected||{}))+'</p>':'')+
       sources({evidence:selected.evidence})+'<details><summary>Read recorded text</summary><pre>'+esc(selected.replyText||selected.packet||selected.returnLine||selected.digest)+'</pre></details>':'')+'</div>';
 }
 function groundFields(thread,v){
@@ -51,7 +53,7 @@ function correctionFields(thread,v){
 }
 function reviewFields(thread,v){
   const criteria=activeIntent(thread).doneWhen;
-  return responseLink(thread,'reconcile',v)+'<input type="hidden" name="basis" value="'+esc(JSON.stringify(criteria))+'">'+
+  return responseLink(thread,'reconcile',v)+'<input type="hidden" hidden name="basis" value="'+esc(JSON.stringify(criteria))+'">'+
     '<div class="workspace-grid"><div><h3>Owner checks</h3>'+(criteria.length?criteria.map((q,n)=>'<label class="criterion"><span>'+esc(q)+'</span><select name="check'+n+'">'+
       ['unknown','met','not met'].map(value=>'<option'+((v['check'+n]||'unknown')===value?' selected':'')+'>'+value+'</option>').join('')+'</select></label>').join(''):
       '<p class="workspace-empty">Owner checks are UNKNOWN. Define them in Overview before closing the outcome.</p>')+
@@ -70,6 +72,7 @@ export function workspaceView(thread,mode,v,draft){
     '<form id="workspace-form" data-mode="'+mode+'">'+content(thread,v)+
     '<div class="workspace-actions"><button type="submit" class="primary">'+labels[mode]+'</button><button type="button" data-action="workspace-build"'+(i.hold?' disabled':'')+'>'+builds[mode]+'</button>'+
     '<span id="workspace-status" role="status" aria-live="polite">'+(saved?'Saved version '+esc(saved.id):'No saved '+TITLES[mode]+' version yet')+'</span></div></form>'+
-    '<p class="small">Typing keeps a separate device draft for this tab. Save records one meaningful update locally. Publish saved updates to GitHub from Overview.</p>'+
-    '<p id="workspace-packet-note" role="status"></p><section id="composer"></section></section>';
+    '<p class="small">Typing keeps a separate device draft for this tab. Save records one meaningful version locally. Unchanged saves add nothing to history.</p>'+
+    '<button data-action="github-save">Publish saved versions to GitHub…</button><p class="small">Device drafts are excluded until you save them. Review and submit the prepared Owner request to publish.</p>'+
+    '<p id="workspace-packet-note" role="status">'+(draft&&!draft.workspaceMode?'An earlier freeform packet is preserved below. Build a new packet to use these workspace fields.':'')+'</p><section id="composer"></section></section>';
 }

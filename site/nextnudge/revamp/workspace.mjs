@@ -1,4 +1,4 @@
-import {freshId,activeIntent,assertPublic,validate,reconcile} from './thread.mjs';
+import {freshId,activeIntent,activeAgent,assertPublic,validate,reconcile} from './thread.mjs';
 import {readGrounding} from './grounding.mjs';
 import {packet} from './screens.mjs';
 import {MODES,TITLES} from './workspace-nav.mjs';
@@ -10,6 +10,10 @@ const fields={
   correction:['groundId','target','claim','expected','redo','preserve','sources'],
   reconcile:['target','basis','check0','check1','check2','check3','check4','decision','gap','evidence','nextTask']
 };
+function ownerBasis(thread){
+  const i=activeIntent(thread);
+  return {goal:i.goal,doneWhen:[...i.doneWhen],inScope:i.inScope,outScope:i.outScope,hold:i.hold};
+}
 export function valuesFor(mode,values={}){
   if(!MODES.includes(mode))throw Error('Unknown workspace');
   const out={};
@@ -59,7 +63,7 @@ export function workspaceMove(thread,mode,input,id=freshId()){
   const values=valuesFor(mode,input);assertPublic(values);
   if(values.groundId)linkedGround(thread,values.groundId);
   if(values.target)targetFor(thread,mode,values.target);
-  const data={mode,values,owner:activeIntent(thread),...(mode==='ground'?{fixtures:readGrounding(thread)}:{})};
+  const data={mode,values,owner:ownerBasis(thread),...(mode==='ground'?{fixtures:readGrounding(thread)}:{})};
   const before=savedWorkspace(thread,mode);
   if(before){const {id:oldId,...old}=before;if(JSON.stringify(old)===JSON.stringify(data))return null;}
   const move={id,kind:'amendment',delivery:'draft',packet:'',returnLine:'',digest:'',
@@ -74,13 +78,13 @@ export function workspaceSummary(move){
 function contextText(thread,values){
   const g=linkedGround(thread,values.groundId);
   if(!g)return values.sources||'UNKNOWN — ask Owner';
-  if(JSON.stringify(g.owner)!==JSON.stringify(activeIntent(thread)))
+  if(JSON.stringify(g.owner)!==JSON.stringify(ownerBasis(thread)))
     throw Error('Owner intent changed. Save an updated Ground version before using this context.');
   return ['Linked Ground version: '+g.id,...Object.entries(g.values).filter(([,v])=>v).map(([k,v])=>k+': '+v),
     ...Object.entries(g.fixtures||{}).map(([k,v])=>'Fixture '+k+': '+v),values.sources||''].filter(Boolean).join('\n');
 }
 export function workspaceBasis(thread,mode,input){
-  return JSON.stringify({mode,values:valuesFor(mode,input),owner:activeIntent(thread),
+  return JSON.stringify({mode,values:valuesFor(mode,input),owner:ownerBasis(thread),agent:activeAgent(thread),
     ...(mode==='ground'?{fixtures:readGrounding(thread)}:{})});
 }
 function required(values,keys){
@@ -98,7 +102,7 @@ export function buildWorkspacePacket(thread,mode,input,id=freshId()){
     result={kind:'ground',packet:packet(id,'ground',body,i)};
   }else if(mode==='task'){
     required(v,[['task','one bounded task'],['deliverable','the deliverable'],['success','a task success check']]);
-    result={kind:'task',packet:packet(id,'task',v.task+'\nDeliverable:\n'+v.deliverable,i,
+    result={kind:'task',requiresTask:true,packet:packet(id,'task',v.task+'\nDeliverable:\n'+v.deliverable,i,
       {inputs:contextText(thread,v),success:v.success,boundaries:v.constraints||i.inScope})};
   }else if(mode==='correction'){
     const target=targetFor(thread,mode,v.target);
@@ -113,7 +117,7 @@ export function buildWorkspacePacket(thread,mode,input,id=freshId()){
     required(v,[['nextTask','the next bounded instruction']]);
     result=reconcile({checks:criteria.map((_,n)=>v['check'+n]||'unknown'),decision:v.decision,
       reply:target.returnLine+'\nResponse ID: '+target.id+'\nEvidence: '+(v.evidence||target.evidence||'UNKNOWN'),
-      gap:v.gap,nudgeId:id,goal:i.goal,criteria});
+      gap:v.gap,nudgeId:id,goal:i.goal,criteria,agent:activeAgent(thread)});
     result.packet=result.packet.replace('One bounded task:\n',()=> 'One bounded task:\n'+v.nextTask+'\n');
     result.requiresTask=true;
   }

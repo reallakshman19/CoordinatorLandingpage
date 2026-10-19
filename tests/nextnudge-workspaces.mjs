@@ -16,7 +16,7 @@ function harness(thread=make()){
   globalThis.localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)};
   const state={threads:{[thread.id]:thread},active:thread.id,view:'thread',draft:null,editor:null};
   const form={id:'workspace-form'};let html='',message='';
-  globalThis.FormData=class{constructor(){return new Map(Object.entries(state.workspaceValues||{}));}};
+  globalThis.FormData=class{constructor(){return new Map(Object.entries(form.values||state.workspaceValues||{}));}};
   const $=q=>q==='#workspace-form'?form:q==='#workspace-title'?{focus(){}}:null;
   globalThis.document={querySelector:$,addEventListener:(key,fn)=>{handlers[key]=fn;}};
   const ctx={state,t:()=>state.threads[state.active],notice:s=>{message=s;},
@@ -83,6 +83,65 @@ test('Workspace model: immutable Ground versions link into Task packets and surv
   const text=buildWorkspacePacket(parse(serialize(t)),'task',v,'OUT-1').packet;
   assert.match(text,/GROUND-1/);assert.match(text,/Original context/);assert.doesNotMatch(text,/New context/);
   assert.match(text,/issues\/7/);assert.match(text,/A reviewable PR/);assert.match(text,/Known input converts/);
+});
+test('Workspace UI: saving fields preserves an edited packet and does not make unchanged context stale',async()=>{
+  const h=harness();try{
+    await h.run('workspace-ground');h.state.workspaceValues.brief='Context with a saved packet';h.input();
+    await h.run('workspace-build');const id=h.state.draft.id;
+    h.state.draft.packet+='\nOwner manual refinement';h.input();h.save();
+    assert.equal(h.state.draft.id,id);assert.match(h.state.draft.packet,/Owner manual refinement/);
+    assert.doesNotThrow(()=>checkWorkspacePacket(h.ctx));
+    assert.equal(h.ctx.t().moves.length,1);h.save();assert.equal(h.ctx.t().moves.length,1);
+    await h.run('workspace-task');await h.run('workspace-ground');
+    assert.equal(h.state.draft.id,id);assert.match(h.state.draft.packet,/Owner manual refinement/);
+  }finally{h.restore();}
+});
+test('Workspace UI: a failed snapshot save retains fields and the last committed thread for reload',async()=>{
+  const h=harness();try{
+    await h.run('workspace-ground');h.state.workspaceValues.brief='Keep recoverable context';h.input();
+    const write=globalThis.localStorage.setItem;
+    globalThis.localStorage.setItem=(key,value)=>{if(key==='nextnudge.threads.v3')throw Error('Snapshot quota');write(key,value);};
+    h.save();
+    assert.equal(h.ctx.t().moves.length,0);
+    assert.equal(readWorkspaceDraft(h.ctx.t().id,'ground').values.brief,'Keep recoverable context');
+    assert.match(h.message(),/not saved: Snapshot quota/);
+    globalThis.localStorage.setItem=write;h.save();h.save();assert.equal(h.ctx.t().moves.length,1);
+  }finally{h.restore();}
+});
+test('Workspace model: amended Owner context stays bounded and unrelated history does not invalidate a packet',()=>{
+  const t=make();
+  t.moves.push({...sent,id:'OWNER-1',kind:'amendment',delivery:'draft',packet:'',note:'OWNER_INTENT_CHANGE:'+JSON.stringify({goal:'Updated goal',doneWhen:['Verify'],inScope:'UI',outScope:'Other projects',hold:''})});
+  const values={brief:'Ground the actual source'},basis=workspaceBasis(t,'ground',values);
+  t.moves.push(workspaceMove(t,'ground',values,'GROUND-1'));
+  assert.equal(workspaceBasis(t,'ground',values),basis);
+  assert.equal(savedWorkspace(t,'ground').owner.moves,undefined);
+  assert.equal(workspaceMove(t,'ground',values),null);
+});
+test('Workspace UI: changing the reviewed response resets prior verdicts through the actual select event sequence',async()=>{
+  const t=make();t.moves.push(sent,reply,{...reply,id:'REPLY-2'});const h=harness(t);try{
+    await h.run('workspace-reconcile');
+    Object.assign(h.state.workspaceValues,{target:'REPLY-1',check0:'met'});
+    h.form.values={...h.state.workspaceValues,target:'REPLY-2'};
+    const target={id:'',name:'target',tagName:'SELECT',closest:()=>h.form};
+    h.handlers.input({target});h.handlers.change({target});
+    assert.equal(h.state.workspaceValues.target,'REPLY-2');
+    assert.equal(h.state.workspaceValues.check0,'unknown');
+    assert.equal(readWorkspaceDraft(t.id,'reconcile').values.check0,'unknown');
+  }finally{h.restore();}
+});
+test('Workspace UI: save links, packet edits and independent thread drafts survive navigation; stale packets are blocked',async()=>{
+  const h=harness();try{
+    await h.run('workspace-ground');Object.assign(h.state.workspaceValues,{brief:'Project source',issue:'https://github.com/example/repo/issues/8'});
+    h.input();h.save();assert.match(h.html(),/href="https:\/\/github.com\/example\/repo\/issues\/8"/);
+    await h.run('workspace-build');const id=h.state.draft.id;
+    h.state.draft.packet+='\nManual clarification';h.input();
+    await h.run('workspace-task');await h.run('workspace-ground');
+    assert.equal(h.state.draft.id,id);assert.match(h.state.draft.packet,/Manual clarification/);
+    h.state.workspaceValues.brief='Changed source';h.input();
+    await assert.rejects(()=>h.run('copy-packet'),/updated packet/);
+    const other=make();other.id='NN-20261020-000000-ab13';
+    assert.equal(readWorkspaceDraft(other.id,'ground'),null);
+  }finally{h.restore();}
 });
 test('Workspace model: correction needs a real target and includes its ID and bounded redo',()=>{
   const t=make(),v={target:'REPLY-1',claim:'Wrong source used',expected:'Read original input',redo:'Re-run only this comparison'};

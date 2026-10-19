@@ -17,7 +17,7 @@ section,form,.archive{background:white;border:1px solid #d1dcda;border-radius:12
 label{display:block;font-weight:600;margin:10px 0}
 input,textarea,select{display:block;width:100%;margin:5px 0;padding:9px;border:1px solid #b9cbc8;border-radius:7px;font:inherit;background:#fff;color:#202c2b}
 textarea{resize:vertical;white-space:pre-wrap}
-textarea.compact-textarea{min-height:38px;height:38px;resize:vertical}
+textarea.compact-textarea{min-height:44px;height:44px;resize:vertical}
 .actions,.heading{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
 .heading h2{flex:1}.thread-list{display:grid;gap:8px}
 .thread-row{display:flex;justify-content:space-between;gap:20px;text-align:left}
@@ -46,6 +46,29 @@ footer{text-align:center;padding:20px}
 details{background:#fcfdfd;border:1px solid #d9e3e0;padding:10px;margin:12px 0;border-radius:8px}
 summary{cursor:pointer;font-weight:600}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto !important;transition:none !important}}
+.workspace-tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:16px 0}
+.workspace-tabs button{text-align:left;padding:10px 12px;border-color:transparent;background:transparent}
+.workspace-tabs small{display:block;font-size:.73rem;font-weight:400;color:#526969;margin-top:3px}
+.workspace-tabs [aria-current="page"]{background:#183f45;color:white;border-color:#183f45;font-weight:650}
+.workspace-tabs [aria-current="page"] small{color:#d5eeeb}
+.workspace{border-top:4px solid #276b6d;padding:22px}
+.workspace-task{border-top-color:#246daa}.workspace-correction{border-top-color:#b66c25}.workspace-reconcile{border-top-color:#7555a1}
+.workspace-heading{display:flex;justify-content:space-between;align-items:center;gap:20px}
+.workspace-heading a{font-size:.85rem}.eyebrow{font-size:.9rem;color:#53696a;margin:0 0 4px}
+.workspace-owner{padding:12px 0;border-bottom:1px solid #d1dcda}
+#workspace-form{border:0;background:transparent;padding:0;margin:0}
+.workspace-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px}
+.workspace-grid>div,.workspace-grid>aside{min-width:0}
+.workspace h3{margin:16px 0 8px}.workspace label small{display:block;font-weight:400}
+.workspace textarea,.workspace select{font-weight:400}
+.workspace-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:22px 0 10px;padding-top:18px;border-top:1px solid #d1dcda}
+#workspace-status{font-size:.85rem;color:#275e4f;max-width:55ch}
+.source-links{padding-left:20px;overflow-wrap:anywhere;font-size:.88rem}
+.linked-context,.response-source{padding:8px 0 14px;border-bottom:1px solid #d1dcda}
+.response-source pre{max-height:280px;overflow:auto}.criterion{padding:12px 0;border-bottom:1px solid #d1dcda}
+.workspace-empty{background:#f3f6f5;padding:14px;color:#53696a}
+.workspace #composer{margin:20px 0 0}.workspace #composer .github-delivery{border:0;border-top:1px solid #d1dcda;border-radius:0;padding:14px 0}
+@media(max-width:800px){.workspace-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}.workspace-grid{grid-template-columns:1fr;gap:8px}.workspace{padding:14px}.workspace-heading{align-items:flex-start}.workspace-heading a{max-width:9ch}}
 @media(max-width:650px){.review-grid{grid-template-columns:1fr}.thread-row{flex-direction:column;gap:0}header small{display:block;margin:0}}
 @media(prefers-color-scheme:dark){body{background:#172328;color:#e5eeef}header{background:#102a33}
 section,form,.archive,details{background:#22363b;border-color:#3f6266}
@@ -56,4 +79,9 @@ button:hover{background:#30575b}button.primary{background:#225a62;border-color:#
 .fallback-reply,.thread-utilities{background:#1e3035;border-color:#3f6266}
 .fallback-reply summary,.thread-utilities summary{color:#a5f3fc}
 .grounding-status,.packet-status{color:#86efac}
+.workspace-tabs small,.eyebrow{color:#b2c6c9}.workspace-tabs [aria-current="page"]{background:#225a62;border-color:#38bdf8}
+.workspace-tabs [aria-current="page"] small{color:#d5eeeb}
+.workspace-owner,.workspace-actions,.linked-context,.response-source,.criterion{border-color:#3f6266}
+#workspace-status{color:#86efac}.workspace-empty{background:#183136;color:#b2c6c9}
+.workspace a{color:#8bd5ee}
 pre{background:#152e33}#notice:not(:empty){background:#264e58}.hold{background:#451a03;border-color:#f59e0b;color:#fef3c7}}

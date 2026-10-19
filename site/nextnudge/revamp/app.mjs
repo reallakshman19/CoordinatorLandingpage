@@ -1,14 +1,15 @@
-import {newThread,freshId,parse,serialize,archiveRun,currentState,reconcile,activeIntent,activeAgent,validate,assertPublic} from './thread.mjs';
+import {newThread,freshId,parse,serialize,archiveRun,currentState,activeIntent,activeAgent,validate,assertPublic} from './thread.mjs';
 import {sentMove,amendValues,agentChange,ownerForm,agentForm,sentForm} from './editor.mjs';
-import {packet as packetTemplate,threadsMarkup} from './screens.mjs';
-import {makeReply,replyLabel,openAgents} from './reply.mjs';
+import {threadsMarkup} from './screens.mjs';
+import {makeReply,openAgents} from './reply.mjs';
 import {makeSeal,sealForm} from './seal.mjs';
 import {moveMarkup} from './move-view.mjs';
 import {askInline} from '../inline-question.mjs';
-const packet=(id,kind,body)=>packetTemplate(id,kind,body,intent());
 import {localThreads,persist,persistMove,chatLink,readRemote,prepareSave,exportThread} from './save.mjs';
 import {featureAction,installFeatures,renderGrounding,restoreDraft,composerExtras,returnControls} from './features.mjs';
 import {clearComposer} from './composer.mjs';
+import {workspaceNav,MODES} from './workspace-nav.mjs';
+import {workspaceAction,installWorkspaces,workspaceMarkup,openWorkspace,checkWorkspacePacket,clearSentWorkspace} from './workspace-ui.mjs';
 const NLM='NN-20261018-171656-66d2';
 const state={threads:localThreads(),active:null,view:'threads',draft:null,editor:null,checks:{},lastReply:'',message:''};
 const $=q=>document.querySelector(q);
@@ -29,7 +30,7 @@ function renderThread() {
   const older=x.moves.slice(0,-1);
   $('#panel').innerHTML='<div class="heading"><button data-action="back">← Threads</button><h2>'+esc(x.title)+'</h2>'+
     '<button data-action="export">Export Markdown</button></div>'+
-    '<nav aria-label="Thread sections"><button data-action="thread" aria-current="page">Thread</button> <button data-action="grounding">Grounding Fixtures</button></nav>'+
+    workspaceNav('overview')+
     '<section class="intent"><strong>📌 Owner Intent</strong><p class="intent-goal">'+esc(i.goal||'UNKNOWN')+'</p>'+
     '<p class="intent-meta"><strong>Agent:</strong> '+esc(activeAgent(x)||'UNKNOWN')+(i.hold?' · <span class="hold-badge"><strong>HOLD:</strong> '+esc(i.hold)+'</span>':' · <strong>Owner constraint:</strong> None')+(openAgents(x).length>1?' · <small>Open agents: '+esc(openAgents(x).join(' · '))+'</small>':'')+'</p>'+
     '<details class="intent-details"><summary>Scope and done-when details ('+(i.doneWhen.length?i.doneWhen.length+' criteria':'not set')+')</summary>'+
@@ -71,15 +72,9 @@ function renderThread() {
         target.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest'});}
     }
   }
-  if(state.draft)renderComposer();
-}
-function focusComposer(){
-  const p=$('#packet');if(!p)return;p.focus();
-  const rect=p.getBoundingClientRect();
-  if(rect.top<60||rect.bottom>window.innerHeight){
-    const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    p.scrollIntoView({behavior:reduced?'auto':'smooth',block:'nearest'});
-  }
+  if(state.draft?.workspaceMode){
+    $('#composer').innerHTML='<button data-action="workspace-'+esc(state.draft.workspaceMode)+'">Resume '+esc(state.draft.workspaceMode)+' packet in its workspace</button>';
+  }else if(state.draft)renderComposer();
 }
 function renderComposer() {
   const d=state.draft;if(!d)return;
@@ -92,37 +87,24 @@ function renderComposer() {
     '<span id="packet-status" class="packet-status" role="status" aria-live="polite"></span></div>'+
     '<label id="fallback-box" hidden>Manual copy fallback<textarea id="fallback" readonly hidden rows="8"></textarea></label>'+composerExtras(t(),d);
   if(state.editor==='send')$('#composer').insertAdjacentHTML('beforeend',sentForm(activeAgent(t())));
-  focusComposer();
-}
-function renderReview() {
-  const x=t(),i=intent(),reply=[...x.moves].reverse().find(m=>m.kind==='reply');
-  $('#panel').innerHTML='<div class="heading"><button data-action="thread">← Thread</button><h2>Reconcile</h2></div>'+
-    '<section class="intent"><strong>Owner outcome</strong><p>'+esc(i.goal)+'</p>'+
-    '<p>Task COMPLETE never accepts this outcome.</p></section>'+
-    '<div class="review-grid"><section><h3>Agent claim and evidence</h3><pre>'+esc(reply?.returnLine||'No reply yet')+'</pre>'+
-    '<p>Assessment: '+esc(replyLabel(reply||{}))+'</p><p>'+esc(reply?.digest||'UNKNOWN')+'</p><p>'+esc(reply?.evidence||'Evidence UNKNOWN')+'</p>'+ 
-    '<label>Observed gap or needed evidence<textarea id="gap">'+esc(state.reviewGap||'')+'</textarea></label></section>'+
-    '<section><h3>Owner done-when (independent of task)</h3>'+
-    (i.doneWhen.length?i.doneWhen.map((q,j)=>'<label>'+esc(q)+'<select class="check" data-check="'+j+'">'+
-      ['unknown','met','not met'].map(v=>'<option value="'+v+'"'+((state.checks[j]||'unknown')===v?' selected':'')+'>'+v+'</option>').join('')+'</select></label>').join(''):
-      '<p>UNKNOWN: Owner has not confirmed done-when. Do not infer or close.</p>')+
-    '<label>Next decision<select id="decision">'+['request evidence','correct','continue','change direction','close'].map(v=>'<option>'+v+'</option>').join('')+'</select></label>'+
-    '<button data-action="draft-decision">Draft next nudge</button></section></div>'+
-    '<p>Compare claim to original sources. Check input encoding and interpretation before blaming an agent. Distinguish drift, new issue and assumption conflict. A hash or receipt is not acceptance.</p>'+
-    '<section id="composer"></section>';
-  if(state.draft)renderComposer();
 }
 function render() {
   $('#notice').textContent=state.message;
   if(state.view==='threads')renderThreads();
   else if(state.view==='grounding')$('#panel').innerHTML=renderGrounding(t());
   else if(state.view==='thread')renderThread();
-  else renderReview();
+  else if(state.view==='workspace'){
+    $('#panel').innerHTML=workspaceMarkup({state,t});
+    if(state.draft)renderComposer();
+  }
 }
 function append(move) {
   const x=persistMove(t(),move);
   state.threads[x.id]=x;state.active=x.id;
-  if(move.delivery==='sent')clearComposer(x.id);
+  if(move.delivery==='sent'){
+    try{clearSentWorkspace({state,t},move);clearComposer(x.id);}
+    catch(e){state.message='Sent history saved; old device packet backup retained: '+e.message;}
+  }
   state.draft=null;state.editor=null;render();
 }
 async function archiveList() {
@@ -145,6 +127,7 @@ async function convert(id) {
   put(x);state.view='thread';render();
 }
 async function onAction(action,target) {
+  if(await workspaceAction(action,{state,t,append,render,notice}))return;
   if(await featureAction(action,{state,t,append,render,notice}))return;
   const x=t(),i=x?intent():null;
   if(action==='back'){state.view='threads';state.draft=null;state.editor=null;return render();}
@@ -173,24 +156,6 @@ async function onAction(action,target) {
     if(evidence&&!/^https:\/\/github\.com\//.test(evidence))throw Error('Only public GitHub evidence links can be persisted');
     const {move,warnings}=makeReply(x,text,{label:v('reply-label')||'UNKNOWN',evidence});
     append(move);if(warnings.length)notice(warnings.join('; '));return;
-  }
-  if(action.startsWith('compose-')) {
-    if(action==='compose-close'){state.view='review';state.draft=null;return render();}
-    if(i.hold)throw Error('Owner HOLD prevents new packet');
-    const kind=action.slice(8),id=freshId();
-    state.draft={id,kind,packet:packet(id,kind,'Write one observable deliverable; name the source and return proof.')};
-    state.editor=null;render();return;
-  }
-  if(action==='review'){state.view='review';state.draft=null;state.editor=null;return render();}
-  if(action==='draft-decision'){
-    if(i.hold)throw Error('Owner HOLD');
-    const checks=[...document.querySelectorAll('.check')].map(q=>q.value),decision=v('decision');
-    state.checks=checks; // Retain selections when the proposed packet re-renders Reconcile.
-    const id=freshId(),r=[...x.moves].reverse().find(m=>m.kind==='reply');
-    state.reviewGap=v('gap');
-    state.draft={id,...reconcile({checks,decision,reply:r?.returnLine||'UNKNOWN',gap:state.reviewGap,
-      nudgeId:id,goal:i.goal,criteria:i.doneWhen,agent:activeAgent(x)}),requiresTask:true};
-    render();return;
   }
   if(action==='copy-packet'||action==='record-sent'){
     if(i.hold)throw Error('Owner HOLD');
@@ -261,6 +226,7 @@ document.addEventListener('submit',async e=>{
     if(form.id==='sent-confirm'){
       if(values.get('approved')!=='on')throw Error('Explicit Owner confirmation required');
       if(intent().hold)throw Error('Owner HOLD prevents sending');
+      checkWorkspacePacket({state,t});
       const text=v('packet')||state.draft?.packet;
       assertPublic(text);
       const move=sentMove(t(),state.draft,text,{role:values.get('role')||'worker',
@@ -289,10 +255,16 @@ async function init(){
   const requested=new URLSearchParams(window.location.search).get('thread');
   if(requested){
     try{if(!state.threads[requested]){const remote=await readRemote(requested);if(remote.thread)put(remote.thread);}
-      if(state.threads[requested]){state.active=requested;state.view='thread';return render();}
+      if(state.threads[requested]){
+        state.active=requested;
+        const mode=new URLSearchParams(window.location.search).get('workspace');
+        if(MODES.includes(mode))return openWorkspace({state,t,append,render,notice},mode);
+        state.view='thread';return render();
+      }
     }catch(e){notice(e.message);}
   }
   state.view='threads';render();
 }
 installFeatures({state,t,append,render,notice});
+installWorkspaces({state,t,append,render,notice});
 init();

@@ -67,10 +67,16 @@ export async function workspaceAction(action,ctx){
 export function installWorkspaces(ctx){
   function capture(event,refresh=false){
     if(ctx.state.view!=='workspace')return;
+    if(!refresh&&event.target.tagName==='SELECT')return;
     const inForm=event.target.closest('#workspace-form');
     if(!inForm&&event.target.id!=='packet')return;
     try{
-      if(inForm)ctx.state.workspaceValues=formValues(ctx);
+      if(inForm){
+        const before=ctx.state.workspaceValues.target,next=formValues(ctx);
+        if(ctx.state.workspaceMode==='reconcile'&&before!==next.target)
+          for(let n=0;n<5;n++)next['check'+n]='unknown';
+        ctx.state.workspaceValues=next;
+      }
       else if(ctx.state.draft)ctx.state.draft.packet=event.target.value;
       saveDevice(ctx);
       let stale=false;

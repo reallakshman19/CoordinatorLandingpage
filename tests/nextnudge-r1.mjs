@@ -1,3 +1,4 @@
+import {workspaceView} from '../site/nextnudge/revamp/workspace-view.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -191,9 +192,10 @@ test('Windows CRLF converts safely to LF and LF source preserves packet bytes',(
 
 
 test('FIX2 Reconcile keeps selected check verdicts through redraw',()=>{
-  const app=fs.readFileSync(new URL('../site/nextnudge/revamp/app.mjs',import.meta.url),'utf8');
-  assert.match(app,/state\.checks=checks/);
-  assert.match(app,/\(state\.checks\[j\]\|\|'unknown'\)===v/);
+  const x=example();x.doneWhen=['First check','Second check'];
+  const html=workspaceView(x,'reconcile',{check0:'met',check1:'unknown',decision:'continue'},null);
+  assert.match(html,/name="check0">[^<]*<option>unknown<\/option><option selected>met/);
+  assert.match(html,/name="check1"><option selected>unknown/);
 });
 
 test('all NextNudge R1 touched source files have at most 300 physical lines',()=>{
