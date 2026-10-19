@@ -183,7 +183,7 @@ export function reconcile({checks,reply,decision,gap='',nudgeId,goal,criteria=[]
     'Uncertainty handling: UNKNOWN must be stated, not assumed.',
     'Evidence and continuation: return actual result, source and next feasible action.',
     method?'GUIDED method: '+method:'',
-    'COMPLETE covers this bounded task only, not the Owner outcome.',
+    'COMPLETE covers this task only; overall acceptance requires Owner checks.',
     'Start your reply with ACK '+nudgeId+'.'].filter(Boolean).join('\n');
   assertPublic(packet);
   return {kind,packet,gap,
