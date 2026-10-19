@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {newThread,serialize,parse,validate,currentState} from '../site/nextnudge/revamp/thread.mjs';
 import {makeSeal,sealUnlocked,sealHtml,sealForm} from '../site/nextnudge/revamp/seal.mjs';
 import {makeReply} from '../site/nextnudge/revamp/reply.mjs';
@@ -60,7 +61,7 @@ function sources(dir,files=[]) {
 }
 test('R3 G5: no native browser prompts or confirmations anywhere in site/nextnudge',()=>{
   const dir=new URL('../site/nextnudge/',import.meta.url);
-  const list=sources(path.fileURLToPath?dir.pathname:dir.pathname);
+  const list=sources(fileURLToPath(dir));
   assert.ok(list.length>5);
   for(const file of list){
     const content=fs.readFileSync(file,'utf8');

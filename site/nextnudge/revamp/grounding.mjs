@@ -36,14 +36,24 @@ export function groundingText(thread){
     'In scope: '+i.inScope,'Out of scope: '+i.outScope,'HOLD: '+(i.hold||'OFF'),
     ...HEADINGS.filter(([,key])=>values[key]).map(([,key,label])=>key+'. '+label+'\n'+values[key])].join('\n\n');
 }
-export function groundingPanel(thread,values=readGrounding(thread)){
+export function groundingPanel(thread,values=readGrounding(thread),hasDraft=false){
+  const linkKeys=new Set(['1a','1b','1c','1d']);
+  const actionsBar='<div class="grounding-actions">'+
+    '<button type="submit" class="primary">Save grounding</button> '+
+    '<button type="button" data-action="copy-grounding">Copy grounding for agent</button> '+
+    '<span class="grounding-status" role="status" aria-live="polite">'+(hasDraft?'Unsaved device draft restored':'')+'</span></div>';
   return '<div class="heading"><button data-action="thread">← Thread</button><h2>Grounding Fixtures</h2></div>'+
     '<nav aria-label="Thread sections"><button data-action="thread">Thread</button> <button data-action="grounding" aria-current="page">Grounding Fixtures</button></nav>'+
-    '<p>Keep reusable context here. Blank means UNKNOWN. Save once after a meaningful update; each keystroke does not create a history entry.</p>'+
-    '<form id="grounding-form">'+Object.entries(PHASES).map(([phase,label])=>
+    '<p>Keep reusable context here. Blank means UNKNOWN. Edits stay on this device while typing. &quot;Save grounding&quot; creates one local snapshot in thread history. Publish to GitHub on Thread page.'+(hasDraft?' <strong class="draft-indicator">(Unsaved device draft restored)</strong>':'')+'</p>'+
+    '<form id="grounding-form">'+actionsBar+Object.entries(PHASES).map(([phase,label])=>
       '<details'+(phase==='onboarding'?' open':'')+'><summary>'+esc(label)+'</summary>'+
       HEADINGS.filter(([p])=>p===phase).map(([,key,title])=>
-        '<label>'+esc(key+'. '+title)+'<textarea name="ground-'+key+'" rows="3" maxlength="12000" placeholder="UNKNOWN — optional notes and source links">'+esc(values[key]||'')+'</textarea></label>').join('')+'</details>').join('')+
-    '<button type="submit">Save grounding</button> <button type="button" data-action="copy-grounding">Copy grounding for agent</button>'+
-    '<p>Saved updates stay in thread history. Public GitHub saves exclude private chat links.</p></form>';
+        '<label>'+esc(key+'. '+title)+
+        (linkKeys.has(key)?
+          '<textarea name="ground-'+key+'" rows="1" class="compact-textarea" maxlength="12000" placeholder="UNKNOWN — optional URL or reference">'+esc(values[key]||'')+'</textarea>':
+          '<textarea name="ground-'+key+'" rows="3" maxlength="12000" placeholder="UNKNOWN — optional notes and source links">'+esc(values[key]||'')+'</textarea>')+
+        '</label>').join('')+'</details>').join('')+
+    actionsBar+
+    '<p class="small">Saved updates stay in thread history. Public GitHub saves exclude private chat links.</p></form>';
 }
+

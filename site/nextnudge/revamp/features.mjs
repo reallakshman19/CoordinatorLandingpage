@@ -12,8 +12,10 @@ function groundingValues(form){
     .map(([key,value])=>[key.slice(7),value]));
 }
 export function renderGrounding(thread){
-  const draft=drafts()[thread.id];
-  return groundingPanel(thread,draft||readGrounding(thread));
+  const draft=drafts()[thread.id],saved=readGrounding(thread);
+  const keys=new Set([...Object.keys(draft||{}),...Object.keys(saved)]);
+  const isDiff=draft&&[...keys].some(k=>String(draft[k]||'').trim()!==(saved[k]||''));
+  return groundingPanel(thread,draft||saved,isDiff);
 }
 export function restoreDraft(thread){return restoreComposer(thread.id);}
 export function composerExtras(thread,draft){
@@ -50,14 +52,26 @@ async function prepareDelivery(action,ctx){
     notice('Review and submit the Owner request. Delivery is not yet confirmed; compare with GitHub after the workflow receipt.');
   }catch(e){win?.close();throw e;}
 }
+const setGroundingStatus=msg=>{
+  if(typeof document?.querySelectorAll==='function'){
+    document.querySelectorAll('.grounding-status').forEach(el=>{el.textContent=msg;});
+  }
+};
 export async function featureAction(action,ctx){
   if(action==='grounding'){ctx.state.view='grounding';ctx.render();return true;}
   if(action==='copy-grounding'){
     const thread=ctx.t(),preview=groundingMove(thread,groundingValues($('#grounding-form')));
     const text=groundingText(preview?{...thread,moves:[...thread.moves,preview]}:thread);
-    try{await navigator.clipboard.writeText(text);ctx.notice('Grounding copied. Copy does not send.');}
-    catch{const box=document.createElement('textarea');box.value=text;box.readOnly=true;
-      $('#grounding-form').appendChild(box);box.select();ctx.notice('Use the selected manual-copy text.');}
+    try{
+      await navigator.clipboard.writeText(text);
+      setGroundingStatus('Grounding copied.');
+      ctx.notice('Grounding copied. Copy does not send.');
+    }catch{
+      const box=document.createElement('textarea');box.value=text;box.readOnly=true;
+      $('#grounding-form')?.appendChild(box);box.select();
+      setGroundingStatus('Use manual copy text below.');
+      ctx.notice('Use the selected manual-copy text.');
+    }
     return true;
   }
   if(['send-github','fetch-github'].includes(action)){await prepareDelivery(action,ctx);return true;}
@@ -68,21 +82,32 @@ export function installFeatures(ctx){
     try{
       if(event.target.id==='packet'&&ctx.state.draft){
         ctx.state.draft.packet=event.target.value;rememberComposer(ctx.t().id,ctx.state.draft);
+        const st=$('#packet-status');if(st)st.textContent='';
       }
       if(event.target.closest('#grounding-form')){
         const rows=drafts();rows[ctx.t().id]=groundingValues($('#grounding-form'));
         localStorage.setItem(DRAFTS,JSON.stringify(rows));
+        setGroundingStatus('Unsaved device draft');
       }
-    }catch(e){ctx.notice('Browser draft storage failed: '+e.message+'. Copy/export before leaving.');}
+    }catch(e){
+      setGroundingStatus('Draft storage failed: '+e.message);
+      ctx.notice('Browser draft storage failed: '+e.message+'. Copy/export before leaving.');
+    }
   });
   document.addEventListener('submit',event=>{
     if(event.target.id!=='grounding-form')return;event.preventDefault();
     try{
-      const thread=ctx.t(),move=groundingMove(thread,groundingValues(event.target));
-      const rows=drafts();delete rows[thread.id];
+      const thread=ctx.t(),vals=groundingValues(event.target),move=groundingMove(thread,vals);
       if(move)ctx.append(move);
-      localStorage.setItem(DRAFTS,JSON.stringify(rows));
-      ctx.notice(move?'Grounding saved locally as one update. Save to GitHub for durable sharing.':'Grounding unchanged; no history entry added.');
-    }catch(e){ctx.notice(e.message);}
+      let cleanup='';
+      try{
+        const rows=drafts();delete rows[thread.id];
+        localStorage.setItem(DRAFTS,JSON.stringify(rows));
+      }catch(e){cleanup=' Draft backup retained; cleanup failed: '+e.message+'.';}
+      if(!move)ctx.render();
+      const msg=move?'Grounding saved locally as one update. Save to GitHub for durable sharing.':'Grounding unchanged; no history entry added.';
+      setGroundingStatus(msg+cleanup);
+      ctx.notice(msg+cleanup);
+    }catch(e){setGroundingStatus(e.message);ctx.notice(e.message);}
   });
 }

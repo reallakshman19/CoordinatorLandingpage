@@ -6,7 +6,7 @@ import {makeSeal,sealForm} from './seal.mjs';
 import {moveMarkup} from './move-view.mjs';
 import {askInline} from '../inline-question.mjs';
 const packet=(id,kind,body)=>packetTemplate(id,kind,body,intent());
-import {localThreads,persist,chatLink,readRemote,prepareSave,exportThread} from './save.mjs';
+import {localThreads,persist,persistMove,chatLink,readRemote,prepareSave,exportThread} from './save.mjs';
 import {featureAction,installFeatures,renderGrounding,restoreDraft,composerExtras,returnControls} from './features.mjs';
 import {clearComposer} from './composer.mjs';
 const NLM='NN-20261018-171656-66d2';
@@ -30,38 +30,56 @@ function renderThread() {
   $('#panel').innerHTML='<div class="heading"><button data-action="back">← Threads</button><h2>'+esc(x.title)+'</h2>'+
     '<button data-action="export">Export Markdown</button></div>'+
     '<nav aria-label="Thread sections"><button data-action="thread" aria-current="page">Thread</button> <button data-action="grounding">Grounding Fixtures</button></nav>'+
-    '<section class="intent"><strong>📌 Owner Intent</strong><p>'+esc(i.goal||'UNKNOWN')+'</p>'+
+    '<section class="intent"><strong>📌 Owner Intent</strong><p class="intent-goal">'+esc(i.goal||'UNKNOWN')+'</p>'+
+    '<p class="intent-meta"><strong>Agent:</strong> '+esc(activeAgent(x)||'UNKNOWN')+(i.hold?' · <span class="hold-badge"><strong>HOLD:</strong> '+esc(i.hold)+'</span>':' · <strong>Owner constraint:</strong> None')+(openAgents(x).length>1?' · <small>Open agents: '+esc(openAgents(x).join(' · '))+'</small>':'')+'</p>'+
+    '<details class="intent-details"><summary>Scope and done-when details ('+(i.doneWhen.length?i.doneWhen.length+' criteria':'not set')+')</summary>'+
     '<p><strong>Done-when:</strong> '+(i.doneWhen.length?i.doneWhen.map((c,j)=>(j+1)+'. '+esc(c)).join(' · '):'UNKNOWN — Owner must define')+'</p>'+
-    '<p><strong>Scope:</strong> '+esc(i.inScope||'UNKNOWN')+' · <strong>Out:</strong> '+esc(i.outScope||'UNKNOWN')+'</p>'+
-    '<p><strong>Agent:</strong> '+esc(activeAgent(x)||'UNKNOWN')+' · <strong>Open agents:</strong> '+esc(openAgents(x).join(' · '))+' · <strong>Owner constraint:</strong> '+esc(i.hold||'None')+'</p>'+ 
-    '<button data-action="owner-edit">Owner: amend intent / checks / HOLD</button> '+
-    '<button data-action="agent-edit">Change agent</button></section><section id="editor"></section>'+ 
+    '<p><strong>Scope:</strong> '+esc(i.inScope||'UNKNOWN')+' · <strong>Out:</strong> '+esc(i.outScope||'UNKNOWN')+'</p></details>'+
+    '<div><button data-action="owner-edit">Owner: amend intent / checks / HOLD</button> '+
+    '<button data-action="agent-edit">Change agent</button></div></section><section id="editor"></section>'+ 
     '<details><summary>Earlier moves ('+older.length+')</summary>'+older.map(m=>moveMarkup(x,m,esc)).join('')+'</details>'+ 
     '<section class="current"><h3>Current move · '+esc(currentState(x))+'</h3>'+
     (last?moveMarkup(x,last,esc):'<p>No nudge sent yet.</p>')+
-    (hold?'<p class="hold">HOLD: '+esc(i.hold)+' — no further packets may be sent until the Owner changes this constraint.</p>':
-      '<div class="actions"><button data-action="compose-ground">Ground</button>'+
-      '<button data-action="compose-task">Task</button>'+
-      '<button data-action="compose-correction">Correction</button><button data-action="review">Close via Reconcile</button>'+
-      '<button data-action="review">Reconcile</button></div>')+
-    '<label>Private chat link (device only) <input id="chat" type="url" placeholder="https://..." value="'+esc(chatLink(x.id))+'"></label>'+
-    '<button data-action="save-chat">Keep link on device</button>'+
-    '<label>Paste agent reply or return line <textarea id="reply" rows="10" maxlength="90000" placeholder="ACK ... SAVED ..."></textarea></label>'+ 
+    (hold?'<div class="hold" role="alert"><strong>⛔ OWNER HOLD ACTIVE:</strong> '+esc(i.hold)+' — sending instructions is blocked until the Owner amends or removes this constraint.</div>':
+      '<div class="actions"><button data-action="compose-task" class="primary">Task</button>'+
+      '<button data-action="compose-ground">Ground</button>'+
+      '<button data-action="compose-correction">Correction</button>'+
+      '<button data-action="review" title="Close via Reconcile">Reconcile</button></div>')+
+    '<section id="composer"></section>'+
+    returnControls(x)+
+    '<details class="fallback-reply"><summary>Manual reply entry (fallback if not using GitHub return)</summary>'+
+    '<label>Paste agent reply or return line <textarea id="reply" rows="6" maxlength="90000" placeholder="ACK ... SAVED ..."></textarea></label>'+ 
     '<label>Public evidence URL (optional) <input id="evidence" placeholder="https://github.com/..."></label>'+
     '<label>Result label<select id="reply-label">'+['UNKNOWN','INDEPENDENT','SELF-ASSESSED','NOT BLIND'].map(v=>'<option>'+v+'</option>').join('')+'</select></label>'+ 
-    '<button data-action="record-reply">Record return digest</button> '+
-    '<button data-action="seal-open">Sealed note</button><section id="seal-host"></section>'+ 
+    '<button data-action="record-reply">Record return digest</button></details>'+
+    '<details class="thread-utilities"'+(state.editor==='seal'?' open':'')+'><summary>Utilities & Notes (private chat, dated note, sealed note)</summary>'+
+    '<label>Private chat link (device only) <input id="chat" type="url" placeholder="https://..." value="'+esc(chatLink(x.id))+'"></label>'+
+    '<button data-action="save-chat">Keep link on device</button>'+
     '<label>Free-form dated note (no reopening gate) <input id="note" placeholder="Short note"></label>'+
-    '<button data-action="note">Add note</button></section>'+
-    returnControls(x)+'<section id="composer"></section>'+
-    '<section class="save"><button data-action="github-save">One-click GitHub save · append only</button>'+
+    '<button data-action="note">Add note</button> '+
+    '<button data-action="seal-open">Sealed note</button><section id="seal-host"></section></details></section>'+
+    '<section class="save"><button data-action="github-save" class="primary">One-click GitHub save · append only</button>'+
     '<a id="save-link" target="_blank" rel="noopener noreferrer" hidden>Open prepared save issue</a>'+
     '<button data-action="reload">Compare with GitHub</button>'+
     '<p>Owner-only issue submission, expected SHA, rejected saves keep this draft.</p></section>';
   if(state.editor==='owner')$('#editor').innerHTML=ownerForm(i);
   if(state.editor==='agent')$('#editor').innerHTML=agentForm(activeAgent(x));
-  if(state.editor==='seal')$('#seal-host').innerHTML=sealForm(x,esc);
+  if(state.editor==='seal'){
+    const host=$('#seal-host');if(host){
+      host.innerHTML=sealForm(x,esc);
+      const target=host.querySelector('textarea,select');if(target){target.focus();
+        target.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest'});}
+    }
+  }
   if(state.draft)renderComposer();
+}
+function focusComposer(){
+  const p=$('#packet');if(!p)return;p.focus();
+  const rect=p.getBoundingClientRect();
+  if(rect.top<60||rect.bottom>window.innerHeight){
+    const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    p.scrollIntoView({behavior:reduced?'auto':'smooth',block:'nearest'});
+  }
 }
 function renderComposer() {
   const d=state.draft;if(!d)return;
@@ -69,10 +87,12 @@ function renderComposer() {
     '<p>Guidance: <a target="_blank" rel="noopener noreferrer" href="https://github.com/reallakshman19/Common/tree/main/skills/agent-work">current agent-work</a>. Follow the project’s selected standalone protocol and record the revision read.</p>'+
     '<label>Exact packet to copy / edit<textarea id="packet" rows="14">'+esc(d.packet)+'</textarea></label>'+
     '<p class="small">Pre-send: one task · intent quoted · observable result · ACK return line · unknowns allowed.</p>'+
-    '<button data-action="copy-packet">Copy exact packet</button> '+
-    '<button data-action="record-sent">Record manually sent packet</button>'+
-    '<label>Manual copy fallback<textarea id="fallback" readonly hidden rows="8"></textarea></label>'+composerExtras(t(),d);
+    '<div class="composer-actions"><button data-action="copy-packet" class="primary">Copy exact packet</button> '+
+    '<button data-action="record-sent">Record manually sent packet</button> '+
+    '<span id="packet-status" class="packet-status" role="status" aria-live="polite"></span></div>'+
+    '<label id="fallback-box" hidden>Manual copy fallback<textarea id="fallback" readonly hidden rows="8"></textarea></label>'+composerExtras(t(),d);
   if(state.editor==='send')$('#composer').insertAdjacentHTML('beforeend',sentForm(activeAgent(t())));
+  focusComposer();
 }
 function renderReview() {
   const x=t(),i=intent(),reply=[...x.moves].reverse().find(m=>m.kind==='reply');
@@ -99,7 +119,12 @@ function render() {
   else if(state.view==='thread')renderThread();
   else renderReview();
 }
-function append(move) {const x=t();x.moves.push(move);put(x);if(move.delivery==='sent')clearComposer(x.id);state.draft=null;state.editor=null;render();}
+function append(move) {
+  const x=persistMove(t(),move);
+  state.threads[x.id]=x;state.active=x.id;
+  if(move.delivery==='sent')clearComposer(x.id);
+  state.draft=null;state.editor=null;render();
+}
 async function archiveList() {
   const response=await fetch('../nextnudge-data/workbench.json',{cache:'no-store'});
   if(!response.ok)throw Error('Archive unavailable');
@@ -172,8 +197,15 @@ async function onAction(action,target) {
     const text=v('packet')||state.draft?.packet;
     if(!text)throw Error('No packet');assertPublic(text);state.draft.packet=text;
     if(action==='copy-packet'){
-      try{await navigator.clipboard.writeText(text);notice('Packet copied. Copy does not imply sending.');}
-      catch {$('#fallback').hidden=false;$('#fallback').value=text;$('#fallback').select();notice('Clipboard denied; use selected manual-copy text.');}
+      const setPacketStatus=s=>{const el=$('#packet-status');if(el)el.textContent=s;};
+      try{
+        await navigator.clipboard.writeText(text);
+        setPacketStatus('Packet copied. Copy does not send.');notice('Exact packet copied to clipboard. Copy does not imply sending.');
+      }catch{
+        const fb=$('#fallback'),box=$('#fallback-box');if(box)box.hidden=false;
+        if(fb){fb.hidden=false;fb.value=text;fb.focus();fb.select();}
+        setPacketStatus('Clipboard denied; use selected manual fallback below.');notice('Clipboard denied; use selected manual-copy text below.');
+      }
       return;
     }
     state.editor='send';renderComposer();return;
