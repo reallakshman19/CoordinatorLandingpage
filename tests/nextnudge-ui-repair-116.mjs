@@ -51,11 +51,9 @@ test('Repair 2: Grounding state feedback reflects draft, save snapshot, and clea
       state: {},
       t: () => t,
       append: m => {
-        // When append runs, render() is called: draft in localStorage must already be deleted!
-        const rows = JSON.parse(store.get(DRAFTS) || '{}');
-        assert.equal(rows[t.id], undefined, 'Draft must be cleared from storage BEFORE append/render');
-        renderedHasDraft = !!rows[t.id];
+        // Check rendered state without requiring unsafe backup cleanup ordering.
         t.moves.push(m);
+        renderedHasDraft = renderGrounding(t).includes('Unsaved device draft restored');
       },
       render: () => {},
       notice: s => { noticeMsg = s; }

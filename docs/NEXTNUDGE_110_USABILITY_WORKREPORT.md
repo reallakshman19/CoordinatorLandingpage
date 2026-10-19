@@ -1,6 +1,6 @@
 # NextNudge UI Usability Repair (#110) — Work Report
 
-**Status:** Completed & Validated (Draft PR #116 Candidate).  
+**Status:** Storage-safety correction in progress; preceding UI evidence retained below.  
 **Task / Source:** [Issue #110](https://github.com/reallakshman19/CoordinatorLandingpage/issues/110) · continuation from merged [PR #112](https://github.com/reallakshman19/CoordinatorLandingpage/pull/112).  
 **Baseline Tested Commit:** `2a70ffcaaa79c3759474dfef5b9d37a6a5ac5cbe` (`origin/main`).  
 **Reviewed PR Head:** `9ed52101ecea27f2ce3e911b726c00a29fb24222`.  
@@ -8,7 +8,26 @@
 
 ---
 
-## 1. Resolved Owner Review Findings
+## Current storage-safety correction
+
+Owner authorized this agent to fix and proceed directly on PR #116 on 2026-10-20 (Dubai).
+Incoming implementation: `1c47e0b0183fba015fd6aff045e17d95654948fd`.
+This is standard software work in standalone mode, with no new agent role or qualification exam.
+No applicable AGENTS.md/master index exists in the current tree. Open PR #105 concerns the legacy interface; this patch targets v3 snapshot storage only.
+
+The snapshot must persist before live history changes or the device draft is removed.
+Tests exercise the actual app append function, production persistence and grounding handlers; DOM rendering is a lightweight witness, not a browser test.
+Baseline `node --test tests/nextnudge-*.mjs`: 94 tests, 94 pass, 0 fail, 0 skip.
+The new five-case regression on unchanged production: 99 tests, 94 pass, 5 behavioral failures, 0 skip.
+Cases cover successful backup ordering, failed-write reload recovery, retry idempotence, cleanup failure after commit, and normalized unchanged-save feedback.
+The old assertion requiring draft deletion before append has been replaced with a rendered-state assertion.
+
+Next: persist a proposed immutable snapshot, commit live state only after success, then clean the redundant draft; run the complete suite and inspect exact-head CI.
+Schema, packets, HOLD, reply correlation, privacy, canonical thread data and workflows remain outside this correction.
+The historical browser results below are agent-reported; their script/screenshots have not been supplied in the PR. Fresh interactive verification remains NOT_RUN for this agent.
+Native label/helper use is NOT_RUN: the standalone tooling explicitly excludes this coordination repository; no accepted label or native DONE receipt is fabricated.
+
+## 1. Resolved Owner Review Findings (preceding agent's record)
 
 ### 1. Clipboard Failure & Complete Fallback Unhiding
 - **Root Cause:** When `navigator.clipboard.writeText` threw or was denied, the catch handler set `$('#fallback').hidden = false`, but its parent container `<label id="fallback-box" hidden>` remained hidden. Because `[hidden] { display: none !important; }` protects HTML hidden elements, the entire fallback remained invisible to the user.
