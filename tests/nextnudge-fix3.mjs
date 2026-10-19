@@ -96,6 +96,23 @@ test('FIX3: harmless mentions and GitHub evidence remain allowed in all three fi
   for(const text of allowed)for(const field of ['packet','digest','header'])
     await exercise(field,text,false);
 });
+test('FIX4: long non-chat input is checked in under 250 ms without backtracking',()=>{
+  const samples=[
+    'a.'.repeat(100000),
+    '1.'.repeat(100000),
+    'a-b.'.repeat(50000),
+    'lorem.ipsum.dolor.'.repeat(11200)
+  ];
+  let max=0;
+  for(const sample of samples){
+    const started=performance.now();
+    assert.doesNotThrow(()=>assertPublic(sample));
+    const elapsed=performance.now()-started;
+    max=Math.max(max,elapsed);
+    assert.ok(elapsed<250,'Non-chat input '+sample.length+' chars took '+elapsed.toFixed(1)+' ms');
+  }
+  console.log('MAX_MS_200KB='+Math.ceil(max));
+});
 test('FIX3: recursive string scanning handles nested arrays, raw newlines and stray percent',()=>{
   const secrets={packet:'100% sure',reply:['Link:\nhttps://chatgpt.com/c/x']};
   assert.throws(()=>assertPublic(secrets),/Private chat URL/);
