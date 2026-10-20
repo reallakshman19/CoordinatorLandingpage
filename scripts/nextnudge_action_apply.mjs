@@ -34,7 +34,7 @@ export async function applyAction({issue,owner,read,write,listComments,postComme
     let move;
     if(request.operation==='send'){
       checkManagedSend(thread,request.target.agent,projects);
-      if(request.move?.agent?.trim().toLowerCase()!==request.target.agent.trim().toLowerCase())
+      if(request.move?.agent && request.move.agent.trim().toLowerCase()!==request.target.agent.trim().toLowerCase())
         throw Error('Target agent and recorded sent agent differ');
       move=await sendNudge(thread,request.move,request.target,api);delivered=move.evidence;
     }else{
