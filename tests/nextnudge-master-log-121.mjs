@@ -22,7 +22,7 @@ test('NN121 active grounding has no Midcycle 1/2, renames Exit and preserves v2 
   assert.equal(RETIRED_MIDCYCLE.length,8);
   assert.deepEqual(Object.keys(PROJECT_PHASES),['onboarding','exit','improvements']);
   assert.equal(PROJECT_PHASES.exit,'Master Log');
-  assert.deepEqual(['8','8a','8b','8c'].map(projectHeadingNumber),['6','6a','6b','6c']);
+  assert.deepEqual(['8','8a','8b','8c','9','10'].map(projectHeadingNumber),['6','6a','6b','6c','7','8']);
   const html=groundingPanel(null,{},false,project('a001','Alpha'));
   assert.equal((html.match(/<textarea /g)||[]).length,17);
   assert.match(html,/Master Log/);
