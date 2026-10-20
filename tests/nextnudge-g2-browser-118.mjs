@@ -212,7 +212,7 @@ test('G2 delta P02 P03 P04 P05 P09 P10 + Master Log: real Chromium local-only in
     await cdp.until('document.querySelector("#panel")?.textContent.includes("P118-HOLD-SENDING")');
     assert.equal(await cdp.eval('!!document.querySelector("[data-action=compose-task]")'),false,'HOLD hides send/compose actions');
     await cdp.click('[data-action="owner-edit"]');
-    await fill(cdp,'#owner-amend [name=hold]','');
+    await fill(cdp,'#owner-amend [name=hold]',' ');
     await cdp.click('#owner-amend [name=approved]');
     await cdp.click('#owner-amend button[type=submit]');
     await cdp.until('!!document.querySelector("[data-action=compose-task]")');
