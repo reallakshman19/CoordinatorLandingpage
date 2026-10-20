@@ -9,9 +9,12 @@ body:
       label: Project
       description: Which project does this input apply to?
       options:
+        - ciifr
+        - g9v35
         - grade9-pilot
         - imo-ab-test
         - landing-live
+        - nudge
         - all projects
     validations:
       required: true
