@@ -64,7 +64,8 @@ export async function main() {
   const number=event.issue?.number;
   if(!Number.isSafeInteger(number))throw Error('No issue number');
   const issue=await api('issues/'+number),owner=process.env.GITHUB_REPOSITORY.split('/')[0];
-  return applyIssue({issue,owner,
+  const projects=await loadRemoteProjects(api);
+  return applyIssue({issue,owner,projects,
     read:async path=>{
       const data=await api('contents/'+path+'?ref=main');
       if(!data)return null;
