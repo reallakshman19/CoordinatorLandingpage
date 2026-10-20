@@ -135,7 +135,7 @@ test('P01/P02/P03 actual Chromium pointer-flow, project editor and agent fixture
     const locally=await cdp.eval('JSON.parse(localStorage.getItem("nextnudge.projects.v1"))');
     const entries=Object.values(locally);
     assert.equal(entries.length,2);
-    assert.equal(entries.find(p=>p.name==='P118-ALPHA').fixtures['1f'],'P118-ALPHA-ONLY-GROUND');
+    assert.equal(entries.find(p=>p.name==='P118-ALPHA').fixtures['1f'],'P118-ALPHA-ONLY-GROUND-V2');
     assert.deepEqual(entries.find(p=>p.name==='P118-BETA').fixtures,{});
     trace.push(await cdp.snap('P03: BETA separate G1 thread, no ALPHA context'));
     await cdp.click('[data-action="thread"]');await cdp.click('[data-action="back"]');
