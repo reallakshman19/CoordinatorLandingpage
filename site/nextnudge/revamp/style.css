@@ -38,7 +38,7 @@ textarea.compact-textarea{min-height:44px;height:44px;resize:vertical}
 .review-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .review-grid section{margin:0;min-width:0}
 pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#eef3f3;padding:12px;border-radius:7px}
-#notice:not(:empty){background:#e5f3fa;border:1px solid #9cc8da;border-radius:8px;padding:8px}
+.master-log-list{display:grid;gap:8px}.master-log-item{background:#fbfdfd;border:1px solid #d1dcda;border-radius:9px;padding:12px 15px}.master-log-item p{margin:5px 0}.master-log-item a{font-weight:600}\n#new-thread-error:not(:empty){background:#fff0ee;border:2px solid #bf3636;color:#852323;padding:12px;border-radius:8px;font-weight:600}\n.move-summary:target,.move-summary:focus{outline:3px solid #3487a1;outline-offset:2px}\n#notice:not(:empty){background:#e5f3fa;border:1px solid #9cc8da;border-radius:8px;padding:8px}
 #composer{border-left:5px solid #183f45;background:#fafcfb;margin-top:14px}
 .small,footer{font-size:.83rem;color:#5b6868}
 footer{text-align:center;padding:20px}

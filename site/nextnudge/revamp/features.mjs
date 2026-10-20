@@ -4,6 +4,7 @@ import {prepareAction} from './transport-request.mjs';
 import {activeAgent,activeIntent} from './thread.mjs';
 import {REPO} from './save.mjs';
 import {projectForThread,assertProjectAgent} from './project-store.mjs';
+import {RETIRED_MIDCYCLE_KEYS} from '../fixtures.mjs';
 const DRAFTS='nextnudge.grounding.drafts.v1';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const $=q=>document.querySelector(q);
@@ -110,7 +111,9 @@ export function installFeatures(ctx){
   document.addEventListener('submit',event=>{
     if(event.target.id!=='grounding-form')return;event.preventDefault();
     try{
-      const thread=ctx.t(),vals=groundingValues(event.target),move=groundingMove(thread,vals);
+      const thread=ctx.t(),vals=groundingValues(event.target);
+      const retired=Object.fromEntries(Object.entries(readGrounding(thread)).filter(([key])=>RETIRED_MIDCYCLE_KEYS.has(key)));
+      const move=groundingMove(thread,{...retired,...vals});
       if(move)ctx.append(move);
       let cleanup='';
       try{

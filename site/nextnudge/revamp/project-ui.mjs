@@ -5,6 +5,8 @@ import {localProjects,localProjectIssues,persistProject,projectForThread,recordP
 import {groundingPanel,projectGroundingText} from './grounding.mjs';
 import {activeAgent} from './thread.mjs';
 import {askInline} from '../inline-question.mjs';
+import {readRemote} from './save.mjs';
+import {masterLogMarkup} from './master-log.mjs';
 const DRAFT='nextnudge.project.grounding.drafts.v1';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const $=q=>document.querySelector(q);
@@ -20,6 +22,7 @@ export function createProjectUI({state,put,render,notice}){
     if(state.activeProject)url.searchParams.set('project',state.activeProject);
     else url.searchParams.delete('project');
     if(state.view==='project-grounding')url.searchParams.set('projectView','grounding');
+    else if(state.view==='project-master-log')url.searchParams.set('projectView','master-log');
     else url.searchParams.delete('projectView');
     window.history.replaceState(null,'',url);
   }
@@ -30,6 +33,11 @@ export function createProjectUI({state,put,render,notice}){
     if(state.view==='project'){
       if(!p){state.view='projects';return show();}
       $('#panel').innerHTML=projectMarkup(p,state.threads,state.projects);return;
+    }
+    if(state.view==='project-master-log'){
+      if(!p)throw Error('Select a project first');
+      $('#panel').innerHTML=masterLogMarkup(p,state.threads,state.masterLogRemote||{},state.masterLogLimit||100,!!state.masterLogLoading);
+      return;
     }
     if(state.view==='project-grounding'){
       if(!p)throw Error('Select a project first');
@@ -54,6 +62,34 @@ export function createProjectUI({state,put,render,notice}){
       state.activeProject=null;
       state.message='Ambiguous project association; historical thread opened without assigning either project or its shared grounding.';
     }
+  }
+  async function refreshMasterLog(){
+    const project=current();if(!project||state.masterLogLoading)return;
+    state.masterLogRemote ||= {};state.masterLogLoading=true;render();
+    try{
+      // Read existing GitHub thread files, never alter device drafts or write new log data.
+      for(let i=0;i<project.threads.length;i+=4){
+        const group=project.threads.slice(i,i+4);
+        await Promise.all(group.map(async row=>{
+          try{
+            const result=await readRemote(row.id);
+            state.masterLogRemote[row.id]=result.thread?
+              {thread:result.thread,sha:result.sha}:{error:'Thread file not saved to GitHub'};
+          }catch(e){state.masterLogRemote[row.id]={error:'GitHub read unavailable: '+e.message};}
+        }));
+        if(state.view==='project-master-log'&&current()?.id===project.id)render();
+      }
+    }finally{
+      state.masterLogLoading=false;
+      if(state.view==='project-master-log'&&current()?.id===project.id)render();
+    }
+  }
+  function createError(form,error){
+    const target=form.querySelector('#new-thread-error');
+    if(!target)return;
+    target.textContent=error.message;
+    target.focus();
+    target.scrollIntoView({block:'nearest'});
   }
   function prepareThread(x){
     const p=current();
@@ -84,6 +120,9 @@ export function createProjectUI({state,put,render,notice}){
     if(name==='projects'){state.view='projects';state.activeProject=null;state.draft=null;route();render();return true;}
     if(name==='project'){state.view='project';state.draft=null;route();render();return true;}
     if(name==='project-grounding'){state.view='project-grounding';state.draft=null;route();render();return true;}
+    if(name==='master-log'){state.view='project-master-log';state.masterLogLimit=100;state.draft=null;route();render();await refreshMasterLog();return true;}
+    if(name==='master-log-refresh'){await refreshMasterLog();return true;}
+    if(name==='master-log-more'){state.masterLogLimit=(state.masterLogLimit||100)+100;render();return true;}
     if(name==='back'){state.view=state.activeProject?'project':'projects';
       state.draft=null;state.editor=null;route();render();return true;}
     if(name==='copy-project-grounding'){
@@ -131,12 +170,16 @@ export function createProjectUI({state,put,render,notice}){
     }catch(e){state.message=(state.message||'')+' Project GitHub discovery unavailable: '+e.message+'. Device drafts retained.';}
   }
   document.addEventListener('input',event=>{
+    if(event.target.closest?.('#new-thread')){
+      const target=event.target.closest('#new-thread').querySelector('#new-thread-error');
+      if(target)target.textContent='';
+    }
     if(!event.target.closest?.('#project-grounding-form'))return;
     try{const rows=drafts();rows[state.activeProject]=fixtureInput($('#project-grounding-form'));
       localStorage.setItem(DRAFT,JSON.stringify(rows));
       const status=$('.grounding-status');if(status)status.textContent='Unsaved device draft';
     }catch(e){notice('Project grounding draft storage failed: '+e.message+'. Copy before leaving.');}
   });
-  return {current,save,show,select,selectThreadProject,prepareThread,submit,action,discover,route,
+  return {current,save,show,select,selectThreadProject,createError,prepareThread,submit,action,discover,route,refreshMasterLog,
     projectForActive:()=>state.active?projectForThread(state.active,state.projects):null};
 }

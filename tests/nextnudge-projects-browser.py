@@ -30,7 +30,9 @@ def test_navigation(page):
         page.get_by_role("button", name=label, exact=False).first.wait_for()
     page.locator('nav.workspace-tabs button[data-action="grounding"]').click()
     page.locator("#project-grounding-form").wait_for()
-    assert page.locator("#project-grounding-form textarea").count() == 25
+    assert page.locator("#project-grounding-form textarea").count() == 17
+    assert page.get_by_text("Master Log", exact=True).count() >= 1
+    assert "Midcycle 1" not in page.locator("#project-grounding-form").inner_text()
     page.locator('#project-grounding-form textarea[name="ground-1f"]').fill("Shared Project A truth")
     page.locator('#project-grounding-form button[type="submit"]').first.click()
     page.locator('[data-action="project"]').first.click()
@@ -63,6 +65,11 @@ def test_navigation(page):
     page.locator('#new-thread textarea[name="goal"]').fill("Must be rejected")
     page.locator('#new-thread button[type="submit"]').click()
     assert "already has a project thread" in page.locator("#notice").inner_text()
+    inline = page.locator("#new-thread-error")
+    assert inline.is_visible(), "Duplicate agent feedback must be beside Create, not only at the page top"
+    assert "already has a project thread" in inline.inner_text()
+    assert page.evaluate("document.activeElement?.id") == "new-thread-error"
+    assert page.locator('#new-thread input[name="title"]').input_value() == "Collision"
     assert page.locator('button[data-open]').count() == 2
     # F2: the device-only member has not been saved to GitHub; publication must be blocked.
     page.locator('[data-action="project-save"]').click()
@@ -87,6 +94,31 @@ def test_navigation(page):
     page.locator('[data-action="send-github"]').click()
     page.get_by_text("Project agent mismatch", exact=False).first.wait_for()
     page.screenshot(path=str(OUT / "review-f1-f2-rejected.png"), full_page=True)
+    # Preserve the successfully built G1 Task using its correct bound agent.
+    page.locator('#sent-confirm input[name="agent"]').fill("Agent One")
+    page.locator('#sent-confirm button[type="submit"]').click()
+    # Project Master Log reads original records; it creates no second Task record.
+    page.locator('[data-action="thread"]').first.click()  # Task workspace → Overview
+    page.locator('[data-action="back"]').first.click()    # Overview → owning project
+    page.locator('[data-action="master-log"]').click()
+    page.get_by_role("heading", name="Master Log · Project A", exact=True).wait_for()
+    page.get_by_text("Agent One · Task", exact=False).first.wait_for()
+    assert page.locator(".master-log-item").count() >= 1
+    page.locator(".master-log-item a").first.click()
+    page.get_by_role("heading", name="Agent One delivery", exact=True).wait_for()
+    assert page.locator('.move-summary[id^="move-"]').count() >= 1
+    assert "move=" in page.url
+    # BETA has no G1 Task from ALPHA; the project feed must not leak across projects.
+    page.locator('[data-action="back"]').first.click()
+    page.locator('[data-action="projects"]').first.click()
+    page.get_by_role("button", name="Project B", exact=False).click()
+    page.locator('[data-action="master-log"]').click()
+    page.get_by_role("heading", name="Master Log · Project B", exact=True).wait_for()
+    assert page.locator(".master-log-item").count() == 0
+    page.locator('[data-action="project"]').first.click()
+    page.locator('[data-action="projects"]').first.click()
+    page.get_by_role("button", name="Project A", exact=False).click()
+    page.locator('button[data-open]').filter(has_text="Agent One").first.click()
     # F3: inject a corrupt sibling record; real reload must keep the healthy project and thread usable.
     page.evaluate("""() => {
       const key='nextnudge.projects.v1', all=JSON.parse(localStorage.getItem(key));
