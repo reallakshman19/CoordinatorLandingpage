@@ -84,6 +84,13 @@ export function createProjectUI({state,put,render,notice}){
       if(state.view==='project-master-log'&&current()?.id===project.id)render();
     }
   }
+  function createError(form,error){
+    const target=form.querySelector('#new-thread-error');
+    if(!target)return;
+    target.textContent=error.message;
+    target.focus();
+    target.scrollIntoView({block:'nearest'});
+  }
   function prepareThread(x){
     const p=current();
     if(!p)throw Error('Select a project');
@@ -163,12 +170,16 @@ export function createProjectUI({state,put,render,notice}){
     }catch(e){state.message=(state.message||'')+' Project GitHub discovery unavailable: '+e.message+'. Device drafts retained.';}
   }
   document.addEventListener('input',event=>{
+    if(event.target.closest?.('#new-thread')){
+      const target=event.target.closest('#new-thread').querySelector('#new-thread-error');
+      if(target)target.textContent='';
+    }
     if(!event.target.closest?.('#project-grounding-form'))return;
     try{const rows=drafts();rows[state.activeProject]=fixtureInput($('#project-grounding-form'));
       localStorage.setItem(DRAFT,JSON.stringify(rows));
       const status=$('.grounding-status');if(status)status.textContent='Unsaved device draft';
     }catch(e){notice('Project grounding draft storage failed: '+e.message+'. Copy before leaving.');}
   });
-  return {current,save,show,select,selectThreadProject,prepareThread,submit,action,discover,route,refreshMasterLog,
+  return {current,save,show,select,selectThreadProject,createError,prepareThread,submit,action,discover,route,refreshMasterLog,
     projectForActive:()=>state.active?projectForThread(state.active,state.projects):null};
 }
