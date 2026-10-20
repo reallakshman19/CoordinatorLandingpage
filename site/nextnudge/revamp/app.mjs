@@ -1,7 +1,7 @@
 import {newThread,freshId,parse,serialize,archiveRun,currentState,activeIntent,activeAgent,validate,assertPublic} from './thread.mjs';
 import {sentMove,amendValues,agentChange,ownerForm,agentForm,sentForm} from './editor.mjs';
 import {threadsMarkup} from './screens.mjs';
-import {localProjects,projectForThread,assertProjectAgent} from './project-store.mjs';
+import {localProjects,assertProjectAgent} from './project-store.mjs';
 import {createProjectUI} from './project-ui.mjs';
 import {makeReply,openAgents} from './reply.mjs';
 import {makeSeal,sealForm} from './seal.mjs';
@@ -148,7 +148,7 @@ async function onAction(action,target) {
     if(!input.ok)return;const id=input.value;
     const remote=await readRemote(id);if(!remote.thread)throw Error('Not found');
     if(state.threads[id]&&!(await askInline({title:'Replace local thread',message:'Replace this device draft with the GitHub version?',accept:'Replace'})).ok)return;
-    put(remote.thread);state.activeProject=projectForThread(id,state.projects)?.id||null;
+    put(remote.thread);projects.selectThreadProject(id);
     state.view='thread';threadRoute(id);return render();
   }
   if(action==='import')return $('#import-file').click();
@@ -209,7 +209,7 @@ document.addEventListener('click',e=>{
   if(action==='open'){
     const id=target.dataset.open;
     (async()=>{if(!state.threads[id]){const remote=await readRemote(id);if(!remote.thread)throw Error('Thread not found on GitHub');put(remote.thread);}
-      state.active=id;state.activeProject=projectForThread(id,state.projects)?.id||null;
+      state.active=id;projects.selectThreadProject(id);
       state.view='thread';state.draft=null;threadRoute(id);render();})().catch(err=>notice(err.message));return;
   }
   if(target.dataset.project){try{projects.select(target.dataset.project);}catch(e){notice(e.message);}return;}
@@ -267,7 +267,7 @@ document.addEventListener('submit',async e=>{
 });
 $('#import-file').addEventListener('change',async e=>{
   const file=e.target.files?.[0];if(!file)return;
-  try{const x=parse(await file.text());put(x);state.activeProject=projectForThread(x.id,state.projects)?.id||null;state.view='thread';threadRoute(x.id);render();}
+  try{const x=parse(await file.text());put(x);projects.selectThreadProject(x.id);state.view='thread';threadRoute(x.id);render();}
   catch(err){notice(err.message);}e.target.value='';
 });
 async function init(){
@@ -283,8 +283,7 @@ async function init(){
     try{if(!state.threads[requested]){const remote=await readRemote(requested);if(remote.thread)put(remote.thread);}
       if(state.threads[requested]){
         state.active=requested;
-        try{state.activeProject=projectForThread(requested,state.projects)?.id||null;}
-        catch(e){state.message=e.message;state.activeProject=null;}
+        projects.selectThreadProject(requested);
         const mode=new URLSearchParams(window.location.search).get('workspace');
         if(MODES.includes(mode))return openWorkspace({state,t,append,render,notice},mode);
         state.view='thread';return render();
