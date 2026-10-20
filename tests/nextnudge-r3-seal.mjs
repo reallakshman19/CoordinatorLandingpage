@@ -1,3 +1,4 @@
+import {workspaceView} from '../site/nextnudge/revamp/workspace-view.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -76,7 +77,11 @@ test('R3 G5: no native browser prompts or confirmations anywhere in site/nextnud
 });
 test('R3 G8: Reconcile explicitly projects latest reply label, old labels read UNKNOWN',()=>{
   const app=fs.readFileSync(new URL('../site/nextnudge/revamp/app.mjs',import.meta.url),'utf8');
-  assert.match(app,/replyLabel\(reply\|\|\{\}\)/);
+  const x=make();x.moves.push(sent('TASK-1'));
+  const r=makeReply(x,'ACK TASK-1',{id:'REPLY-1'}).move;delete r.label;x.moves.push(r);
+  assert.match(workspaceView(x,'reconcile',{target:r.id},null),/Assessment: UNKNOWN/);
+  r.label='SELF-ASSESSED';
+  assert.match(workspaceView(x,'reconcile',{target:r.id},null),/Assessment: SELF-ASSESSED/);
   assert.match(app,/id="reply-label"/);
   assert.match(app,/value|label/);
   const view=fs.readFileSync(new URL('../site/nextnudge/revamp/move-view.mjs',import.meta.url),'utf8');

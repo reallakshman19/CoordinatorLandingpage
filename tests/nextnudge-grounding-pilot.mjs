@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {newThread,currentState,serialize,parse} from '../site/nextnudge/revamp/thread.mjs';
 import {makeReply,openMoves} from '../site/nextnudge/revamp/reply.mjs';
+import {workspaceNav} from '../site/nextnudge/revamp/workspace-nav.mjs';
 
 const repo='reallakshman19/CoordinatorLandingpage';
 const source='https://github.com/'+repo+'/issues/110';
@@ -15,7 +16,8 @@ const memory=()=>{const db=new Map();return {getItem:k=>db.get(k)??null,setItem:
 
 test('NN110: current thread exposes Grounding Fixtures without restoring the old ladder',()=>{
   const page=fs.readFileSync(new URL('../site/nextnudge/revamp/app.mjs',import.meta.url),'utf8');
-  assert.match(page,/Grounding Fixtures/);
+  assert.match(workspaceNav('overview'),/Grounding Fixtures/);
+  assert.match(page,/workspaceNav/);
   assert.match(page,/grounding/);
   assert.doesNotMatch(page,/from ['"]\.\.\/workspace\.mjs/);
 });
