@@ -207,6 +207,15 @@ jobs:
           python -m pip install playwright
           python -m playwright install --with-deps chromium
 
+      - name: NN118 Chromium project navigation and grounding isolation
+        id: nn118_browser
+        if: steps.chromium.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python tests/nextnudge-projects-browser.py 2>&1 | tee nn118-browser-head.log
+
       - name: Run unchanged 19 browser checks
         id: browser
         if: steps.artifact.outcome == 'success' && steps.chromium.outcome == 'success'
@@ -361,6 +370,8 @@ jobs:
           name: wp1a-head-output
           path: |
             nextnudge-head.log
+            nn118-browser-head.log
+            artifacts/nextnudge-projects-browser/
             wp1a-original.log
             wp1a-head.log
             wp1a-browser.log
