@@ -17,6 +17,7 @@ const state={threads:localThreads(),projects:localProjects(),active:null,activeP
 const $=q=>document.querySelector(q);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const v=id=>$('#'+id)?.value||'';
+const threadRoute=id=>{if(typeof window==='undefined')return;const url=new URL(window.location.href);url.searchParams.set('thread',id);['project','projectView','workspace'].forEach(k=>url.searchParams.delete(k));window.history.replaceState(null,'',url);};
 const t=()=>state.threads[state.active];
 const intent=()=>activeIntent(t());
 const notice=s=>{state.message=s;$('#notice').textContent=s;};
@@ -132,7 +133,7 @@ async function convert(id) {
   if(!run)throw Error('Archived run not found');
   if(state.threads[id]&&!(await askInline({title:'Replace converted thread',message:'This replaces your local draft.',accept:'Replace'})).ok)return;
   const x=archiveRun(run);
-  put(x);state.view='thread';render();
+  put(x);state.view='thread';threadRoute(x.id);render();
 }
 async function onAction(action,target) {
   if(await workspaceAction(action,{state,t,append,render,notice}))return;
@@ -148,7 +149,7 @@ async function onAction(action,target) {
     const remote=await readRemote(id);if(!remote.thread)throw Error('Not found');
     if(state.threads[id]&&!(await askInline({title:'Replace local thread',message:'Replace this device draft with the GitHub version?',accept:'Replace'})).ok)return;
     put(remote.thread);state.activeProject=projectForThread(id,state.projects)?.id||null;
-    state.view='thread';return render();
+    state.view='thread';threadRoute(id);return render();
   }
   if(action==='import')return $('#import-file').click();
   if(action==='save-chat'){chatLink(x.id,v('chat'));return notice('Private chat link kept on this device only.');}
@@ -209,7 +210,7 @@ document.addEventListener('click',e=>{
     const id=target.dataset.open;
     (async()=>{if(!state.threads[id]){const remote=await readRemote(id);if(!remote.thread)throw Error('Thread not found on GitHub');put(remote.thread);}
       state.active=id;state.activeProject=projectForThread(id,state.projects)?.id||null;
-      state.view='thread';state.draft=null;render();})().catch(err=>notice(err.message));return;
+      state.view='thread';state.draft=null;threadRoute(id);render();})().catch(err=>notice(err.message));return;
   }
   if(target.dataset.project){try{projects.select(target.dataset.project);}catch(e){notice(e.message);}return;}
   onAction(action,target).catch(err=>notice(err.message));
@@ -226,7 +227,7 @@ document.addEventListener('submit',async e=>{
         const next=projects.prepareThread(x);
         put(x);projects.save(next);
       }else{put(x);state.activeProject=null;}
-      state.view='thread';render();return;
+      state.view='thread';threadRoute(x.id);render();return;
     }
     if(form.id==='owner-amend'){
       if(values.get('approved')!=='on')throw Error('Explicit Owner confirmation required');
@@ -265,7 +266,7 @@ document.addEventListener('submit',async e=>{
 });
 $('#import-file').addEventListener('change',async e=>{
   const file=e.target.files?.[0];if(!file)return;
-  try{const x=parse(await file.text());put(x);state.activeProject=projectForThread(x.id,state.projects)?.id||null;state.view='thread';render();}
+  try{const x=parse(await file.text());put(x);state.activeProject=projectForThread(x.id,state.projects)?.id||null;state.view='thread';threadRoute(x.id);render();}
   catch(err){notice(err.message);}e.target.value='';
 });
 async function init(){
@@ -274,13 +275,8 @@ async function init(){
     try{const r=await fetch('../nextnudge-data/threads/'+NLM+'.md');
       if(r.ok){const seed=parse(await r.text());put(seed);}}catch{}
   }
-  const params=new URLSearchParams(window.location.search);
-  const project=params.get('project');
-  if(project&&state.projects[project]){
-    state.activeProject=project;
-    state.view=params.get('projectView')==='grounding'?'project-grounding':'project';
-    return render();
-  }
+  const params=new URLSearchParams(window.location.search),project=params.get('project');
+  if(project&&state.projects[project]){state.activeProject=project;state.view=params.get('projectView')==='grounding'?'project-grounding':'project';return render();}
   const requested=params.get('thread');
   if(requested){
     try{if(!state.threads[requested]){const remote=await readRemote(requested);if(remote.thread)put(remote.thread);}
