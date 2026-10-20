@@ -54,8 +54,8 @@ export function groundingPanel(thread,values=readGrounding(thread),hasDraft=fals
     '<button type="submit" class="primary">Save grounding</button> '+
     '<button type="button" data-action="'+(project?'copy-project-grounding':'copy-grounding')+'">Copy grounding for agent</button> '+
     '<span class="grounding-status" role="status" aria-live="polite">'+(hasDraft?'Unsaved device draft restored':'')+'</span></div>';
-  return '<div class="heading"><button data-action="thread">← Thread</button><h2>Grounding Fixtures</h2></div>'+
-    workspaceNav('fixtures')+
+  return '<div class="heading"><button data-action="'+(project?'project':'thread')+'">← '+(project?'Project':'Thread')+'</button><h2>Grounding Fixtures</h2></div>'+
+    (project?'':workspaceNav('fixtures'))+
     '<p>Keep reusable context here. Blank means UNKNOWN. Edits stay on this device while typing. &quot;Save grounding&quot; creates one local snapshot '+(project?'in this project':'in thread history')+'. Publish to GitHub '+(project?'from this project':'on Thread page')+'.'+(hasDraft?' <strong class="draft-indicator">(Unsaved device draft restored)</strong>':'')+'</p>'+
     '<form id="'+(project?'project-grounding-form':'grounding-form')+'">'+actionsBar+Object.entries(PHASES).map(([phase,label])=>
       '<details'+(phase==='onboarding'?' open':'')+'><summary>'+esc(label)+'</summary>'+
