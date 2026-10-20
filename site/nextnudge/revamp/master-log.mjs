@@ -37,7 +37,9 @@ function selectThread(local,remote){
   if(!local)return {thread:remote||null,origin:remote?'GitHub':'not available'};
   if(!remote)return {thread:local,origin:'device (remote unverified)'};
   const prefix=JSON.stringify(remote.moves.slice(0,local.moves.length))===JSON.stringify(local.moves);
-  if(prefix&&remote.moves.length>=local.moves.length)return {thread:remote,origin:'GitHub'};
+  if(prefix&&remote.moves.length===local.moves.length)return {thread:local,origin:'device (matches GitHub)'};
+  if(prefix&&remote.moves.length>local.moves.length)
+    return {thread:local,origin:'device (GitHub has newer moves — compare before opening)'};
   const localAhead=JSON.stringify(local.moves.slice(0,remote.moves.length))===JSON.stringify(remote.moves);
   return {thread:local,origin:localAhead?'device (newer local moves)':'device (GitHub conflict — compare)'};
 }
