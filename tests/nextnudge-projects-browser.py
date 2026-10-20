@@ -98,7 +98,7 @@ def test_navigation(page):
     page.locator('#sent-confirm input[name="agent"]').fill("Agent One")
     page.locator('#sent-confirm button[type="submit"]').click()
     # Project Master Log reads original records; it creates no second Task record.
-    page.locator('[data-action="project"]').first.click()
+    page.locator('[data-action="back"]').first.click()
     page.locator('[data-action="master-log"]').click()
     page.get_by_role("heading", name="Master Log · Project A", exact=True).wait_for()
     page.get_by_text("Agent One · Task", exact=False).first.wait_for()
@@ -108,7 +108,7 @@ def test_navigation(page):
     assert page.locator('.move-summary[id^="move-"]').count() >= 1
     assert "move=" in page.url
     # BETA has no G1 Task from ALPHA; the project feed must not leak across projects.
-    page.locator('[data-action="project"]').first.click()
+    page.locator('[data-action="back"]').first.click()
     page.locator('[data-action="projects"]').first.click()
     page.get_by_role("button", name="Project B", exact=False).click()
     page.locator('[data-action="master-log"]').click()
