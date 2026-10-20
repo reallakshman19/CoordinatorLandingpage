@@ -2,13 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {newThread} from '../site/nextnudge/revamp/thread.mjs';
 import {groundingPanel,readGrounding} from '../site/nextnudge/revamp/grounding.mjs';
-import {HEADINGS} from '../site/nextnudge/fixtures.mjs';
+import {PROJECT_HEADINGS} from '../site/nextnudge/fixtures.mjs';
 import {installFeatures} from '../site/nextnudge/revamp/features.mjs';
 const thread=()=>newThread({id:'NN-20261019-173100-aa11',title:'Grounding UI',goal:'Preserve context'});
-test('NN110 UI: all original headings remain optional and text is escaped',()=>{
+test('NN121 UI: active project headings remain optional and text is escaped',()=>{
   const html=groundingPanel(thread(),{'1f':'<script>do not run</script>'});
-  assert.equal((html.match(/<textarea /g)||[]).length,HEADINGS.length);
-  for(const [,key] of HEADINGS)assert.ok(html.includes('name="ground-'+key+'"'));
+  assert.equal((html.match(/<textarea /g)||[]).length,PROJECT_HEADINGS.length);
+  for(const [,key] of PROJECT_HEADINGS)assert.ok(html.includes('name="ground-'+key+'"'));
   assert.match(html,/&lt;script&gt;/);assert.doesNotMatch(html,/<script>/);
   assert.doesNotMatch(html,/textarea[^>]*required/);
 });
