@@ -98,7 +98,8 @@ def test_navigation(page):
     page.locator('#sent-confirm input[name="agent"]').fill("Agent One")
     page.locator('#sent-confirm button[type="submit"]').click()
     # Project Master Log reads original records; it creates no second Task record.
-    page.locator('[data-action="back"]').first.click()
+    page.locator('[data-action="thread"]').first.click()  # Task workspace → Overview
+    page.locator('[data-action="back"]').first.click()    # Overview → owning project
     page.locator('[data-action="master-log"]').click()
     page.get_by_role("heading", name="Master Log · Project A", exact=True).wait_for()
     page.get_by_text("Agent One · Task", exact=False).first.wait_for()
