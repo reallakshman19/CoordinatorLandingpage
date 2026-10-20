@@ -1,0 +1,67 @@
+{
+  "project": "g9v35",
+  "protocol": "Team protocol (protocol/TEAM_PROTOCOL.md §3 TASK EVIDENCE v2 + A14 SELF-CHECK v1)",
+  "repository": "reallakshman19/CoordinatorLandingpage",
+  "product_repo": "UNCONFIRMED (each Oracle names it in its TASK EVIDENCE #1; then this field is set)",
+  "criticality": "normal",
+  "criticality_owner_words": "all these 3 projects are Non critical (Owner, 20 Oct 2026 21:39)",
+  "parent_issue": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1",
+  "updated": "2026-10-20T17:51:10Z",
+  "updated_by": "OwnerTeammember (Claude): enrolment registry",
+  "control": {
+    "epoch": 1,
+    "coordinator": "OwnerTeammember (Claude, acting TeamCoordinator; sole sender to these chats)",
+    "control_post": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6297320322",
+    "since": "2026-10-20T17:51:10Z",
+    "hold": null,
+    "hold_history": [
+      {
+        "since": "2026-10-19T23:12+04:00",
+        "owner_words": "fix skill and other architecture . do not start NLM or any project",
+        "scope": "all projects",
+        "lifted_for": [
+          "enrolment of these chats (evidence issues, registries, one enrolment message each)"
+        ],
+        "lifted_words": "yes, except standalone. all these 3 projects are Non critical",
+        "lifted_source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6297320322",
+        "still_held": "new task work, until the Owner says otherwise"
+      }
+    ]
+  },
+  "agents": [
+    {
+      "alias": "O1-G9v3.5",
+      "role": "oracle",
+      "generation": 1,
+      "chat_id8": "6ad7678e",
+      "status": "ENROL SENT; awaiting ACK + TASK EVIDENCE #1",
+      "native_route": "chatgpt-browser",
+      "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/127",
+      "delivery_receipt": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6297426669",
+      "timer": "NOT_ARMED"
+    },
+    {
+      "alias": "Gx-PQRT",
+      "role": "agent",
+      "generation": 1,
+      "chat_id8": "6ad77d6a",
+      "status": "ENROL SENT; awaiting ACK + TASK EVIDENCE #1",
+      "native_route": "chatgpt-browser",
+      "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128",
+      "delivery_receipt": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6297426669",
+      "timer": "NOT_ARMED"
+    },
+    {
+      "alias": "Gx-MathQRT",
+      "role": "agent",
+      "generation": 1,
+      "chat_id8": "6ad77d97",
+      "status": "ENROL SENT; awaiting ACK + TASK EVIDENCE #1",
+      "native_route": "chatgpt-browser",
+      "evidence_thread": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/129",
+      "delivery_receipt": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6297426669",
+      "timer": "NOT_ARMED"
+    }
+  ],
+  "open_owner_decisions": []
+}
