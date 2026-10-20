@@ -47,6 +47,14 @@ export function createProjectUI({state,put,render,notice}){
     }
   }
   function select(id){if(!state.projects[id])throw Error('Project not found');state.activeProject=id;state.view='project';state.draft=null;route();render();}
+  function selectThreadProject(id){
+    try{state.activeProject=projectForThread(id,state.projects)?.id||null;}
+    catch(e){
+      if(!/Ambiguous project association/.test(e.message))throw e;
+      state.activeProject=null;
+      state.message='Ambiguous project association; historical thread opened without assigning either project or its shared grounding.';
+    }
+  }
   function prepareThread(x){
     const p=current();
     if(!p)throw Error('Select a project');
@@ -129,6 +137,6 @@ export function createProjectUI({state,put,render,notice}){
       const status=$('.grounding-status');if(status)status.textContent='Unsaved device draft';
     }catch(e){notice('Project grounding draft storage failed: '+e.message+'. Copy before leaving.');}
   });
-  return {current,save,show,select,prepareThread,submit,action,discover,route,
+  return {current,save,show,select,selectThreadProject,prepareThread,submit,action,discover,route,
     projectForActive:()=>state.active?projectForThread(state.active,state.projects):null};
 }
