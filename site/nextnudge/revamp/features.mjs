@@ -3,7 +3,7 @@ import {rememberComposer,restoreComposer} from './composer.mjs';
 import {prepareAction} from './transport-request.mjs';
 import {activeAgent,activeIntent} from './thread.mjs';
 import {REPO} from './save.mjs';
-import {projectForThread} from './project-store.mjs';
+import {projectForThread,assertProjectAgent} from './project-store.mjs';
 const DRAFTS='nextnudge.grounding.drafts.v1';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const $=q=>document.querySelector(q);
@@ -43,6 +43,7 @@ async function prepareDelivery(action,ctx){
     const options=action==='send-github'?{draft:state.draft,packet:$('#packet')?.value||state.draft?.packet,
       issue:$('#delivery-issue')?.value,agent:$('#delivery-agent')?.value}:{moveId:$('#return-move')?.value};
     if(action==='send-github'){
+      assertProjectAgent(thread,options.agent,state.projects);
       Object.assign(state.draft,{packet:options.packet,targetIssue:options.issue,targetAgent:options.agent});
       rememberComposer(thread.id,state.draft);
     }
