@@ -1,0 +1,35 @@
+name: NextNudge project navigation Chromium
+
+on:
+  pull_request:
+    paths:
+      - 'site/nextnudge/**'
+      - 'site/nextnudge-data/projects/**'
+      - 'tests/nextnudge-projects-browser.py'
+      - '.github/workflows/nextnudge-projects-browser.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Chromium test dependency
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Run real Projects-to-Agents Chromium navigation
+        run: python tests/nextnudge-projects-browser.py
+      - name: Preserve screenshots even when the test fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nn118-chromium
+          path: artifacts/nextnudge-projects-browser/
+          if-no-files-found: ignore
