@@ -41,7 +41,7 @@ function groundingFormValues(form){
 }
 function renderProjects(){ $('#panel').innerHTML=projectsMarkup(state.projects,state.threads); }
 function renderProject(){const p=activeProject();if(!p){state.view='projects';return renderProjects();}
-  $('#panel').innerHTML=projectMarkup(p,state.threads);}
+  $('#panel').innerHTML=projectMarkup(p,state.threads,state.projects);}
 function renderProjectGrounding(){
   const p=activeProject();if(!p)throw Error('Select a project first');
   const draft=projectDrafts()[p.id],saved=p.fixtures;
@@ -70,8 +70,12 @@ function renderThread() {
     '<p><strong>Done-when:</strong> '+(i.doneWhen.length?i.doneWhen.map((c,j)=>(j+1)+'. '+esc(c)).join(' · '):'UNKNOWN — Owner must define')+'</p>'+
     '<p><strong>Scope:</strong> '+esc(i.inScope||'UNKNOWN')+' · <strong>Out:</strong> '+esc(i.outScope||'UNKNOWN')+'</p></details>'+
     '<div><button data-action="owner-edit">Owner: amend intent / checks / HOLD</button> '+
-    '<button data-action="agent-edit">Change agent</button></div></section><section id="editor"></section>'+ 
+    (state.activeProject?'<span class="small">Project agent identity fixed; create another agent thread to transfer work.</span>':'<button data-action="agent-edit">Change agent</button>')+'</div></section><section id="editor"></section>'+ 
     '<details><summary>Earlier moves ('+older.length+')</summary>'+older.map(m=>moveMarkup(x,m,esc)).join('')+'</details>'+ 
+    '<details><summary>Historical thread grounding ('+x.moves.filter(m=>m.note?.startsWith('GROUNDING_FIXTURES_V1:')).length+' snapshots) · read-only</summary>'+
+    x.moves.filter(m=>m.note?.startsWith('GROUNDING_FIXTURES_V1:')).map(m=>'<details><summary>'+esc(m.id)+'</summary><pre>'+
+      esc(JSON.stringify(JSON.parse(m.note.slice('GROUNDING_FIXTURES_V1:'.length)),null,2))+'</pre></details>').join('')+
+    '</details>'+
     '<section class="current"><h3>Current move · '+esc(currentState(x))+'</h3>'+
     (last?moveMarkup(x,last,esc):'<p>No nudge sent yet.</p>')+
     (hold?'<div class="hold" role="alert"><strong>⛔ OWNER HOLD ACTIVE:</strong> '+esc(i.hold)+' — sending instructions is blocked until the Owner amends or removes this constraint.</div>':
