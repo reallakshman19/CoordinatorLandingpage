@@ -1,9 +1,8 @@
 import {newThread,freshId,parse,serialize,archiveRun,currentState,activeIntent,activeAgent,validate,assertPublic} from './thread.mjs';
 import {sentMove,amendValues,agentChange,ownerForm,agentForm,sentForm} from './editor.mjs';
-import {threadsMarkup,projectsMarkup,projectMarkup} from './screens.mjs';
-import {newProject,addThread,updateFixtures} from './project-model.mjs';
-import {localProjects,persistProject,projectForThread,projectSha,recordProjectSha,readRemoteProject,discoverProjects,prepareProjectSave} from './project-store.mjs';
-import {groundingPanel,readGrounding,projectGroundingText} from './grounding.mjs';
+import {threadsMarkup} from './screens.mjs';
+import {localProjects,projectForThread} from './project-store.mjs';
+import {createProjectUI} from './project-ui.mjs';
 import {makeReply,openAgents} from './reply.mjs';
 import {makeSeal,sealForm} from './seal.mjs';
 import {moveMarkup} from './move-view.mjs';
@@ -26,36 +25,7 @@ const emptyMove=(id,kind)=>({id,kind,delivery:'draft',packet:'',returnLine:'',di
 function put(thread) {
   validate(thread);state.threads[thread.id]=thread;persist(thread);state.active=thread.id;
 }
-function activeProject(){return state.projects[state.activeProject]||null;}
-function putProject(project){
-  persistProject(project);state.projects[project.id]=project;state.activeProject=project.id;
-}
-function projectForActive(){
-  return state.active?projectForThread(state.active,state.projects):null;
-}
-const projectDraftKey='nextnudge.project.grounding.drafts.v1';
-function projectDrafts(){try{return JSON.parse(localStorage.getItem(projectDraftKey)||'{}');}catch{return {};}}
-function groundingFormValues(form){
-  return Object.fromEntries([...new FormData(form)].filter(([key])=>key.startsWith('ground-'))
-    .map(([key,value])=>[key.slice(7),value]));
-}
-function renderProjects(){ $('#panel').innerHTML=projectsMarkup(state.projects,state.threads); }
-function renderProject(){const p=activeProject();if(!p){state.view='projects';return renderProjects();}
-  $('#panel').innerHTML=projectMarkup(p,state.threads,state.projects);}
-function renderProjectGrounding(){
-  const p=activeProject();if(!p)throw Error('Select a project first');
-  const draft=projectDrafts()[p.id],saved=p.fixtures;
-  const keys=new Set([...Object.keys(draft||{}),...Object.keys(saved)]);
-  const isDiff=!!draft&&[...keys].some(k=>String(draft[k]||'').trim()!==(saved[k]||''));
-  $('#panel').innerHTML=groundingPanel(null,draft||saved,isDiff,p);
-}
-function renderLegacyGrounding(){
-  const x=t(),history=x.moves.filter(m=>m.note?.startsWith('GROUNDING_FIXTURES_V1:'));
-  $('#panel').innerHTML='<div class="heading"><button data-action="thread">← Thread</button><h2>Historical Grounding Fixtures · read-only</h2></div>'+
-    '<p>This unassigned legacy thread has no project library. Select a project and explicitly attach the thread to edit shared fixtures. No historical grounding was merged.</p>'+
-    history.map(m=>'<details><summary>'+esc(m.id)+' · saved historical snapshot</summary><pre>'+
-      esc(JSON.stringify(JSON.parse(m.note.slice('GROUNDING_FIXTURES_V1:'.length)),null,2))+'</pre></details>').join('');
-}
+const projects=createProjectUI({state,put,render,notice});
 function renderThreads(){ $('#panel').innerHTML=threadsMarkup(state.threads); }
 function renderThread() {
   const x=t(),i=intent(),last=x.moves.at(-1),hold=!!i.hold;
@@ -127,10 +97,7 @@ function renderComposer() {
 }
 function render() {
   $('#notice').textContent=state.message;
-  if(state.view==='projects')renderProjects();
-  else if(state.view==='project')renderProject();
-  else if(state.view==='project-grounding')renderProjectGrounding();
-  else if(state.view==='legacy-grounding')renderLegacyGrounding();
+  if(['projects','project','project-grounding','legacy-grounding'].includes(state.view))projects.show();
   else if(state.view==='threads')renderThreads();
   else if(state.view==='grounding')$('#panel').innerHTML=renderGrounding(t());
   else if(state.view==='thread')renderThread();
@@ -171,44 +138,7 @@ async function onAction(action,target) {
   if(await workspaceAction(action,{state,t,append,render,notice}))return;
   if(await featureAction(action,{state,t,append,render,notice}))return;
   const x=t(),i=x?intent():null;
-  if(action==='projects'){state.view='projects';state.activeProject=null;state.draft=null;return render();}
-  if(action==='project'){state.view='project';state.draft=null;return render();}
-  if(action==='project-grounding'){state.view='project-grounding';state.draft=null;return render();}
-  if(action==='back'){state.view=state.activeProject?'project':'projects';state.draft=null;state.editor=null;return render();}
-  if(action==='copy-project-grounding'){
-    const p=activeProject(),text=projectGroundingText(p,groundingFormValues($('#project-grounding-form')));
-    try{await navigator.clipboard.writeText(text);notice('Project grounding copied. Copy does not send.');}
-    catch{const box=document.createElement('textarea');box.value=text;box.readOnly=true;
-      $('#project-grounding-form').appendChild(box);box.select();notice('Clipboard denied; selected manual copy text.');}
-    return;
-  }
-  if(action==='project-save'){
-    const p=activeProject();if(!p)throw Error('Select a project');
-    const win=window.open('about:blank','_blank');
-    try{const prepared=await prepareProjectSave(p);
-      if(prepared.manual){
-        const host=document.createElement('section'),label=document.createElement('label'),box=document.createElement('textarea');
-        label.textContent='Manual Owner issue body · copy all text into the GitHub issue before submitting';
-        box.value=prepared.body;box.readOnly=true;box.rows=8;
-        label.appendChild(box);host.appendChild(label);$('#panel').appendChild(host);
-        try{await navigator.clipboard.writeText(prepared.body);}
-        catch{box.focus();box.select();}
-      }
-      if(win){win.opener=null;win.location.replace(prepared.url);}
-      else{const a=document.createElement('a');a.href=prepared.url;a.target='_blank';a.rel='noopener noreferrer';
-        a.textContent='Open prepared project save';$('#panel').append(a);}
-      notice(prepared.manual?'Manual Owner issue body prepared. Paste the full body into the open GitHub issue; nothing sent yet. Device draft retained.':
-        'Owner review request prepared ('+prepared.chars+' URL characters). Device draft retained until confirmed GitHub readback.');
-    }catch(e){win?.close();throw e;}
-    return;
-  }
-  if(action==='project-reload'){
-    const p=activeProject(),remote=await readRemoteProject(p.id);
-    if(!remote.project)return notice('Project not yet on GitHub. Device draft retained.');
-    if(!(await askInline({title:'GitHub project readback',message:'Replace local project draft with the GitHub version? Unsaved local changes must be exported or recovered separately.',accept:'Replace'})).ok)return;
-    putProject(remote.project);recordProjectSha(p.id,remote.sha);
-    state.view='project';notice('GitHub project readback verified at SHA '+remote.sha.slice(0,10)+'.');return render();
-  }
+  if(await projects.action(action))return;
   if(action==='thread'){state.view='thread';state.draft=null;state.editor=null;return render();}
   if(action==='export')return exportThread(x);
   if(action==='archive-list')return archiveList();
@@ -281,46 +211,20 @@ document.addEventListener('click',e=>{
       state.active=id;state.activeProject=projectForThread(id,state.projects)?.id||null;
       state.view='thread';state.draft=null;render();})().catch(err=>notice(err.message));return;
   }
-  if(target.dataset.project){state.activeProject=target.dataset.project;state.view='project';state.draft=null;render();return;}
+  if(target.dataset.project){try{projects.select(target.dataset.project);}catch(e){notice(e.message);}return;}
   onAction(action,target).catch(err=>notice(err.message));
-});
-document.addEventListener('input',event=>{
-  if(!event.target.closest?.('#project-grounding-form'))return;
-  try{
-    const rows=projectDrafts();rows[state.activeProject]=groundingFormValues($('#project-grounding-form'));
-    localStorage.setItem(projectDraftKey,JSON.stringify(rows));
-    const status=$('.grounding-status');if(status)status.textContent='Unsaved device draft';
-  }catch(e){notice('Project grounding draft storage failed: '+e.message+'. Copy before leaving.');}
 });
 document.addEventListener('submit',async e=>{
   const form=e.target;if(!['new-project','new-thread','attach-thread','project-grounding-form','owner-amend','agent-change','sent-confirm','seal-form'].includes(form.id))return;
   e.preventDefault();
   try{
     const values=new FormData(form);
-    if(form.id==='new-project'){
-      const p=newProject(values.get('name').trim());putProject(p);state.view='project';render();return;
-    }
-    if(form.id==='project-grounding-form'){
-      const p=activeProject(),next=updateFixtures(p,groundingFormValues(form));
-      if(next)putProject(next);
-      const rows=projectDrafts();delete rows[p.id];
-      try{localStorage.setItem(projectDraftKey,JSON.stringify(rows));}catch{}
-      render();notice(next?'Project grounding saved locally as one version. Save project to GitHub for sharing.':'Project grounding unchanged; no history added.');return;
-    }
-    if(form.id==='attach-thread'){
-      const id=values.get('thread'),thread=state.threads[id],p=activeProject();
-      if(!thread)throw Error('Thread is not on this device; load it first');
-      if(projectForThread(id,state.projects))throw Error('Thread already belongs to a project');
-      putProject(addThread(p,{id,agent:activeAgent(thread)||'UNKNOWN'},{legacy:true}));
-      state.view='project';render();return;
-    }
+    if(projects.submit(form,values))return;
     if(form.id==='new-thread'){
       const x=newThread({title:values.get('title').trim(),goal:values.get('goal').trim(),agent:values.get('agent').trim()});
       if(state.view==='project'){
-        const p=activeProject();
-        if(!p)throw Error('Select a project');
-        const next=addThread(p,x);
-        put(x);putProject(next);
+        const next=projects.prepareThread(x);
+        put(x);projects.save(next);
       }else{put(x);state.activeProject=null;}
       state.view='thread';render();return;
     }
@@ -331,7 +235,7 @@ document.addEventListener('submit',async e=>{
       append(m);return;
     }
     if(form.id==='agent-change'){
-      if(projectForActive())throw Error('Project thread identity is fixed. Create/select the other agent thread; existing history is preserved.');
+      if(projects.projectForActive())throw Error('Project thread identity is fixed. Create/select the other agent thread; existing history is preserved.');
       const m=agentChange(values.get('agent'));
       chatLink(t().id,'');append(m);
       notice('Agent changed. Add the new private chat link for this agent.');return;
@@ -365,10 +269,7 @@ $('#import-file').addEventListener('change',async e=>{
   catch(err){notice(err.message);}e.target.value='';
 });
 async function init(){
-  try{
-    const found=await discoverProjects();state.projects=localProjects();
-    if(found.conflicts)state.message=found.conflicts+' project GitHub revisions differ from device drafts; compare before writing.';
-  }catch(e){state.message='Project GitHub discovery unavailable: '+e.message+'. Device drafts retained.';}
+  await projects.discover();
   if(!state.threads[NLM]){
     try{const r=await fetch('../nextnudge-data/threads/'+NLM+'.md');
       if(r.ok){const seed=parse(await r.text());put(seed);}}catch{}
