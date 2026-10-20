@@ -1,13 +1,43 @@
 import {validateProject,PROJECT_ID,assertAppendOnly} from './project-model.mjs';
-import {REPO,issueUrl,issueBody} from './save.mjs';
+import {REPO,issueUrl,issueBody,readRemote} from './save.mjs';
 const ROOT='site/nextnudge-data/projects/';
 const LOCAL='nextnudge.projects.v1',SHAS='nextnudge.projects.sha.v1';
 const readKey=key=>{try{return JSON.parse(localStorage.getItem(key)||'{}');}catch{return {};}};
-export function localProjects(){const rows=readKey(LOCAL);for(const p of Object.values(rows))validateProject(p);return rows;}
+function projectRecords(){
+  const raw=localStorage.getItem(LOCAL);
+  if(!raw)return {rows:{},invalid:0,unreadable:false};
+  let rows;
+  try{rows=JSON.parse(raw);}catch{return {rows:{},invalid:1,unreadable:true};}
+  if(!rows||typeof rows!=='object'||Array.isArray(rows))
+    return {rows:{},invalid:1,unreadable:true};
+  let invalid=0;
+  const valid={};
+  for(const [id,p] of Object.entries(rows)){
+    try{validateProject(p);if(id!==p.id)throw Error('Registry key does not match project');valid[id]=p;}
+    catch{invalid++;}
+  }
+  return {rows,valid,invalid,unreadable:false};
+}
+export function localProjectIssues(){
+  const result=projectRecords();
+  return {invalid:result.invalid,unreadable:result.unreadable};
+}
+export function localProjects(){return projectRecords().valid||{};}
 export function persistProject(p){
   validateProject(p);
-  const rows=localProjects();rows[p.id]=p;
+  const records=projectRecords();
+  if(records.unreadable)throw Error('Project registry is unreadable; original bytes preserved. Export or repair before another save.');
+  // Preserve invalid entries in storage for recovery; only the known project entry changes.
+  const rows={...records.rows,[p.id]:p};
   localStorage.setItem(LOCAL,JSON.stringify(rows));return p;
+}
+export function assertProjectAgent(thread,agent,projects=localProjects()){
+  const project=projectForThread(thread.id,projects);
+  if(!project)return null; // Historical unassigned v3 threads keep their original behavior.
+  const binding=project.threads.find(row=>row.id===thread.id);
+  if(typeof agent!=='string'||agent.trim().toLowerCase()!==binding.agent.trim().toLowerCase())
+    throw Error('Project agent mismatch: this thread belongs to '+binding.agent+'. Open the intended agent thread.');
+  return binding.agent;
 }
 export function projectForThread(threadId,projects=localProjects()){
   const matches=Object.values(projects).filter(p=>p.threads.some(t=>t.id===threadId));
@@ -50,8 +80,20 @@ export async function discoverProjects(){
   }
   return {imported,conflicts};
 }
+export async function verifyProjectThreads(project,load=readRemote){
+  validateProject(project);
+  for(const member of project.threads){
+    const remote=await load(member.id);
+    if(!remote?.thread||!/^[a-f0-9]{40}$/.test(remote.sha||''))
+      throw Error('Save thread '+member.agent+' ('+member.id+') to GitHub and confirm readback before saving this project. Device drafts retained.');
+    if(remote.thread.id!==member.id)
+      throw Error('GitHub thread identity does not match project membership: '+member.id);
+  }
+  return true;
+}
 export async function prepareProjectSave(project){
   validateProject(project);
+  await verifyProjectThreads(project);
   const remote=await readFile(project.id),known=projectSha(project.id);
   if(remote.sha!==known)throw Error('NEEDS RELOAD: GitHub project changed. Device draft retained.');
   assertAppendOnly(remote.project,project);
