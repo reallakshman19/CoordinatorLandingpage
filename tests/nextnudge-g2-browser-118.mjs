@@ -170,9 +170,15 @@ test('P01/P02/P03 actual Chromium pointer-flow, project editor and agent fixture
     const alphaID=await cdp.eval('Object.values(JSON.parse(localStorage.getItem("nextnudge.projects.v1"))).find(p=>p.name==="P118-ALPHA").id');
     await cdp.click('[data-project="'+alphaID+'"]');await cdp.click('[data-open="'+alphaG2+'"]');
     await cdp.click('[data-action="workspace-ground"]');
-    await cdp.until('document.querySelector("#workspace-form [name=brief]")?.value==="P118-ALPHA-ONLY-GROUND-V2"');
-    assert.equal(await cdp.eval('document.querySelector("#workspace-form [name=brief]")?.value'),'P118-ALPHA-ONLY-GROUND-V2');
-    trace.push(await cdp.snap('P03: ALPHA/G2 unaffected by BETA fixture'));
+    await cdp.until('!!document.querySelector("#workspace-form [name=brief]")');
+    const preservedDraft=await cdp.eval('document.querySelector("#workspace-form [name=brief]")?.value');
+    assert.equal(preservedDraft,'P118-ALPHA-ONLY-GROUND','G2 existing unsent local Ground draft is preserved');
+    await cdp.click('[data-action="grounding"]');
+    await cdp.until('!!document.querySelector("#project-grounding-form")');
+    const liveGrounding=await cdp.eval('document.querySelector("#project-grounding-form [name=ground-1f]")?.value');
+    assert.equal(liveGrounding,'P118-ALPHA-ONLY-GROUND-V2','Shared ALPHA library reflects V2 despite old local draft');
+    assert.notEqual(liveGrounding,'P118-BETA-NEVER-IN-ALPHA');
+    trace.push(await cdp.snap('P03: ALPHA/G2 sees current V2 fixture; existing Ground draft preserved'));
     assert.deepEqual(cdp.errors,[],'No uncaught browser JavaScript exceptions');
     const shot=await cdp.send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
     const digest=createHash('sha256').update(Buffer.from(shot.data,'base64')).digest('hex');
