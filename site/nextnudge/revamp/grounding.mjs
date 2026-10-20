@@ -1,4 +1,4 @@
-import {HEADINGS,PHASES} from '../fixtures.mjs';
+import {HEADINGS,PROJECT_HEADINGS,PROJECT_PHASES,RETIRED_MIDCYCLE,RETIRED_MIDCYCLE_KEYS,projectHeadingNumber} from '../fixtures.mjs';
 import {freshId,activeIntent,assertPublic,validate} from './thread.mjs';
 import {workspaceNav} from './workspace-nav.mjs';
 import {projectForThread} from './project-store.mjs';
