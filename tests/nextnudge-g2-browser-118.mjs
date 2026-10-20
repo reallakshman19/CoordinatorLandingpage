@@ -1,0 +1,124 @@
+// G2 real-browser pilot of a local, disposable PR checkout via Chrome DevTools Protocol.
+// Real pointer and keyboard events; no production issues, writes, agent impersonation or release.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import http from 'node:http';
+import {spawn,spawnSync} from 'node:child_process';
+import {once} from 'node:events';
+import {createHash} from 'node:crypto';
+const root=path.resolve(new URL('..',import.meta.url).pathname);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const chromeCandidates=[process.env.CHROME_BIN,'chromium','google-chrome','google-chrome-stable','chromium-browser'].filter(Boolean);
+const browser=chromeCandidates.find(p=>spawnSync('which',[p],{encoding:'utf8'}).status===0);
+async function server(){
+  const mime={'.html':'text/html','.mjs':'text/javascript','.js':'text/javascript','.json':'application/json','.css':'text/css','.md':'text/plain'};
+  const web=http.createServer((req,res)=>{
+    const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
+    const file=path.resolve(root,'.'+pathname);
+    if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}
+    fs.readFile(file,(err,data)=>{if(err){res.writeHead(404).end();return;}
+      res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream',
+        'Cache-Control':'no-store'});res.end(data);});
+  });
+  web.listen(0,'127.0.0.1');await once(web,'listening');
+  return {web,url:'http://127.0.0.1:'+web.address().port+'/site/nextnudge/index.html'};
+}
+async function remotePort(){const s=http.createServer();s.listen(0,'127.0.0.1');await once(s,'listening');const port=s.address().port;s.close();return port;}
+class CDP{
+  constructor(ws){this.ws=ws;this.seq=0;this.pending=new Map();this.errors=[];ws.addEventListener('message',evt=>{
+    const m=JSON.parse(evt.data);
+    if(m.method==='Runtime.exceptionThrown')this.errors.push(JSON.stringify(m.params.exceptionDetails));
+    if(m.id){const p=this.pending.get(m.id);if(p){this.pending.delete(m.id);if(m.error)p.reject(Error(m.error.message));else p.resolve(m.result);}}
+  });}
+  send(method,params={}){const id=++this.seq;return new Promise((resolve,reject)=>{this.pending.set(id,{resolve,reject});this.ws.send(JSON.stringify({id,method,params}));});}
+  async eval(expr){const x=await this.send('Runtime.evaluate',{expression:expr,returnByValue:true,awaitPromise:true});
+    if(x.exceptionDetails)throw Error('Browser expression: '+JSON.stringify(x.exceptionDetails));
+    return x.result?.value;}
+  async until(expr,timeout=12000){const start=Date.now();while(Date.now()-start<timeout){if(await this.eval(expr))return;await sleep(150);}throw Error('Browser timed out: '+expr);}
+  async click(selector){
+    const bounds=await this.eval('(()=>{const x=document.querySelector('+JSON.stringify(selector)+');if(!x)return null;x.scrollIntoView({block:"center"});const b=x.getBoundingClientRect();return {x:b.left+b.width/2,y:b.top+b.height/2,w:b.width,h:b.height};})()');
+    if(!bounds||bounds.w<1||bounds.h<1)throw Error('Not visible for pointer: '+selector);
+    const {x,y}=bounds;await this.send('Input.dispatchMouseEvent',{type:'mouseMoved',x,y});
+    await this.send('Input.dispatchMouseEvent',{type:'mousePressed',x,y,button:'left',clickCount:1});
+    await this.send('Input.dispatchMouseEvent',{type:'mouseReleased',x,y,button:'left',clickCount:1});}
+  async type(selector,text){await this.click(selector);await this.send('Input.insertText',{text});}
+  async snap(label){const html=await this.eval('document.querySelector("#panel")?.innerText.slice(0,800)');
+    const route=await this.eval('window.location.search');return {label,route,view:html};}
+}
+test('P01/P02/P03 actual Chromium pointer-flow, project editor and agent fixtures (candidate checkout, local-only)',{timeout:110000},async t=>{
+  if(!browser){console.log('P01_BROWSER_NOT_RUN Chrome/Chromium executable absent');t.skip('Browser executable unavailable');return;}
+  const {web,url}=await server(),profile=fs.mkdtempSync(path.join(os.tmpdir(),'nn118-g2-'));
+  const port=await remotePort();const cp=spawn(browser,['--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu',
+    '--window-size=1300,1000','--remote-debugging-port='+port,'--user-data-dir='+profile,url],{stdio:'ignore'});
+  const trace=[];let cdp;
+  try{
+    let info=null;
+    for(let i=0;i<80;i++){if(cp.exitCode!==null)throw Error('Chromium exited early '+cp.exitCode);
+      try{const r=await fetch('http://127.0.0.1:'+port+'/json/list');const tabs=await r.json();
+        info=tabs.find(x=>x.type==='page'&&x.url.includes('nextnudge'));if(info)break;}catch{} await sleep(250);}
+    if(!info)throw Error('Chromium CDP endpoint unavailable');
+    const ws=new WebSocket(info.webSocketDebuggerUrl);
+    await new Promise((resolve,reject)=>{ws.addEventListener('open',resolve,{once:true});ws.addEventListener('error',reject,{once:true});});
+    cdp=new CDP(ws);await cdp.send('Runtime.enable');await cdp.send('Page.enable');
+    const version=await cdp.send('Browser.getVersion');trace.push({browser:version.product,url});
+    await cdp.until('document.querySelector("#panel h2")?.textContent==="Projects"',18000);
+    trace.push(await cdp.snap('P01: Projects landed'));
+    await cdp.type('#new-project input[name="name"]','P118-ALPHA');
+    await cdp.click('#new-project button[type="submit"]');
+    await cdp.until('document.querySelector("#panel h2")?.textContent==="P118-ALPHA"');
+    trace.push(await cdp.snap('P01: selected ALPHA'));
+    await cdp.type('#new-thread input[name="agent"]','P118-G1');
+    await cdp.type('#new-thread input[name="title"]','G1 pilot task');
+    await cdp.type('#new-thread textarea[name="goal"]','Preserve the Owner intent');
+    await cdp.click('#new-thread button[type="submit"]');
+    await cdp.until('!!document.querySelector("nav.workspace-tabs")');
+    trace.push(await cdp.snap('P01: agent G1 Overview'));
+    for(const mode of ['ground','task','correction','reconcile']){
+      await cdp.click('[data-action="workspace-'+mode+'"]');
+      await cdp.until('document.querySelector("[aria-current=page]")?.dataset.action==="workspace-'+mode+'"');
+      trace.push(await cdp.snap('P01: '+mode));
+    }
+    await cdp.click('[data-action="thread"]');await cdp.until('document.querySelector("[aria-current=page]")?.dataset.action==="thread"');
+    await cdp.click('[data-action="back"]');await cdp.until('document.querySelector("#panel h2")?.textContent==="P118-ALPHA"');
+    await cdp.click('[data-action="project-grounding"]');await cdp.until('!!document.querySelector("#project-grounding-form")');
+    await cdp.type('#project-grounding-form textarea[name="ground-1f"]','P118-ALPHA-ONLY-GROUND');
+    await cdp.click('#project-grounding-form button[type="submit"]');
+    await cdp.until('!!JSON.parse(localStorage.getItem("nextnudge.projects.v1"))[Object.keys(JSON.parse(localStorage.getItem("nextnudge.projects.v1")))[0]].fixtures["1f"]');
+    trace.push(await cdp.snap('P02: ALPHA fixture saved'));
+    await cdp.click('[data-action="project"]');
+    await cdp.type('#new-thread input[name="agent"]','P118-G2');
+    await cdp.type('#new-thread input[name="title"]','G2 pilot task');
+    await cdp.type('#new-thread textarea[name="goal"]','Check shared context');
+    await cdp.click('#new-thread button[type="submit"]');
+    await cdp.click('[data-action="workspace-ground"]');
+    await cdp.until('!!document.querySelector("#workspace-form")');
+    const brief=await cdp.eval('document.querySelector("#workspace-form [name=brief]")?.value');
+    assert.equal(brief,'P118-ALPHA-ONLY-GROUND');
+    trace.push(await cdp.snap('P02: G2 sees shared ALPHA context'));
+    await cdp.click('[data-action="thread"]');await cdp.click('[data-action="back"]');await cdp.click('[data-action="projects"]');
+    await cdp.until('document.querySelector("#panel h2")?.textContent==="Projects"');
+    await cdp.type('#new-project input[name="name"]','P118-BETA');await cdp.click('#new-project button[type="submit"]');
+    await cdp.until('document.querySelector("#panel h2")?.textContent==="P118-BETA"');
+    await cdp.type('#new-thread input[name="agent"]','P118-G1');
+    await cdp.type('#new-thread input[name="title"]','BETA agent task');
+    await cdp.type('#new-thread textarea[name="goal"]','Maintain project isolation');
+    await cdp.click('#new-thread button[type="submit"]');
+    await cdp.click('[data-action="workspace-ground"]');
+    await cdp.until('!!document.querySelector("#workspace-form")');
+    const beta=await cdp.eval('document.querySelector("#workspace-form [name=brief]")?.value');
+    assert.notEqual(beta,'P118-ALPHA-ONLY-GROUND');
+    const locally=await cdp.eval('JSON.parse(localStorage.getItem("nextnudge.projects.v1"))');
+    const entries=Object.values(locally);
+    assert.equal(entries.length,2);
+    assert.equal(entries.find(p=>p.name==='P118-ALPHA').fixtures['1f'],'P118-ALPHA-ONLY-GROUND');
+    assert.deepEqual(entries.find(p=>p.name==='P118-BETA').fixtures,{});
+    trace.push(await cdp.snap('P03: BETA separate G1 thread, no ALPHA context'));
+    assert.deepEqual(cdp.errors,[],'No uncaught browser JavaScript exceptions');
+    const shot=await cdp.send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
+    const digest=createHash('sha256').update(Buffer.from(shot.data,'base64')).digest('hex');
+    console.log('P01_P03_REAL_BROWSER_TRACE '+JSON.stringify({events:trace,uncaughtErrors:cdp.errors,screenshotSha256:digest}));
+  }finally{cdp?.ws?.close();cp.kill('SIGKILL');web.close();fs.rmSync(profile,{recursive:true,force:true});}
+});
