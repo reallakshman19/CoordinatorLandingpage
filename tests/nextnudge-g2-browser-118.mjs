@@ -26,7 +26,28 @@ async function server(){
   web.listen(0,'127.0.0.1');await once(web,'listening');
   return {web,url:'http://127.0.0.1:'+web.address().port+'/site/nextnudge/index.html'};
 }
-async function remotePort(){const s=http.createServer();s.listen(0,'127.0.0.1');await once(s,'listening');const port=s.address().port;s.close();return port;}
+async function chromiumTab(profile,child){
+  for(let i=0;i<200;i++){
+    if(child.exitCode!==null)throw Error('Chromium exited before DevTools: '+child.exitCode);
+    try{
+      const port=Number(fs.readFileSync(path.join(profile,'DevToolsActivePort'),'utf8').split('\n')[0]);
+      if(Number.isSafeInteger(port)&&port>0){
+        const response=await fetch('http://127.0.0.1:'+port+'/json/list');
+        const page=(await response.json()).find(x=>x.type==='page'&&x.url.includes('nextnudge'));
+        if(page)return page;
+      }
+    }catch{}await sleep(250);
+  }
+  throw Error('Chromium DevTools endpoint unavailable after profile startup');
+}
+async function cleanBrowser(child,web,profile,ws){
+  ws?.close();child.kill('SIGKILL');
+  if(child.exitCode===null)await Promise.race([once(child,'exit').catch(()=>{}),sleep(5000)]);
+  web.close();
+  try{fs.rmSync(profile,{recursive:true,force:true,maxRetries:15,retryDelay:200});}
+  catch(e){console.log('G2_PROFILE_CLEANUP_WARNING '+e.message);}
+}
+
 class CDP{
   constructor(ws){this.ws=ws;this.seq=0;this.pending=new Map();this.errors=[];ws.addEventListener('message',evt=>{
     const m=JSON.parse(evt.data);
@@ -51,15 +72,11 @@ class CDP{
 test('P01/P02/P03 actual Chromium pointer-flow, project editor and agent fixtures (candidate checkout, local-only)',{timeout:110000},async t=>{
   if(!browser){console.log('P01_BROWSER_NOT_RUN Chrome/Chromium executable absent');t.skip('Browser executable unavailable');return;}
   const {web,url}=await server(),profile=fs.mkdtempSync(path.join(os.tmpdir(),'nn118-g2-'));
-  const port=await remotePort();const cp=spawn(browser,['--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu',
-    '--window-size=1300,1000','--remote-debugging-port='+port,'--user-data-dir='+profile,url],{stdio:'ignore'});
+  const cp=spawn(browser,['--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu',
+    '--window-size=1300,1000','--remote-debugging-port=0','--user-data-dir='+profile,url],{stdio:'ignore'});
   const trace=[];let cdp;
   try{
-    let info=null;
-    for(let i=0;i<80;i++){if(cp.exitCode!==null)throw Error('Chromium exited early '+cp.exitCode);
-      try{const r=await fetch('http://127.0.0.1:'+port+'/json/list');const tabs=await r.json();
-        info=tabs.find(x=>x.type==='page'&&x.url.includes('nextnudge'));if(info)break;}catch{} await sleep(250);}
-    if(!info)throw Error('Chromium CDP endpoint unavailable');
+    const info=await chromiumTab(profile,cp);
     const ws=new WebSocket(info.webSocketDebuggerUrl);
     await new Promise((resolve,reject)=>{ws.addEventListener('open',resolve,{once:true});ws.addEventListener('error',reject,{once:true});});
     cdp=new CDP(ws);await cdp.send('Runtime.enable');await cdp.send('Page.enable');
@@ -160,22 +177,17 @@ test('P01/P02/P03 actual Chromium pointer-flow, project editor and agent fixture
     const shot=await cdp.send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
     const digest=createHash('sha256').update(Buffer.from(shot.data,'base64')).digest('hex');
     console.log('P01_P03_REAL_BROWSER_TRACE '+JSON.stringify({events:trace,uncaughtErrors:cdp.errors,screenshotSha256:digest}));
-  }finally{cdp?.ws?.close();cp.kill('SIGKILL');web.close();fs.rmSync(profile,{recursive:true,force:true});}
+  }finally{await cleanBrowser(cp,web,profile,cdp?.ws);}
 });
 
 test('P06 negative browser control: ambiguous legacy thread remains navigable without choosing either project',{timeout:30000},async t=>{
   if(!browser){t.skip('Browser executable unavailable');return;}
   const {web,url}=await server(),profile=fs.mkdtempSync(path.join(os.tmpdir(),'nn118-g2-collision-'));
-  const port=await remotePort(),cp=spawn(browser,['--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu',
-    '--window-size=1250,900','--remote-debugging-port='+port,'--user-data-dir='+profile,url],{stdio:'ignore'});
+  const cp=spawn(browser,['--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu',
+    '--window-size=1250,900','--remote-debugging-port=0','--user-data-dir='+profile,url],{stdio:'ignore'});
   let cdp;
   try{
-    let info=null;
-    for(let i=0;i<80;i++){if(cp.exitCode!==null)throw Error('Chromium exited early');
-      try{const response=await fetch('http://127.0.0.1:'+port+'/json/list');
-        info=(await response.json()).find(x=>x.type==='page'&&x.url.includes('nextnudge'));
-        if(info)break;}catch{}await sleep(250);}
-    if(!info)throw Error('Chromium CDP unavailable');
+    const info=await chromiumTab(profile,cp);
     const ws=new WebSocket(info.webSocketDebuggerUrl);
     await new Promise((resolve,reject)=>{ws.addEventListener('open',resolve,{once:true});ws.addEventListener('error',reject,{once:true});});
     cdp=new CDP(ws);await cdp.send('Runtime.enable');await cdp.send('Page.enable');
@@ -202,5 +214,5 @@ test('P06 negative browser control: ambiguous legacy thread remains navigable wi
     assert.equal(observed.heading,record.threadTitle,
       'A multiply-associated legacy thread must remain readable, with unresolved project custody flagged');
     assert.equal(observed.historyVisible,true,'Sent history remains navigable without choosing a project');
-  }finally{cdp?.ws?.close();cp.kill('SIGKILL');web.close();fs.rmSync(profile,{recursive:true,force:true});}
+  }finally{await cleanBrowser(cp,web,profile,cdp?.ws);}
 });
