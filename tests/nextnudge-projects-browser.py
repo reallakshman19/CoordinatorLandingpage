@@ -12,7 +12,7 @@ OUT = ROOT / "artifacts" / "nextnudge-projects-browser"
 
 
 def test_navigation(page):
-    page.goto(page.base_url + "/nextnudge/", wait_until="domcontentloaded")
+    page.goto("/nextnudge/", wait_until="domcontentloaded")
     page.get_by_role("heading", name="Projects", exact=True).wait_for()
     # Owner creates project A and Agent One's v3 thread.
     page.locator('#new-project input[name="name"]').fill("Project A")
@@ -62,7 +62,7 @@ def test_navigation(page):
     page.locator('#new-thread input[name="title"]').fill("Collision")
     page.locator('#new-thread textarea[name="goal"]').fill("Must be rejected")
     page.locator('#new-thread button[type="submit"]').click()
-    page.locator("#notice").get_by_text("already has a project thread", exact=False).wait_for()
+    assert "already has a project thread" in page.locator("#notice").inner_text()
     assert page.locator('button[data-open]').count() == 2
     print("NN118_CHROMIUM: PASS navigation, 25 headings, shared same-project, isolated second project, reload and duplicate block")
 
@@ -76,9 +76,8 @@ def main():
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
-            context = browser.new_context()
+            context = browser.new_context(base_url=f"http://127.0.0.1:{server.server_port}")
             page = context.new_page()
-            page.base_url = f"http://127.0.0.1:{server.server_port}"
             # No live main-data reads/writes are needed for this local pointer test.
             page.route("https://api.github.com/**", lambda route: route.fulfill(status=404, body="{}"))
             try:
