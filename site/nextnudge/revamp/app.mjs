@@ -186,10 +186,19 @@ async function onAction(action,target) {
     const p=activeProject();if(!p)throw Error('Select a project');
     const win=window.open('about:blank','_blank');
     try{const prepared=await prepareProjectSave(p);
+      if(prepared.manual){
+        const host=document.createElement('section'),label=document.createElement('label'),box=document.createElement('textarea');
+        label.textContent='Manual Owner issue body · copy all text into the GitHub issue before submitting';
+        box.value=prepared.body;box.readOnly=true;box.rows=8;
+        label.appendChild(box);host.appendChild(label);$('#panel').appendChild(host);
+        try{await navigator.clipboard.writeText(prepared.body);}
+        catch{box.focus();box.select();}
+      }
       if(win){win.opener=null;win.location.replace(prepared.url);}
       else{const a=document.createElement('a');a.href=prepared.url;a.target='_blank';a.rel='noopener noreferrer';
         a.textContent='Open prepared project save';$('#panel').append(a);}
-      notice('Owner review request prepared ('+prepared.chars+' URL characters). Device draft retained until confirmed GitHub readback.');
+      notice(prepared.manual?'Manual Owner issue body prepared. Paste the full body into the open GitHub issue; nothing sent yet. Device draft retained.':
+        'Owner review request prepared ('+prepared.chars+' URL characters). Device draft retained until confirmed GitHub readback.');
     }catch(e){win?.close();throw e;}
     return;
   }
