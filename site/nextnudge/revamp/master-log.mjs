@@ -10,6 +10,24 @@ function kind(move){
   if(move.note?.startsWith('OWNER_INTENT_CHANGE:'))return 'Owner intent amended';
   return 'Amendment';
 }
+function preview(move){
+  if(move.kind==='sealed')return 'Private contents not shown';
+  if(move.returnLine?.trim())return move.returnLine.trim().slice(0,180);
+  if(move.kind==='amendment'&&move.note?.startsWith('WORKSPACE_V1:')){
+    try{const data=JSON.parse(move.note.slice('WORKSPACE_V1:'.length));
+      const v=data.values||{};
+      return String(v.task||v.brief||v.claim||v.nextTask||v.decision||'Saved source workspace').slice(0,180);
+    }catch{return 'Workspace data needs inspection in original thread';}
+  }
+  if(move.kind==='amendment')return 'Open the original Owner/context amendment';
+  if(move.packet){
+    const m=/One bounded task:\s*\n([^\n]+)/.exec(move.packet)||
+      /Project context:\s*([^\n]+)/.exec(move.packet)||
+      /Observed error \/ quoted claim:\s*([^\n]+)/.exec(move.packet);
+    if(m?.[1]?.trim())return m[1].trim().slice(0,180);
+  }
+  return String(move.gap||move.note||'Open original item in agent thread').slice(0,180);
+}
 function stamp(move){
   const m=/^NN-(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})-/.exec(move.id);
   if(!m)return null;
@@ -31,8 +49,7 @@ export function masterLogEntries(project,device={},remote={}){
     const thread=selection.thread;
     thread.moves.forEach((move,index)=>{
       // Sealed-note contents are not repeated in the project overview.
-      const description=move.kind==='sealed'?'Private contents not shown':
-        String(move.returnLine||move.gap||((move.kind==='amendment')?'Source record in agent thread':'Open original item in agent thread')).slice(0,180);
+      const description=preview(move);
       rows.push({agent:member.agent,threadId:member.id,threadTitle:thread.title,
         moveId:move.id,kind:kind(move),delivery:move.delivery,
         description,origin:selection.origin,time:stamp(move),index,memberIndex:project.threads.indexOf(member)});
