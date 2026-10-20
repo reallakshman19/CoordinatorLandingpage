@@ -433,6 +433,7 @@ jobs:
           cat gate-negative.log
           echo "FINAL GATE SELF-TEST: injected failure -> exit 1 (REJECTED)"
           require_success "NextNudge-owner-save" "${{ steps.nextnudge_unit.outcome }}"
+          require_success "NN118-Chromium" "${{ steps.nn118_browser.outcome }}"
           require_success "original-31" "${{ steps.original.outcome }}"
           require_success "WP1a-18-and-WP1b-F5-14" "${{ steps.wp1a.outcome }}"
           require_success "benchmark-artifact" "${{ steps.artifact.outcome }}"
@@ -469,7 +470,7 @@ jobs:
           require_success "WP15-evaluator-trigger-heartbeat-review" "${{ steps.wp15_unit.outcome }}"
           require_success "WP-L1-extraction-seams-and-frozen-fixtures" "${{ steps.extract_seams.outcome }}"
           require_success "WP15-board-evaluator-cross-check" "${{ steps.wp15_browser.outcome }}"
-          echo "FINAL GATE: 36/36 actual head outcomes success"
+          echo "FINAL GATE: 37/37 actual head outcomes success"
 
   red-control:
     name: red-control · require seven behavioural FAIL and zero ERROR
