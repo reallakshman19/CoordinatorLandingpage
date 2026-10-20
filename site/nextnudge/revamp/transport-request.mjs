@@ -1,6 +1,7 @@
 import {readRemote,delta,issueUrl,REPO} from './save.mjs';
 import {sentMove} from './editor.mjs';
 import {targetOf,sentTarget} from './transport.mjs';
+import {assertProjectAgent} from './project-store.mjs';
 export function snapshotDelta(local,remote,sha){
   if(remote&&JSON.stringify(local)===JSON.stringify(remote))
     return {v:3,id:local.id,baseSha:sha,expectedCount:remote.moves.length,moves:[]};
@@ -10,6 +11,7 @@ export async function prepareAction(thread,operation,{draft,packet,issue,agent,m
   if(!['send','fetch'].includes(operation))throw Error('Unknown GitHub action');
   let move,target;
   if(operation==='send'){
+    assertProjectAgent(thread,agent);
     target=targetOf({repository:REPO,issue:Number(issue),agent});
     move=sentMove(thread,draft,packet,{agent,role:'worker'});
   }else{
