@@ -60,8 +60,14 @@ const setGroundingStatus=msg=>{
 };
 export async function featureAction(action,ctx){
   if(action==='grounding'){
-    if(ctx.state.projects){const p=projectForThread(ctx.t()?.id,ctx.state.projects);
-      ctx.state.activeProject=p?.id||null;ctx.state.view=p?'project-grounding':'legacy-grounding';
+    if(ctx.state.projects){
+      try{
+        const p=projectForThread(ctx.t()?.id,ctx.state.projects);
+        ctx.state.activeProject=p?.id||null;ctx.state.view=p?'project-grounding':'legacy-grounding';
+      }catch(e){
+        ctx.state.activeProject=null;ctx.state.view='legacy-grounding';
+        ctx.notice('Ambiguous project association: showing historical thread grounding only.');
+      }
     }else ctx.state.view='grounding';
     ctx.render();return true;
   }
