@@ -104,3 +104,32 @@ test('AC7 AC9 unchanged security and workflow guards',()=>{
   const a=agent('a001','Agent');a.hold='Owner HOLD';assert.equal(currentState(a),'Your move');
   assert.throws(()=>assertPublic({'1f':'https://chatgpt.com/c/private'}),/Private chat URL/);
 });
+
+test('AC3/AC4 ambiguous legacy project associations keep original thread snapshots readable',()=>{
+  const old=globalThis.localStorage;globalThis.localStorage=memory();
+  try{
+    const t=agent('a001','Worker');t.moves.push(groundingMove(t,{'1f':'Historical only'},'HIST-1'));
+    const a=addThread(project('b001','A'),t,{legacy:true});
+    const b=addThread(project('b002','B'),t,{legacy:true});
+    persistProject(a);persistProject(b);
+    assert.throws(()=>projectForThread(t.id),/Ambiguous project association/);
+    assert.equal(effectiveGrounding(t)['1f'],'Historical only','never guess a project or leak its fixtures');
+    assert.equal(parse(serialize(t)).moves.length,1);
+  }finally{globalThis.localStorage=old;}
+});
+test('AC8 quota failure preserves previous committed project and pending draft for recovery',()=>{
+  const old=globalThis.localStorage,raw=memory();globalThis.localStorage=raw;
+  try{
+    const p=project('b001','A');persistProject(p);
+    const next=updateFixtures(p,{'1f':'Unsaved owner notes'},'2026-10-20T01:00:00Z');
+    globalThis.localStorage={...raw,setItem:(key,value)=>{
+      if(key==='nextnudge.projects.v1')throw Error('Storage quota');
+      return raw.setItem(key,value);
+    }};
+    assert.throws(()=>persistProject(next),/Storage quota/);
+    assert.deepEqual(localProjects()[p.id].fixtures,{},'last committed project survives');
+    assert.equal(next.fixtures['1f'],'Unsaved owner notes','editable object retained for copy or retry');
+    globalThis.localStorage=raw;persistProject(next);
+    assert.equal(localProjects()[p.id].fixtures['1f'],'Unsaved owner notes');
+  }finally{globalThis.localStorage=old;}
+});
