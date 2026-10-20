@@ -86,7 +86,9 @@ test('NN121 missing GitHub source and divergent remote record are not misreporte
   assert.match(masterLogMarkup(p,{[a.id]:a}),/device \(remote unverified\)/);
   const newer={...a,moves:[...a.moves,move('NN-20261020-120300-abcd')]};
   feed=masterLogEntries(p,{[a.id]:a},{[a.id]:{thread:newer}});
-  assert.equal(feed.rows.length,2);assert.match(feed.rows[0].origin,/GitHub/);
+  assert.equal(feed.rows.length,1,'stale local thread must not produce a deep link to an unseen remote-only move');
+  assert.match(feed.rows[0].origin,/GitHub has newer moves/);
+  assert.equal(masterLogEntries(p,{}, {[a.id]:{thread:newer}}).rows.length,2,'clean Oracle device reads all remote moves');
   const incompatible={...a,moves:[move('NN-20261020-120200-abcd','correction')]};
   feed=masterLogEntries(p,{[a.id]:a},{[a.id]:{thread:incompatible}});
   assert.match(feed.rows[0].origin,/GitHub conflict/);
