@@ -1,5 +1,5 @@
 // Project membership and shared fixtures are separate from immutable v3 thread history.
-import {HEADINGS} from '../fixtures.mjs';
+import {HEADINGS,RETIRED_MIDCYCLE_KEYS} from '../fixtures.mjs';
 import {THREAD_ID,assertPublic,freshId} from './thread.mjs';
 export const PROJECT_ID=/^NP-\d{8}-\d{6}-[a-f0-9]{4}$/;
 const KEYS=new Set(HEADINGS.map(([,key])=>key));
@@ -53,7 +53,10 @@ export function addThread(p,thread,{legacy=false}={}){
   return validateProject({...p,threads:[...p.threads,{id:thread.id,agent,legacy}]});
 }
 export function updateFixtures(p,values,at=new Date().toISOString()){
-  const next=fixtureValues(values);
+  // Preserve retired 6/7-series values verbatim; removing fields from the
+  // active form must never delete earlier Owner grounding or saved snapshots.
+  const archived=Object.fromEntries(Object.entries(p.fixtures).filter(([k])=>RETIRED_MIDCYCLE_KEYS.has(k)));
+  const next=fixtureValues({...archived,...values});
   if(same(p.fixtures,next))return null;
   return validateProject({...p,fixtures:next,snapshots:[...p.snapshots,{at,values:next}]});
 }
