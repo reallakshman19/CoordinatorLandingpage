@@ -146,7 +146,7 @@ test('G2 delta P02 P03 P04 P05 P09 P10 + Master Log: real Chromium local-only in
     const frozenHash=sha(sent.packet);
     assert.equal(sent.packet,packet1);
     trace.push({case:'P05 G1 local MANUALLY MARKED sent (not real transport)',id:sent.id,sha256:frozenHash,bytes:Buffer.byteLength(sent.packet)});
-    await cdp.click('[data-action="back"]');
+    await cdp.click('[data-action="thread"]');await cdp.click('[data-action="back"]');
     await cdp.until('document.querySelector("#panel h2")?.textContent==="P118-ALPHA"');
     const g2=await makeThread(cdp,'P118-G2','G2 post122 independent draft');
     await cdp.click('[data-action="workspace-task"]');
@@ -156,7 +156,7 @@ test('G2 delta P02 P03 P04 P05 P09 P10 + Master Log: real Chromium local-only in
     assert.equal(await cdp.eval('document.querySelector("#workspace-form [name=task]").value'),'P118 G2 UNSENT DRAFT ONLY','G2 unsent draft survives mode switch');
     assert.equal((await read(cdp)).threads[g2].moves.length,0,'G2 draft never lands in G1 history');
     trace.push('P05 G2 unsent workspace draft independent and retained');
-    await cdp.click('[data-action="back"]');
+    await cdp.click('[data-action="thread"]');await cdp.click('[data-action="back"]');
     await cdp.until('document.querySelector("#panel h2")?.textContent==="P118-ALPHA"');
     await fill(cdp,'#new-thread input[name=agent]','P118-G1');
     await fill(cdp,'#new-thread input[name=title]','ILLEGAL second G1');
