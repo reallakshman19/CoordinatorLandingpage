@@ -1,8 +1,9 @@
-import {groundingPanel,groundingMove,groundingText,readGrounding} from './grounding.mjs';
+import {groundingPanel,groundingMove,groundingText,readGrounding,effectiveGrounding} from './grounding.mjs';
 import {rememberComposer,restoreComposer} from './composer.mjs';
 import {prepareAction} from './transport-request.mjs';
 import {activeAgent,activeIntent} from './thread.mjs';
 import {REPO} from './save.mjs';
+import {projectForThread} from './project-store.mjs';
 const DRAFTS='nextnudge.grounding.drafts.v1';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const $=q=>document.querySelector(q);
@@ -20,7 +21,7 @@ export function renderGrounding(thread){
 export function restoreDraft(thread){return restoreComposer(thread.id);}
 export function composerExtras(thread,draft){
   rememberComposer(thread.id,draft);
-  const issue=readGrounding(thread)['1a']?.match(/\/issues\/(\d+)/)?.[1]||'';
+  const issue=effectiveGrounding(thread)['1a']?.match(/\/issues\/(\d+)/)?.[1]||'';
   return '<section class="github-delivery"><h4>GitHub delivery</h4>'+
     '<p>Owner submits one prepared issue; the existing workflow posts and records this exact packet. Target repository: '+esc(REPO)+'.</p>'+
     '<label>Target issue number<input id="delivery-issue" type="number" min="1" value="'+esc(draft.targetIssue||issue)+'"></label>'+
@@ -58,7 +59,12 @@ const setGroundingStatus=msg=>{
   }
 };
 export async function featureAction(action,ctx){
-  if(action==='grounding'){ctx.state.view='grounding';ctx.render();return true;}
+  if(action==='grounding'){
+    if(ctx.state.projects){const p=projectForThread(ctx.t()?.id,ctx.state.projects);
+      ctx.state.activeProject=p?.id||null;ctx.state.view=p?'project-grounding':'legacy-grounding';
+    }else ctx.state.view='grounding';
+    ctx.render();return true;
+  }
   if(action==='copy-grounding'){
     const thread=ctx.t(),preview=groundingMove(thread,groundingValues($('#grounding-form')));
     const text=groundingText(preview?{...thread,moves:[...thread.moves,preview]}:thread);
