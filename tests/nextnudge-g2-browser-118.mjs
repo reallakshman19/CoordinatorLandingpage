@@ -229,3 +229,53 @@ test('P06 negative browser control: ambiguous legacy thread remains navigable wi
     assert.equal(observed.historyVisible,true,'Sent history remains navigable without choosing a project');
   }finally{await cleanBrowser(cp,web,profile,cdp?.ws);}
 });
+
+test('P06 authentic v3 import exact-byte preservation and v2 Archive/Convert in real Chromium',{timeout:75000},async t=>{
+  if(!browser){t.skip('Browser executable unavailable');return;}
+  const {parse}=await import('../site/nextnudge/revamp/thread.mjs');
+  const input=path.join(root,'site/nextnudge-data/threads/NN-20261019-165622-6810.md');
+  const original=parse(fs.readFileSync(input,'utf8'));
+  const receipts=original.moves.filter(m=>m.delivery==='sent'&&m.packet)
+    .map(m=>({id:m.id,length:Buffer.byteLength(m.packet,'utf8'),
+      hash:createHash('sha256').update(m.packet,'utf8').digest('hex')}));
+  assert.ok(receipts.length>0,'authentic historical file must contain exact sent packets');
+  const {web,url}=await server(),profile=fs.mkdtempSync(path.join(os.tmpdir(),'nn118-g2-import-'));
+  const cp=spawn(browser,['--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu',
+    '--window-size=1300,1000','--remote-debugging-port=0','--user-data-dir='+profile,url],{stdio:'ignore'});
+  let cdp;
+  try{
+    const info=await chromiumTab(profile,cp),ws=new WebSocket(info.webSocketDebuggerUrl);
+    await new Promise((resolve,reject)=>{ws.addEventListener('open',resolve,{once:true});ws.addEventListener('error',reject,{once:true});});
+    cdp=new CDP(ws);await cdp.send('Runtime.enable');await cdp.send('Page.enable');await cdp.send('DOM.enable');
+    await cdp.until('document.querySelector("#panel h2")?.textContent==="Projects"');
+    const doc=await cdp.send('DOM.getDocument',{depth:1});
+    const inputNode=await cdp.send('DOM.querySelector',{nodeId:doc.root.nodeId,selector:'#import-file'});
+    assert.ok(inputNode.nodeId);
+    await cdp.send('DOM.setFileInputFiles',{nodeId:inputNode.nodeId,files:[input]});
+    await cdp.until('document.querySelector("#panel h2")?.textContent==='+JSON.stringify(original.title),12000);
+    const actual=await cdp.eval('(()=>{const t=JSON.parse(localStorage.getItem("nextnudge.threads.v3"))['+
+      JSON.stringify(original.id)+'];return {id:t.id,title:t.title,moveCount:t.moves.length,packets:t.moves.filter(m=>m.delivery==="sent"&&m.packet).map(m=>({id:m.id,packet:m.packet})),legacy:t.moves.filter(m=>m.note?.startsWith("GROUNDING_FIXTURES_V1:")).length};})()');
+    assert.equal(actual.id,original.id);assert.equal(actual.moveCount,original.moves.length);
+    assert.deepEqual(actual.packets.map(p=>({id:p.id,length:Buffer.byteLength(p.packet,'utf8'),
+      hash:createHash('sha256').update(p.packet,'utf8').digest('hex')})),receipts);
+    assert.equal(actual.legacy,original.moves.filter(m=>m.note?.startsWith('GROUNDING_FIXTURES_V1:')).length);
+    assert.deepEqual(cdp.errors,[],'No JS exception importing a real preserved v3 file');
+    console.log('P06_AUTHENTIC_CHROMIUM_IMPORT '+JSON.stringify({id:original.id,moveCount:actual.moveCount,legacy:actual.legacy,receipts}));
+    await cdp.click('[data-action="back"]');await cdp.until('document.querySelector("#panel h2")?.textContent==="Projects"');
+    await cdp.click('details summary');
+    await cdp.until('!!document.querySelector("[data-action=archive-list]")');
+    const archiveToggle=await cdp.eval('(()=>{const b=document.querySelector("[data-action=archive-list]");return b?.closest("details")?.querySelector("summary")?.textContent;})()');
+    assert.match(archiveToggle,/v2 Archive/);
+    await cdp.click('details details summary');
+    await cdp.click('[data-action="archive-list"]');
+    await cdp.until('document.querySelectorAll("#archive-runs [data-convert]").length>0');
+    const convertedId=await cdp.eval('document.querySelector("#archive-runs [data-convert]")?.dataset.convert');
+    await cdp.click('#archive-runs details summary');
+    await cdp.click('#archive-runs [data-convert]');
+    await cdp.until('document.querySelector("#panel h2")?.textContent!=="Projects"');
+    const post=await cdp.eval('(()=>{const ts=JSON.parse(localStorage.getItem("nextnudge.threads.v3"));return {ids:Object.keys(ts),converted:ts['+JSON.stringify(convertedId)+']?.moves?.length,original:ts['+JSON.stringify(original.id)+']?.moves?.length};})()');
+    assert.equal(post.original,original.moves.length,'conversion cannot overwrite imported v3');
+    assert.ok(post.ids.includes(convertedId),'v2 conversion retained as new separate thread');
+    console.log('P06_V2_ARCHIVE_CONVERT_CHROMIUM '+JSON.stringify({convertedId,post}));
+  }finally{await cleanBrowser(cp,web,profile,cdp?.ws);}
+});
