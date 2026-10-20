@@ -30,8 +30,15 @@ export function groundingMove(thread,values,id=freshId()){
 }
 export function effectiveGrounding(thread){
   if(!thread)return {};
-  const p=projectForThread(thread.id);
-  return p?p.fixtures:readGrounding(thread);
+  // Ambiguous legacy associations cannot select either project's fixtures.
+  // Keep the original immutable thread grounding readable until the Owner resolves custody.
+  try{
+    const p=projectForThread(thread.id);
+    return p?p.fixtures:readGrounding(thread);
+  }catch(e){
+    if(/Ambiguous project association/.test(e.message))return readGrounding(thread);
+    throw e;
+  }
 }
 export function projectGroundingText(project,values=project.fixtures){
   const checkedValues=checked(values);
