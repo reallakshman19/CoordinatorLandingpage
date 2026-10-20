@@ -17,7 +17,7 @@ const state={threads:localThreads(),projects:localProjects(),active:null,activeP
 const $=q=>document.querySelector(q);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const v=id=>$('#'+id)?.value||'';
-const threadRoute=id=>{if(typeof window==='undefined')return;const url=new URL(window.location.href);url.searchParams.set('thread',id);['project','projectView','workspace'].forEach(k=>url.searchParams.delete(k));window.history.replaceState(null,'',url);};
+const threadRoute=id=>{if(typeof window==='undefined')return;const url=new URL(window.location.href);url.searchParams.set('thread',id);['project','projectView','workspace','move'].forEach(k=>url.searchParams.delete(k));window.history.replaceState(null,'',url);};
 const t=()=>state.threads[state.active];
 const intent=()=>activeIntent(t());
 const notice=s=>{state.message=s;$('#notice').textContent=s;};
@@ -83,6 +83,8 @@ function renderThread() {
   if(state.draft?.workspaceMode){
     $('#composer').innerHTML='<button data-action="workspace-'+esc(state.draft.workspaceMode)+'">Resume '+esc(state.draft.workspaceMode)+' packet in its workspace</button>';
   }else if(state.draft)renderComposer();
+  const focus=new URLSearchParams(window.location.search).get('move'),node=focus&&document.getElementById('move-'+focus);
+  if(node){node.closest('details')?.setAttribute('open','');node.focus({preventScroll:true});node.scrollIntoView({block:'center'});}
 }
 function renderComposer() {
   const d=state.draft;if(!d)return;
@@ -98,7 +100,7 @@ function renderComposer() {
 }
 function render() {
   $('#notice').textContent=state.message;
-  if(['projects','project','project-grounding','legacy-grounding'].includes(state.view))projects.show();
+  if(['projects','project','project-grounding','project-master-log','legacy-grounding'].includes(state.view))projects.show();
   else if(state.view==='threads')renderThreads();
   else if(state.view==='grounding')$('#panel').innerHTML=renderGrounding(t());
   else if(state.view==='thread')renderThread();
@@ -263,7 +265,7 @@ document.addEventListener('submit',async e=>{
       }
       append(move);
     }
-  }catch(err){notice(err.message);}
+  }catch(err){if(form.id==='new-thread')projects.createError(form,err);notice(err.message);}
 });
 $('#import-file').addEventListener('change',async e=>{
   const file=e.target.files?.[0];if(!file)return;
@@ -277,7 +279,7 @@ async function init(){
       if(r.ok){const seed=parse(await r.text());put(seed);}}catch{}
   }
   const params=new URLSearchParams(window.location.search),project=params.get('project');
-  if(project&&state.projects[project]){state.activeProject=project;state.view=params.get('projectView')==='grounding'?'project-grounding':'project';return render();}
+  if(project&&state.projects[project]){state.activeProject=project;state.view=params.get('projectView')==='grounding'?'project-grounding':params.get('projectView')==='master-log'?'project-master-log':'project';render();if(state.view==='project-master-log')await projects.refreshMasterLog();return;}
   const requested=params.get('thread');
   if(requested){
     try{if(!state.threads[requested]){const remote=await readRemote(requested);if(remote.thread)put(remote.thread);}
