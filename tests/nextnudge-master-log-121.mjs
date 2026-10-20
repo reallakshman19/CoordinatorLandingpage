@@ -53,7 +53,7 @@ test('NN121 archived 6/7 values survive active project edits, snapshots and owne
 
 test('NN121 master log is project scoped and derives links from immutable agent moves',()=>{
   const g1=thread('a001','G1'),g2=thread('a002','G2'),b=thread('a003','B');
-  g1.moves.push(move('NN-20261020-120100-aaaa'));
+  g1.moves.push(move('NN-20261020-120100-aaaa','task', {packet:'Owner context\nOne bounded task:\nInspect sample pipes\nEvidence'}));
   g1.moves.push(move('NN-20261020-120200-bbbb','reply',{delivery:'draft',returnLine:'ACK some earlier task'}));
   g2.moves.push(move('NN-20261020-120300-cccc','correction',{gap:'Needs rework'}));
   b.moves.push(move('NN-20261020-120400-dddd','task',{returnLine:'BETA ONLY'}));
@@ -66,6 +66,7 @@ test('NN121 master log is project scoped and derives links from immutable agent 
   assert.deepEqual(feed.rows.map(x=>x.agent),['G2','G1','G1']);
   const html=masterLogMarkup(a,stored);
   assert.match(html,/Open exact thread item/);
+  assert.match(html,/Inspect sample pipes/,'Task preview must be usable without opening every link');
   assert.match(html,new RegExp('thread='+g1.id+'&move=NN-20261020-120100-aaaa'));
   assert.doesNotMatch(html,/BETA ONLY|Thread B/);
   assert.equal(masterLogEntries(beta,stored).rows.length,1);
