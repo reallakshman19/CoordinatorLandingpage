@@ -84,7 +84,18 @@ def test_navigation(page):
     page.locator('[data-action="send-github"]').click()
     page.get_by_text("Project agent mismatch", exact=False).first.wait_for()
     page.screenshot(path=str(OUT / "review-f1-f2-rejected.png"), full_page=True)
-    print("NN118_CHROMIUM: PASS navigation, shared grounding, isolation, reload, duplicates, F1 manual/GitHub mismatch and F2 thread-first publish rejection")
+    # F3: inject a corrupt sibling record; real reload must keep the healthy project and thread usable.
+    page.evaluate("""() => {
+      const key='nextnudge.projects.v1', all=JSON.parse(localStorage.getItem(key));
+      all['MALFORMED']={version:999,unexpected:'keep this raw entry'};
+      localStorage.setItem(key,JSON.stringify(all));
+    }""")
+    page.reload(wait_until="domcontentloaded")
+    page.get_by_role("heading", name="Agent One delivery", exact=True).wait_for()
+    assert "invalid local project record" in page.locator("#notice").inner_text()
+    assert page.evaluate("""() => JSON.parse(localStorage.getItem('nextnudge.projects.v1')).MALFORMED.unexpected""") == "keep this raw entry"
+    page.screenshot(path=str(OUT / "review-f3-corrupt-recovered.png"), full_page=True)
+    print("NN118_CHROMIUM: PASS navigation, shared grounding, isolation, reload, duplicates, F1 manual/GitHub, F2 thread-first, F3 corrupt local record")
 
 
 def main():
