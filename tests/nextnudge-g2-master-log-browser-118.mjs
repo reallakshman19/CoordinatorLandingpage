@@ -1,3 +1,5 @@
+import {updateFixtures,validateProject} from '../site/nextnudge/revamp/project-model.mjs';
+import {groundingPanel,projectGroundingText} from '../site/nextnudge/revamp/grounding.mjs';
 // G2 real-browser pilot of a local, disposable PR checkout via Chrome DevTools Protocol.
 // Real pointer and keyboard events; no production issues, writes, agent impersonation or release.
 import test from 'node:test';
@@ -139,4 +141,24 @@ test('NN121 G2 real Chromium Master Log multi-agent fidelity and P09 premature C
   assert.deepEqual(cdp.errors,[]);
   console.log('G2_NN121_MASTER_LOG_AND_P09_BROWSER '+JSON.stringify({version,source:'13432ab7e23e30a1dbe2246d03d0802f6aff1ff9',items:w.items,missing:w.missing,taskMove:task,exactDeepLink:link.href,closureNotice:guard,remoteWrites:false,evidenceLevel:'local synthetic source records and real pointer UI only'}));
  }finally{await cleanBrowser(cp,web,profile,cdp?.ws);}
+});
+
+test('P10 post-122 operation adaptation: archived 6a stays in original snapshots but not active 5-derived packets',()=>{
+ const p0=newProject('P118-HISTORICAL-6A','NP-20261020-170000-d001');
+ const p1=updateFixtures(p0,{'6a':'P118-6A-EXISTING-HISTORICAL','5':'P118-V1-CRITERIA'},'2026-10-20T17:00:00Z');
+ const old=JSON.stringify(p1.snapshots[0]);
+ const p2=updateFixtures(p1,{'5':'P118-V2-CRITERIA'},'2026-10-20T17:01:00Z');
+ assert.equal(validateProject(p2),p2);
+ assert.equal(p2.fixtures['6a'],'P118-6A-EXISTING-HISTORICAL');
+ assert.equal(JSON.stringify(p2.snapshots[0]),old);
+ assert.equal(p2.snapshots.length,2);
+ const active=projectGroundingText(p2);
+ assert.match(active,/P118-V2-CRITERIA/);
+ assert.doesNotMatch(active,/P118-6A-EXISTING-HISTORICAL/);
+ const html=groundingPanel(null,p2.fixtures,false,p2);
+ assert.match(html,/Historical retired Midcycle context/);
+ assert.match(html,/P118-6A-EXISTING-HISTORICAL/);
+ assert.doesNotMatch(html,/name="ground-6a"/);
+ assert.throws(()=>validateProject({...p2,fixtures:{'5':'P118-V2-CRITERIA'}}),/mismatch/);
+ console.log('P118_HISTORICAL_6A_CUSTODY '+JSON.stringify({originalSnapshotUnchanged:true,retained6a:p2.fixtures['6a'],latest5:p2.fixtures['5'],newPacket6aAbsent:true,activeEditor6aAbsent:true}));
 });
