@@ -1,7 +1,7 @@
 import {newThread,freshId,parse,serialize,archiveRun,currentState,activeIntent,activeAgent,validate,assertPublic} from './thread.mjs';
 import {sentMove,amendValues,agentChange,ownerForm,agentForm,sentForm} from './editor.mjs';
 import {threadsMarkup} from './screens.mjs';
-import {localProjects,projectForThread} from './project-store.mjs';
+import {localProjects,projectForThread,assertProjectAgent} from './project-store.mjs';
 import {createProjectUI} from './project-ui.mjs';
 import {makeReply,openAgents} from './reply.mjs';
 import {makeSeal,sealForm} from './seal.mjs';
@@ -251,6 +251,7 @@ document.addEventListener('submit',async e=>{
       checkWorkspacePacket({state,t});
       const text=v('packet')||state.draft?.packet;
       assertPublic(text);
+      assertProjectAgent(t(),values.get('agent')||'',state.projects);
       const move=sentMove(t(),state.draft,text,{role:values.get('role')||'worker',
         agent:values.get('agent')||activeAgent(t()),override_note:values.get('override_note')||''});
       const i=intent();
