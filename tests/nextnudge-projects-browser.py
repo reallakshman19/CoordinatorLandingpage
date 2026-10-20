@@ -64,7 +64,27 @@ def test_navigation(page):
     page.locator('#new-thread button[type="submit"]').click()
     assert "already has a project thread" in page.locator("#notice").inner_text()
     assert page.locator('button[data-open]').count() == 2
-    print("NN118_CHROMIUM: PASS navigation, 25 headings, shared same-project, isolated second project, reload and duplicate block")
+    # F2: the device-only member has not been saved to GitHub; publication must be blocked.
+    page.locator('[data-action="project-save"]').click()
+    page.get_by_text("Save thread Agent One", exact=False).first.wait_for()
+    assert page.locator('button[data-open]').count() == 2
+    # F1: manual confirmation cannot label a G1 thread's exact task packet as G2.
+    page.locator('button[data-open]').filter(has_text="Agent One").first.click()
+    page.locator('nav.workspace-tabs button[data-action="workspace-task"]').click()
+    page.locator('#workspace-form textarea[name="task"]').fill("One bounded source task for G1")
+    page.locator('[data-action="workspace-build"]').click()
+    page.locator('#composer button[data-action="record-sent"]').click()
+    page.locator('#sent-confirm input[name="agent"]').fill("Agent Two")
+    page.locator('#sent-confirm input[name="approved"]').check()
+    page.locator('#sent-confirm button[type="submit"]').click()
+    assert "Project agent mismatch" in page.locator("#notice").inner_text()
+    # F1: the original GitHub delivery controls must also reject a G2 target.
+    page.locator('#delivery-issue').fill("118")
+    page.locator('#delivery-agent').fill("Agent Two")
+    page.locator('[data-action="send-github"]').click()
+    page.get_by_text("Project agent mismatch", exact=False).first.wait_for()
+    page.screenshot(path=str(OUT / "review-f1-f2-rejected.png"), full_page=True)
+    print("NN118_CHROMIUM: PASS navigation, shared grounding, isolation, reload, duplicates, F1 manual/GitHub mismatch and F2 thread-first publish rejection")
 
 
 def main():
