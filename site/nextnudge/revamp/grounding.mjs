@@ -52,7 +52,7 @@ export function groundingPanel(thread,values=readGrounding(thread),hasDraft=fals
   const linkKeys=new Set(['1a','1b','1c','1d']);
   const actionsBar='<div class="grounding-actions">'+
     '<button type="submit" class="primary">Save grounding</button> '+
-    '<button type="button" data-action="copy-grounding">Copy grounding for agent</button> '+
+    '<button type="button" data-action="'+(project?'copy-project-grounding':'copy-grounding')+'">Copy grounding for agent</button> '+
     '<span class="grounding-status" role="status" aria-live="polite">'+(hasDraft?'Unsaved device draft restored':'')+'</span></div>';
   return '<div class="heading"><button data-action="thread">← Thread</button><h2>Grounding Fixtures</h2></div>'+
     workspaceNav('fixtures')+
