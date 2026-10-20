@@ -208,7 +208,8 @@ async function onAction(action,target) {
     if(!input.ok)return;const id=input.value;
     const remote=await readRemote(id);if(!remote.thread)throw Error('Not found');
     if(state.threads[id]&&!(await askInline({title:'Replace local thread',message:'Replace this device draft with the GitHub version?',accept:'Replace'})).ok)return;
-    put(remote.thread);state.view='thread';return render();
+    put(remote.thread);state.activeProject=projectForThread(id,state.projects)?.id||null;
+    state.view='thread';return render();
   }
   if(action==='import')return $('#import-file').click();
   if(action==='save-chat'){chatLink(x.id,v('chat'));return notice('Private chat link kept on this device only.');}
@@ -351,7 +352,7 @@ document.addEventListener('submit',async e=>{
 });
 $('#import-file').addEventListener('change',async e=>{
   const file=e.target.files?.[0];if(!file)return;
-  try{const x=parse(await file.text());put(x);state.view='thread';render();}
+  try{const x=parse(await file.text());put(x);state.activeProject=projectForThread(x.id,state.projects)?.id||null;state.view='thread';render();}
   catch(err){notice(err.message);}e.target.value='';
 });
 async function init(){
