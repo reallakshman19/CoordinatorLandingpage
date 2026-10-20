@@ -14,13 +14,13 @@ export function packet(id,kind,body,i,options={}) {
     kind==='close'?'The Owner outcome checks were verified. Return the final PR/file/comment pointer.\n'+body:body;
   return [...common,prefix,'Start your reply with ACK '+id+'.'].join('\n\n');
 }
-export function threadsMarkup(threads) {
+export function threadsMarkup(threads,{create=true}={}) {
   const rows=Object.values(threads).sort((a,b)=>b.id.localeCompare(a.id));
   return '<h2>Threads</h2><p>One intent, one current move. Drafts stay on this device.</p>'+
-    '<form id="new-thread"><label>Intent title <input name="title" required maxlength="120"></label>'+
+    (create?'<form id="new-thread"><label>Intent title <input name="title" required maxlength="120"></label>'+
     '<label>Owner goal, in their words <textarea name="goal" required></textarea></label>'+
     '<label>Agent <input name="agent" placeholder="Agent or UNKNOWN"></label>'+
-    '<button type="submit">Create thread</button></form>'+
+    '<button type="submit">Create thread</button></form>':'')+
     '<div class="thread-list">'+rows.map(x=>'<button data-open="'+esc(x.id)+'" class="thread-row">'+
       '<strong>'+esc(x.title)+'</strong><span>'+esc(activeAgent(x)||'UNKNOWN')+' · '+esc(currentState(x))+
       (activeIntent(x).hold?' · '+esc(activeIntent(x).hold):'')+'</span></button>').join('')+'</div>'+
@@ -44,15 +44,16 @@ export function projectsMarkup(projects,threads){
       ' grounding headings</span></button>').join('')+'</div>'+
     '<details><summary>Unassigned legacy v3 threads ('+Object.keys(legacy).length+') · preserved</summary>'+
     '<p>No project is inferred from a historical title, URL or agent. Attach explicitly within a project.</p>'+
-    threadsMarkup(legacy)+'</details>';
+    threadsMarkup(legacy,{create:false})+'</details>';
 }
-export function projectMarkup(project,threads){
+export function projectMarkup(project,threads,projects={}){
   const pairs=project.threads.map(row=>({row,thread:threads[row.id]}));
   const collisions=new Map(),duplicates=[];
   for(const {row} of pairs){const key=row.agent.toLowerCase();
     if(collisions.has(key))duplicates.push(row.agent);else collisions.set(key,row.id);}
   const linked=new Set(Object.values(project.threads).map(row=>row.id));
-  const unassigned=Object.values(threads).filter(t=>!linked.has(t.id));
+  const globallyLinked=new Set(Object.values(projects).flatMap(p=>p.threads.map(row=>row.id)));
+  const unassigned=Object.values(threads).filter(t=>!linked.has(t.id)&&!globallyLinked.has(t.id));
   return '<div class="heading"><button data-action="projects">← Projects</button><h2>'+esc(project.name)+'</h2></div>'+
     '<section><h3>Grounding Fixtures</h3><p>One shared library for this project · 25 optional headings</p>'+
     '<button data-action="project-grounding">Open shared Grounding Fixtures</button></section>'+
