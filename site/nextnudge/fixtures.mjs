@@ -30,6 +30,15 @@ export const PHASES = {
   onboarding:'On boarding',midcycle1:'Midcycle 1',midcycle2:'Midcycle 2',
   exit:'Exit',improvements:'Successor improvements'
 };
+// The v2 Archive continues to use all original headings and unchanged keys.
+ // Current project Grounding Fixtures hide retired Midcycle fields; their old values
+ // remain valid historical data. Master Log numbers are display aliases, not a
+ // destructive remapping of old 8-series data onto the retired 6-series keys.
+export const PROJECT_HEADINGS = HEADINGS.filter(([phase])=>phase!=='midcycle1'&&phase!=='midcycle2');
+export const RETIRED_MIDCYCLE = HEADINGS.filter(([phase])=>phase==='midcycle1'||phase==='midcycle2');
+export const RETIRED_MIDCYCLE_KEYS = new Set(RETIRED_MIDCYCLE.map(([,key])=>key));
+export const PROJECT_PHASES = {onboarding:'On boarding',exit:'Master Log notes',improvements:'Successor improvements'};
+export const projectHeadingNumber = key=>({8:'6','8a':'6a','8b':'6b','8c':'6c'})[key]||key;
 export const appendOnly = key => ['1e','10'].includes(key);
 export const emptyFixtures = () => Object.fromEntries(HEADINGS.map(([,key]) => [key,[]]));
 export function fixtureChange(db, run, key, values, rowId, approvalNote = '') {
