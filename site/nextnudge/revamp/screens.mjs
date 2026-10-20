@@ -1,4 +1,5 @@
 import {activeAgent,activeIntent,currentState} from './thread.mjs';
+import {PROJECT_HEADINGS} from '../fixtures.mjs';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function packet(id,kind,body,i,options={}) {
   const common=['[Owner · NextNudge '+id+']','Owner intent: '+i.goal,
@@ -55,8 +56,10 @@ export function projectMarkup(project,threads,projects={}){
   const globallyLinked=new Set(Object.values(projects).flatMap(p=>p.threads.map(row=>row.id)));
   const unassigned=Object.values(threads).filter(t=>!linked.has(t.id)&&!globallyLinked.has(t.id));
   return '<div class="heading"><button data-action="projects">← Projects</button><h2>'+esc(project.name)+'</h2></div>'+
-    '<section><h3>Grounding Fixtures</h3><p>One shared library for this project · 25 optional headings</p>'+
-    '<button data-action="project-grounding">Open shared Grounding Fixtures</button></section>'+
+    '<section><h3>Grounding Fixtures</h3><p>One shared library for this project · '+PROJECT_HEADINGS.length+' optional active headings</p>'+
+    '<button data-action="project-grounding">Open shared Grounding Fixtures</button></section>'+ 
+    '<section><h3>Master Log</h3><p>All available agents\' original Task, Ground, Correction, Reconcile, reply and other records — read-only, with per-item links.</p>'+ 
+    '<button data-action="master-log">Open project Master Log</button></section>'+
     (duplicates.length?'<p role="alert"><strong>Legacy conflict:</strong> duplicate agent associations retained: '+esc(duplicates.join(', '))+'. No threads were merged.</p>':'')+
     '<h3>Agent Threads</h3><div class="thread-list">'+pairs.map(({row,thread})=>
       '<button data-open="'+esc(row.id)+'" class="thread-row"><strong>'+esc(row.agent)+(row.legacy?' · legacy':'')+
@@ -66,7 +69,8 @@ export function projectMarkup(project,threads,projects={}){
     '<label>Agent <input name="agent" required maxlength="200"></label>'+
     '<label>Intent title <input name="title" required maxlength="120"></label>'+
     '<label>Owner goal <textarea name="goal" required></textarea></label>'+
-    '<button type="submit">Create agent thread</button></form>'+
+    '<button type="submit">Create agent thread</button>'+ 
+    '<p id="new-thread-error" role="alert" aria-live="assertive" tabindex="-1"></p></form>'+
     '<details><summary>Attach an existing legacy thread (explicit, no merges)</summary>'+
     '<form id="attach-thread"><label>Unassigned thread <select name="thread">'+unassigned.map(t=>
       '<option value="'+esc(t.id)+'">'+esc(t.title)+' · '+esc(activeAgent(t)||'UNKNOWN')+'</option>').join('')+
