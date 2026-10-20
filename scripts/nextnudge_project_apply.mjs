@@ -2,6 +2,7 @@ import {gunzipSync} from 'node:zlib';
 import fs from 'node:fs';
 import {pathToFileURL} from 'node:url';
 import {PROJECT_ID,validateProject,assertAppendOnly} from '../site/nextnudge/revamp/project-model.mjs';
+import {parse,activeAgent} from '../site/nextnudge/revamp/thread.mjs';
 const SHA=/^[a-f0-9]{40}$/,ROOT='site/nextnudge-data/projects/';
 export function unpackProject(body){
   if(typeof body!=='string'||body.length>100000)throw Error('Invalid project request');
@@ -29,6 +30,17 @@ export async function applyProjectIssue({issue,owner,read,write,comment,close}){
     }else{
       const original=file?validateProject(JSON.parse(file.content)):null;
       const next=assertAppendOnly(original,packet.project);
+      // Authoritative check at write time: no public project may reference device-only threads.
+      // A browser preflight alone is not sufficient; the Owner issue can be modified or delayed.
+      for(const member of next.threads){
+        const source=await read('site/nextnudge-data/threads/'+member.id+'.md');
+        if(!source||!SHA.test(source.sha||''))
+          throw Error('THREAD_FIRST: save '+member.agent+' ('+member.id+') to GitHub before project publication');
+        const thread=parse(source.content);
+        if(thread.id!==member.id)throw Error('THREAD_FIRST: linked thread identity mismatch '+member.id);
+        if(!member.legacy&&activeAgent(thread).trim().toLowerCase()!==member.agent.trim().toLowerCase())
+          throw Error('THREAD_FIRST: active agent differs for '+member.id);
+      }
       const contents=JSON.stringify(next,null,2)+'\n';
       if(JSON.stringify(validateProject(JSON.parse(contents)))!==JSON.stringify(next))
         throw Error('Project round-trip failed');
