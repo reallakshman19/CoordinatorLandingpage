@@ -1,10 +1,12 @@
 import {validateProject,PROJECT_ID,assertAppendOnly} from './project-model.mjs';
 import {REPO,issueUrl,issueBody,readRemote} from './save.mjs';
+import {activeAgent} from './thread.mjs';
 const ROOT='site/nextnudge-data/projects/';
 const LOCAL='nextnudge.projects.v1',SHAS='nextnudge.projects.sha.v1';
 const readKey=key=>{try{return JSON.parse(localStorage.getItem(key)||'{}');}catch{return {};}};
 function projectRecords(){
-  const raw=localStorage.getItem(LOCAL);
+  let raw;
+  try{raw=localStorage.getItem(LOCAL);}catch{return {rows:{},invalid:1,unreadable:true};}
   if(!raw)return {rows:{},invalid:0,unreadable:false};
   let rows;
   try{rows=JSON.parse(raw);}catch{return {rows:{},invalid:1,unreadable:true};}
@@ -88,6 +90,8 @@ export async function verifyProjectThreads(project,load=readRemote){
       throw Error('Save thread '+member.agent+' ('+member.id+') to GitHub and confirm readback before saving this project. Device drafts retained.');
     if(remote.thread.id!==member.id)
       throw Error('GitHub thread identity does not match project membership: '+member.id);
+    if(!member.legacy&&activeAgent(remote.thread).trim().toLowerCase()!==member.agent.trim().toLowerCase())
+      throw Error('Save the matching '+member.agent+' thread on GitHub before project publication. Device drafts retained.');
   }
   return true;
 }
