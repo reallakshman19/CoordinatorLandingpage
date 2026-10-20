@@ -272,8 +272,9 @@ test('G2 P06 authentic v3 imported/attached, reload, Master Log links; archived 
     await cdp.click('#attach-thread button[type=submit]');
     await cdp.until('JSON.parse(localStorage.getItem("nextnudge.projects.v1"))['+JSON.stringify(alpha)+'].threads.some(x=>x.id==='+JSON.stringify(historic.id)+')');
     await cdp.send('Page.reload',{ignoreCache:true});
-    await cdp.until('document.querySelector("#panel h2")?.textContent==="Projects"',18000);
-    await cdp.click('[data-project="'+alpha+'"]');
+    await cdp.until('document.querySelector("#panel h2")?.textContent.includes("P118-ALPHA-IMPORT")',18000);
+    if(await cdp.eval('document.querySelector("#panel h2")?.textContent.startsWith("Master Log")'))
+      await cdp.click('[data-action="project"]');
     await cdp.click('[data-action="master-log"]');
     await cdp.until('!!document.querySelector(".master-log-item")');
     const linked=await cdp.eval('Array.from(document.querySelectorAll(".master-log-item a")).map(a=>a.getAttribute("href"))');
