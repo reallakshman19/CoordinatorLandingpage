@@ -21,11 +21,11 @@ test('NN121 active grounding has no Midcycle 1/2, renames Exit and preserves v2 
   assert.equal(PROJECT_HEADINGS.length,17);
   assert.equal(RETIRED_MIDCYCLE.length,8);
   assert.deepEqual(Object.keys(PROJECT_PHASES),['onboarding','exit','improvements']);
-  assert.equal(PROJECT_PHASES.exit,'Master Log notes');
+  assert.equal(PROJECT_PHASES.exit,'Master Log');
   assert.deepEqual(['8','8a','8b','8c'].map(projectHeadingNumber),['6','6a','6b','6c']);
   const html=groundingPanel(null,{},false,project('a001','Alpha'));
   assert.equal((html.match(/<textarea /g)||[]).length,17);
-  assert.match(html,/Master Log notes/);
+  assert.match(html,/Master Log/);
   assert.match(html,/6\. Reconciliation against/);
   assert.doesNotMatch(html,/>Midcycle 1|>Midcycle 2|name="ground-6"|name="ground-7a"/);
   assert.match(html,/name="ground-8"/,'storage key remains unchanged for historical data');
@@ -57,8 +57,8 @@ test('NN121 master log is project scoped and derives links from immutable agent 
   g1.moves.push(move('NN-20261020-120200-bbbb','reply',{delivery:'draft',returnLine:'ACK some earlier task'}));
   g2.moves.push(move('NN-20261020-120300-cccc','correction',{gap:'Needs rework'}));
   b.moves.push(move('NN-20261020-120400-dddd','task',{returnLine:'BETA ONLY'}));
-  let a=addThread(addThread(project('p001','ALPHA'),g1),g2);
-  const beta=addThread(project('p002','BETA'),b);
+  let a=addThread(addThread(project('b001','ALPHA'),g1),g2);
+  const beta=addThread(project('b002','BETA'),b);
   const stored={[g1.id]:g1,[g2.id]:g2,[b.id]:b};
   const feed=masterLogEntries(a,stored);
   assert.equal(feed.rows.length,3);
@@ -77,7 +77,7 @@ test('NN121 master log is project scoped and derives links from immutable agent 
 
 test('NN121 missing GitHub source and divergent remote record are not misreported as complete',()=>{
   const a=thread('a001','G1'),b=thread('a002','G2');
-  const p=addThread(addThread(project('p001','ALPHA'),a),b);
+  const p=addThread(addThread(project('b001','ALPHA'),a),b);
   a.moves.push(move('NN-20261020-120200-abcd'));
   let feed=masterLogEntries(p,{[a.id]:a},{[b.id]:{error:'GitHub read failed 403'}});
   assert.equal(feed.rows.length,1);assert.equal(feed.unavailable.length,1);
@@ -96,14 +96,14 @@ test('NN121 source preview escapes markup; sealed notes are not exposed in summa
   a.moves.push(move('NN-20261020-120500-ffff','task',{returnLine:'<img src=x onerror=alert(1)>'}));
   a.moves.push(move('NN-20261020-120600-aaaa','sealed',{delivery:'draft',
     packet:'',returnLine:'PRIVATE SECRET',note:''}));
-  const p=addThread(project('p001','ALPHA'),a);
+  const p=addThread(project('b001','ALPHA'),a);
   const html=masterLogMarkup(p,{[a.id]:a});
   assert.match(html,/&lt;img/);assert.doesNotMatch(html,/<img src=x/);
   assert.doesNotMatch(html,/PRIVATE SECRET/);assert.match(html,/Private contents not shown/);
 });
 
 test('NN121 duplicate-agent error stays beside Create button and focuses accessible alert',()=>{
-  const p=project('p001','ALPHA'),a=thread('a001','G1'),managed=addThread(p,a);
+  const p=project('b001','ALPHA'),a=thread('a001','G1'),managed=addThread(p,a);
   const rendered=projectMarkup(managed,{[a.id]:a},{[p.id]:managed});
   assert.match(rendered,/id="new-thread-error" role="alert" aria-live="assertive"/);
   assert.match(rendered,/data-action="master-log"/);
