@@ -51,7 +51,7 @@ export async function sweepUnreceipted({owner,currentIssueNumber,listOpenIssues,
   }
   let swept=0;
   for(const candidate of candidates) {
-      if(/```nextnudge-thread-(?:save|action)\s*\n/.test(candidate.body||'')||
+      if(/```nextnudge-(?:thread-(?:save|action)|project-save)\s*\n/.test(candidate.body||'')||
          !ownerIssue(candidate,owner)||candidate.state!=='open'||
          !Number.isSafeInteger(candidate.number)||candidate.number>=currentIssueNumber)continue;
       let receipted=false;
