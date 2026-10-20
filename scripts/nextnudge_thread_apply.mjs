@@ -3,6 +3,7 @@ import {gunzipSync} from 'node:zlib';
 import {pathToFileURL} from 'node:url';
 import {parse,serialize,assertPublic,THREAD_ID} from '../site/nextnudge/revamp/thread.mjs';
 import {applyDelta,ROOT} from '../site/nextnudge/revamp/save.mjs';
+import {checkManagedSend,loadRemoteProjects} from './nextnudge_project_guard.mjs';
 const SHA=/^[0-9a-f]{40}$/;
 const OWNER_LABEL='nextnudge-save';
 export function ownerIssue(issue,owner) {
@@ -26,7 +27,7 @@ export function unpack(body) {
   assertPublic(packet);
   return packet;
 }
-export async function applyIssue({issue,owner,read,write,comment,close}) {
+export async function applyIssue({issue,owner,read,write,comment,close,projects={}}) {
   if(!ownerIssue(issue,owner))return 'IGNORED';
   let result='REJECTED',message;
   try{
@@ -39,6 +40,7 @@ export async function applyIssue({issue,owner,read,write,comment,close}) {
       if(!markdown.startsWith('# ')||markdown.length>2000000)throw Error('Invalid thread output');
       // Never persist a document the actual reader cannot fully reconstruct.
       const rebuilt=parse(markdown);
+      for(const move of packet.moves.filter(m=>m.delivery==='sent'))checkManagedSend(rebuilt,move.agent,projects);
       if(serialize(rebuilt)!==markdown)throw Error('Thread Markdown does not round-trip');
       await write(ROOT+packet.id+'.md',markdown,file?.sha||null);
       result='SAVED';message='SAVED: '+ROOT+packet.id+'.md · appended '+packet.moves.length+' moves';
@@ -62,7 +64,8 @@ export async function main() {
   const number=event.issue?.number;
   if(!Number.isSafeInteger(number))throw Error('No issue number');
   const issue=await api('issues/'+number),owner=process.env.GITHUB_REPOSITORY.split('/')[0];
-  return applyIssue({issue,owner,
+  const projects=await loadRemoteProjects(api);
+  return applyIssue({issue,owner,projects,
     read:async path=>{
       const data=await api('contents/'+path+'?ref=main');
       if(!data)return null;

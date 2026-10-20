@@ -1,6 +1,8 @@
 import {newThread,freshId,parse,serialize,archiveRun,currentState,activeIntent,activeAgent,validate,assertPublic} from './thread.mjs';
 import {sentMove,amendValues,agentChange,ownerForm,agentForm,sentForm} from './editor.mjs';
 import {threadsMarkup} from './screens.mjs';
+import {localProjects,assertProjectAgent} from './project-store.mjs';
+import {createProjectUI} from './project-ui.mjs';
 import {makeReply,openAgents} from './reply.mjs';
 import {makeSeal,sealForm} from './seal.mjs';
 import {moveMarkup} from './move-view.mjs';
@@ -11,15 +13,17 @@ import {clearComposer} from './composer.mjs';
 import {workspaceNav,MODES} from './workspace-nav.mjs';
 import {workspaceAction,installWorkspaces,workspaceMarkup,openWorkspace,checkWorkspacePacket,clearSentWorkspace} from './workspace-ui.mjs';
 const NLM='NN-20261018-171656-66d2';
-const state={threads:localThreads(),active:null,view:'threads',draft:null,editor:null,checks:{},lastReply:'',message:''};
+const state={threads:localThreads(),projects:localProjects(),active:null,activeProject:null,view:'projects',draft:null,editor:null,checks:{},lastReply:'',message:''};
 const $=q=>document.querySelector(q);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const v=id=>$('#'+id)?.value||'';
+const threadRoute=id=>{if(typeof window==='undefined')return;const url=new URL(window.location.href);url.searchParams.set('thread',id);['project','projectView','workspace'].forEach(k=>url.searchParams.delete(k));window.history.replaceState(null,'',url);};
 const t=()=>state.threads[state.active];
 const intent=()=>activeIntent(t());
 const notice=s=>{state.message=s;$('#notice').textContent=s;};
 const emptyMove=(id,kind)=>({id,kind,delivery:'draft',packet:'',returnLine:'',digest:'',
   evidence:'',gap:'',decision:'',archive:'',note:''});
+const projects=createProjectUI({state,put,render,notice});
 function put(thread) {
   validate(thread);state.threads[thread.id]=thread;persist(thread);state.active=thread.id;
 }
@@ -28,7 +32,7 @@ function renderThread() {
   const x=t(),i=intent(),last=x.moves.at(-1),hold=!!i.hold;
   if(!state.draft){const saved=restoreDraft(x);if(saved&&!x.moves.some(m=>m.id===saved.id))state.draft=saved;}
   const older=x.moves.slice(0,-1);
-  $('#panel').innerHTML='<div class="heading"><button data-action="back">← Threads</button><h2>'+esc(x.title)+'</h2>'+
+  $('#panel').innerHTML='<div class="heading"><button data-action="back">← '+(state.activeProject?'Project':'Projects')+'</button><h2>'+esc(x.title)+'</h2>'+
     '<button data-action="export">Export Markdown</button></div>'+
     workspaceNav('overview')+
     '<section class="intent"><strong>📌 Owner Intent</strong><p class="intent-goal">'+esc(i.goal||'UNKNOWN')+'</p>'+
@@ -37,8 +41,12 @@ function renderThread() {
     '<p><strong>Done-when:</strong> '+(i.doneWhen.length?i.doneWhen.map((c,j)=>(j+1)+'. '+esc(c)).join(' · '):'UNKNOWN — Owner must define')+'</p>'+
     '<p><strong>Scope:</strong> '+esc(i.inScope||'UNKNOWN')+' · <strong>Out:</strong> '+esc(i.outScope||'UNKNOWN')+'</p></details>'+
     '<div><button data-action="owner-edit">Owner: amend intent / checks / HOLD</button> '+
-    '<button data-action="agent-edit">Change agent</button></div></section><section id="editor"></section>'+ 
+    (state.activeProject?'<span class="small">Project agent identity fixed; create another agent thread to transfer work.</span>':'<button data-action="agent-edit">Change agent</button>')+'</div></section><section id="editor"></section>'+ 
     '<details><summary>Earlier moves ('+older.length+')</summary>'+older.map(m=>moveMarkup(x,m,esc)).join('')+'</details>'+ 
+    '<details><summary>Historical thread grounding ('+x.moves.filter(m=>m.note?.startsWith('GROUNDING_FIXTURES_V1:')).length+' snapshots) · read-only</summary>'+
+    x.moves.filter(m=>m.note?.startsWith('GROUNDING_FIXTURES_V1:')).map(m=>'<details><summary>'+esc(m.id)+'</summary><pre>'+
+      esc(JSON.stringify(JSON.parse(m.note.slice('GROUNDING_FIXTURES_V1:'.length)),null,2))+'</pre></details>').join('')+
+    '</details>'+
     '<section class="current"><h3>Current move · '+esc(currentState(x))+'</h3>'+
     (last?moveMarkup(x,last,esc):'<p>No nudge sent yet.</p>')+
     (hold?'<div class="hold" role="alert"><strong>⛔ OWNER HOLD ACTIVE:</strong> '+esc(i.hold)+' — sending instructions is blocked until the Owner amends or removes this constraint.</div>':
@@ -90,7 +98,8 @@ function renderComposer() {
 }
 function render() {
   $('#notice').textContent=state.message;
-  if(state.view==='threads')renderThreads();
+  if(['projects','project','project-grounding','legacy-grounding'].includes(state.view))projects.show();
+  else if(state.view==='threads')renderThreads();
   else if(state.view==='grounding')$('#panel').innerHTML=renderGrounding(t());
   else if(state.view==='thread')renderThread();
   else if(state.view==='workspace'){
@@ -124,13 +133,13 @@ async function convert(id) {
   if(!run)throw Error('Archived run not found');
   if(state.threads[id]&&!(await askInline({title:'Replace converted thread',message:'This replaces your local draft.',accept:'Replace'})).ok)return;
   const x=archiveRun(run);
-  put(x);state.view='thread';render();
+  put(x);state.view='thread';threadRoute(x.id);render();
 }
 async function onAction(action,target) {
   if(await workspaceAction(action,{state,t,append,render,notice}))return;
   if(await featureAction(action,{state,t,append,render,notice}))return;
   const x=t(),i=x?intent():null;
-  if(action==='back'){state.view='threads';state.draft=null;state.editor=null;return render();}
+  if(await projects.action(action))return;
   if(action==='thread'){state.view='thread';state.draft=null;state.editor=null;return render();}
   if(action==='export')return exportThread(x);
   if(action==='archive-list')return archiveList();
@@ -139,7 +148,8 @@ async function onAction(action,target) {
     if(!input.ok)return;const id=input.value;
     const remote=await readRemote(id);if(!remote.thread)throw Error('Not found');
     if(state.threads[id]&&!(await askInline({title:'Replace local thread',message:'Replace this device draft with the GitHub version?',accept:'Replace'})).ok)return;
-    put(remote.thread);state.view='thread';return render();
+    put(remote.thread);projects.selectThreadProject(id);
+    state.view='thread';threadRoute(id);return render();
   }
   if(action==='import')return $('#import-file').click();
   if(action==='save-chat'){chatLink(x.id,v('chat'));return notice('Private chat link kept on this device only.');}
@@ -194,19 +204,30 @@ async function onAction(action,target) {
   }
 }
 document.addEventListener('click',e=>{
-  const target=e.target.closest('[data-action],[data-open],[data-convert]');if(!target)return;
-  const action=target.dataset.action|| (target.dataset.open?'open':'convert');
-  if(action==='open'){state.active=target.dataset.open;state.view='thread';state.draft=null;render();return;}
+  const target=e.target.closest('[data-action],[data-open],[data-convert],[data-project]');if(!target)return;
+  const action=target.dataset.action|| (target.dataset.open?'open':target.dataset.project?'project-select':'convert');
+  if(action==='open'){
+    const id=target.dataset.open;
+    (async()=>{if(!state.threads[id]){const remote=await readRemote(id);if(!remote.thread)throw Error('Thread not found on GitHub');put(remote.thread);}
+      state.active=id;projects.selectThreadProject(id);
+      state.view='thread';state.draft=null;threadRoute(id);render();})().catch(err=>notice(err.message));return;
+  }
+  if(target.dataset.project){try{projects.select(target.dataset.project);}catch(e){notice(e.message);}return;}
   onAction(action,target).catch(err=>notice(err.message));
 });
 document.addEventListener('submit',async e=>{
-  const form=e.target;if(!['new-thread','owner-amend','agent-change','sent-confirm','seal-form'].includes(form.id))return;
+  const form=e.target;if(!['new-project','new-thread','attach-thread','project-grounding-form','owner-amend','agent-change','sent-confirm','seal-form'].includes(form.id))return;
   e.preventDefault();
   try{
     const values=new FormData(form);
+    if(projects.submit(form,values))return;
     if(form.id==='new-thread'){
       const x=newThread({title:values.get('title').trim(),goal:values.get('goal').trim(),agent:values.get('agent').trim()});
-      put(x);state.view='thread';render();return;
+      if(state.view==='project'){
+        const next=projects.prepareThread(x);
+        put(x);projects.save(next);
+      }else{put(x);state.activeProject=null;}
+      state.view='thread';threadRoute(x.id);render();return;
     }
     if(form.id==='owner-amend'){
       if(values.get('approved')!=='on')throw Error('Explicit Owner confirmation required');
@@ -215,6 +236,7 @@ document.addEventListener('submit',async e=>{
       append(m);return;
     }
     if(form.id==='agent-change'){
+      if(projects.projectForActive())throw Error('Project thread identity is fixed. Create/select the other agent thread; existing history is preserved.');
       const m=agentChange(values.get('agent'));
       chatLink(t().id,'');append(m);
       notice('Agent changed. Add the new private chat link for this agent.');return;
@@ -229,6 +251,7 @@ document.addEventListener('submit',async e=>{
       checkWorkspacePacket({state,t});
       const text=v('packet')||state.draft?.packet;
       assertPublic(text);
+      assertProjectAgent(t(),values.get('agent')||'',state.projects);
       const move=sentMove(t(),state.draft,text,{role:values.get('role')||'worker',
         agent:values.get('agent')||activeAgent(t()),override_note:values.get('override_note')||''});
       const i=intent();
@@ -244,26 +267,30 @@ document.addEventListener('submit',async e=>{
 });
 $('#import-file').addEventListener('change',async e=>{
   const file=e.target.files?.[0];if(!file)return;
-  try{const x=parse(await file.text());put(x);state.view='thread';render();}
+  try{const x=parse(await file.text());put(x);projects.selectThreadProject(x.id);state.view='thread';threadRoute(x.id);render();}
   catch(err){notice(err.message);}e.target.value='';
 });
 async function init(){
+  await projects.discover();
   if(!state.threads[NLM]){
     try{const r=await fetch('../nextnudge-data/threads/'+NLM+'.md');
       if(r.ok){const seed=parse(await r.text());put(seed);}}catch{}
   }
-  const requested=new URLSearchParams(window.location.search).get('thread');
+  const params=new URLSearchParams(window.location.search),project=params.get('project');
+  if(project&&state.projects[project]){state.activeProject=project;state.view=params.get('projectView')==='grounding'?'project-grounding':'project';return render();}
+  const requested=params.get('thread');
   if(requested){
     try{if(!state.threads[requested]){const remote=await readRemote(requested);if(remote.thread)put(remote.thread);}
       if(state.threads[requested]){
         state.active=requested;
+        projects.selectThreadProject(requested);
         const mode=new URLSearchParams(window.location.search).get('workspace');
         if(MODES.includes(mode))return openWorkspace({state,t,append,render,notice},mode);
         state.view='thread';return render();
       }
     }catch(e){notice(e.message);}
   }
-  state.view='threads';render();
+  state.view='projects';render();
 }
 installFeatures({state,t,append,render,notice});
 installWorkspaces({state,t,append,render,notice});

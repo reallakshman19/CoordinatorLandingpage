@@ -1,5 +1,5 @@
 import {freshId,activeIntent,activeAgent,assertPublic,validate,reconcile} from './thread.mjs';
-import {readGrounding} from './grounding.mjs';
+import {effectiveGrounding} from './grounding.mjs';
 import {packet} from './screens.mjs';
 import {MODES,TITLES} from './workspace-nav.mjs';
 export {MODES,TITLES};
@@ -34,7 +34,7 @@ export function workspaceEntries(thread,mode){
 }
 export function savedWorkspace(thread,mode){return workspaceEntries(thread,mode).at(-1)||null;}
 export function defaults(thread,mode){
-  const stored=savedWorkspace(thread,mode),g=readGrounding(thread);
+  const stored=savedWorkspace(thread,mode),g=effectiveGrounding(thread);
   const value=valuesFor(mode,stored?.values||{});
   if(mode==='ground'&&!stored)Object.assign(value,{issue:g['1a']||'',pullRequest:g['1b']||'',
     roadmap:g['1d']||'',sources:g['1']||'',brief:g['1f']||''});
@@ -63,7 +63,7 @@ export function workspaceMove(thread,mode,input,id=freshId()){
   const values=valuesFor(mode,input);assertPublic(values);
   if(values.groundId)linkedGround(thread,values.groundId);
   if(values.target)targetFor(thread,mode,values.target);
-  const data={mode,values,owner:ownerBasis(thread),...(mode==='ground'?{fixtures:readGrounding(thread)}:{})};
+  const data={mode,values,owner:ownerBasis(thread),...(mode==='ground'?{fixtures:effectiveGrounding(thread)}:{})};
   const before=savedWorkspace(thread,mode);
   if(before){const {id:oldId,...old}=before;if(JSON.stringify(old)===JSON.stringify(data))return null;}
   const move={id,kind:'amendment',delivery:'draft',packet:'',returnLine:'',digest:'',
@@ -85,7 +85,7 @@ function contextText(thread,values){
 }
 export function workspaceBasis(thread,mode,input){
   return JSON.stringify({mode,values:valuesFor(mode,input),owner:ownerBasis(thread),agent:activeAgent(thread),
-    ...(mode==='ground'?{fixtures:readGrounding(thread)}:{})});
+    ...(mode==='ground'?{fixtures:effectiveGrounding(thread)}:{})});
 }
 function required(values,keys){
   for(const [key,label] of keys)if(!values[key])throw Error('Enter '+label+' before building this packet');
@@ -97,7 +97,7 @@ export function buildWorkspacePacket(thread,mode,input,id=freshId()){
   if(mode==='ground'){
     required(v,[['brief','the context the agent needs']]);
     const body=['Project context: '+v.brief,...['repository','issue','pullRequest','roadmap','sources'].filter(k=>v[k]).map(k=>k+': '+v[k]),
-      ...Object.entries(readGrounding(thread)).map(([k,text])=>'Fixture '+k+': '+text),
+      ...Object.entries(effectiveGrounding(thread)).map(([k,text])=>'Fixture '+k+': '+text),
       'Known unknowns: '+(v.unknowns||'UNKNOWN'),'First step: '+(v.firstStep||'Ask about missing facts')].join('\n');
     result={kind:'ground',packet:packet(id,'ground',body,i)};
   }else if(mode==='task'){
