@@ -1,7 +1,7 @@
 // Project-only navigation and forms; v3 thread workspaces remain owned by app.mjs.
 import {projectsMarkup,projectMarkup} from './screens.mjs';
 import {newProject,addThread,updateFixtures} from './project-model.mjs';
-import {localProjects,persistProject,projectForThread,recordProjectSha,readRemoteProject,discoverProjects,prepareProjectSave} from './project-store.mjs';
+import {localProjects,localProjectIssues,persistProject,projectForThread,recordProjectSha,readRemoteProject,discoverProjects,prepareProjectSave} from './project-store.mjs';
 import {groundingPanel,projectGroundingText} from './grounding.mjs';
 import {activeAgent} from './thread.mjs';
 import {askInline} from '../inline-question.mjs';
@@ -116,9 +116,11 @@ export function createProjectUI({state,put,render,notice}){
     return false;
   }
   async function discover(){
+    const issues=localProjectIssues();
+    if(issues.invalid)state.message=issues.invalid+' invalid local project record(s) preserved; valid projects remain available. Export storage before repair.';
     try{const found=await discoverProjects();state.projects=localProjects();
-      if(found.conflicts)state.message=found.conflicts+' project GitHub revisions differ from device drafts; compare before writing.';
-    }catch(e){state.message='Project GitHub discovery unavailable: '+e.message+'. Device drafts retained.';}
+      if(found.conflicts)state.message=(state.message||'')+' '+found.conflicts+' project GitHub revisions differ from device drafts; compare before writing.';
+    }catch(e){state.message=(state.message||'')+' Project GitHub discovery unavailable: '+e.message+'. Device drafts retained.';}
   }
   document.addEventListener('input',event=>{
     if(!event.target.closest?.('#project-grounding-form'))return;
