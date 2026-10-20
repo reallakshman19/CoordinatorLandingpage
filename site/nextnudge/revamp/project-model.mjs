@@ -18,9 +18,11 @@ export function validateProject(p){
   if(!p||p.version!==1||!PROJECT_ID.test(p.id)||typeof p.name!=='string'||
     !p.name.trim()||p.name.length>120||!Array.isArray(p.threads)||p.threads.length>200||
     !Array.isArray(p.snapshots)||p.snapshots.length>200)throw Error('Invalid project');
+  if(Object.keys(p).some(key=>!['version','id','name','threads','fixtures','snapshots'].includes(key))||
+     JSON.stringify(p).length>300000)throw Error('Unsupported or oversized project data');
   const ids=new Set(),agents=new Set();
   for(const row of p.threads){
-    if(!row||!THREAD_ID.test(row.id)||typeof row.agent!=='string'||!row.agent.trim()||
+    if(!row||Object.keys(row).some(key=>!['id','agent','legacy'].includes(key))||!THREAD_ID.test(row.id)||typeof row.agent!=='string'||!row.agent.trim()||
       row.agent.length>200||typeof row.legacy!=='boolean'||ids.has(row.id))
       throw Error('Invalid or repeated project thread');
     ids.add(row.id);
@@ -31,7 +33,7 @@ export function validateProject(p){
   const values=fixtureValues(p.fixtures);
   if(!same(values,p.fixtures))throw Error('Noncanonical project fixtures');
   for(const item of p.snapshots){
-    if(!item||typeof item.at!=='string'||item.at.length>64||!/^\d{4}-\d\d-\d\dT/.test(item.at))
+    if(!item||Object.keys(item).some(key=>!['at','values'].includes(key))||typeof item.at!=='string'||item.at.length>64||!/^\d{4}-\d\d-\d\dT/.test(item.at))
       throw Error('Invalid fixture snapshot date');
     if(!same(fixtureValues(item.values),item.values))throw Error('Noncanonical snapshot');
   }
