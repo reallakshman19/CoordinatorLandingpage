@@ -1,5 +1,5 @@
 // Read-only project view. Original thread moves remain the only activity authority.
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'," ' ":'&#39;',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function kind(move){
   if(move.kind!=='amendment')return move.kind==='reply'?'Agent reply':move.kind[0].toUpperCase()+move.kind.slice(1);
   if(move.note?.startsWith('WORKSPACE_V1:')){
