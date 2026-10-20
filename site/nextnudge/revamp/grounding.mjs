@@ -1,6 +1,7 @@
 import {HEADINGS,PHASES} from '../fixtures.mjs';
 import {freshId,activeIntent,assertPublic,validate} from './thread.mjs';
 import {workspaceNav} from './workspace-nav.mjs';
+import {projectForThread} from './project-store.mjs';
 const PREFIX='GROUNDING_FIXTURES_V1:';
 const keys=new Set(HEADINGS.map(([,key])=>key));
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -27,6 +28,16 @@ export function groundingMove(thread,values,id=freshId()){
     evidence:'',gap:'',decision:'',archive:'',note:PREFIX+JSON.stringify(next)};
   validate({...thread,moves:[...thread.moves,move]});return move;
 }
+export function effectiveGrounding(thread){
+  if(!thread)return {};
+  const p=projectForThread(thread.id);
+  return p?p.fixtures:readGrounding(thread);
+}
+export function projectGroundingText(project,values=project.fixtures){
+  const checkedValues=checked(values);
+  return ['Project grounding · '+project.name,
+    ...HEADINGS.filter(([,key])=>checkedValues[key]).map(([,key,label])=>key+'. '+label+'\n'+checkedValues[key])].join('\n\n');
+}
 export function groundingSummary(move){
   if(!move.note?.startsWith(PREFIX))return null;
   return 'Grounding updated · '+Object.keys(checked(JSON.parse(move.note.slice(PREFIX.length)))).length+' headings';
@@ -37,7 +48,7 @@ export function groundingText(thread){
     'In scope: '+i.inScope,'Out of scope: '+i.outScope,'HOLD: '+(i.hold||'OFF'),
     ...HEADINGS.filter(([,key])=>values[key]).map(([,key,label])=>key+'. '+label+'\n'+values[key])].join('\n\n');
 }
-export function groundingPanel(thread,values=readGrounding(thread),hasDraft=false){
+export function groundingPanel(thread,values=readGrounding(thread),hasDraft=false,project=null){
   const linkKeys=new Set(['1a','1b','1c','1d']);
   const actionsBar='<div class="grounding-actions">'+
     '<button type="submit" class="primary">Save grounding</button> '+
@@ -45,8 +56,8 @@ export function groundingPanel(thread,values=readGrounding(thread),hasDraft=fals
     '<span class="grounding-status" role="status" aria-live="polite">'+(hasDraft?'Unsaved device draft restored':'')+'</span></div>';
   return '<div class="heading"><button data-action="thread">← Thread</button><h2>Grounding Fixtures</h2></div>'+
     workspaceNav('fixtures')+
-    '<p>Keep reusable context here. Blank means UNKNOWN. Edits stay on this device while typing. &quot;Save grounding&quot; creates one local snapshot in thread history. Publish to GitHub on Thread page.'+(hasDraft?' <strong class="draft-indicator">(Unsaved device draft restored)</strong>':'')+'</p>'+
-    '<form id="grounding-form">'+actionsBar+Object.entries(PHASES).map(([phase,label])=>
+    '<p>Keep reusable context here. Blank means UNKNOWN. Edits stay on this device while typing. &quot;Save grounding&quot; creates one local snapshot '+(project?'in this project':'in thread history')+'. Publish to GitHub '+(project?'from this project':'on Thread page')+'.'+(hasDraft?' <strong class="draft-indicator">(Unsaved device draft restored)</strong>':'')+'</p>'+
+    '<form id="'+(project?'project-grounding-form':'grounding-form')+'">'+actionsBar+Object.entries(PHASES).map(([phase,label])=>
       '<details'+(phase==='onboarding'?' open':'')+'><summary>'+esc(label)+'</summary>'+
       HEADINGS.filter(([p])=>p===phase).map(([,key,title])=>
         '<label>'+esc(key+'. '+title)+
@@ -55,6 +66,6 @@ export function groundingPanel(thread,values=readGrounding(thread),hasDraft=fals
           '<textarea name="ground-'+key+'" rows="3" maxlength="12000" placeholder="UNKNOWN — optional notes and source links">'+esc(values[key]||'')+'</textarea>')+
         '</label>').join('')+'</details>').join('')+
     actionsBar+
-    '<p class="small">Saved updates stay in thread history. Public GitHub saves exclude private chat links.</p></form>';
+    '<p class="small">'+(project?'Saved versions belong to this project. Existing thread grounding history is preserved separately.':'Saved updates stay in thread history.')+' Public GitHub saves exclude private chat links.</p></form>';
 }
 
