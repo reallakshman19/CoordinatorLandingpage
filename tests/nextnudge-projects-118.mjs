@@ -9,7 +9,7 @@ import {readGrounding,effectiveGrounding,groundingMove,groundingPanel,projectGro
 import {workspaceMove,defaults} from '../site/nextnudge/revamp/workspace.mjs';
 import {projectsMarkup,projectMarkup} from '../site/nextnudge/revamp/screens.mjs';
 import {unpackProject,applyProjectIssue} from '../scripts/nextnudge_project_apply.mjs';
-import {HEADINGS} from '../site/nextnudge/fixtures.mjs';
+import {PROJECT_HEADINGS} from '../site/nextnudge/fixtures.mjs';
 const A='a'.repeat(40),B='b'.repeat(40);
 const id=x=>'NN-20261020-120000-'+x;
 const project=(x,name)=>newProject(name,'NP-20261020-120000-'+x);
@@ -24,7 +24,7 @@ test('AC1 navigation structure and pre-existing workspaces and v2 Archive',()=>{
   const tabs=fs.readFileSync(new URL('../site/nextnudge/revamp/workspace-nav.mjs',import.meta.url),'utf8');
   for(const mode of ['Overview','Ground','Task','Correction','Reconcile'])assert.ok(tabs.includes(mode));
 });
-test('AC2 shared project context, cross-project isolation, 25 optional fields, independent Ground',()=>{
+test('AC2 shared project context, cross-project isolation, 17 active optional fields, independent Ground',()=>{
   const old=globalThis.localStorage;globalThis.localStorage=memory();
   try{
     const a=agent('a001','Alpha'),b=agent('b001','Beta'),c=agent('c001','Alpha');
@@ -36,7 +36,7 @@ test('AC2 shared project context, cross-project isolation, 25 optional fields, i
     assert.deepEqual(effectiveGrounding(c),{});
     assert.deepEqual(readGrounding(a),{});
     const html=groundingPanel(null,p.fixtures,false,p);
-    assert.equal((html.match(/<textarea /g)||[]).length,HEADINGS.length);
+    assert.equal((html.match(/<textarea /g)||[]).length,PROJECT_HEADINGS.length);
     assert.match(html,/project-grounding-form/);
     assert.match(projectGroundingText(p),/Shared context/);
     const m=workspaceMove(a,'ground',{brief:'Agent A orientation'},'G-1');
