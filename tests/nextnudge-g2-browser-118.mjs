@@ -162,3 +162,45 @@ test('P01/P02/P03 actual Chromium pointer-flow, project editor and agent fixture
     console.log('P01_P03_REAL_BROWSER_TRACE '+JSON.stringify({events:trace,uncaughtErrors:cdp.errors,screenshotSha256:digest}));
   }finally{cdp?.ws?.close();cp.kill('SIGKILL');web.close();fs.rmSync(profile,{recursive:true,force:true});}
 });
+
+test('P06 negative browser control: ambiguous legacy thread remains navigable without choosing either project',{timeout:30000},async t=>{
+  if(!browser){t.skip('Browser executable unavailable');return;}
+  const {web,url}=await server(),profile=fs.mkdtempSync(path.join(os.tmpdir(),'nn118-g2-collision-'));
+  const port=await remotePort(),cp=spawn(browser,['--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu',
+    '--window-size=1250,900','--remote-debugging-port='+port,'--user-data-dir='+profile,url],{stdio:'ignore'});
+  let cdp;
+  try{
+    let info=null;
+    for(let i=0;i<80;i++){if(cp.exitCode!==null)throw Error('Chromium exited early');
+      try{const response=await fetch('http://127.0.0.1:'+port+'/json/list');
+        info=(await response.json()).find(x=>x.type==='page'&&x.url.includes('nextnudge'));
+        if(info)break;}catch{}await sleep(250);}
+    if(!info)throw Error('Chromium CDP unavailable');
+    const ws=new WebSocket(info.webSocketDebuggerUrl);
+    await new Promise((resolve,reject)=>{ws.addEventListener('open',resolve,{once:true});ws.addEventListener('error',reject,{once:true});});
+    cdp=new CDP(ws);await cdp.send('Runtime.enable');await cdp.send('Page.enable');
+    await cdp.until('document.querySelector("#panel h2")?.textContent==="Projects"');
+    const record=await cdp.eval(`(()=>{
+      const threads=JSON.parse(localStorage.getItem('nextnudge.threads.v3')||'{}');
+      const original=Object.values(threads)[0];if(!original)throw Error('Historical seeded thread missing');
+      const ids=['NP-20261020-140000-a001','NP-20261020-140000-b001'];
+      const row={id:original.id,agent:original.agent||'P118-LEGACY',legacy:true};
+      const projects=Object.fromEntries(ids.map((id,index)=>[id,{
+        version:1,id,name:index?'P118-BETA':'P118-ALPHA',
+        threads:[row],fixtures:{},snapshots:[]}]));
+      localStorage.setItem('nextnudge.projects.v1',JSON.stringify(projects));
+      return {threadId:original.id,threadTitle:original.title,projects:ids};
+    })()`);
+    await cdp.send('Page.reload',{ignoreCache:true});
+    await cdp.until('document.querySelector("#panel h2")?.textContent==="Projects"');
+    await cdp.click('[data-project="'+record.projects[0]+'"]');
+    await cdp.until('document.querySelector("#panel h2")?.textContent==="P118-ALPHA"');
+    await cdp.click('[data-open="'+record.threadId+'"]');
+    await sleep(300);
+    const observed=await cdp.eval('({heading:document.querySelector("#panel h2")?.textContent,notice:document.querySelector("#notice")?.textContent,historyVisible:document.querySelector("#panel")?.textContent.includes("Earlier moves")})');
+    console.log('P06_AMBIGUOUS_LEGACY_BROWSER_WITNESS '+JSON.stringify({record,observed}));
+    assert.equal(observed.heading,record.threadTitle,
+      'A multiply-associated legacy thread must remain readable, with unresolved project custody flagged');
+    assert.equal(observed.historyVisible,true,'Sent history remains navigable without choosing a project');
+  }finally{cdp?.ws?.close();cp.kill('SIGKILL');web.close();fs.rmSync(profile,{recursive:true,force:true});}
+});
