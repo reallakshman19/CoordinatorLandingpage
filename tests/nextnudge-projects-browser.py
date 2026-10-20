@@ -98,7 +98,44 @@ def test_navigation(page):
     assert "invalid local project record" in page.locator("#notice").inner_text()
     assert page.evaluate("""() => JSON.parse(localStorage.getItem('nextnudge.projects.v1')).MALFORMED.unexpected""") == "keep this raw entry"
     page.screenshot(path=str(OUT / "review-f3-corrupt-recovered.png"), full_page=True)
-    print("NN118_CHROMIUM: PASS navigation, shared grounding, isolation, reload, duplicates, F1 manual/GitHub, F2 thread-first, F3 corrupt local record")
+    # G2-F01: one authentic legacy thread may appear in two project memberships.
+    # Preserve the thread's original packets and open it without selecting either fixture store.
+    legacy_id = "NN-20261018-171656-66d2"
+    import hashlib
+    import json
+    def sent_packets():
+        raw = page.evaluate("""id => JSON.parse(localStorage.getItem('nextnudge.threads.v3'))[id]""", legacy_id)
+        return [hashlib.sha256(m["packet"].encode("utf-8")).hexdigest()
+                for m in raw["moves"] if m.get("delivery") == "sent"]
+    original_hashes = sent_packets()
+    assert original_hashes, "Historical NLM thread must contain genuine sent packets"
+    page.evaluate("""id => {
+      const key='nextnudge.projects.v1', rows=JSON.parse(localStorage.getItem(key));
+      for (const p of Object.values(rows)) {
+        if (p.name==='Project A' || p.name==='Project B')
+          p.threads.push({id,agent:'Google Antigravity',legacy:true});
+      }
+      localStorage.setItem(key,JSON.stringify(rows));
+    }""", legacy_id)
+    page.goto("/nextnudge/", wait_until="domcontentloaded")
+    page.get_by_role("button", name="Project A", exact=False).click()
+    page.locator('button[data-open="'+legacy_id+'"]').click()
+    page.get_by_role("heading", name="NLM validator · PR #299 review", exact=True).wait_for()
+    assert "Ambiguous project association" in page.locator("#notice").inner_text()
+    assert page.locator("summary").filter(has_text="Earlier moves").count() == 1
+    assert sent_packets() == original_hashes, "Project navigation altered exact legacy packets"
+    page.screenshot(path=str(OUT / "review-legacy-ambiguous-open.png"), full_page=True)
+    # Cold direct link and explicit Markdown import use the same conservative association choice.
+    page.goto("/nextnudge/?thread="+legacy_id, wait_until="domcontentloaded")
+    page.get_by_role("heading", name="NLM validator · PR #299 review", exact=True).wait_for()
+    assert "Ambiguous project association" in page.locator("#notice").inner_text()
+    assert sent_packets() == original_hashes
+    source = SITE / "nextnudge-data" / "threads" / (legacy_id + ".md")
+    page.locator("#import-file").set_input_files(str(source))
+    page.get_by_role("heading", name="NLM validator · PR #299 review", exact=True).wait_for()
+    assert "Ambiguous project association" in page.locator("#notice").inner_text()
+    assert sent_packets() == original_hashes, "Import altered historical packet bytes"
+    print("NN118_CHROMIUM: PASS navigation, sharing, isolation, F1-F3 and G2-F01 ambiguous legacy open/URL/import with authentic sent-packet SHA")
 
 
 def main():
