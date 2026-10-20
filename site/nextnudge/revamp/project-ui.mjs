@@ -13,6 +13,16 @@ const fixtureInput=form=>Object.fromEntries([...new FormData(form)].filter(([key
   .map(([key,value])=>[key.slice(7),value]));
 export function createProjectUI({state,put,render,notice}){
   const current=()=>state.projects[state.activeProject]||null;
+  function route(){
+    if(typeof window==='undefined'||!window.history?.replaceState)return;
+    const url=new URL(window.location.href);
+    url.searchParams.delete('thread');url.searchParams.delete('workspace');
+    if(state.activeProject)url.searchParams.set('project',state.activeProject);
+    else url.searchParams.delete('project');
+    if(state.view==='project-grounding')url.searchParams.set('projectView','grounding');
+    else url.searchParams.delete('projectView');
+    window.history.replaceState(null,'',url);
+  }
   function save(p){persistProject(p);state.projects[p.id]=p;state.activeProject=p.id;return p;}
   function show(){
     const p=current();
@@ -36,7 +46,7 @@ export function createProjectUI({state,put,render,notice}){
         esc(JSON.stringify(JSON.parse(m.note.slice('GROUNDING_FIXTURES_V1:'.length)),null,2))+'</pre></details>').join('');
     }
   }
-  function select(id){if(!state.projects[id])throw Error('Project not found');state.activeProject=id;state.view='project';state.draft=null;render();}
+  function select(id){if(!state.projects[id])throw Error('Project not found');state.activeProject=id;state.view='project';state.draft=null;route();render();}
   function prepareThread(x){
     const p=current();
     if(!p)throw Error('Select a project');
@@ -44,7 +54,7 @@ export function createProjectUI({state,put,render,notice}){
   }
   function submit(form,values){
     if(form.id==='new-project'){
-      save(newProject(values.get('name').trim()));state.view='project';render();return true;
+      save(newProject(values.get('name').trim()));state.view='project';route();render();return true;
     }
     if(form.id==='project-grounding-form'){
       const p=current(),next=updateFixtures(p,fixtureInput(form));
@@ -63,11 +73,11 @@ export function createProjectUI({state,put,render,notice}){
     return false;
   }
   async function action(name){
-    if(name==='projects'){state.view='projects';state.activeProject=null;state.draft=null;render();return true;}
-    if(name==='project'){state.view='project';state.draft=null;render();return true;}
-    if(name==='project-grounding'){state.view='project-grounding';state.draft=null;render();return true;}
+    if(name==='projects'){state.view='projects';state.activeProject=null;state.draft=null;route();render();return true;}
+    if(name==='project'){state.view='project';state.draft=null;route();render();return true;}
+    if(name==='project-grounding'){state.view='project-grounding';state.draft=null;route();render();return true;}
     if(name==='back'){state.view=state.activeProject?'project':'projects';
-      state.draft=null;state.editor=null;render();return true;}
+      state.draft=null;state.editor=null;route();render();return true;}
     if(name==='copy-project-grounding'){
       const text=projectGroundingText(current(),fixtureInput($('#project-grounding-form')));
       try{await navigator.clipboard.writeText(text);notice('Project grounding copied. Copy does not send.');}
@@ -117,6 +127,6 @@ export function createProjectUI({state,put,render,notice}){
       const status=$('.grounding-status');if(status)status.textContent='Unsaved device draft';
     }catch(e){notice('Project grounding draft storage failed: '+e.message+'. Copy before leaving.');}
   });
-  return {current,save,show,select,prepareThread,submit,action,discover,
+  return {current,save,show,select,prepareThread,submit,action,discover,route,
     projectForActive:()=>state.active?projectForThread(state.active,state.projects):null};
 }
