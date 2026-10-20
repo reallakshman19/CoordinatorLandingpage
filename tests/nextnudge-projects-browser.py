@@ -97,7 +97,6 @@ def test_navigation(page):
     # Preserve the successfully built G1 Task using its correct bound agent.
     page.locator('#sent-confirm input[name="agent"]').fill("Agent One")
     page.locator('#sent-confirm button[type="submit"]').click()
-    page.locator("#composer").wait_for(state="attached")
     # Project Master Log reads original records; it creates no second Task record.
     page.locator('[data-action="project"]').first.click()
     page.locator('[data-action="master-log"]').click()
@@ -115,6 +114,7 @@ def test_navigation(page):
     page.locator('[data-action="master-log"]').click()
     page.get_by_role("heading", name="Master Log · Project B", exact=True).wait_for()
     assert page.locator(".master-log-item").count() == 0
+    page.locator('[data-action="project"]').first.click()
     page.locator('[data-action="projects"]').first.click()
     page.get_by_role("button", name="Project A", exact=False).click()
     page.locator('button[data-open]').filter(has_text="Agent One").first.click()
