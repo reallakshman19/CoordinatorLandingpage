@@ -274,7 +274,14 @@ async function init(){
     try{const r=await fetch('../nextnudge-data/threads/'+NLM+'.md');
       if(r.ok){const seed=parse(await r.text());put(seed);}}catch{}
   }
-  const requested=new URLSearchParams(window.location.search).get('thread');
+  const params=new URLSearchParams(window.location.search);
+  const project=params.get('project');
+  if(project&&state.projects[project]){
+    state.activeProject=project;
+    state.view=params.get('projectView')==='grounding'?'project-grounding':'project';
+    return render();
+  }
+  const requested=params.get('thread');
   if(requested){
     try{if(!state.threads[requested]){const remote=await readRemote(requested);if(remote.thread)put(remote.thread);}
       if(state.threads[requested]){
