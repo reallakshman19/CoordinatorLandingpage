@@ -71,17 +71,17 @@ export function applyDelta(remote,packet) {
   return serialize(validate({...packet.header,moves:packet.moves}));
 }
 export async function issueUrl(packet,kind='nextnudge-thread-save') {
-  if(!['nextnudge-thread-save','nextnudge-thread-action'].includes(kind))throw Error('Unknown Owner request kind');
+  if(!['nextnudge-thread-save','nextnudge-thread-action','nextnudge-project-save'].includes(kind))throw Error('Unknown Owner request kind');
   assertPublic(packet);
   if(typeof CompressionStream!=='function')throw Error('Browser gzip unavailable; export draft');
   const stream=new Blob([JSON.stringify(packet)]).stream().pipeThrough(new CompressionStream('gzip'));
   const bytes=new Uint8Array(await new Response(stream).arrayBuffer());
   let binary='';for(let i=0;i<bytes.length;i+=8192)binary+=String.fromCharCode(...bytes.subarray(i,i+8192));
   const b64=btoa(binary),fence=String.fromCharCode(96).repeat(3);
-  const body='NextNudge v3 single-thread append (Owner review required).\n\n'+
+  const body=(kind==='nextnudge-project-save'?'NextNudge project fixtures and membership (Owner review required).\n\n':'NextNudge v3 single-thread append (Owner review required).\n\n')+
     fence+kind+'\n'+b64+'\n'+fence;
   const url='https://github.com/'+REPO+'/issues/new?labels=nextnudge-save&title='+
-    encodeURIComponent('NextNudge thread '+packet.id)+'&body='+encodeURIComponent(body);
+    encodeURIComponent('NextNudge '+(kind==='nextnudge-project-save'?'project ':'thread ')+packet.id)+'&body='+encodeURIComponent(body);
   if(url.length>LIMIT)throw Error('Save URL '+url.length+' characters exceeds one-click limit '+LIMIT+'. Draft retained; split the next packet.');
   return url;
 }
