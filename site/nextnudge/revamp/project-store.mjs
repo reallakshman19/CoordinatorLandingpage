@@ -1,5 +1,5 @@
 import {validateProject,PROJECT_ID,assertAppendOnly} from './project-model.mjs';
-import {REPO,issueUrl} from './save.mjs';
+import {REPO,issueUrl,issueBody} from './save.mjs';
 const ROOT='site/nextnudge-data/projects/';
 const LOCAL='nextnudge.projects.v1',SHAS='nextnudge.projects.sha.v1';
 const readKey=key=>{try{return JSON.parse(localStorage.getItem(key)||'{}');}catch{return {};}};
@@ -56,6 +56,15 @@ export async function prepareProjectSave(project){
   if(remote.sha!==known)throw Error('NEEDS RELOAD: GitHub project changed. Device draft retained.');
   assertAppendOnly(remote.project,project);
   const packet={v:1,id:project.id,baseSha:remote.sha,project};
-  const url=await issueUrl(packet,'nextnudge-project-save');
-  return {url,chars:url.length,packet};
+  try{
+    const url=await issueUrl(packet,'nextnudge-project-save');
+    return {url,chars:url.length,packet,manual:false};
+  }catch(e){
+    if(!/exceeds one-click limit/.test(e.message))throw e;
+    const body=await issueBody(packet,'nextnudge-project-save');
+    if(body.length>65000)throw Error('Project snapshot exceeds GitHub issue-body limit. Device draft retained; export and request a reviewed source-file save.');
+    const url='https://github.com/'+REPO+'/issues/new?labels=nextnudge-save&title='+
+      encodeURIComponent('NextNudge project '+packet.id);
+    return {url,chars:url.length,packet,manual:true,body};
+  }
 }
