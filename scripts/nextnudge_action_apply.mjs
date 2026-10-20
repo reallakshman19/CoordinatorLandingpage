@@ -5,6 +5,7 @@ import {ownerIssue} from './nextnudge_thread_apply.mjs';
 import {parse,serialize,assertPublic} from '../site/nextnudge/revamp/thread.mjs';
 import {applyDelta,ROOT,REPO,safeId} from '../site/nextnudge/revamp/save.mjs';
 import {sendNudge,fetchReturn,targetOf,sentTarget} from '../site/nextnudge/revamp/transport.mjs';
+import {checkManagedSend,loadRemoteProjects} from './nextnudge_project_guard.mjs';
 const SHA=/^[a-f0-9]{40}$/;
 export function unpackAction(body){
   if(typeof body!=='string'||body.length>100000)throw Error('Invalid action body');
@@ -22,7 +23,7 @@ export function unpackAction(body){
     !Array.isArray(request.delta.moves)||request.delta.moves.length>50)throw Error('Invalid thread delta');
   targetOf(request.target);assertPublic(request);return request;
 }
-export async function applyAction({issue,owner,read,write,listComments,postComment,comment,close}){
+export async function applyAction({issue,owner,read,write,listComments,postComment,comment,close,projects={}}){
   if(!ownerIssue(issue,owner))return 'IGNORED';
   let result='REJECTED',message,delivered='';
   try{
@@ -32,6 +33,9 @@ export async function applyAction({issue,owner,read,write,listComments,postComme
     const api={listComments,postComment};
     let move;
     if(request.operation==='send'){
+      checkManagedSend(thread,request.target.agent,projects);
+      if(request.move?.agent?.trim().toLowerCase()!==request.target.agent.trim().toLowerCase())
+        throw Error('Target agent and recorded sent agent differ');
       move=await sendNudge(thread,request.move,request.target,api);delivered=move.evidence;
     }else{
       const sent=thread.moves.find(m=>m.id===request.moveId&&m.delivery==='sent');
@@ -80,7 +84,8 @@ export async function main(){
   const event=JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH,'utf8')),number=event.issue?.number;
   if(!Number.isSafeInteger(number))throw Error('Missing Owner request issue');
   const issue=await api('issues/'+number);
-  return applyAction({issue,owner:REPO.split('/')[0],
+  const projects=await loadRemoteProjects(api);
+  return applyAction({issue,owner:REPO.split('/')[0],projects,
     read:async path=>{const x=await api('contents/'+path+'?ref=main');
       if(!x)return null;
       if(!SHA.test(x.sha)||x.encoding!=='base64')throw Error('Invalid source file');
