@@ -23,10 +23,10 @@ const intent=()=>activeIntent(t());
 const notice=s=>{state.message=s;$('#notice').textContent=s;};
 const emptyMove=(id,kind)=>({id,kind,delivery:'draft',packet:'',returnLine:'',digest:'',
   evidence:'',gap:'',decision:'',archive:'',note:''});
+const projects=createProjectUI({state,put,render,notice});
 function put(thread) {
   validate(thread);state.threads[thread.id]=thread;persist(thread);state.active=thread.id;
 }
-const projects=createProjectUI({state,put,render,notice});
 function renderThreads(){ $('#panel').innerHTML=threadsMarkup(state.threads); }
 function renderThread() {
   const x=t(),i=intent(),last=x.moves.at(-1),hold=!!i.hold;
