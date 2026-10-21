@@ -8,5 +8,5 @@ handover_readiness: READY
 report_path: agents/PR137_workreport.md
 report_basis_head: 8248342b0c631e3f811cf847b53524f90eda57da
 main_head_last_checked: 4637f83b7cb4dcf48fafa9db98852a1332416ab9
-blocker: Actual PR-app browser/mobile QA and requested local CLI suites NOT_RUN here (checkout/network unavailable); independent review NOT_RUN; final-head CI recheck required.
-exact_next_action: Oracle inspect Agent 1 repair/report; obtain full PR-app browser and CLI-suite evidence in checkout-capable environment, then independent exact-head review and CI reconciliation; no merge.
+blocker: Actual PR-app browser/mobile QA and four local CLI suites NOT_RUN (no exact checkout/dependencies; git transport DNS failure); independent review NOT_RUN. Hosted 39/39 SUCCESS at pre-documentation head a32f3308a4863e307b03ce5d60b6fd116b285b86; recheck newly advanced exact HEAD.
+exact_next_action: Oracle challenge count-repair claim and surviving-error adequacy; obtain exact-head full checkout, run four specified CLI suites and real PR-app 1280/390/320 browser journeys through an actually capable verifier, then independent review. No merge, deployment or Agent 2 assignment.
