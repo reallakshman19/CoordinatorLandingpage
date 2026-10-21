@@ -784,6 +784,8 @@ tr:hover td { background: var(--bg-2); }
 .pp-obody { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .pp-steps { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 3px; }
 .pp-replybox { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.pp-sendrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.pp-sendhint { font-size: .75rem; color: var(--text-2); }
 .pp-reply { margin: 0; padding: 8px 10px; width: 100%; background: var(--bg); border: 1px dashed var(--text-3); border-radius: var(--radius); }
 .pp-tw { border: 1px solid var(--border); border-radius: var(--radius); }
 .pp-table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: .82rem; }
