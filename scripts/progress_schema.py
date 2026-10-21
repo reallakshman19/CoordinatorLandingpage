@@ -115,11 +115,11 @@ def validate(value, schema, at="$"):
 def scan_forbidden(raw, private):
     """Return forbidden-content findings; private relaxes only ChatGPT links."""
     bad = []
-    if re.search(r"drive\\.google\\.com|docs\\.google\\.com", raw):
+    if re.search(r"drive\.google\.com|docs\.google\.com", raw):
         bad.append("contains a Google Drive link")
-    if re.search(r"[\\w.+-]+@[\\w-]+\\.[\\w.]+", raw):
+    if re.search(r"[\w.+-]+@[\w-]+\.[\w.]+", raw):
         bad.append("contains an email address")
-    if not private and re.search(r"chatgpt\\.com/c/|chat\\.openai\\.com", raw):
+    if not private and re.search(r"chatgpt\.com/c/|chat\.openai\.com", raw):
         bad.append("contains a ChatGPT chat link (public repo: id8 only)")
     return bad
 
