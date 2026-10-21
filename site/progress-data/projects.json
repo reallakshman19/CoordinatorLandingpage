@@ -1,0 +1,7 @@
+{
+  "schema": 2,
+  "note": "One entry per sub-tab of the Progress page. key = folder name under site/progress-data/. project = the value sent in the Owner Reply form (defaults to key).",
+  "projects": [
+    { "key": "g9v35", "label": "G9v3.5 Pilot Progress", "project": "g9v35", "order": 1 }
+  ]
+}

@@ -1,6 +1,6 @@
 /**
  * progress_page.js — "Progress page" tab: one sub-tab per project progress view.
- * Today there is one: "G9v3.5 Pilot Progress". It holds the children (topics) of the pilot, for example
+ * The sub-tabs are listed in site/progress-data/projects.json (today one: "G9v3.5 Pilot Progress"); adding a project needs no code change. It holds the children (topics) of the pilot, for example
  * "G9v3.5 Physics pilot-NLM", plus the shared tooling. Each topic has three views:
  * My actions (what the Owner must do), Progress (milestones and stages) and Grounding fixtures.
  * An Overview shows every topic side by side.
@@ -17,9 +17,23 @@
 
 'use strict';
 
-const PP_PAGES = [
+// The sub-tabs come from progress-data/projects.json; this entry is only the fallback if that file cannot be read.
+const PP_DEFAULT_PAGES = [
   { key: 'g9v35', label: 'G9v3.5 Pilot Progress', project: 'g9v35', data: 'progress-data/g9v35' },
 ];
+async function ppPages() {
+  try {
+    const r = await fetch('progress-data/projects.json', { cache: 'no-cache' });
+    if (!r.ok) throw new Error(String(r.status));
+    const j = await r.json();
+    const list = (j.projects || [])
+      .filter(p => p && /^[a-z0-9][a-z0-9-]*$/.test(p.key || '') && p.label)
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
+      .map(p => ({ key: p.key, label: p.label, project: p.project || p.key, data: `progress-data/${p.key}` }));
+    if (list.length) return list;
+  } catch { /* use the fallback below */ }
+  return PP_DEFAULT_PAGES;
+}
 const PP_SITE = 'https://reallakshman19.github.io/CoordinatorLandingpage/';
 const PP_POLL_MS = 120000;
 const PP_VIEWS = [['actions', 'My actions'], ['progress', 'Progress'], ['fixtures', 'Grounding fixtures']];
@@ -647,7 +661,8 @@ function ppDrawProject(body, page, topic, view, st) {
 
 async function renderProgressPage(app, pageKey, a2, a3) {
   if (ppState.timer) { clearInterval(ppState.timer); ppState.timer = null; }
-  const page = PP_PAGES.find(p => p.key === pageKey) || PP_PAGES[0];
+  const pages = await ppPages();
+  const page = pages.find(p => p.key === pageKey) || pages[0];
   const isView = v => PP_VIEWS.some(x => x[0] === v);
   let topic = 'overview', view = 'actions';
   if (a2 && !isView(a2)) { topic = a2; view = isView(a3) ? a3 : 'actions'; }   // an old link with only a view opens the overview
@@ -658,7 +673,7 @@ async function renderProgressPage(app, pageKey, a2, a3) {
   const subtabs = el('div', 'pp-subtabs');
   subtabs.setAttribute('role', 'tablist');
   subtabs.setAttribute('aria-label', 'Progress pages');
-  PP_PAGES.forEach(p => {
+  pages.forEach(p => {
     const b = el('button', 'pp-subtab' + (p === page ? ' active' : ''), p.label);
     b.type = 'button';
     b.setAttribute('role', 'tab');

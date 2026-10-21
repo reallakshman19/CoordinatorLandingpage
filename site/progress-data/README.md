@@ -1,11 +1,15 @@
 # Progress data
 
+Full guide for agents (formats, rules, how to add a topic or a project): [docs/PROGRESS_PAGE.md](../../docs/PROGRESS_PAGE.md).
+Validate before every commit: `python scripts/check_progress_data.py`.
+
 JSON files behind the landing page tab **Progress page**. One folder per project, one sub-folder per topic
 (a child of the project, for example `nlm` = "G9v3.5 Physics pilot-NLM", `m1d` = Motion in 1D).
 
 ```
 site/progress-data/
   README.md
+  projects.json              the sub-tabs of the Progress page (add a project here)
   <project>/                 e.g. g9v35
     index.json               project title, last write time, chat ids (id8 only), list of topics
     <topic>/                 e.g. nlm, shared, m1d
