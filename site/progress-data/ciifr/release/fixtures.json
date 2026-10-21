@@ -56,6 +56,16 @@
   ],
   "inputs": [
     {
+      "t": "REQUIRED FIRST — every new or resumed standalone agent reads this topic's Grounding fixtures AND the Engineering Relay Protocol before testing, editing or dispatch. Post a source/head/authority/independence onboarding receipt on the owning GitHub task.",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/blob/main/docs/STANDALONE_ORACLE_PROGRESS_PROTOCOL.md",
+      "n": "Grounding receipt is a prerequisite, not permission. Keep relevant private materials out of public GitHub."
+    },
+    {
+      "t": "Engineering relay audit ledger — complete page-change record from an explicit public baseline, with source-backed handoffs, findings, improvements and stage transitions.",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/blob/main/site/progress-data/ciifr/audit.json",
+      "n": "The initial record is only a published-state baseline, not reconstructed earlier agent execution."
+    },
+    {
       "t": "Authoritative current work packet and engineering scope",
       "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139"
     }
@@ -68,6 +78,11 @@
     }
   ],
   "pending": [
+    {
+      "t": "Release is an Owner decision after independent three-engine, Config, original-file and true served-browser qualification; no standalone page badge authorizes production tile replacement.",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139",
+      "s": "waiting"
+    },
     {
       "t": "Next actor must produce actual implementation/review receipts, not infer them from an open issue",
       "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139",

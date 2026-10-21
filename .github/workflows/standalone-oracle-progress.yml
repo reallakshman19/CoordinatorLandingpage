@@ -1,0 +1,38 @@
+name: Standalone Oracle Progress — evidence and relay validation
+
+on:
+  pull_request:
+    paths:
+      - 'site/progress-data/**'
+      - 'site/js/progress_page.js'
+      - 'scripts/check_progress_data.py'
+      - 'scripts/standalone_oracle_relay.py'
+      - 'tests/test_standalone_oracle_relay.py'
+      - 'docs/STANDALONE_ORACLE_PROGRESS_PROTOCOL.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  read-only-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate page JSON and chained standalone relay stages
+        run: python scripts/check_progress_data.py
+      - name: Validate declared audit
+        run: python scripts/standalone_oracle_relay.py check --project ciifr
+      - name: Adversarial standalone relay regressions
+        run: python -m unittest tests.test_standalone_oracle_relay -v
+      - name: Verify reader JavaScript syntax
+        run: node --check site/js/progress_page.js

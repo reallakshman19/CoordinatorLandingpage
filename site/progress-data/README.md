@@ -1,6 +1,10 @@
 # Progress data
 
 Full guide for agents (formats, rules, how to add a topic or a project): [docs/PROGRESS_PAGE.md](../../docs/PROGRESS_PAGE.md).
+Standalone projects with `"mode": "standalone-oracle"` follow the
+[Standalone Oracle Engineering Relay Protocol](../../docs/STANDALONE_ORACLE_PROGRESS_PROTOCOL.md).
+**Agents read the Grounding fixture before starting, and record the actual
+onboarding receipt.** This is Owner ↔ Oracle, not Coordinator/OTM.
 Validate before every commit: `python scripts/check_progress_data.py`.
 
 JSON files behind the landing page tab **Progress page**. One folder per project, one sub-folder per topic
@@ -23,6 +27,7 @@ site/progress-data/
 `repository`, `issues`, `pullRequests`, `roadmap`, `highRoi`, `future` (Project sources) and
 `intent`, `inputs`, `knownIssues`, `pending` (Starting context).
 
-**Written by OTM** (the Owner's teammate session) at each event; do not edit by hand. The page fetches the files again
+**Written by OTM** in Coordinator mode. In standalone mode, the designated
+Oracle maintains each topic through auditable, Owner-reviewable PRs. The page fetches the files again
 every two minutes. The repository is public: chat ids are id8 only, and no ChatGPT chat link, Drive link or private
 file text belongs here. A new topic is a new folder with the four files plus an entry in `index.json`.

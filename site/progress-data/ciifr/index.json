@@ -4,8 +4,8 @@
     "key": "ciifr",
     "title": "CII Find & Replace VNext",
     "subtitle": "Standalone three-engine qualification, Config policy and Owner-gated replacement of the current tile",
-    "updatedAt": "2026-10-21T16:12:11Z",
-    "updatedBy": "Oracle — initial public-safe project snapshot",
+    "updatedAt": "2026-10-21T17:38:11Z",
+    "updatedBy": "Standalone Oracle protocol proposal — not yet adopted",
     "staleAfterMin": 1440
   },
   "chats": {},
@@ -15,35 +15,35 @@
       "label": "Normal / Writer",
       "title": "Normal Find & Replace and common writer",
       "order": 1,
-      "updatedAt": "2026-10-21T16:12:11Z"
+      "updatedAt": "2026-10-21T17:38:11Z"
     },
     {
       "key": "line-node",
       "label": "Line + Node",
       "title": "Independent Line Number + Node Name matcher",
       "order": 2,
-      "updatedAt": "2026-10-21T16:12:11Z"
+      "updatedAt": "2026-10-21T17:38:11Z"
     },
     {
       "key": "geometry",
       "label": "Geometry",
       "title": "Signed graph, branch identity and atomic T1",
       "order": 3,
-      "updatedAt": "2026-10-21T16:12:11Z"
+      "updatedAt": "2026-10-21T17:38:11Z"
     },
     {
       "key": "config-review",
       "label": "Config / Review",
       "title": "P1/P2/F01/F02 policy and independent safety review",
       "order": 4,
-      "updatedAt": "2026-10-21T16:12:11Z"
+      "updatedAt": "2026-10-21T17:38:11Z"
     },
     {
       "key": "release",
       "label": "Integration / Release",
       "title": "Standalone assembly and Owner release",
       "order": 5,
-      "updatedAt": "2026-10-21T16:12:11Z"
+      "updatedAt": "2026-10-21T17:38:11Z"
     }
   ]
 }
