@@ -1,27 +1,43 @@
 /**
  * progress_page.js — "Progress page" tab: one sub-tab per project progress view.
- * Today there is one: "G9v3.5 Pilot Progress", with two views, "My actions" and "Progress".
+ * Today there is one: "G9v3.5 Pilot Progress". It holds the children (topics) of the pilot, for example
+ * "G9v3.5 Physics pilot-NLM", plus the shared tooling. Each topic has three views:
+ * My actions (what the Owner must do), Progress (milestones and stages) and Grounding fixtures.
+ * An Overview shows every topic side by side.
  *
- * Data: the body of a GitHub issue (a ```json block that OTM rewrites at each event), read live
- * from the browser, so a change shows within a couple of minutes without a Pages deploy.
+ * Data: GitHub issue bodies (a ```json block that OTM rewrites at each event): one index issue that lists
+ * the topics, and one issue per topic. Read live from the browser, so a change shows within a couple of
+ * minutes without a Pages deploy.
  * Public repository: chat ids appear as id8 only and no ChatGPT chat is ever linked.
- * Read-only: this view never posts, accepts or changes a stage. Replies are copied, not sent.
- * Routes: #progress-page, #progress-page/g9v35, #progress-page/g9v35/progress
+ * Read-only: this view never posts or changes a stage. "Send to OTM" (and the + and - on a fixture) only
+ * open GitHub's Owner Reply form with text filled in; the Owner submits it.
+ * Routes: #progress-page, #progress-page/<page>, #progress-page/<page>/<topic>[/<view>]
+ *   topic: overview (default) or a topic key; view: actions | progress | fixtures
  */
 
 'use strict';
 
 const PP_PAGES = [
-  { key: 'g9v35', label: 'G9v3.5 Pilot Progress', issue: 138, project: 'g9v35' },
+  { key: 'g9v35', label: 'G9v3.5 Pilot Progress', issue: 141, project: 'g9v35' },
 ];
 const PP_SITE = 'https://reallakshman19.github.io/CoordinatorLandingpage/';
 const PP_POLL_MS = 120000;
-const PP_FRESH_MS = 60000;
+const PP_VIEWS = [['actions', 'My actions'], ['progress', 'Progress'], ['fixtures', 'Grounding fixtures']];
+const PP_FIX_LEFT = [
+  ['repository', 'Repository / project link'], ['issues', 'Issue / assignment links'],
+  ['pullRequests', 'Pull request / candidate links'], ['roadmap', 'Roadmap / governing documents'],
+  ['highRoi', 'High ROI: proposed and implemented'], ['future', 'Future improvements'],
+];
+const PP_FIX_RIGHT = [
+  ['intent', 'Owner intent'], ['inputs', 'Other inputs, files and source notes'],
+  ['knownIssues', 'Known issues'], ['pending', 'Pending items'],
+];
 const PP_SYM = { VERIFIED: '✓', SUBMITTED: '↑', IN_PROGRESS: '◐', BLOCKED: '!', NOT_STARTED: '○', STALE: '↻', UNKNOWN: '?', NOT_APPLICABLE: '–', PARTIAL: '◑' };
 const PP_CLS = { VERIFIED: 'pp-ok', SUBMITTED: 'pp-sbm', IN_PROGRESS: 'pp-wip', BLOCKED: 'pp-blk', NOT_STARTED: 'pp-idle', STALE: 'pp-wip', UNKNOWN: 'pp-idle', NOT_APPLICABLE: 'pp-idle', PARTIAL: 'pp-sbm' };
+const PP_FIX_CLS = { implemented: 'pp-ok', proposed: 'pp-sbm', open: 'pp-blk', waiting: 'pp-idle', planned: 'pp-idle' };
 const PP_LABELS = [['who', 'Who'], ['do', 'Do'], ['why', 'Why'], ['files', 'Files'], ['status', 'Status'], ['still', 'Still current'], ['waits', 'Waits for'], ['result', 'Result'], ['done', 'Done when'], ['next', 'Next']];
 const PP_NUMWORD = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
-const ppState = { timer: null, cache: {}, drawnKey: {} };
+const ppState = { timer: null, bundle: null, drawnSig: '' };
 
 // ── helpers ───────────────────────────────────────────────
 function ppRich(node, text) {
@@ -62,24 +78,56 @@ function ppRollup(states) {
   if (states.every(s => s === 'NOT_STARTED')) return 'NOT_STARTED';
   return 'PARTIAL';
 }
+function ppMilestones(P) {
+  const stages = ppList(P.stages);
+  return ppList((P.topic || {}).milestones).map(m => {
+    const its = stages.filter(s => s.milestone === m.id);
+    return Object.assign({}, m, { state: ppRollup(its.map(s => s.state)), total: its.length,
+      ok: its.filter(s => s.state === 'VERIFIED').length });
+  });
+}
+function ppOpenActions(P) { return ppList(P.actions).filter(a => a.status === 'open'); }
 
 // ── data ──────────────────────────────────────────────────
-async function ppLoad(page) {
-  const cached = ppState.cache[page.key];
-  if (cached && Date.now() - cached.fetchedAt < PP_FRESH_MS) return cached;
-  const r = await fetch(`https://api.github.com/repos/${REPO}/issues/${page.issue}`,
-    { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' });
+async function ppIssue(number) {
+  const r = await fetch(`https://api.github.com/repos/${REPO}/issues/${number}`,
+    { headers: { Accept: 'application/vnd.github+json' } });
   if (!r.ok) {
     throw new Error(r.status === 403 || r.status === 429
-      ? 'GitHub is limiting requests from this network; it retries by itself' : `GitHub answered ${r.status}`);
+      ? 'GitHub is limiting requests from this network; it retries by itself' : `GitHub answered ${r.status} for issue ${number}`);
   }
   const issue = await r.json();
   const m = /```json\s*([\s\S]*?)```/.exec(issue.body || '');
-  if (!m) throw new Error('the data issue has no JSON block yet');
-  const data = JSON.parse(m[1]);
-  const result = { data, fetchedAt: Date.now(), issueUpdated: issue.updated_at };
-  ppState.cache[page.key] = result;
-  return result;
+  if (!m) throw new Error(`issue ${number} has no JSON block yet`);
+  return { data: JSON.parse(m[1]), updated: issue.updated_at };
+}
+async function ppBundle(page) {
+  const idx = await ppIssue(page.issue);
+  const topics = {}, errors = {};
+  let sig = idx.updated;
+  await Promise.all((idx.data.topics || []).filter(t => t.issue).map(async t => {
+    try { const r = await ppIssue(t.issue); topics[t.key] = r.data; sig += '|' + r.updated; }
+    catch (e) { errors[t.key] = e.message; }
+  }));
+  return { index: idx.data, topics, errors, sig: sig + '|' + Object.keys(errors).join(',') };
+}
+
+// ── Send to OTM: opens the Owner Reply form on GitHub, prefilled ──
+// Nothing is posted from this page and no token is involved. The Owner ticks "I am the Owner" and submits.
+function ppSendUrl(ctx, text) {
+  const type = ctx.type || 'DECISION';
+  const label = ctx.label || `${type} ${ctx.topic ? ctx.topic + ':' : ''}${ctx.card}/${ctx.option}`;
+  const params = new URLSearchParams({
+    template: 'owner-reply.yml',
+    title: `[Owner input] ${label} (${ctx.project})`,
+    labels: 'owner-input',
+    project: ctx.project,
+    target: 'OwnerTeammember',
+    type,
+    text,
+    evidence_link: `${PP_SITE}#progress-page/${ctx.page}/${ctx.topic || 'overview'}/${ctx.view || 'actions'}`,
+  });
+  return `${NEW_ISSUE_BASE}?${params}`;
 }
 
 // ── shared pieces ─────────────────────────────────────────
@@ -98,21 +146,6 @@ function ppTable(t) {
   tb.appendChild(body);
   wrap.appendChild(tb);
   return wrap;
-}
-// "Send to OTM" opens the existing Owner Input issue form with the reply filled in. The Owner ticks
-// "I am the Owner" and submits; nothing is posted from this page, and no token is involved.
-function ppSendUrl(ctx, text) {
-  const params = new URLSearchParams({
-    template: 'owner-reply.yml',
-    title: `[Owner input] DECISION ${ctx.card}/${ctx.option} (${ctx.project})`,
-    labels: 'owner-input',
-    project: ctx.project,
-    target: 'OwnerTeammember',
-    type: 'DECISION',
-    text,
-    evidence_link: `${PP_SITE}#progress-page/${ctx.page}/actions`,
-  });
-  return `${NEW_ISSUE_BASE}?${params}`;
 }
 function ppReplyBox(text, ctx) {
   const w = el('div', 'pp-replybox');
@@ -137,14 +170,14 @@ function ppReplyBox(text, ctx) {
     a.href = ppSendUrl(ctx, text);
     a.target = '_blank';
     a.rel = 'noopener noreferrer';
-    a.title = 'Opens GitHub with this reply filled in the Owner Input form';
+    a.title = 'Opens GitHub with this reply filled in the Owner Reply form';
     row.appendChild(a);
     row.appendChild(el('span', 'pp-sendhint', 'Opens GitHub with this reply filled in. Tick "I am the Owner", then Submit new issue.'));
   }
   w.appendChild(pre); w.appendChild(row);
   return w;
 }
-function ppOption(o, a, page) {
+function ppOption(o, a, ctx) {
   const d = el('div', 'pp-opt' + (o.suggested ? ' pp-rec' : ''));
   const lab = el('div', 'pp-olabel');
   lab.appendChild(el('b', '', o.label || o.key));
@@ -157,14 +190,15 @@ function ppOption(o, a, page) {
     o.steps.forEach(s => ol.appendChild(ppRich(el('li'), s)));
     body.appendChild(ol);
   }
-  if (o.reply) body.appendChild(ppReplyBox(o.reply, { card: a.id, option: o.key, project: page.project, page: page.key }));
+  if (o.reply) body.appendChild(ppReplyBox(o.reply, Object.assign({}, ctx, { card: a.id, option: o.key })));
   d.appendChild(body);
   return d;
 }
-function ppActionCard(a, page) {
+function ppActionCard(a, ctx, tag) {
   const c = el('article', 'card pp-dcard');
-  c.id = 'pp-act-' + a.id;
+  c.id = `pp-act-${ctx.topic || 'x'}-${a.id}`;
   const head = el('div', 'pp-dhead');
+  if (tag) head.appendChild(el('span', 'pp-topicchip', tag));
   (a.stages || []).forEach(s => head.appendChild(el('span', 'pp-sid', s)));
   head.appendChild(el('span', 'pp-who pp-you', 'YOU'));
   head.appendChild(el('h3', '', a.title || a.id));
@@ -172,7 +206,7 @@ function ppActionCard(a, page) {
   if (a.lead) c.appendChild(ppRich(el('p', 'pp-lead'), a.lead));
   (a.tables || []).forEach(t => c.appendChild(ppTable(t)));
   if (a.ask) c.appendChild(ppRich(el('p', 'pp-ask'), a.ask));
-  (a.options || []).forEach(o => c.appendChild(ppOption(o, a, page)));
+  (a.options || []).forEach(o => c.appendChild(ppOption(o, a, ctx)));
   if (a.links && a.links.length) {
     const n = el('p', 'note', 'Links: ');
     a.links.forEach((l, i) => { if (i) n.appendChild(document.createTextNode(', ')); n.appendChild(ppLink(l.u, l.l)); });
@@ -180,7 +214,7 @@ function ppActionCard(a, page) {
   }
   return c;
 }
-function ppAllCard(open, page) {
+function ppAllCard(open, ctx) {
   const parts = [];
   open.forEach(a => {
     const o = (a.options || []).find(x => x.suggested);
@@ -191,7 +225,7 @@ function ppAllCard(open, page) {
   const c = el('article', 'card pp-dcard pp-all');
   c.appendChild(el('h3', '', `Answer all ${word} at once`));
   c.appendChild(el('p', 'pp-lead', 'This joins the suggested reply of each open card. Fill any square brackets, then send it to OTM.'));
-  c.appendChild(ppReplyBox(`All ${word}: ${parts.join(' ')}`, { card: 'ALL', option: 'suggested', project: page.project, page: page.key }));
+  c.appendChild(ppReplyBox(`All ${word}: ${parts.join(' ')}`, Object.assign({}, ctx, { card: 'ALL', option: 'suggested' })));
   return c;
 }
 function ppPlainList(items) {
@@ -200,26 +234,26 @@ function ppPlainList(items) {
   return ul;
 }
 
-// ── view 1: My actions ────────────────────────────────────
-function ppDrawActions(root, D, page) {
-  const acts = ppList(D.actions);
-  const open = acts.filter(a => a.status === 'open');
-  const done = acts.filter(a => a.status === 'done');
+// ── topic view 1: My actions ──────────────────────────────
+function ppDrawActions(root, page, topicKey, P) {
+  const ctx = { project: page.project, page: page.key, topic: topicKey, view: 'actions' };
+  const open = ppOpenActions(P);
+  const done = ppList(P.actions).filter(a => a.status === 'done');
   const sec = el('div', 'pp-sec');
   sec.appendChild(el('h2', '', 'Do now'));
   if (!open.length) {
-    sec.appendChild(el('div', 'pp-empty', 'Nothing waits on you right now. When an agent or OTM needs a decision, it appears here with the files involved and a reply to copy.'));
+    sec.appendChild(el('div', 'pp-empty', 'Nothing waits on you in this topic. When an agent or OTM needs a decision, it appears here with the files involved and a reply to copy.'));
   } else {
-    sec.appendChild(el('p', 'pp-intro', `${open.length} open. Each card says what to reply. Paste your reply in the chat with OTM, and OTM records it and moves the work on.`));
-    open.forEach(a => sec.appendChild(ppActionCard(a, page)));
-    const all = ppAllCard(open, page);
+    sec.appendChild(el('p', 'pp-intro', `${open.length} open. Each card says what to reply. Paste your reply in the chat with OTM, or use Send to OTM, and OTM records it and moves the work on.`));
+    open.forEach(a => sec.appendChild(ppActionCard(a, ctx)));
+    const all = ppAllCard(open, ctx);
     if (all) sec.appendChild(all);
   }
   root.appendChild(sec);
 
   const covered = {};
   open.forEach(a => (a.stages || []).forEach(s => { covered[s] = true; }));
-  const coming = ppList(D.stages).filter(s => s.actor === 'YOU' && s.state !== 'VERIFIED' && !covered[s.id]);
+  const coming = ppList(P.stages).filter(s => s.actor === 'YOU' && s.state !== 'VERIFIED' && !covered[s.id]);
   if (coming.length) {
     const cs = el('div', 'pp-sec');
     cs.appendChild(el('h2', '', 'Coming up for you'));
@@ -255,7 +289,7 @@ function ppDrawActions(root, D, page) {
   }
 }
 
-// ── view 2: Progress ──────────────────────────────────────
+// ── topic view 2: Progress ────────────────────────────────
 function ppRow(s, chats) {
   const li = el('li', 'pp-row ' + (PP_CLS[s.state] || 'pp-idle'));
   li.id = 'pp-row-' + s.id;
@@ -310,30 +344,31 @@ function ppLaneCard(ln, stages, chats) {
   c.appendChild(ul);
   return c;
 }
-function ppDrawProgress(root, D) {
-  const stages = ppList(D.stages);
-  if (!stages.length) { root.appendChild(el('div', 'pp-empty', 'OTM has not written the stage list yet.')); return; }
+function ppMilestoneCard(m) {
+  const card = el('div', 'pp-mcard ' + (PP_CLS[m.state] || 'pp-idle'));
+  card.setAttribute('role', 'listitem');
+  if (m.full) card.title = m.full;
+  const mh = el('div', 'pp-mh');
+  const ic = el('span', 'pp-mic', PP_SYM[m.state] || '?');
+  ic.setAttribute('aria-hidden', 'true');
+  mh.appendChild(ic);
+  mh.appendChild(document.createTextNode(m.id));
+  card.appendChild(mh);
+  card.appendChild(el('div', 'pp-mn', m.name || m.id));
+  card.appendChild(el('div', 'pp-ms', m.state));
+  card.appendChild(el('div', 'pp-mc', `${m.ok} of ${m.total} verified`));
+  return card;
+}
+function ppDrawProgress(root, page, topicKey, P, chats) {
+  const stages = ppList(P.stages);
+  if (!stages.length) { root.appendChild(el('div', 'pp-empty', 'OTM has not written the stage list for this topic yet.')); return; }
   const sec = el('div', 'pp-sec');
   sec.appendChild(el('h2', '', 'Milestones'));
   const strip = el('div', 'pp-mstrip');
   strip.setAttribute('role', 'list');
-  ppList((D.meta || {}).milestones).forEach((m, i) => {
-    const its = stages.filter(s => s.milestone === m.id);
-    const st = ppRollup(its.map(s => s.state));
+  ppMilestones(P).forEach((m, i) => {
     if (i) { const ch = el('span', 'pp-chev', '›'); ch.setAttribute('aria-hidden', 'true'); strip.appendChild(ch); }
-    const card = el('div', 'pp-mcard ' + (PP_CLS[st] || 'pp-idle'));
-    card.setAttribute('role', 'listitem');
-    if (m.full) card.title = m.full;
-    const mh = el('div', 'pp-mh');
-    const ic = el('span', 'pp-mic', PP_SYM[st] || '?');
-    ic.setAttribute('aria-hidden', 'true');
-    mh.appendChild(ic);
-    mh.appendChild(document.createTextNode(m.id));
-    card.appendChild(mh);
-    card.appendChild(el('div', 'pp-mn', m.name || m.id));
-    card.appendChild(el('div', 'pp-ms', st));
-    card.appendChild(el('div', 'pp-mc', `${its.filter(s => s.state === 'VERIFIED').length} of ${its.length} verified`));
-    strip.appendChild(card);
+    strip.appendChild(ppMilestoneCard(m));
   });
   sec.appendChild(strip);
   const tally = { VERIFIED: 0, SUBMITTED: 0, BLOCKED: 0, NOT_STARTED: 0, other: 0 };
@@ -343,7 +378,7 @@ function ppDrawProgress(root, D) {
 
   const wrap = el('div', 'pp-lanewrap');
   let buf = null;
-  ppList((D.meta || {}).lanes).forEach(ln => {
+  ppList((P.topic || {}).lanes).forEach(ln => {
     const its = stages.filter(s => s.lane === ln.id);
     if (!its.length) return;
     if (ln.parallel) {
@@ -352,10 +387,10 @@ function ppDrawProgress(root, D) {
         buf = el('div', 'pp-lanes');
         wrap.appendChild(buf);
       }
-      buf.appendChild(ppLaneCard(ln, its, D.chats));
+      buf.appendChild(ppLaneCard(ln, its, chats));
     } else {
       if (buf) { wrap.appendChild(el('div', 'pp-fork', 'Join: both lanes feed the last step (inferred)')); buf = null; }
-      wrap.appendChild(ppLaneCard(ln, its, D.chats));
+      wrap.appendChild(ppLaneCard(ln, its, chats));
     }
   });
   root.appendChild(wrap);
@@ -378,9 +413,139 @@ function ppDrawProgress(root, D) {
   root.appendChild(lg);
 }
 
+// ── topic view 3: Grounding fixtures ──────────────────────
+function ppFixLink(ctx, text, sign, title) {
+  const a = el('a', 'pp-pm', sign);
+  a.href = ppSendUrl(ctx, text);
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  a.title = title;
+  a.setAttribute('aria-label', title);
+  return a;
+}
+function ppFixSection(page, topicKey, key, label, entries) {
+  const ctx = { project: page.project, page: page.key, topic: topicKey, view: 'fixtures', type: 'INFO',
+    label: `INFO fixture ${topicKey}/${key}`, card: key, option: 'fixture' };
+  const s = el('section', 'pp-fsec');
+  const h = el('div', 'pp-fhead');
+  h.appendChild(el('h4', '', label));
+  h.appendChild(ppFixLink(ctx, `FIXTURE ${topicKey}/${key} ADD: `, '+', 'Propose an addition (opens the GitHub Owner Reply form)'));
+  s.appendChild(h);
+  const items = Array.isArray(entries) ? entries : [];
+  if (!items.length) { s.appendChild(el('p', 'pp-fnone', 'None recorded yet.')); return s; }
+  const ul = el('ul', 'pp-flist');
+  items.forEach(e => {
+    const li = el('li');
+    const line = el('div', 'pp-fline');
+    const u = ppSafeUrl(e.u);
+    const long = !!e.n || String(e.t || '').length > 110;   // a long entry stays plain text with a small source link
+    const text = u && !long ? ppLink(u, e.t || e.u, 'pp-ftext') : ppRich(el('span', 'pp-ftext'), e.t);
+    line.appendChild(text);
+    if (u && long) line.appendChild(ppLink(u, 'source', 'pp-fsrc'));
+    if (e.s) line.appendChild(el('span', 'pp-st ' + (PP_FIX_CLS[e.s] || 'pp-idle'), String(e.s).toUpperCase()));
+    line.appendChild(ppFixLink(ctx, `FIXTURE ${topicKey}/${key} REMOVE: ${e.t || ''}`, '−', 'Propose removing this entry (opens the GitHub Owner Reply form)'));
+    li.appendChild(line);
+    if (e.n) li.appendChild(ppRich(el('div', 'pp-fnote'), e.n));
+    ul.appendChild(li);
+  });
+  s.appendChild(ul);
+  return s;
+}
+function ppDrawFixtures(root, page, topicKey, P) {
+  const fx = P.fixtures || {};
+  root.appendChild(el('p', 'pp-intro', 'What a new agent or Oracle should read first for this topic. OTM keeps it current. The + and − open GitHub\'s Owner Reply form with the change filled in; nothing changes until OTM applies it and you confirm.'));
+  const grid = el('div', 'pp-fixgrid');
+  [['Project sources', PP_FIX_LEFT], ['Starting context', PP_FIX_RIGHT]].forEach(([title, defs]) => {
+    const col = el('section', 'card pp-fixcol');
+    col.appendChild(el('h3', '', title));
+    defs.forEach(([key, label]) => col.appendChild(ppFixSection(page, topicKey, key, label, fx[key])));
+    grid.appendChild(col);
+  });
+  root.appendChild(grid);
+}
+
+// ── overview ──────────────────────────────────────────────
+function ppDrawOverview(root, page, B) {
+  const topics = (B.index.topics || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0));
+  const open = [];
+  topics.forEach(t => { const P = B.topics[t.key]; if (P) ppOpenActions(P).forEach(a => open.push({ t, a })); });
+
+  const need = el('div', 'pp-sec');
+  need.appendChild(el('h2', '', 'Needs you, across topics'));
+  if (!open.length) {
+    need.appendChild(el('div', 'pp-empty', 'Nothing waits on you in any topic.'));
+  } else {
+    const ul = el('ul', 'pp-plain');
+    open.forEach(({ t, a }) => {
+      const li = el('li');
+      const head = el('div', 'pp-pt');
+      head.appendChild(el('span', 'pp-topicchip', t.label));
+      head.appendChild(document.createTextNode(' ' + (a.title || a.id)));
+      li.appendChild(head);
+      const go = el('a', 'btn btn-small', 'Open the card');
+      go.href = `#progress-page/${page.key}/${t.key}/actions`;
+      li.appendChild(go);
+      ul.appendChild(li);
+    });
+    need.appendChild(ul);
+    const all = ppAllCard(open.map(x => x.a), { project: page.project, page: page.key, topic: '', view: 'actions' });
+    if (all) need.appendChild(all);
+  }
+  root.appendChild(need);
+
+  const sec = el('div', 'pp-sec');
+  sec.appendChild(el('h2', '', 'Topics'));
+  const ids = [];
+  topics.forEach(t => { const P = B.topics[t.key]; if (P) ppMilestones(P).forEach(m => { if (!ids.includes(m.id)) ids.push(m.id); }); });
+  ids.sort();
+  const wrap = el('div', 'table-wrap pp-tw');
+  const tb = el('table', 'pp-table pp-matrix');
+  const hr = el('tr');
+  ['Topic', ...ids, 'Verified', 'Blocked', 'Next on you'].forEach(c => hr.appendChild(el('th', '', c)));
+  tb.appendChild(el('thead')).appendChild(hr);
+  const body = el('tbody');
+  topics.forEach(t => {
+    const P = B.topics[t.key];
+    const row = el('tr');
+    const first = el('td');
+    const a = el('a', 'pp-toplink', (P && P.topic && P.topic.title) || t.title || t.label);
+    a.href = `#progress-page/${page.key}/${t.key}/progress`;
+    first.appendChild(a);
+    row.appendChild(first);
+    if (!P) {
+      const td = el('td', 'pp-planned', B.errors[t.key] ? 'Could not load: ' + B.errors[t.key] : t.issue ? 'Loading' : 'Planned: no data yet');
+      td.colSpan = ids.length + 3;
+      row.appendChild(td);
+    } else {
+      const ms = ppMilestones(P);
+      ids.forEach(id => {
+        const m = ms.find(x => x.id === id);
+        const td = el('td', 'pp-mcell');
+        if (m) {
+          const c = el('span', 'pp-mini ' + PP_CLS[m.state], PP_SYM[m.state]);
+          c.title = `${m.id} ${m.name}: ${m.state}, ${m.ok} of ${m.total} verified`;
+          td.appendChild(c);
+        } else td.textContent = '–';
+        row.appendChild(td);
+      });
+      const stages = ppList(P.stages);
+      row.appendChild(el('td', '', `${stages.filter(s => s.state === 'VERIFIED').length} of ${stages.length}`));
+      row.appendChild(el('td', '', String(stages.filter(s => s.state === 'BLOCKED').length)));
+      const o = ppOpenActions(P)[0];
+      row.appendChild(el('td', '', o ? o.title : '–'));
+    }
+    body.appendChild(row);
+  });
+  tb.appendChild(body);
+  wrap.appendChild(tb);
+  sec.appendChild(wrap);
+  sec.appendChild(el('p', 'note', 'Each topic is a child of the pilot and has its own My actions, Progress and Grounding fixtures. Shared tooling holds what every topic depends on. A new topic, for example Motion in 1D, appears here as soon as OTM creates it.'));
+  root.appendChild(sec);
+}
+
 // ── page frame ────────────────────────────────────────────
-function ppLiveBadge(badge, meta, err) {
-  const m = meta || {};
+function ppLiveBadge(badge, project, err) {
+  const m = project || {};
   let cls = 'pp-badge', text;
   if (!m.updatedAt) { text = err ? 'No data' : 'Waiting for data'; }
   else {
@@ -392,55 +557,97 @@ function ppLiveBadge(badge, meta, err) {
   badge.className = cls;
   badge.textContent = text;
 }
-function ppDrawPilot(body, page, tab, st) {
+function ppDrawProject(body, page, topic, view, st) {
   body.textContent = '';
-  const D = st.data && st.data.data;
+  const B = st.bundle;
+  const project = B && B.index && B.index.project;
   const head = el('div', 'pp-top');
   const titles = el('div');
-  titles.appendChild(el('h2', 'pp-title', (D && D.meta && D.meta.title) || page.label));
-  titles.appendChild(el('p', 'pp-sub', (D && D.meta && D.meta.subtitle) || ''));
+  titles.appendChild(el('h2', 'pp-title', (project && project.title) || page.label));
+  titles.appendChild(el('p', 'pp-sub', (project && project.subtitle) || ''));
   head.appendChild(titles);
   const badges = el('div', 'pp-badges');
   const live = el('span', 'pp-badge');
   live.id = 'pp-live';
-  ppLiveBadge(live, D && D.meta, st.error);
+  ppLiveBadge(live, project, st.error);
   badges.appendChild(live);
   badges.appendChild(el('span', 'pp-badge', 'Read-only'));
   head.appendChild(badges);
   body.appendChild(head);
 
-  const tabs = el('div', 'pp-tabs');
-  tabs.setAttribute('role', 'tablist');
-  const openCount = D ? ppList(D.actions).filter(a => a.status === 'open').length : 0;
-  [['actions', 'My actions'], ['progress', 'Progress']].forEach(([key, label]) => {
-    const b = el('button', 'pp-tab' + (key === tab ? ' active' : ''), label);
+  if (st.error) body.appendChild(el('div', 'pp-banner pp-bad', `Could not refresh: ${st.error}.` + (B ? ' Showing the last data received.' : '')));
+  else if (project && project.updatedAt) {
+    const age = Math.round((Date.now() - new Date(project.updatedAt).getTime()) / 60000);
+    if (age > (project.staleAfterMin || 120)) body.appendChild(el('div', 'pp-banner', `OTM has not written an update for ${ppAgeText(age)}, so the states below may be out of date.`));
+  }
+  if (st.loading || !B) {
+    body.appendChild(el('div', 'loading', 'Loading live progress…'));
+    return;
+  }
+
+  const topics = (B.index.topics || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0));
+  const bar = el('div', 'pp-topics');
+  bar.setAttribute('role', 'tablist');
+  bar.setAttribute('aria-label', 'Topics of the pilot');
+  const totalOpen = topics.reduce((n, t) => n + (B.topics[t.key] ? ppOpenActions(B.topics[t.key]).length : 0), 0);
+  const chip = (key, label, count, disabled) => {
+    const b = el('button', 'pp-topic' + (key === topic ? ' active' : ''), label);
     b.type = 'button';
     b.setAttribute('role', 'tab');
-    b.setAttribute('aria-selected', key === tab ? 'true' : 'false');
-    if (key === 'actions') b.appendChild(el('span', 'pp-count' + (openCount ? '' : ' pp-zero'), String(openCount)));
-    b.addEventListener('click', () => navigate(`#progress-page/${page.key}/${key}`));
-    tabs.appendChild(b);
+    b.setAttribute('aria-selected', key === topic ? 'true' : 'false');
+    if (disabled) { b.disabled = true; b.title = 'Planned: no data yet'; }
+    if (count != null) b.appendChild(el('span', 'pp-count' + (count ? '' : ' pp-zero'), String(count)));
+    b.addEventListener('click', () => navigate(key === 'overview' ? `#progress-page/${page.key}/overview` : `#progress-page/${page.key}/${key}/${view}`));
+    return b;
+  };
+  bar.appendChild(chip('overview', 'Overview', totalOpen, false));
+  topics.forEach(t => {
+    const P = B.topics[t.key];
+    bar.appendChild(chip(t.key, t.label, P ? ppOpenActions(P).length : null, !t.issue));
   });
-  body.appendChild(tabs);
+  body.appendChild(bar);
 
-  if (st.error) body.appendChild(el('div', 'pp-banner pp-bad', `Could not refresh: ${st.error}.` + (D ? ' Showing the last data received.' : '')));
-  else if (D && D.meta && D.meta.updatedAt) {
-    const age = Math.round((Date.now() - new Date(D.meta.updatedAt).getTime()) / 60000);
-    if (age > (D.meta.staleAfterMin || 120)) body.appendChild(el('div', 'pp-banner', `OTM has not written an update for ${ppAgeText(age)}, so the states below may be out of date.`));
-  }
   const panel = el('div', 'pp-panel');
-  if (st.loading) panel.appendChild(el('div', 'loading', 'Loading live progress…'));
-  else if (!D) panel.appendChild(el('div', 'pp-empty', 'No data to show yet.'));
-  else if (tab === 'progress') ppDrawProgress(panel, D);
-  else ppDrawActions(panel, D, page);
+  if (topic === 'overview') {
+    ppDrawOverview(panel, page, B);
+  } else {
+    const P = B.topics[topic];
+    if (!P) {
+      panel.appendChild(el('div', 'pp-empty', B.errors[topic] ? `Could not load this topic: ${B.errors[topic]}` : 'This topic has no data yet.'));
+    } else {
+      const th = el('div', 'pp-thead');
+      th.appendChild(el('h3', '', P.topic.title || topic));
+      if (P.topic.subtitle) th.appendChild(el('p', 'pp-sub', P.topic.subtitle));
+      panel.appendChild(th);
+      const tabs = el('div', 'pp-tabs');
+      tabs.setAttribute('role', 'tablist');
+      PP_VIEWS.forEach(([key, label]) => {
+        const b = el('button', 'pp-tab' + (key === view ? ' active' : ''), label);
+        b.type = 'button';
+        b.setAttribute('role', 'tab');
+        b.setAttribute('aria-selected', key === view ? 'true' : 'false');
+        if (key === 'actions') { const n = ppOpenActions(P).length; b.appendChild(el('span', 'pp-count' + (n ? '' : ' pp-zero'), String(n))); }
+        b.addEventListener('click', () => navigate(`#progress-page/${page.key}/${topic}/${key}`));
+        tabs.appendChild(b);
+      });
+      panel.appendChild(tabs);
+      const inner = el('div', 'pp-panel');
+      if (view === 'progress') ppDrawProgress(inner, page, topic, P, B.index.chats);
+      else if (view === 'fixtures') ppDrawFixtures(inner, page, topic, P);
+      else ppDrawActions(inner, page, topic, P);
+      panel.appendChild(inner);
+    }
+  }
   body.appendChild(panel);
-  body.appendChild(el('p', 'note pp-foot', 'Stage states are written by OTM, the Owner\'s teammate session, at each event, and read from GitHub issue #' + page.issue + ' every two minutes. The stage list is inferred from the Oracle\'s packets. This page changes nothing on GitHub.'));
+  body.appendChild(el('p', 'note pp-foot', `Stage states are written by OTM, the Owner's teammate session, at each event, and read from GitHub (index issue #${page.issue} and one issue per topic) every two minutes. The stage list is inferred from the Oracle's packets. This page changes nothing on GitHub.`));
 }
 
-async function renderProgressPage(app, pageKey, tabKey) {
+async function renderProgressPage(app, pageKey, a2, a3) {
   if (ppState.timer) { clearInterval(ppState.timer); ppState.timer = null; }
   const page = PP_PAGES.find(p => p.key === pageKey) || PP_PAGES[0];
-  const tab = tabKey === 'progress' ? 'progress' : 'actions';
+  const isView = v => PP_VIEWS.some(x => x[0] === v);
+  let topic = 'overview', view = 'actions';
+  if (a2 && !isView(a2)) { topic = a2; view = isView(a3) ? a3 : 'actions'; }   // an old link with only a view opens the overview
   app.textContent = '';
   const root = el('section', 'pp');
   root.id = 'view-progress-page';
@@ -453,7 +660,7 @@ async function renderProgressPage(app, pageKey, tabKey) {
     b.type = 'button';
     b.setAttribute('role', 'tab');
     b.setAttribute('aria-selected', p === page ? 'true' : 'false');
-    b.addEventListener('click', () => navigate(`#progress-page/${p.key}/${tab}`));
+    b.addEventListener('click', () => navigate(`#progress-page/${p.key}/overview`));
     subtabs.appendChild(b);
   });
   root.appendChild(subtabs);
@@ -461,18 +668,17 @@ async function renderProgressPage(app, pageKey, tabKey) {
   root.appendChild(body);
   app.appendChild(root);
 
-  const draw = st => { ppDrawPilot(body, page, tab, st); };
-  const cacheKey = r => r ? `${r.issueUpdated}|${(r.data.meta || {}).updatedAt}` : '';
-  const known = ppState.cache[page.key];
-  draw(known ? { data: known } : { loading: true });
-  ppState.drawnKey[page.key] = cacheKey(known);
+  const draw = st => { ppDrawProject(body, page, topic, view, st); };
+  draw(ppState.bundle ? { bundle: ppState.bundle } : { loading: true });
+  ppState.drawnSig = ppState.bundle ? ppState.bundle.sig : '';
   const load = async () => {
     try {
-      const r = await ppLoad(page);
-      if (cacheKey(r) !== ppState.drawnKey[page.key]) { ppState.drawnKey[page.key] = cacheKey(r); draw({ data: r }); }
-      else ppLiveBadge(document.getElementById('pp-live') || el('span'), r.data.meta);
+      const b = await ppBundle(page);
+      ppState.bundle = b;
+      if (b.sig !== ppState.drawnSig) { ppState.drawnSig = b.sig; draw({ bundle: b }); }
+      else ppLiveBadge(document.getElementById('pp-live') || el('span'), b.index.project);
     } catch (e) {
-      draw({ error: e.message, data: ppState.cache[page.key] });
+      draw({ error: e.message, bundle: ppState.bundle });
     }
   };
   await load();
