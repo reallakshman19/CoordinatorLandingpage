@@ -1,0 +1,98 @@
+{
+  "C1": {
+    "order": 1,
+    "lane": "S",
+    "milestone": "M0",
+    "name": "Owner requested configurable policy",
+    "sub": "Unapproved conflict handling and approval UX belong in a dedicated Config tab.",
+    "state": "VERIFIED",
+    "actor": "-",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/pull/150"
+      }
+    ],
+    "detail": {
+      "result": "Feature scope established, not release permission."
+    }
+  },
+  "C2": {
+    "order": 2,
+    "lane": "B",
+    "milestone": "M1",
+    "name": "Config + shared policy PR #150",
+    "sub": "Draft head 19c3cdf1; author-reported source checks do not qualify browser or private originals.",
+    "state": "SUBMITTED",
+    "actor": "IR",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/pull/150"
+      }
+    ],
+    "detail": {
+      "still": "Recheck the live SHA before review."
+    }
+  },
+  "C3": {
+    "order": 3,
+    "lane": "V",
+    "milestone": "M2",
+    "name": "F02 stale Generate after policy change",
+    "sub": "Source-exact controlled harness restored revoked plan after an outstanding hash resolved; export harm not established.",
+    "state": "BLOCKED",
+    "actor": "IR",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/152#issuecomment-6320421844"
+      }
+    ],
+    "detail": {
+      "do": "Confirm in actual Chromium, including late target change and errors.",
+      "still": "Contributor source-level evidence; no distinct independent verdict."
+    }
+  },
+  "C4": {
+    "order": 4,
+    "lane": "V",
+    "milestone": "M2",
+    "name": "F01/P1/P2 and recovery-policy review",
+    "sub": "Conflicting claims, writer/admission parity and skipped pre-edit backups remain open.",
+    "state": "BLOCKED",
+    "actor": "IR",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/152"
+      }
+    ],
+    "detail": {
+      "do": "Run actual native tests and inspect inherited F01 matrix; Owner dispositions backup deviations."
+    }
+  },
+  "C5": {
+    "order": 5,
+    "lane": "V",
+    "milestone": "M3",
+    "name": "New independent reviewer accepts #152",
+    "sub": "Packet issued, actual separate review execution and browser verdict not established.",
+    "state": "NOT_STARTED",
+    "actor": "OTM",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/152"
+      }
+    ],
+    "detail": {
+      "do": "Route to genuinely distinct reviewer and obtain recorded actor/exposure, test evidence and verdict."
+    }
+  }
+}

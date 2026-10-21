@@ -1,0 +1,72 @@
+{
+  "G1": {
+    "order": 1,
+    "lane": "S",
+    "milestone": "M0",
+    "name": "A3 signed graph contract",
+    "sub": "A3 #142 requires independent multigraph interpretation, branches and atomic T1.",
+    "state": "VERIFIED",
+    "actor": "-",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/142"
+      }
+    ],
+    "detail": {}
+  },
+  "G2": {
+    "order": 2,
+    "lane": "B",
+    "milestone": "M1",
+    "name": "Appoint and execute distinct A3 engine agent",
+    "sub": "The work packet exists; no qualified implemented A3 engine has been established.",
+    "state": "NOT_STARTED",
+    "actor": "OTM",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/142"
+      }
+    ],
+    "detail": {
+      "still": "Creating an issue or branch does not prove an agent was launched."
+    }
+  },
+  "G3": {
+    "order": 3,
+    "lane": "V",
+    "milestone": "M2",
+    "name": "Challenge branch correspondence and T1 atomicity",
+    "sub": "Reject ambiguous tees/loops/disconnected labels and non-atomic branch writes.",
+    "state": "NOT_STARTED",
+    "actor": "IR",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139"
+      }
+    ],
+    "detail": {}
+  },
+  "G4": {
+    "order": 4,
+    "lane": "V",
+    "milestone": "M3",
+    "name": "Integrate and browser-test Geometry",
+    "sub": "Tab 3 remains unavailable until independent engine and atomic-group qualification.",
+    "state": "NOT_STARTED",
+    "actor": "CODER",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139"
+      }
+    ],
+    "detail": {}
+  }
+}

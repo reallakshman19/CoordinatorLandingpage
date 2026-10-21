@@ -1,0 +1,53 @@
+{
+  "title": "Line Number + Node Name",
+  "subtitle": "Independent A2 matcher; two selector prerequisites and common writer custody.",
+  "milestones": {
+    "M0": {
+      "order": 0,
+      "name": "Contract",
+      "full": "Owner contract, independent scope and original custody"
+    },
+    "M1": {
+      "order": 1,
+      "name": "Candidate",
+      "full": "Evidence-backed draft candidate or active implementation"
+    },
+    "M2": {
+      "order": 2,
+      "name": "Safety",
+      "full": "Adversarial and independent review of engineering invariants"
+    },
+    "M3": {
+      "order": 3,
+      "name": "Integration",
+      "full": "Browser/original-file integration and acceptance"
+    },
+    "M4": {
+      "order": 4,
+      "name": "Release",
+      "full": "Owner-authorized merge and replacement"
+    }
+  },
+  "lanes": {
+    "S": {
+      "order": 0,
+      "title": "Scope and source authority",
+      "sub": "Authoritative contract and existing baseline."
+    },
+    "B": {
+      "order": 1,
+      "title": "Implementation candidate",
+      "sub": "Draft or qualified code must be distinguished from released behavior."
+    },
+    "V": {
+      "order": 2,
+      "title": "Independent qualification",
+      "sub": "Native evidence, adverse cases and approval custody."
+    },
+    "R": {
+      "order": 3,
+      "title": "Owner-gated release",
+      "sub": "No automated acceptance or production cutover."
+    }
+  }
+}

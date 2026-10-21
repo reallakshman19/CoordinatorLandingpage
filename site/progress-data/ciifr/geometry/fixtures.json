@@ -1,0 +1,60 @@
+{
+  "repository": [
+    {
+      "t": "XML_Compare_Utilities — VNext engineering repository",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities"
+    }
+  ],
+  "issues": [
+    {
+      "t": "A3 signed-geometry contract #142",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/142"
+    }
+  ],
+  "pullRequests": [],
+  "roadmap": [
+    {
+      "t": "Original VNext project contract and acceptance plan",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139"
+    }
+  ],
+  "highRoi": [
+    {
+      "t": "Preserve original TARGET0 raw bytes and explicit, SHA-bound new-copy writer rules",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139",
+      "s": "proposed"
+    }
+  ],
+  "future": [
+    {
+      "t": "Only separately Owner-authorized production replacement after integrated validation",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139"
+    }
+  ],
+  "intent": [
+    {
+      "t": "A separate signed multigraph maps physical source-target branches, never guesses a root or relaxes atomic T1.",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/142"
+    }
+  ],
+  "inputs": [
+    {
+      "t": "Authoritative current work packet and engineering scope",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/142"
+    }
+  ],
+  "knownIssues": [
+    {
+      "t": "No reviewed A3 implementation or atomic branch writer contract established.",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/142",
+      "s": "open"
+    }
+  ],
+  "pending": [
+    {
+      "t": "Next actor must produce actual implementation/review receipts, not infer them from an open issue",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/142",
+      "s": "waiting"
+    }
+  ]
+}

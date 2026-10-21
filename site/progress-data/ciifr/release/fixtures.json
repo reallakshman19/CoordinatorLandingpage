@@ -1,0 +1,77 @@
+{
+  "repository": [
+    {
+      "t": "XML_Compare_Utilities — VNext engineering repository",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities"
+    }
+  ],
+  "issues": [
+    {
+      "t": "Overall VNext contract #139",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139"
+    },
+    {
+      "t": "Independent-review scope #143",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/143"
+    }
+  ],
+  "pullRequests": [
+    {
+      "t": "A2 candidate #145",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/pull/145"
+    },
+    {
+      "t": "A1 writer candidate #149",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/pull/149"
+    },
+    {
+      "t": "Config candidate #150",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/pull/150"
+    }
+  ],
+  "roadmap": [
+    {
+      "t": "Original VNext project contract and acceptance plan",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139"
+    }
+  ],
+  "highRoi": [
+    {
+      "t": "Preserve original TARGET0 raw bytes and explicit, SHA-bound new-copy writer rules",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139",
+      "s": "proposed"
+    }
+  ],
+  "future": [
+    {
+      "t": "Only separately Owner-authorized production replacement after integrated validation",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139"
+    }
+  ],
+  "intent": [
+    {
+      "t": "Standalone three-engine CII VNext replaces current tile only when accepted and Owner explicitly releases.",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139"
+    }
+  ],
+  "inputs": [
+    {
+      "t": "Authoritative current work packet and engineering scope",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139"
+    }
+  ],
+  "knownIssues": [
+    {
+      "t": "Tab2/Tab3 standalone integration and actual three-engine/browser qualification not done.",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139",
+      "s": "open"
+    }
+  ],
+  "pending": [
+    {
+      "t": "Next actor must produce actual implementation/review receipts, not infer them from an open issue",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139",
+      "s": "waiting"
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "N1": {
+    "order": 1,
+    "lane": "S",
+    "milestone": "M0",
+    "name": "Standalone VNext and Policy-A contract",
+    "sub": "Owner requires field-aware exact-byte proposals and no premature production-tile change.",
+    "state": "VERIFIED",
+    "actor": "-",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139"
+      }
+    ],
+    "detail": {
+      "result": "Contract recorded; this verifies scope, not candidate safety."
+    }
+  },
+  "N2": {
+    "order": 2,
+    "lane": "B",
+    "milestone": "M1",
+    "name": "Normal UI + writer draft candidate",
+    "sub": "A1 successor PR #149 exists but remains draft and unmerged.",
+    "state": "SUBMITTED",
+    "actor": "IR",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/pull/149"
+      }
+    ],
+    "detail": {
+      "still": "No integrated browser or authorized private-file acceptance."
+    }
+  },
+  "N3": {
+    "order": 3,
+    "lane": "V",
+    "milestone": "M2",
+    "name": "F01 physical custody and alias closure",
+    "sub": "Prior review reported 14 mismatches; current-head independent reproduction remains outstanding.",
+    "state": "BLOCKED",
+    "actor": "IR",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/152"
+      }
+    ],
+    "detail": {
+      "do": "Falsify overlaps, blank-name custody, exact field widths and all nonblank aliases.",
+      "still": "The reported mismatch count is not a fresh current-commit test."
+    }
+  },
+  "N4": {
+    "order": 4,
+    "lane": "V",
+    "milestone": "M3",
+    "name": "Real browser Validate → Apply → Export",
+    "sub": "Inspect TARGET1 bytes, SHA and unchanged originals on the actual served UI.",
+    "state": "NOT_STARTED",
+    "actor": "IR",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139"
+      }
+    ],
+    "detail": {
+      "do": "Run LF/CRLF CII and negative controls; real browser evidence is not recorded."
+    }
+  }
+}

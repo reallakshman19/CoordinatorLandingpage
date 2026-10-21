@@ -1,0 +1,76 @@
+{
+  "L1": {
+    "order": 1,
+    "lane": "S",
+    "milestone": "M0",
+    "name": "A2 independent selector contract",
+    "sub": "Line Number and Node Name independently support literal/regex; score cannot override hard prerequisites.",
+    "state": "VERIFIED",
+    "actor": "-",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/141"
+      }
+    ],
+    "detail": {}
+  },
+  "L2": {
+    "order": 2,
+    "lane": "B",
+    "milestone": "M1",
+    "name": "A2 draft planner PR #145",
+    "sub": "A2 reported scoped 33/33 tests, not full integration signoff.",
+    "state": "SUBMITTED",
+    "actor": "IR",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/pull/145"
+      }
+    ],
+    "detail": {
+      "still": "Candidate remains draft and separate from PR #149/#150."
+    }
+  },
+  "L3": {
+    "order": 3,
+    "lane": "V",
+    "milestone": "M2",
+    "name": "Align LINE_NODE admission with common writer",
+    "sub": "P1/P2 conflict-policy behavior still requires independent current-head reconciliation.",
+    "state": "BLOCKED",
+    "actor": "IR",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/152"
+      }
+    ],
+    "detail": {
+      "do": "Compare same approved claims, contradictory withheld overlaps and forged physical witnesses."
+    }
+  },
+  "L4": {
+    "order": 4,
+    "lane": "V",
+    "milestone": "M3",
+    "name": "Enable and qualify standalone Tab 2",
+    "sub": "Tab 2 is disabled in current A1 UI; adapter integration and browser qualification have not occurred.",
+    "state": "NOT_STARTED",
+    "actor": "CODER",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139"
+      }
+    ],
+    "detail": {
+      "do": "Wire an independently reviewed A2 adapter without copying older engine logic."
+    }
+  }
+}
