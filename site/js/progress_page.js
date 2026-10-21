@@ -5,9 +5,9 @@
  * My actions (what the Owner must do), Progress (milestones and stages) and Grounding fixtures.
  * An Overview shows every topic side by side.
  *
- * Data: GitHub issue bodies (a ```json block that OTM rewrites at each event): one index issue that lists
- * the topics, and one issue per topic. Read live from the browser, so a change shows within a couple of
- * minutes without a Pages deploy.
+ * Data: JSON files in a folder tree beside the site, site/progress-data/<project>/index.json (project, chats,
+ * topic list) and <topic>/{meta,stages,actions,fixtures}.json. OTM rewrites them at each event; the page
+ * fetches them again every two minutes, so a change shows after the next Pages build.
  * Public repository: chat ids appear as id8 only and no ChatGPT chat is ever linked.
  * Read-only: this view never posts or changes a stage. "Send to OTM" (and the + and - on a fixture) only
  * open GitHub's Owner Reply form with text filled in; the Owner submits it.
@@ -18,7 +18,7 @@
 'use strict';
 
 const PP_PAGES = [
-  { key: 'g9v35', label: 'G9v3.5 Pilot Progress', issue: 141, project: 'g9v35' },
+  { key: 'g9v35', label: 'G9v3.5 Pilot Progress', project: 'g9v35', data: 'progress-data/g9v35' },
 ];
 const PP_SITE = 'https://reallakshman19.github.io/CoordinatorLandingpage/';
 const PP_POLL_MS = 120000;
@@ -89,25 +89,28 @@ function ppMilestones(P) {
 function ppOpenActions(P) { return ppList(P.actions).filter(a => a.status === 'open'); }
 
 // ── data ──────────────────────────────────────────────────
-async function ppIssue(number) {
-  const r = await fetch(`https://api.github.com/repos/${REPO}/issues/${number}`,
-    { headers: { Accept: 'application/vnd.github+json' } });
-  if (!r.ok) {
-    throw new Error(r.status === 403 || r.status === 429
-      ? 'GitHub is limiting requests from this network; it retries by itself' : `GitHub answered ${r.status} for issue ${number}`);
-  }
-  const issue = await r.json();
-  const m = /```json\s*([\s\S]*?)```/.exec(issue.body || '');
-  if (!m) throw new Error(`issue ${number} has no JSON block yet`);
-  return { data: JSON.parse(m[1]), updated: issue.updated_at };
+function ppHash(text) {
+  let h = 5381;
+  for (let i = 0; i < text.length; i++) h = ((h << 5) + h + text.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
+}
+async function ppJson(path) {
+  const r = await fetch(path, { cache: 'no-cache' });
+  if (!r.ok) throw new Error(`${path}: HTTP ${r.status}`);
+  const text = await r.text();
+  return { data: JSON.parse(text), text };
 }
 async function ppBundle(page) {
-  const idx = await ppIssue(page.issue);
+  const idx = await ppJson(`${page.data}/index.json`);
   const topics = {}, errors = {};
-  let sig = idx.updated;
-  await Promise.all((idx.data.topics || []).filter(t => t.issue).map(async t => {
-    try { const r = await ppIssue(t.issue); topics[t.key] = r.data; sig += '|' + r.updated; }
-    catch (e) { errors[t.key] = e.message; }
+  let sig = ppHash(idx.text);
+  await Promise.all((idx.data.topics || []).filter(t => !t.planned).map(async t => {
+    try {
+      const parts = await Promise.all(['meta', 'stages', 'actions', 'fixtures'].map(n => ppJson(`${page.data}/${t.key}/${n}.json`)));
+      const [meta, stages, actions, fixtures] = parts.map(p => p.data);
+      topics[t.key] = { topic: Object.assign({ key: t.key, updatedAt: t.updatedAt }, meta), stages, actions, fixtures };
+      sig += parts.map(p => ppHash(p.text)).join('');
+    } catch (e) { errors[t.key] = e.message; }
   }));
   return { index: idx.data, topics, errors, sig: sig + '|' + Object.keys(errors).join(',') };
 }
@@ -513,7 +516,7 @@ function ppDrawOverview(root, page, B) {
     first.appendChild(a);
     row.appendChild(first);
     if (!P) {
-      const td = el('td', 'pp-planned', B.errors[t.key] ? 'Could not load: ' + B.errors[t.key] : t.issue ? 'Loading' : 'Planned: no data yet');
+      const td = el('td', 'pp-planned', B.errors[t.key] ? 'Could not load: ' + B.errors[t.key] : t.planned ? 'Planned: no data yet' : 'Loading');
       td.colSpan = ids.length + 3;
       row.appendChild(td);
     } else {
@@ -603,7 +606,7 @@ function ppDrawProject(body, page, topic, view, st) {
   bar.appendChild(chip('overview', 'Overview', totalOpen, false));
   topics.forEach(t => {
     const P = B.topics[t.key];
-    bar.appendChild(chip(t.key, t.label, P ? ppOpenActions(P).length : null, !t.issue));
+    bar.appendChild(chip(t.key, t.label, P ? ppOpenActions(P).length : null, !!t.planned));
   });
   body.appendChild(bar);
 
@@ -639,7 +642,7 @@ function ppDrawProject(body, page, topic, view, st) {
     }
   }
   body.appendChild(panel);
-  body.appendChild(el('p', 'note pp-foot', `Stage states are written by OTM, the Owner's teammate session, at each event, and read from GitHub (index issue #${page.issue} and one issue per topic) every two minutes. The stage list is inferred from the Oracle's packets. This page changes nothing on GitHub.`));
+  body.appendChild(el('p', 'note pp-foot', `Stage states are written by OTM, the Owner's teammate session, at each event, into JSON files under ${page.data}/ (index.json and one folder per topic) and read from there every two minutes. The stage list is inferred from the Oracle's packets. This page changes nothing on GitHub.`));
 }
 
 async function renderProgressPage(app, pageKey, a2, a3) {
