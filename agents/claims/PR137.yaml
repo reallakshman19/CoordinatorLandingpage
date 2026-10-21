@@ -1,5 +1,5 @@
 schema: AgentClaim.v1
-pr_or_wip: WIP-dashboard-20261021
+pr_or_wip: PR137
 branch: codex/otm-dashboard-20261021
 claim_state: ACTIVE
 files:

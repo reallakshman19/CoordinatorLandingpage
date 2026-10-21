@@ -1,0 +1,11 @@
+schema: AgentPrStatus.v1
+pr_or_wip: PR137
+branch: codex/otm-dashboard-20261021
+work_intent: IMPLEMENT
+criticality: STANDARD
+agent_state: AWAITING_REVIEW
+handover_readiness: READY
+report_path: agents/PR137_workreport.md
+main_head_last_checked: 4637f83b7cb4dcf48fafa9db98852a1332416ab9
+report_basis_head: 2602fe3d98bcc481efa16cce9f3f41349e0c48c5
+exact_next_action: Independent browser QA, exact-head review and CI reconciliation; no merge.

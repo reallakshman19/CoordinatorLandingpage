@@ -1,20 +1,20 @@
-# Dashboard implementation — recovery checkpoint
-HANDOVER_READINESS: DEGRADED (sync to resulting implementation head next)
-PR_RECOVERY_STATE: RECOVERABLE
+# PR137 — operational OTM Dashboard work report
+HANDOVER_READINESS: READY (reviewable recovery state; browser QA remains NOT_RUN)
+PR_RECOVERY_STATE: HEALTHY
 TAKEOVER_AUTHORITY: WRITE_ALLOWED (current Owner instruction)
 WORK_INTENT: IMPLEMENT
 CRITICALITY: STANDARD
 REPOSITORY: reallakshman19/CoordinatorLandingpage
-PR_OR_WIP: WIP-dashboard-20261021
+PR_OR_WIP: PR137
 BRANCH: codex/otm-dashboard-20261021
-REPORT_BASIS_HEAD: 4637f83b7cb4dcf48fafa9db98852a1332416ab9
+REPORT_BASIS_HEAD: 2602fe3d98bcc481efa16cce9f3f41349e0c48c5
 MAIN_HEAD_LAST_CHECKED: 4637f83b7cb4dcf48fafa9db98852a1332416ab9
 MERGE_BASE: 4637f83b7cb4dcf48fafa9db98852a1332416ab9
-REPORT_SYNC: STALE after the implementation commit; next metadata-only commit must sync basis
+REPORT_SYNC: CURRENT (only recovery metadata follows the implementation basis)
 GROUNDING_EPOCH: GE-dashboard-20261021-01
-CURRENT_STAGE: VALIDATED_LOCALLY
+CURRENT_STAGE: AWAITING_INDEPENDENT_REVIEW
 APPENDIX_A_STATUS: NOT_REQUIRED (new standard UI work; no engineering-critical takeover)
-EXACT_NEXT_ACTION: open draft PR, migrate own recovery records to PR number, sync implementation head and inspect remote diff/checks.
+EXACT_NEXT_ACTION: run independent browser QA and review latest_report/timer boundaries on the PR head; do not merge without Owner authorization.
 
 ## Mission and scope
 Owner requests a new Dashboard page reusing the provided operational HTML and existing data; continue high/medium ROI coding. Working UI must show source-backed traffic lights, evidence/observation age, known state duration, timer observation, scheduled check countdown and overdue state, with project/state grouping and expanded evidence. No synthetic production agents or dates. Reuse existing publisher, grants, monitoring, and routing; do not add schedulers or dispatches. No merge authority.
@@ -29,7 +29,7 @@ site/index.html; site/js/core.js; new site/js/dashboard-model.js; new site/js/da
 status-bar.json supplies normalized registered declarations, work/monitoring/authority dimensions, timer state/checked_at/last_tick/next_due, browser observation and as_of. projects.json and build-info supply project context/capture. monitoring.next_due is a freshness threshold, not a scheduled check; label separately. State-start timestamps are often absent: display UNKNOWN rather than derive from capture. Preserve project-qualified identity and evidence links. Recheck positive observations as the local clock advances. Benchmark clocks must remain frozen.
 
 ## Current implementation / validation
-Bootstrap only; implementation and tests NOT_RUN. Browser engine unavailable in this workspace (earlier preview finding); assess available runtime again if needed. Local source files are selected exact-head materializations, not a complete git clone. No independent verification claimed.
+Implemented and wired to production route. 43 local checks pass; see validation ledger. Genuine browser layout/mobile inspection, hosted readback and independent review remain NOT_RUN. Local source materialization is not the live git history. No independent verification claimed.
 
 ## Risks / continuation
 RISK-001: confusing timer schedule with monitoring freshness; regression required.
@@ -66,4 +66,11 @@ Remote CI pending PR creation. Current workflow enumerates tests explicitly and 
 ## Recovery notes / next independent work
 Local git is a selected-source materialization, not the real repository history. Additional unchanged producer dependencies, tests/test_wp16.py and five exact-base registries are local test inputs only: do not upload them as changed files. GitHub branch/base/head and the remote diff are authoritative.
 Current actor implements this change and does not claim independent Oracle verification. Next: browser QA at #dashboard, 320/390px layout, source outage, benchmark mode, grouping/expansion, navigation away/back, source refresh; inspect identity fences and due-vs-freshness semantics. No merge authority.
-REPORT_BASIS_HEAD will be replaced by the newly created implementation SHA in the next recovery-only commit, avoiding a self-referential report head.
+REPORT_BASIS_HEAD is the implementation SHA above. This report/status/claim synchronization is metadata-only; its containing commit is intentionally not its own basis.
+
+## Live PR reconciliation
+PR: https://github.com/reallakshman19/CoordinatorLandingpage/pull/137 (OPEN, DRAFT).
+PR_HEAD_OBSERVED: 2602fe3d98bcc481efa16cce9f3f41349e0c48c5 before metadata-only recovery migration.
+MAIN_HEAD_LAST_RECHECKED: 4637f83b7cb4dcf48fafa9db98852a1332416ab9; no drift. Actual changed files verified: 9 implementation/test paths + 3 own recovery records; no unexplained files. Recovery records migrated from WIP to PR137 in this metadata-only follow-up. Open PRs #123/#120/#105 retain their previously inspected heads and no path overlap.
+Reviews: none as observed. Live GitHub reports mergeable=true; mergeable_state=unstable while CI is running. Implementation-head check run list inspected: several legacy negative-control jobs passed, other checks still in progress; no aggregate CI PASS claimed. Metadata-only follow-up head must be read live for current check status. Dashboard-specific new tests require their explicit commands during independent review.
+Exact continuation: fetch current PR head, read this report, run the two new suites and existing WP16 suite, then use a real browser to inspect #dashboard timing/expansions, 320/390 px, benchmark freezing, source refresh and leaving/returning to the route. Preserve current publisher, status logic, grants, scheduler, and delivery semantics. No merge/deploy performed.
