@@ -13,7 +13,7 @@ Hosted via GitHub Pages from the `feat/landing-page` branch (draft PR; not yet m
 | **Timeline** | Every event across actors, filterable; flow strip; raw-text panel for selected event |
 | **Decision card** | The ask, evidence link, and a prefilled "Answer this decision" button |
 | **Owner inputs** | All Owner inputs with state (open / acknowledged / handled) and handler receipts |
-| **Progress page** | Sub-tab **G9v3.5 Pilot Progress**: *My actions* (what the Owner must do, with files and copy-ready replies) and *Progress* (milestones and stages with chat ids). Read live from GitHub issue #138, which OTM rewrites at each event. Each reply has **Copy reply** and **Send to OTM**, which opens the Owner Input issue form prefilled (you tick "I am the Owner" and submit); the page itself posts nothing |
+| **Progress page** | Sub-tab **G9v3.5 Pilot Progress**: an **Overview** of every child topic of the pilot (for example G9v3.5 Physics pilot-NLM, shared tooling) and, per topic, three views: *My actions*, *Progress* and *Grounding fixtures*. Everything is read from JSON files in `site/progress-data/<project>/` (see its README). **Send to OTM**, and the + / - on a fixture, open the Owner Reply issue form prefilled; the page itself posts nothing |
 | **Protocol** | `protocol/TEAM_PROTOCOL.md` rendered with table of contents |
 | **Benchmarks** | Switch to a frozen benchmark snapshot; posting disabled |
 

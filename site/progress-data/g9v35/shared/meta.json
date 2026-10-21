@@ -1,0 +1,43 @@
+{
+  "title": "G9v3.5 shared tooling",
+  "subtitle": "Owner-bank identity guard (PR 305), CI and custody steps every topic depends on",
+  "milestones": {
+    "M0": {
+      "order": 0,
+      "name": "Approval",
+      "full": "Owner approval"
+    },
+    "M1": {
+      "order": 1,
+      "name": "Build",
+      "full": "Guard built"
+    },
+    "M2": {
+      "order": 2,
+      "name": "Review",
+      "full": "Review and decisions"
+    },
+    "M3": {
+      "order": 3,
+      "name": "Acceptance",
+      "full": "Owner acceptance"
+    },
+    "M4": {
+      "order": 4,
+      "name": "Custody",
+      "full": "Custody before import"
+    }
+  },
+  "lanes": {
+    "G": {
+      "order": 1,
+      "title": "Owner-bank guard (PR 305)",
+      "sub": "Draft pull request in Grade9v3.5. Shared tooling, no private content."
+    },
+    "J": {
+      "order": 2,
+      "title": "Before any protected import",
+      "sub": "A prerequisite for every topic's import step."
+    }
+  }
+}

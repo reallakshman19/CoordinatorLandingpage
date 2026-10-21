@@ -1,0 +1,51 @@
+{
+  "schema": 2,
+  "project": {
+    "key": "g9v35",
+    "title": "G9v3.5 Physics pilot",
+    "subtitle": "Children of the pilot: one page set per topic, plus the shared tooling",
+    "updatedAt": "2026-10-21T15:34:35Z",
+    "updatedBy": "OTM",
+    "staleAfterMin": 120
+  },
+  "chats": {
+    "oracle": {
+      "label": "Oracle O3",
+      "id8": "6ad87417"
+    },
+    "pqrt": {
+      "label": "PQRT author",
+      "id8": "6ad7ee24"
+    },
+    "pchk": {
+      "label": "PCHK checker",
+      "id8": "6ad8a3e0"
+    },
+    "pgrd": {
+      "label": "PGRD coder",
+      "id8": "6ad8a9bb"
+    },
+    "ir": {
+      "label": "IR-G9V35",
+      "id8": "01a159bb",
+      "url": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/135",
+      "note": "Runs in ChatGPT Work (Codex). The link opens its GitHub inbox, issue 135."
+    }
+  },
+  "topics": [
+    {
+      "key": "nlm",
+      "label": "NLM",
+      "order": 1,
+      "title": "G9v3.5 Physics pilot-NLM",
+      "updatedAt": "2026-10-21T15:34:35Z"
+    },
+    {
+      "key": "shared",
+      "label": "Shared tooling",
+      "order": 2,
+      "title": "G9v3.5 shared tooling",
+      "updatedAt": "2026-10-21T15:34:35Z"
+    }
+  ]
+}
