@@ -89,7 +89,7 @@
     "lane": "P",
     "milestone": "M2",
     "name": "Drafts reach the handoff folder",
-    "sub": "0 of 2 saved. The Drive tool needs a file reference PQRT cannot make.",
+    "sub": "0 of 2 saved. Route A ruled out. Oracle recommends B: PQRT rechecks its files privately first; upload only with a real bridge and writer identity (#128 6320447599).",
     "state": "BLOCKED",
     "actor": "YOU",
     "chats": [
@@ -107,7 +107,7 @@
     ],
     "detail": {
       "who": "You.",
-      "do": "Reply with Route A, B or C (card D3 on this page).",
+      "do": "Reply Route B (step 1 only) or Route C (card D3 on this page).",
       "files": "The two ZIPs above. Target: Drive folder `Local Agent Handoffs`.",
       "done": "Both files are listed in the folder and PQRT's recomputed size and SHA-256 match."
     }
