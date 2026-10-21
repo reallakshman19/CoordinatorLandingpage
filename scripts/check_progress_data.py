@@ -1,135 +1,180 @@
 #!/usr/bin/env python3
-"""Validate site/progress-data/ (the JSON behind the landing page tab "Progress page").
-
-Run from the repository root:  python scripts/check_progress_data.py
-Exit code 1 and one line per problem when something is wrong. See docs/PROGRESS_PAGE.md.
-"""
+"""Validate Progress JSON against strict stdlib schemas and cross-file invariants."""
+import argparse
 import json
 import re
 import sys
 from pathlib import Path
 
+from progress_schema import UnsupportedKeyword, check_schema, validate
+
 ROOT = Path(__file__).resolve().parents[1] / "site" / "progress-data"
-STATES = {"VERIFIED", "SUBMITTED", "IN_PROGRESS", "BLOCKED", "NOT_STARTED", "STALE", "UNKNOWN", "NOT_APPLICABLE"}
-ACTORS = {"-", "YOU", "OTM", "ORACLE", "IR", "CODER", "PQRT", "PCHK"}
-SECTIONS = ("repository", "issues", "pullRequests", "roadmap", "highRoi", "future", "intent", "inputs", "knownIssues", "pending")
+SECTIONS = ("repository", "issues", "pullRequests", "roadmap", "highRoi",
+            "future", "intent", "inputs", "knownIssues", "pending")
 TOPIC_FILES = ("meta", "stages", "actions", "fixtures")
 KEY = re.compile(r"^[a-z0-9][a-z0-9-]*$")
-FORBIDDEN = [(re.compile(r"chatgpt\.com/c/|chat\.openai\.com"), "ChatGPT chat link (public repo: id8 only)"),
-             (re.compile(r"drive\.google\.com|docs\.google\.com"), "Google Drive link"),
-             (re.compile(r"[\w.+-]+@[\w-]+\.[\w.]+"), "email address")]
-errors = []
+ID8 = re.compile(r"^[0-9a-f]{8}$")
+BLOCKED = [(re.compile(r"drive\.google\.com|docs\.google\.com"), "Google Drive link"),
+           (re.compile(r"[\w.+-]+@[\w-]+\.[\w.]+"), "email address")]
+CHATGPT = re.compile(r"chatgpt\.com/c/|chat\.openai\.com")
 
 
-def err(where, msg):
-    errors.append(f"{where}: {msg}")
+def check_tree(root=ROOT, private=False):
+    errors = []
 
+    def err(where, message):
+        errors.append(f"{where}: {message}")
 
-def load(path):
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, ValueError) as e:
-        err(path.relative_to(ROOT), f"cannot read JSON ({e})")
-        return None
+    def load(path):
+        where = str(path.relative_to(root))
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            err(where, f"cannot read JSON ({exc})")
+            return None
+        return value
 
+    def schema_check(name, value, where):
+        path = root / "schema" / f"{name}.schema.json"
+        try:
+            schema = json.loads(path.read_text(encoding="utf-8"))
+            check_schema(schema)
+            for message in validate(value, schema):
+                err(where, f"schema {name}: {message}")
+        except (OSError, ValueError, TypeError) as exc:
+            err(where, f"invalid or unsupported schema {name}: {exc}")
 
-def scan(path):
-    text = path.read_text(encoding="utf-8")
-    for rx, what in FORBIDDEN:
-        if rx.search(text):
-            err(path.relative_to(ROOT), f"contains a {what}")
+    def scan(path, is_private):
+        where = str(path.relative_to(root))
+        try:
+            raw = path.read_text(encoding="utf-8")
+        except OSError as exc:
+            err(where, f"cannot scan ({exc})")
+            return
+        for rx, what in BLOCKED:
+            if rx.search(raw):
+                err(where, f"contains a {what}")
+        if not is_private and CHATGPT.search(raw):
+            err(where, "contains a ChatGPT chat link (public repo: id8 only)")
 
+    def links(value, where):
+        if isinstance(value, dict):
+            for k, v in value.items():
+                if k in ("u", "url", "ref") and isinstance(v, str) and v and not v.startswith("https://"):
+                    err(where, f"link must start with https:// ({v[:50]})")
+                links(v, where)
+        elif isinstance(value, list):
+            for v in value:
+                links(v, where)
 
-def check_urls(where, obj):
-    if isinstance(obj, dict):
-        for k, v in obj.items():
-            if k in ("u", "url", "ref") and isinstance(v, str) and v and not v.startswith("https://"):
-                err(where, f"link must start with https:// ({v[:50]})")
-            check_urls(where, v)
-    elif isinstance(obj, list):
-        for v in obj:
-            check_urls(where, v)
-
-
-def main():
-    projects = load(ROOT / "projects.json")
-    for p in (projects or {}).get("projects", []):
+    projects = load(root / "projects.json")
+    if not isinstance(projects, dict):
+        return errors or ["projects.json: expected object"]
+    schema_check("projects", projects, "projects.json")
+    scan(root / "projects.json", private)
+    links(projects, "projects.json")
+    seen_projects = set()
+    for p in projects.get("projects", []):
+        if not isinstance(p, dict):
+            err("projects.json", "project entry must be an object")
+            continue
         key = p.get("key", "")
+        if not isinstance(key, str) or not KEY.fullmatch(key) or key in seen_projects:
+            err("projects.json", f"invalid or duplicate project key {key!r}")
+            continue
+        seen_projects.add(key)
         if p.get("mode", "coordinator") not in ("coordinator", "standalone-oracle"):
-            err("projects.json", f"{key}: unknown workflow mode {p.get('mode')!r}")
-        if not KEY.match(key) or not p.get("label"):
-            err("projects.json", f"bad project entry {p}")
-            continue
-        base = ROOT / key
+            err("projects.json", f"{key}: unknown workflow mode")
+        own_private = private or p.get("visibility", "public") == "private"
+        base = root / key
         index = load(base / "index.json")
-        if index is None:
+        if not isinstance(index, dict):
             continue
-        scan(base / "index.json")
-        for c, chat in (index.get("chats") or {}).items():
-            if not re.fullmatch(r"[0-9a-f]{8}", str(chat.get("id8", ""))):
-                err(f"{key}/index.json", f"chat {c}: id8 must be 8 hex characters")
-            if chat.get("url") and not str(chat["url"]).startswith("https://github.com/"):
-                err(f"{key}/index.json", f"chat {c}: only github.com links are allowed")
-        proj = index.get("project", {})
-        for f in ("title", "updatedAt", "updatedBy", "staleAfterMin"):
-            if f not in proj:
-                err(f"{key}/index.json", f"project.{f} missing")
+        schema_check("index", index, f"{key}/index.json")
+        scan(base / "index.json", own_private)
+        links(index, f"{key}/index.json")
+        chats = index.get("chats", {})
+        if not isinstance(chats, dict):
+            continue
+        for ck, chat in chats.items():
+            if not isinstance(chat, dict):
+                continue
+            if not ID8.fullmatch(str(chat.get("id8", ""))):
+                err(f"{key}/index.json", f"chat {ck}: id8 must be 8 hex characters")
+            url = chat.get("url")
+            if url and isinstance(url, str) and not own_private and not url.startswith("https://github.com/"):
+                err(f"{key}/index.json", f"chat {ck}: only github.com links are allowed")
         if p.get("mode") == "standalone-oracle":
             from standalone_oracle_relay import validate_audit
-            for message in validate_audit(base):
-                err(f"{key}/audit.json", message)
+            for problem in validate_audit(base):
+                err(f"{key}/audit.json", problem)
         seen = set()
         for t in index.get("topics", []):
+            if not isinstance(t, dict):
+                continue
             tk = t.get("key", "")
-            if not KEY.match(tk) or tk in seen or not t.get("label"):
-                err(f"{key}/index.json", f"bad or duplicate topic entry {t}")
+            if not isinstance(tk, str) or not KEY.fullmatch(tk) or tk in seen:
+                err(f"{key}/index.json", f"invalid or duplicate topic key {tk!r}")
                 continue
             seen.add(tk)
             if t.get("planned"):
                 continue
-            tdir = base / tk
             data = {}
-            for n in TOPIC_FILES:
-                d = load(tdir / f"{n}.json")
-                if d is None:
+            for name in TOPIC_FILES:
+                path = base / tk / f"{name}.json"
+                value = load(path)
+                if value is None:
                     break
-                scan(tdir / f"{n}.json")
-                check_urls(f"{key}/{tk}/{n}.json", d)
-                data[n] = d
-            if len(data) < 4:
+                schema_check(name, value, f"{key}/{tk}/{name}.json")
+                scan(path, own_private)
+                links(value, f"{key}/{tk}/{name}.json")
+                data[name] = value
+            if len(data) != 4 or any(not isinstance(v, dict) for v in data.values()):
                 continue
-            where = f"{key}/{tk}"
-            miles, lanes = data["meta"].get("milestones", {}), data["meta"].get("lanes", {})
+            prefix = f"{key}/{tk}"
             for sid, s in data["stages"].items():
-                if s.get("state") not in STATES:
-                    err(f"{where}/stages.json", f"{sid}: state {s.get('state')!r} not in the vocabulary")
-                if s.get("actor", "-") not in ACTORS:
-                    err(f"{where}/stages.json", f"{sid}: actor {s.get('actor')!r} unknown")
-                if s.get("milestone") not in miles:
-                    err(f"{where}/stages.json", f"{sid}: milestone {s.get('milestone')!r} not in meta.json")
-                if s.get("lane") not in lanes:
-                    err(f"{where}/stages.json", f"{sid}: lane {s.get('lane')!r} not in meta.json")
+                if not isinstance(s, dict):
+                    continue
+                if s.get("milestone") not in data["meta"].get("milestones", {}):
+                    err(f"{prefix}/stages.json", f"{sid}: unknown milestone {s.get('milestone')!r}")
+                if s.get("lane") not in data["meta"].get("lanes", {}):
+                    err(f"{prefix}/stages.json", f"{sid}: unknown lane {s.get('lane')!r}")
                 for c in s.get("chats", []):
-                    if c not in (index.get("chats") or {}):
-                        err(f"{where}/stages.json", f"{sid}: chat {c!r} not in index.json chats")
+                    if c not in chats:
+                        err(f"{prefix}/stages.json", f"{sid}: chat key {c!r} not in index.json")
             for cid, a in data["actions"].items():
-                if a.get("status") not in ("open", "done"):
-                    err(f"{where}/actions.json", f"{cid}: status must be open or done")
-                for s in a.get("stages", []):
-                    if s not in data["stages"]:
-                        err(f"{where}/actions.json", f"{cid}: stage {s!r} not in stages.json")
-                if a.get("status") == "open" and not any(o.get("suggested") for o in a.get("options", [])):
-                    err(f"{where}/actions.json", f"{cid}: an open card needs one suggested option")
-            for sec in data["fixtures"]:
+                if not isinstance(a, dict):
+                    continue
+                for sid in a.get("stages", []):
+                    if sid not in data["stages"]:
+                        err(f"{prefix}/actions.json", f"{cid}: unknown stage {sid!r}")
+                if a.get("status") == "open" and sum(bool(o.get("suggested")) for o in a.get("options", []) if isinstance(o, dict)) != 1:
+                    err(f"{prefix}/actions.json", f"{cid}: open card needs exactly one suggested option")
+                if a.get("status") == "done":
+                    ans = a.get("answer")
+                    for field in ("text", "at", "ref"):
+                        if not isinstance(ans, dict) or not isinstance(ans.get(field), str) or not ans[field]:
+                            err(f"{prefix}/actions.json", f"{cid}: done card needs answer.{field}")
+            for sec, entries in data["fixtures"].items():
                 if sec not in SECTIONS:
-                    err(f"{where}/fixtures.json", f"unknown section {sec!r}")
-                for e in data["fixtures"][sec]:
-                    if not e.get("t"):
-                        err(f"{where}/fixtures.json", f"{sec}: an entry has no text (t)")
-    for e in errors:
-        print("ERROR", e)
-    print("progress-data OK" if not errors else f"{len(errors)} problem(s)")
-    return 1 if errors else 0
+                    err(f"{prefix}/fixtures.json", f"unknown fixture section {sec!r}")
+                elif isinstance(entries, list):
+                    for e in entries:
+                        if isinstance(e, dict) and not e.get("t"):
+                            err(f"{prefix}/fixtures.json", f"{sec}: entry has no text")
+    return errors
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--data", type=Path, default=ROOT)
+    parser.add_argument("--private", action="store_true")
+    args = parser.parse_args(argv)
+    problems = check_tree(args.data.resolve(), args.private)
+    for problem in problems:
+        print("ERROR", problem)
+    print("progress-data OK" if not problems else f"{len(problems)} problem(s)")
+    return int(bool(problems))
 
 
 if __name__ == "__main__":
