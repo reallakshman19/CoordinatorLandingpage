@@ -12,8 +12,9 @@
 'use strict';
 
 const PP_PAGES = [
-  { key: 'g9v35', label: 'G9v3.5 Pilot Progress', issue: 138 },
+  { key: 'g9v35', label: 'G9v3.5 Pilot Progress', issue: 138, project: 'g9v35' },
 ];
+const PP_SITE = 'https://reallakshman19.github.io/CoordinatorLandingpage/';
 const PP_POLL_MS = 120000;
 const PP_FRESH_MS = 60000;
 const PP_SYM = { VERIFIED: '✓', SUBMITTED: '↑', IN_PROGRESS: '◐', BLOCKED: '!', NOT_STARTED: '○', STALE: '↻', UNKNOWN: '?', NOT_APPLICABLE: '–', PARTIAL: '◑' };
@@ -98,7 +99,22 @@ function ppTable(t) {
   wrap.appendChild(tb);
   return wrap;
 }
-function ppReplyBox(text) {
+// "Send to OTM" opens the existing Owner Input issue form with the reply filled in. The Owner ticks
+// "I am the Owner" and submits; nothing is posted from this page, and no token is involved.
+function ppSendUrl(ctx, text) {
+  const params = new URLSearchParams({
+    template: 'owner-reply.yml',
+    title: `[Owner input] DECISION ${ctx.card}/${ctx.option} (${ctx.project})`,
+    labels: 'owner-input',
+    project: ctx.project,
+    target: 'OwnerTeammember',
+    type: 'DECISION',
+    text,
+    evidence_link: `${PP_SITE}#progress-page/${ctx.page}/actions`,
+  });
+  return `${NEW_ISSUE_BASE}?${params}`;
+}
+function ppReplyBox(text, ctx) {
   const w = el('div', 'pp-replybox');
   const pre = el('pre', 'pp-reply', text);
   const b = el('button', 'btn btn-small', 'Copy reply');
@@ -114,10 +130,21 @@ function ppReplyBox(text) {
       done('Selected: press Ctrl+C');
     }
   });
-  w.appendChild(pre); w.appendChild(b);
+  const row = el('div', 'pp-sendrow');
+  row.appendChild(b);
+  if (ctx) {
+    const a = el('a', 'btn btn-small btn-primary', 'Send to OTM');
+    a.href = ppSendUrl(ctx, text);
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.title = 'Opens GitHub with this reply filled in the Owner Input form';
+    row.appendChild(a);
+    row.appendChild(el('span', 'pp-sendhint', 'Opens GitHub with this reply filled in. Tick "I am the Owner", then Submit new issue.'));
+  }
+  w.appendChild(pre); w.appendChild(row);
   return w;
 }
-function ppOption(o) {
+function ppOption(o, a, page) {
   const d = el('div', 'pp-opt' + (o.suggested ? ' pp-rec' : ''));
   const lab = el('div', 'pp-olabel');
   lab.appendChild(el('b', '', o.label || o.key));
@@ -130,11 +157,11 @@ function ppOption(o) {
     o.steps.forEach(s => ol.appendChild(ppRich(el('li'), s)));
     body.appendChild(ol);
   }
-  if (o.reply) body.appendChild(ppReplyBox(o.reply));
+  if (o.reply) body.appendChild(ppReplyBox(o.reply, { card: a.id, option: o.key, project: page.project, page: page.key }));
   d.appendChild(body);
   return d;
 }
-function ppActionCard(a) {
+function ppActionCard(a, page) {
   const c = el('article', 'card pp-dcard');
   c.id = 'pp-act-' + a.id;
   const head = el('div', 'pp-dhead');
@@ -145,7 +172,7 @@ function ppActionCard(a) {
   if (a.lead) c.appendChild(ppRich(el('p', 'pp-lead'), a.lead));
   (a.tables || []).forEach(t => c.appendChild(ppTable(t)));
   if (a.ask) c.appendChild(ppRich(el('p', 'pp-ask'), a.ask));
-  (a.options || []).forEach(o => c.appendChild(ppOption(o)));
+  (a.options || []).forEach(o => c.appendChild(ppOption(o, a, page)));
   if (a.links && a.links.length) {
     const n = el('p', 'note', 'Links: ');
     a.links.forEach((l, i) => { if (i) n.appendChild(document.createTextNode(', ')); n.appendChild(ppLink(l.u, l.l)); });
@@ -153,7 +180,7 @@ function ppActionCard(a) {
   }
   return c;
 }
-function ppAllCard(open) {
+function ppAllCard(open, page) {
   const parts = [];
   open.forEach(a => {
     const o = (a.options || []).find(x => x.suggested);
@@ -164,7 +191,7 @@ function ppAllCard(open) {
   const c = el('article', 'card pp-dcard pp-all');
   c.appendChild(el('h3', '', `Answer all ${word} at once`));
   c.appendChild(el('p', 'pp-lead', 'This joins the suggested reply of each open card. Fill any square brackets, then send it to OTM.'));
-  c.appendChild(ppReplyBox(`All ${word}: ${parts.join(' ')}`));
+  c.appendChild(ppReplyBox(`All ${word}: ${parts.join(' ')}`, { card: 'ALL', option: 'suggested', project: page.project, page: page.key }));
   return c;
 }
 function ppPlainList(items) {
@@ -174,7 +201,7 @@ function ppPlainList(items) {
 }
 
 // ── view 1: My actions ────────────────────────────────────
-function ppDrawActions(root, D) {
+function ppDrawActions(root, D, page) {
   const acts = ppList(D.actions);
   const open = acts.filter(a => a.status === 'open');
   const done = acts.filter(a => a.status === 'done');
@@ -184,8 +211,8 @@ function ppDrawActions(root, D) {
     sec.appendChild(el('div', 'pp-empty', 'Nothing waits on you right now. When an agent or OTM needs a decision, it appears here with the files involved and a reply to copy.'));
   } else {
     sec.appendChild(el('p', 'pp-intro', `${open.length} open. Each card says what to reply. Paste your reply in the chat with OTM, and OTM records it and moves the work on.`));
-    open.forEach(a => sec.appendChild(ppActionCard(a)));
-    const all = ppAllCard(open);
+    open.forEach(a => sec.appendChild(ppActionCard(a, page)));
+    const all = ppAllCard(open, page);
     if (all) sec.appendChild(all);
   }
   root.appendChild(sec);
@@ -405,7 +432,7 @@ function ppDrawPilot(body, page, tab, st) {
   if (st.loading) panel.appendChild(el('div', 'loading', 'Loading live progress…'));
   else if (!D) panel.appendChild(el('div', 'pp-empty', 'No data to show yet.'));
   else if (tab === 'progress') ppDrawProgress(panel, D);
-  else ppDrawActions(panel, D);
+  else ppDrawActions(panel, D, page);
   body.appendChild(panel);
   body.appendChild(el('p', 'note pp-foot', 'Stage states are written by OTM, the Owner\'s teammate session, at each event, and read from GitHub issue #' + page.issue + ' every two minutes. The stage list is inferred from the Oracle\'s packets. This page changes nothing on GitHub.'));
 }

@@ -1,0 +1,52 @@
+name: Owner Reply
+description: One-click reply from the landing page Progress page ("Send to OTM"). Project, target, type and your reply come filled in. Tick the confirmation and submit.
+title: "[Owner input] DECISION "
+labels: ["owner-input"]
+body:
+  - type: input
+    id: project
+    attributes:
+      label: Project
+      description: Filled in by the Progress page. Change it only if this reply belongs to another project.
+    validations:
+      required: true
+
+  - type: input
+    id: target
+    attributes:
+      label: Target
+      description: Filled in by the Progress page (OwnerTeammember reads it).
+    validations:
+      required: true
+
+  - type: input
+    id: type
+    attributes:
+      label: Input type
+      description: Filled in by the Progress page (DECISION answers a card).
+    validations:
+      required: true
+
+  - type: textarea
+    id: text
+    attributes:
+      label: Your instruction or message
+      description: |
+        The reply is filled in from the card option you chose. Edit it only if you mean something different.
+        OTM compares it with the reply offered on the open card; a reply that differs is shown back to you in chat before anything happens.
+    validations:
+      required: true
+
+  - type: input
+    id: evidence_link
+    attributes:
+      label: Evidence link (optional)
+      description: Link to the card this reply answers (filled in by the Progress page).
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirmation
+      options:
+        - label: I am the Owner. This input is mine and is time-stamped by GitHub.
+          required: true
