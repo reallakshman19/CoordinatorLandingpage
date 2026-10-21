@@ -5,8 +5,8 @@
     "stages": [
       "P4"
     ],
-    "title": "Private drafts: how do the two files reach the folder?",
-    "lead": "PQRT wrote two private draft files, but its Drive tool cannot upload them: it needs a file reference that PQRT cannot make from its local files. Nothing is saved yet (0 of 2). You said (21 Oct): the two candidate files are not available to you, so Route A cannot work.",
+    "title": "Private drafts: route B or C? (route A is ruled out)",
+    "lead": "PQRT's two private draft files cannot reach the folder by the Drive tool, and you cannot get them to save by hand (Route A is ruled out). The Oracle's packet (#128 6320447599) says: the files may still exist in PQRT's own session, so first check that privately. Moving them needs a real file-reference bridge and a Drive identity that is allowed to write to the folder. Neither exists yet.",
     "tables": [
       {
         "cols": [
@@ -35,46 +35,30 @@
     ],
     "options": [
       {
-        "key": "A",
-        "label": "A (ruled out)",
-        "suggested": false,
-        "body": "Ruled out by you on 21 Oct: the files are not available to save by hand.",
-        "steps": [
-          "You reply with the text below. This also approves showing the files in PQRT's own private chat, which is an exception to \"Drive folder only\".",
-          "OTM asks PQRT to attach the two ZIPs in its chat.",
-          "You download both and drag them into the Drive folder `Local Agent Handoffs` (My Drive). Keep the file names exactly. Do not open, edit or share them.",
-          "You tell OTM \"saved\".",
-          "OTM attaches both files from Drive to PQRT. PQRT recomputes size and SHA-256, which must match the table above.",
-          "Only then does OTM attach them to the checker PCHK, which recomputes the hashes again before it reviews."
-        ],
-        "reply": "Drive: Route A. PQRT may show phy-nlm-010-option-diagnosis-a1.zip and phy-nlm-022-diagnosis-only-a1.zip in its own chat, and I will save them into Local Agent Handoffs myself.",
-        "short": "Drive: Route A, I will save phy-nlm-010-option-diagnosis-a1.zip and phy-nlm-022-diagnosis-only-a1.zip into Local Agent Handoffs myself."
-      },
-      {
         "key": "B",
-        "label": "B",
-        "suggested": false,
-        "body": "Wait for a connector that accepts raw file content. Nobody has found one that does, so this has no date.",
-        "reply": "Drive: Route B. Wait for a connector that takes raw file content; do not use any other route.",
-        "short": "Drive: Route B, wait for a connector that takes raw file content."
+        "label": "B (suggested)",
+        "suggested": true,
+        "body": "Step 1 now: PQRT privately rechecks that both existing ZIPs (and the Physics source it holds) still exist, with name, size and SHA-256 against the receipt above. No upload yet. Step 2 only when a real file-reference bridge and a writer identity for the folder are shown to work: one upload retry of the unchanged files, then a byte check of each saved file. If the files are gone, regeneration is allowed only if PQRT still holds the authorized source; otherwise it stops and you restore the source.",
+        "reply": "Drive: Route B, step 1 only. PQRT privately rechecks that both existing ZIPs and its Physics source still exist (name, size, SHA-256), no upload. An upload retry only after a real file-reference bridge and a folder writer identity are shown to work.",
+        "short": "Drive: Route B, step 1 only: PQRT rechecks privately that both ZIPs and its source still exist, no upload until a real bridge and writer identity work."
       },
       {
         "key": "C",
-        "label": "C (suggested now)",
-        "suggested": true,
-        "body": "Stay blocked until you give another way to move the files.",
-        "reply": "Drive: Route C. Stay blocked. I will give you another way to move the files.",
-        "short": "Drive: Route C, stay blocked."
+        "label": "C",
+        "suggested": false,
+        "body": "Hold. No more upload attempts, no new authoring and no sharing changes. You provide a secure way to move binary files, then we restart.",
+        "reply": "Drive: Route C. Hold. No more upload attempts or new authoring until I provide a secure way to move binary files.",
+        "short": "Drive: Route C, hold."
       }
     ],
     "links": [
       {
-        "l": "PQRT report",
-        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317616600"
+        "l": "Oracle packet",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6320447599"
       },
       {
-        "l": "Oracle routes",
-        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317846442"
+        "l": "PQRT report",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317616600"
       }
     ]
   }
