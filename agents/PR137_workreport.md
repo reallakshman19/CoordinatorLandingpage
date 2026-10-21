@@ -10,9 +10,9 @@ BRANCH: codex/otm-dashboard-20261021
 REPORT_BASIS_HEAD: 2602fe3d98bcc481efa16cce9f3f41349e0c48c5
 MAIN_HEAD_LAST_CHECKED: 4637f83b7cb4dcf48fafa9db98852a1332416ab9
 MERGE_BASE: 4637f83b7cb4dcf48fafa9db98852a1332416ab9
-REPORT_SYNC: CURRENT (only recovery metadata follows the implementation basis)
+REPORT_SYNC: STALE until metadata sync to benchmark-preservation fix head
 GROUNDING_EPOCH: GE-dashboard-20261021-01
-CURRENT_STAGE: AWAITING_INDEPENDENT_REVIEW
+CURRENT_STAGE: VALIDATED_BENCHMARK_FIX
 APPENDIX_A_STATUS: NOT_REQUIRED (new standard UI work; no engineering-critical takeover)
 EXACT_NEXT_ACTION: run independent browser QA and review latest_report/timer boundaries on the PR head; do not merge without Owner authorization.
 
@@ -74,3 +74,6 @@ PR_HEAD_OBSERVED: 2602fe3d98bcc481efa16cce9f3f41349e0c48c5 before metadata-only 
 MAIN_HEAD_LAST_RECHECKED: 4637f83b7cb4dcf48fafa9db98852a1332416ab9; no drift. Actual changed files verified: 9 implementation/test paths + 3 own recovery records; no unexplained files. Recovery records migrated from WIP to PR137 in this metadata-only follow-up. Open PRs #123/#120/#105 retain their previously inspected heads and no path overlap.
 Reviews: none as observed. Live GitHub reports mergeable=true; mergeable_state=unstable while CI is running. Implementation-head check run list inspected: several legacy negative-control jobs passed, other checks still in progress; no aggregate CI PASS claimed. Metadata-only follow-up head must be read live for current check status. Dashboard-specific new tests require their explicit commands during independent review.
 Exact continuation: fetch current PR head, read this report, run the two new suites and existing WP16 suite, then use a real browser to inspect #dashboard timing/expansions, 320/390 px, benchmark freezing, source refresh and leaving/returning to the route. Preserve current publisher, status logic, grants, scheduler, and delivery semantics. No merge/deploy performed.
+
+## Current regression fix checkpoint
+CI at 90a6c2451fccca083aed31300f61581c7c6d6832 exposed an INTRODUCED_BY_PR frozen-output regression: latest_report was added to benchmark status-bar rows. Fixed by attaching that optional envelope only when the project view is not a frozen benchmark. No frozen fixture, expected hash, status rule, or workflow changed. Added a focused exclusion regression. Current local validation: 12 Node Dashboard + 6 report/publisher + 26 unchanged WP16 + 48 unchanged extraction/lineage/schema/intake checks all PASS. The exact original generated-fixture oracle is restored: 0a7ebd12ca385963c97adadfeb033a8f88777a4ec6ad9d1bcddf0e785e4095a8. Earlier 43-check/fingerprint records are historical for the pre-fix basis. Next metadata-only commit will sync this report to the resulting fix SHA. Browser QA and independent review remain NOT_RUN; latest-head CI pending.

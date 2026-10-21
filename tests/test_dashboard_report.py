@@ -63,6 +63,14 @@ class DashboardReport(unittest.TestCase):
         self.assertEqual(data["instances"][0]["light"], "yellow")
         self.assertEqual(data["coverage"]["expected"], data["coverage"]["projected"])
 
+    def test_frozen_benchmark_rows_remain_byte_compatible_without_new_envelope(self):
+        from status_bar import build_status_bar
+        registry = {"project": "p", "repository": "owner/product", "agents": [
+            {"chat_id8": "12345678", "generation": 2, "status": "active", "role": "worker"}]}
+        view = {"project": "p", "agents": [self.agent], "is_benchmark": True}
+        data = build_status_bar({"p": registry}, {"p": view}, NOW, include_continuity=False)
+        self.assertNotIn("latest_report", data["instances"][0])
+
 
 if __name__ == "__main__":
     unittest.main()
