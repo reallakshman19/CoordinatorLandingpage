@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": {
+    "type": "object",
+    "properties": {
+      "order": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "status": {
+        "enum": [
+          "open",
+          "done"
+        ]
+      },
+      "stages": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "title": {
+        "type": "string",
+        "minLength": 1
+      },
+      "lead": {
+        "type": "string"
+      },
+      "tables": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "cols": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "mono": {
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            },
+            "rows": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "required": [
+            "cols",
+            "rows"
+          ],
+          "additionalProperties": true
+        }
+      },
+      "ask": {
+        "type": "string"
+      },
+      "options": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "minLength": 1
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1
+            },
+            "suggested": {
+              "type": "boolean"
+            },
+            "body": {
+              "type": "string",
+              "minLength": 1
+            },
+            "steps": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "reply": {
+              "type": "string",
+              "minLength": 1
+            },
+            "short": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "key",
+            "label",
+            "suggested",
+            "body",
+            "reply",
+            "short"
+          ],
+          "additionalProperties": true
+        }
+      },
+      "links": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "l": {
+              "type": "string",
+              "minLength": 1
+            },
+            "u": {
+              "type": "string",
+              "pattern": "^https://"
+            }
+          },
+          "required": [
+            "l",
+            "u"
+          ],
+          "additionalProperties": true
+        }
+      },
+      "answer": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "at": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ref": {
+            "type": "string",
+            "pattern": "^https://"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "required": [
+      "order",
+      "status",
+      "title"
+    ],
+    "additionalProperties": true
+  }
+}
