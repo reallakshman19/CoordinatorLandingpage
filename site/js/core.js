@@ -4,7 +4,7 @@
  * Pure vanilla JS, no frameworks.
  * Hash routing: #home, #project/<name>, #agent/<id8>, #timeline,
  *               #decision/<project>/<id>, #owner-inputs, #protocol,
- *               #benchmarks, #benchmark/<project>
+ *               #benchmarks, #benchmark/<project>, #progress-page[/<page>[/<view>]]
  *
  * Data is loaded from site/data/*.json (pre-built by the GHA workflow).
  * In benchmark mode, data comes from site/data/benchmarks/*.json.
@@ -249,6 +249,7 @@ async function render() {
         .renderNextNudge(app, state.benchmarkMode, LOADED_SITE_VERSION);
       break;
     case 'status-bar': await renderStatusBar(app); break;
+    case 'progress-page': await renderProgressPage(app, arg1, arg2); break;
     case 'decision': await renderDecision(app, arg1, arg2); break;
     case 'owner-inputs': await renderOwnerInputs(app); break;
     case 'trace': await renderTrace(app, arg1); break;
