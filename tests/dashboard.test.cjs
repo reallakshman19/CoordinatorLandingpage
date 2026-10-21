@@ -140,3 +140,11 @@ test('source outage leaves an explicit unknown view with no timer interval', asy
   assert(h.all().some(e => e.textContent.includes('projection unavailable')));
   assert.equal(h.intervals.size, 0);
 });
+
+test('Dashboard project count uses displayed status-bar source if auxiliary catalog is missing', async () => {
+  const h = harness(source());
+  h.context.state.projects = []; // projects.json unavailable; status-bar still has a valid project.
+  await h.context.renderDashboard(h.app);
+  assert(h.all().some(e => e.textContent === '1 project · coordinator cycles in project view'));
+  h.context.stopDashboard();
+});
