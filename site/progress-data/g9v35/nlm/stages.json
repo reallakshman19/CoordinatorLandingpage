@@ -1,0 +1,205 @@
+{
+  "S1": {
+    "order": 1,
+    "lane": "S",
+    "milestone": "M0",
+    "name": "Pilot scope set",
+    "sub": "You lifted the hold for the Physics pilot only. Math, Nudge and CIIFR stay held.",
+    "state": "VERIFIED",
+    "actor": "-",
+    "chats": [],
+    "refs": [
+      {
+        "l": "#1 · 6312266867",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6312266867"
+      }
+    ],
+    "detail": {
+      "result": "The hold is lifted for the Physics pilot only.",
+      "next": "Nothing."
+    }
+  },
+  "P1": {
+    "order": 2,
+    "lane": "P",
+    "milestone": "M1",
+    "name": "Checker review of 007, 010 and 022 (Y1)",
+    "sub": "Report posted. You chose Option A after reading it.",
+    "state": "SUBMITTED",
+    "actor": "-",
+    "chats": [
+      "pchk"
+    ],
+    "refs": [
+      {
+        "l": "#128 · 6315662483",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6315662483"
+      }
+    ],
+    "detail": {
+      "result": "The checker's report is posted on #128.",
+      "next": "Nothing."
+    }
+  },
+  "P2": {
+    "order": 3,
+    "lane": "P",
+    "milestone": "M0",
+    "name": "Option A chosen",
+    "sub": "007 unchanged. 010 gets one option change plus its diagnosis. 022 gets one diagnosis only.",
+    "state": "VERIFIED",
+    "actor": "-",
+    "chats": [],
+    "refs": [
+      {
+        "l": "#1 · 6316790105",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6316790105"
+      }
+    ],
+    "detail": {
+      "result": "Your choice is recorded on #1.",
+      "next": "Nothing."
+    }
+  },
+  "P3": {
+    "order": 4,
+    "lane": "P",
+    "milestone": "M1",
+    "name": "Author drafts 010 and 022",
+    "sub": "Two private ZIPs sit in PQRT's workspace. Self-reported, not yet checked by anyone else.",
+    "state": "SUBMITTED",
+    "actor": "-",
+    "chats": [
+      "pqrt"
+    ],
+    "refs": [
+      {
+        "l": "#128 · 6317267036",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317267036"
+      }
+    ],
+    "detail": {
+      "files": "`phy-nlm-010-option-diagnosis-a1.zip` and `phy-nlm-022-diagnosis-only-a1.zip`. Each holds `candidate.json` and `private_qa_manifest.json`.",
+      "status": "Self-reported by PQRT. No one else has checked them.",
+      "next": "Nothing until the files are moved (P4)."
+    }
+  },
+  "P4": {
+    "order": 5,
+    "lane": "P",
+    "milestone": "M2",
+    "name": "Drafts reach the handoff folder",
+    "sub": "0 of 2 saved. The Drive tool needs a file reference PQRT cannot make.",
+    "state": "BLOCKED",
+    "actor": "YOU",
+    "chats": [
+      "pqrt"
+    ],
+    "refs": [
+      {
+        "l": "#128 · 6317616600",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317616600"
+      },
+      {
+        "l": "#128 · 6317846442",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317846442"
+      }
+    ],
+    "detail": {
+      "who": "You.",
+      "do": "Reply with Route A, B or C (card D3 on this page).",
+      "files": "The two ZIPs above. Target: Drive folder `Local Agent Handoffs`.",
+      "done": "Both files are listed in the folder and PQRT's recomputed size and SHA-256 match."
+    }
+  },
+  "P5": {
+    "order": 6,
+    "lane": "P",
+    "milestone": "M2",
+    "name": "Checker reviews the drafts",
+    "sub": "Held until both files are in the folder and the checker can open them.",
+    "state": "NOT_STARTED",
+    "actor": "OTM",
+    "chats": [
+      "pchk"
+    ],
+    "refs": [
+      {
+        "l": "#128 · 6316907785",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6316907785"
+      },
+      {
+        "l": "#128 · 6317846442",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317846442"
+      }
+    ],
+    "detail": {
+      "who": "OTM sends, then the checker PCHK reviews.",
+      "do": "OTM attaches the two Drive files to PCHK's chat, then sends packet `PHY-NLM-DERIVATIVE-A-PCHK-REVIEW-1`. PCHK recomputes the SHA-256 first and stops on a mismatch.",
+      "waits": "P4 done, and the Oracle's four release conditions.",
+      "done": "PCHK posts its review on #128."
+    }
+  },
+  "P6": {
+    "order": 7,
+    "lane": "P",
+    "milestone": "M2",
+    "name": "Oracle challenge and advice",
+    "sub": "Follows the checker's review.",
+    "state": "NOT_STARTED",
+    "actor": "ORACLE",
+    "chats": [
+      "oracle"
+    ],
+    "detail": {
+      "who": "Oracle O3.",
+      "do": "Read PCHK's review, challenge it, then write the next packet.",
+      "done": "The Oracle posts its adjudication on #128."
+    }
+  },
+  "P7": {
+    "order": 8,
+    "lane": "P",
+    "milestone": "M3",
+    "name": "Owner accepts or rejects the drafts",
+    "sub": "Acceptance of private derivatives is yours alone.",
+    "state": "NOT_STARTED",
+    "actor": "YOU",
+    "chats": [],
+    "detail": {
+      "who": "You, alone.",
+      "do": "After the Oracle's advice, reply Accept or Reject for item 010 and for item 022.",
+      "done": "OTM records your reply on #1."
+    }
+  },
+  "J2": {
+    "order": 19,
+    "lane": "J",
+    "milestone": "M4",
+    "name": "Integrate the three items",
+    "sub": "Held. Item 007 is on hard hold. Waits for the shared custody step (shared J1).",
+    "state": "NOT_STARTED",
+    "actor": "ORACLE",
+    "chats": [
+      "oracle"
+    ],
+    "detail": {
+      "do": "Bring 007, 010 and 022 into the canonical bank.",
+      "waits": "P7 here, and shared G9 and J1."
+    }
+  },
+  "J3": {
+    "order": 20,
+    "lane": "J",
+    "milestone": "M5",
+    "name": "Owner release",
+    "sub": "Release is yours alone.",
+    "state": "NOT_STARTED",
+    "actor": "YOU",
+    "chats": [],
+    "detail": {
+      "who": "You, alone.",
+      "waits": "J2."
+    }
+  }
+}

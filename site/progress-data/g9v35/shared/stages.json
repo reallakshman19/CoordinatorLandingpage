@@ -1,0 +1,221 @@
+{
+  "G1": {
+    "order": 9,
+    "lane": "G",
+    "milestone": "M0",
+    "name": "Owner write approval",
+    "sub": "One branch and one draft PR for the identity-guard files. No other shared contract.",
+    "state": "VERIFIED",
+    "actor": "-",
+    "chats": [],
+    "refs": [
+      {
+        "l": "#1 · 6315384960",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6315384960"
+      }
+    ],
+    "detail": {
+      "result": "Your approval is recorded on #1.",
+      "next": "Nothing."
+    }
+  },
+  "G2": {
+    "order": 10,
+    "lane": "G",
+    "milestone": "M1",
+    "name": "Coder builds the guard (PR #305)",
+    "sub": "Draft PR at head 60f67601. The coder reported PARTIAL.",
+    "state": "SUBMITTED",
+    "actor": "-",
+    "chats": [
+      "pgrd"
+    ],
+    "refs": [
+      {
+        "l": "Grade9v3.5 · PR 305",
+        "u": "https://github.com/reallakshman19/Grade9v3.5/pull/305"
+      }
+    ],
+    "detail": {
+      "files": "`Shared/tools/owner_bank.py`, `tests/test_owner_bank_identity_guard.py`, `tests/test_test_area.py`, `TEST/README.md`.",
+      "next": "Nothing now. The PR is a draft."
+    }
+  },
+  "G3": {
+    "order": 11,
+    "lane": "G",
+    "milestone": "M2",
+    "name": "IR reviews the exact diff",
+    "sub": "Verdict PARTIAL, merge HOLD. 14 of 14 guard tests pass. Finding F1 is open.",
+    "state": "VERIFIED",
+    "actor": "-",
+    "chats": [
+      "ir"
+    ],
+    "refs": [
+      {
+        "l": "#128 · 6317077215",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317077215"
+      },
+      {
+        "l": "#135 · 6317084856",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/135#issuecomment-6317084856"
+      }
+    ],
+    "detail": {
+      "result": "Verdict PARTIAL, merge readiness HOLD. F1: three crashes in `Shared/tools/owner_bank.py` lines 196–203, also present at base.",
+      "still": "Yes, the head is still `60f67601`.",
+      "next": "Nothing."
+    }
+  },
+  "G4": {
+    "order": 12,
+    "lane": "G",
+    "milestone": "M2",
+    "name": "Oracle challenges the verdict",
+    "sub": "Upheld PARTIAL. CI is red with 0 new failures against base.",
+    "state": "VERIFIED",
+    "actor": "-",
+    "chats": [
+      "oracle"
+    ],
+    "refs": [
+      {
+        "l": "#128 · 6317356041",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317356041"
+      }
+    ],
+    "detail": {
+      "result": "The Oracle upheld PARTIAL. F1 is a real inherited defect.",
+      "next": "Nothing."
+    }
+  },
+  "G5": {
+    "order": 13,
+    "lane": "G",
+    "milestone": "M2",
+    "name": "Owner decides F1",
+    "sub": "Fix inside PR #305 (A) or defer as known debt (B).",
+    "state": "BLOCKED",
+    "actor": "YOU",
+    "chats": [],
+    "refs": [
+      {
+        "l": "#128 · 6317382753",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317382753"
+      }
+    ],
+    "detail": {
+      "who": "You.",
+      "do": "Reply F1-A or F1-B (card D1 on this page).",
+      "files": "`Shared/tools/owner_bank.py` (`check()`), `tests/test_owner_bank_identity_guard.py` (new tests T12, T13, T14).",
+      "done": "OTM records your reply on #1."
+    }
+  },
+  "G6": {
+    "order": 14,
+    "lane": "G",
+    "milestone": "M2",
+    "name": "Coder fixes F1",
+    "sub": "Same draft PR, no merge.",
+    "state": "NOT_STARTED",
+    "actor": "OTM",
+    "cond": "only if F1-A",
+    "chats": [
+      "pgrd"
+    ],
+    "refs": [
+      {
+        "l": "#128 · 6317382753",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317382753"
+      }
+    ],
+    "detail": {
+      "who": "OTM sends, then coder PGRD works.",
+      "do": "OTM delivers packet `PHY-NLM-OWNERBANK-F1-REPAIR-1`. The coder edits only the two files in G5, on branch `fix/owner-bank-identity-bijection-6ad8a9bb`.",
+      "done": "PR #305 has a new head SHA and the hosted focused tests (14 existing and 3 new) pass."
+    }
+  },
+  "G7": {
+    "order": 15,
+    "lane": "G",
+    "milestone": "M2",
+    "name": "IR rechecks the new head",
+    "sub": "A short check of the F1 fix, the new tests and the CI delta.",
+    "state": "NOT_STARTED",
+    "actor": "OTM",
+    "cond": "only if F1-A",
+    "chats": [
+      "ir"
+    ],
+    "detail": {
+      "who": "OTM asks, then IR-G9V35 checks.",
+      "do": "OTM posts a `TO: IR-G9V35` request on #135. The IR checks only the three F1 cases, the new tests and the CI delta against base.",
+      "done": "The IR posts its verdict on #128 and #135."
+    }
+  },
+  "G8": {
+    "order": 16,
+    "lane": "G",
+    "milestone": "M2",
+    "name": "Owner decides on red CI",
+    "sub": "Four checks are red on main and on PR #305. Suggested: fix validate-v31 only.",
+    "state": "BLOCKED",
+    "actor": "YOU",
+    "chats": [],
+    "refs": [
+      {
+        "l": "#128 · 6317759407",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317759407"
+      },
+      {
+        "l": "#128 · 6318289999",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6318289999"
+      }
+    ],
+    "detail": {
+      "who": "You.",
+      "do": "Reply Split or Hold, and say what happened to the old repos (card D2 on this page).",
+      "files": "`.github/workflows/v3-relay.yml` line 31 (fix now). `.github/workflows/learner-quality.yml` and `Shared/tools/verify_test_source_witnesses.py` (leave). `guardrails.yml` and `canonical-assurance.yml` (debt).",
+      "done": "OTM records your reply on #1. If you chose Split, the Oracle writes the one-line validate-v31 packet."
+    }
+  },
+  "G9": {
+    "order": 17,
+    "lane": "G",
+    "milestone": "M3",
+    "name": "Owner accepts and merges",
+    "sub": "PR #305 is a draft on merge hold.",
+    "state": "NOT_STARTED",
+    "actor": "YOU",
+    "chats": [],
+    "detail": {
+      "who": "You, alone.",
+      "do": "After G5 to G8, say accept or merge for PR #305. The coder marks it Ready first.",
+      "done": "PR #305 is merged at the exact reviewed head and your word is recorded on #1."
+    }
+  },
+  "J1": {
+    "order": 18,
+    "lane": "J",
+    "milestone": "M4",
+    "name": "Custody of every original occurrence",
+    "sub": "Needed before any protected import (IR finding 6).",
+    "state": "NOT_STARTED",
+    "actor": "ORACLE",
+    "chats": [
+      "oracle"
+    ],
+    "refs": [
+      {
+        "l": "#128 · 6317077215",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317077215"
+      }
+    ],
+    "detail": {
+      "why": "`Shared/tools/raw_intake.py` (`_dedupe`, around line 127) merges two identical-text occurrences into one row with `supplied_count=2`. PR #305 cannot see that.",
+      "do": "Before any protected import, the Oracle scopes an occurrence ledger or crosswalk. You approve it.",
+      "done": "An approved packet exists."
+    }
+  }
+}

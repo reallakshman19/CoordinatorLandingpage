@@ -1,0 +1,134 @@
+{
+  "repository": [
+    {
+      "t": "Grade9v3.5, the content repository",
+      "u": "https://github.com/reallakshman19/Grade9v3.5"
+    },
+    {
+      "t": "CoordinatorLandingpage, the coordination records",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage"
+    }
+  ],
+  "issues": [
+    {
+      "t": "#1 Control record: Owner decisions",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1"
+    },
+    {
+      "t": "#128 Oracle packets and agent evidence",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128"
+    },
+    {
+      "t": "#135 IR inbox",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/135"
+    }
+  ],
+  "pullRequests": [
+    {
+      "t": "Private candidates for items 010 and 022: two files held by the author, 0 of 2 in the folder yet; names, sizes and hashes are in the report",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317616600",
+      "s": "open"
+    },
+    {
+      "t": "Grade9v3.5 PR #305, owner-bank identity guard (shared topic, draft)",
+      "u": "https://github.com/reallakshman19/Grade9v3.5/pull/305"
+    }
+  ],
+  "roadmap": [
+    {
+      "t": "Pilot scope: Physics first, then Math",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6312266867"
+    },
+    {
+      "t": "Option A: 007 unchanged, 010 one option plus diagnosis, 022 one diagnosis only",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6316790105"
+    },
+    {
+      "t": "Packet PHY-NLM-DERIVATIVE-A-AUTHOR-1 (author)",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6316876787"
+    },
+    {
+      "t": "Packet PHY-NLM-DERIVATIVE-A-PCHK-REVIEW-1 (checker, held until the files are in the folder)",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6316907785"
+    }
+  ],
+  "highRoi": [
+    {
+      "t": "Independent checker pass settled which of 007, 010, 022 to change before any authoring",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6315662483",
+      "s": "implemented"
+    },
+    {
+      "t": "Name, size and SHA-256 receipt for each private candidate",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317616600",
+      "s": "implemented"
+    },
+    {
+      "t": "One private route only: the Owner's handoff folder",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6316876787",
+      "s": "implemented"
+    },
+    {
+      "t": "Route A: the Owner saves the two files by hand to unblock the transfer",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317846442",
+      "s": "proposed"
+    }
+  ],
+  "future": [
+    {
+      "t": "Next Physics topic: Motion in 1D (M1D), as its own topic page"
+    },
+    {
+      "t": "A connector that takes raw file content, so no manual save is needed"
+    },
+    {
+      "t": "Re-attest the Math witnesses when Math resumes"
+    }
+  ],
+  "intent": [
+    {
+      "t": "Pilot Physics first, Math later. For Newton's Laws of Motion keep item 007 unchanged; give 010 one private wrong-option replacement with its diagnosis; give 022 one private diagnosis only. Originals stay immutable. Private files move only through the Owner's handoff folder. Acceptance and release are the Owner's alone.",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6316790105",
+      "n": "OTM summary of the Owner's words"
+    }
+  ],
+  "inputs": [
+    {
+      "t": "The Owner's private source ZIP stays private; only hashes and findings are posted"
+    },
+    {
+      "t": "Oracle intent read-back and packets",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128"
+    },
+    {
+      "t": "Two private candidate ZIPs held by the author (names, sizes, SHA-256)",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317616600"
+    }
+  ],
+  "knownIssues": [
+    {
+      "t": "Drive upload tool cannot take the author's local files (needs a file reference)",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317616600",
+      "s": "open"
+    },
+    {
+      "t": "Raw intake merges identical occurrences (IR finding 6), so custody is needed before any protected import (shared topic)",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317077215",
+      "s": "open"
+    }
+  ],
+  "pending": [
+    {
+      "t": "Owner picks the transfer route (Route A, B or C)",
+      "s": "open"
+    },
+    {
+      "t": "Checker reviews the two files once they are in the folder and the hashes match",
+      "s": "waiting"
+    },
+    {
+      "t": "Oracle adjudication, then the Owner accepts or rejects 010 and 022",
+      "s": "waiting"
+    }
+  ]
+}

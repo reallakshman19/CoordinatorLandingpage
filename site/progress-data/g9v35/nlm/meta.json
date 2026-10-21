@@ -1,0 +1,53 @@
+{
+  "title": "G9v3.5 Physics pilot-NLM",
+  "subtitle": "Newton's Laws of Motion: private derivatives for items 010 and 022, from Owner intent to Owner acceptance",
+  "milestones": {
+    "M0": {
+      "order": 0,
+      "name": "Scope",
+      "full": "Scope and approvals"
+    },
+    "M1": {
+      "order": 1,
+      "name": "Build",
+      "full": "Drafts and guard built"
+    },
+    "M2": {
+      "order": 2,
+      "name": "Review",
+      "full": "Review and decisions"
+    },
+    "M3": {
+      "order": 3,
+      "name": "Acceptance",
+      "full": "Owner acceptance"
+    },
+    "M4": {
+      "order": 4,
+      "name": "Import",
+      "full": "Protected import"
+    },
+    "M5": {
+      "order": 5,
+      "name": "Release",
+      "full": "Owner release"
+    }
+  },
+  "lanes": {
+    "S": {
+      "order": 0,
+      "title": "Start",
+      "sub": "One decision opens the pilot."
+    },
+    "P": {
+      "order": 1,
+      "title": "Physics drafts (Option A)",
+      "sub": "Private candidates for items 010 and 022. Item 007 stays on hard hold, unchanged."
+    },
+    "J": {
+      "order": 2,
+      "title": "Import and release",
+      "sub": "Inferred from the Oracle's packets. Nothing here is assigned yet."
+    }
+  }
+}

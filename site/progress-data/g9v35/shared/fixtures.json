@@ -1,0 +1,123 @@
+{
+  "repository": [
+    {
+      "t": "Grade9v3.5, tooling under Shared/tools",
+      "u": "https://github.com/reallakshman19/Grade9v3.5"
+    }
+  ],
+  "issues": [
+    {
+      "t": "#128 Oracle packets and IR verdict",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128"
+    },
+    {
+      "t": "#135 IR inbox",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/135"
+    },
+    {
+      "t": "#1 Owner write approval",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6315384960"
+    }
+  ],
+  "pullRequests": [
+    {
+      "t": "Grade9v3.5 PR #305, owner-bank identity guard (draft, head 60f67601)",
+      "u": "https://github.com/reallakshman19/Grade9v3.5/pull/305"
+    }
+  ],
+  "roadmap": [
+    {
+      "t": "Owner write approval: one branch, one draft PR, identity-guard files only",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6315384960"
+    },
+    {
+      "t": "Packet PHY-NLM-OWNERBANK-GUARD-IR1",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6316387523"
+    },
+    {
+      "t": "Packet PHY-NLM-OWNERBANK-F1-CI-DISPOSITION-1",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317382753"
+    }
+  ],
+  "highRoi": [
+    {
+      "t": "Exact-diff IR review found three inherited crashes (F1) before any merge",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317077215",
+      "s": "implemented"
+    },
+    {
+      "t": "Baseline comparison: head against the immediate base and the older main gives 0 new failures",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317077215",
+      "s": "implemented"
+    },
+    {
+      "t": "Narrow F1 hardening with three synthetic tests in the same PR",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317382753",
+      "s": "proposed"
+    },
+    {
+      "t": "Fix validate-v31 with a one-line repo-owner change",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6318289999",
+      "s": "proposed"
+    }
+  ],
+  "future": [
+    {
+      "t": "Re-attest the four Math witnesses (code-tests) when Math resumes"
+    },
+    {
+      "t": "Occurrence ledger or crosswalk in raw intake before protected import"
+    },
+    {
+      "t": "Clear the guardrails and Assurance debt (never green on main)"
+    }
+  ],
+  "intent": [
+    {
+      "t": "Keep the owner bank's identity checks strict: one bank record per original source occurrence, no reused refs, and malformed input reported instead of crashing. Approved scope: the identity guard only, no other shared contract, PR stays a draft until the Owner accepts.",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6315384960",
+      "n": "OTM summary of the Owner's words"
+    }
+  ],
+  "inputs": [
+    {
+      "t": "IR verdict IR_CODE_PARTIAL",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317077215"
+    },
+    {
+      "t": "CI facts and addendum",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317759407"
+    }
+  ],
+  "knownIssues": [
+    {
+      "t": "F1: three malformed-record crashes in check(), also at the base commit",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317077215",
+      "s": "open"
+    },
+    {
+      "t": "Four checks are red on main and on PR 305; guardrails and Assurance have never been green",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317759407",
+      "s": "open"
+    },
+    {
+      "t": "validate-v31 and code-tests broke on 20 Oct over the old account name",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6318289999",
+      "s": "open"
+    }
+  ],
+  "pending": [
+    {
+      "t": "Owner decides F1 (A fix in this PR, B defer)",
+      "s": "open"
+    },
+    {
+      "t": "Owner decides how to treat the red CI checks",
+      "s": "open"
+    },
+    {
+      "t": "If F1-A: coder fix, then a short IR recheck of the new head",
+      "s": "waiting"
+    }
+  ]
+}

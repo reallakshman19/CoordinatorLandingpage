@@ -1,0 +1,160 @@
+{
+  "D1": {
+    "order": 1,
+    "status": "open",
+    "stages": [
+      "G5"
+    ],
+    "title": "F1: fix three crashes inside PR #305?",
+    "lead": "The IR found that `check()` stops with an error, instead of reporting a problem, when a bank record has a list where a value or a mapping belongs. The same three crashes happen at the base commit, so PR #305 did not cause them.",
+    "tables": [
+      {
+        "cols": [
+          "Bad record",
+          "Crash today",
+          "Where"
+        ],
+        "mono": [
+          false,
+          false,
+          true
+        ],
+        "rows": [
+          [
+            "canonical `id` is a list",
+            "TypeError",
+            "Shared/tools/owner_bank.py, check(), lines 196–203"
+          ],
+          [
+            "a non-empty list in `extensions`",
+            "AttributeError",
+            "same lines"
+          ],
+          [
+            "a non-empty list at `extensions[\"grade9v3:source_custody\"]`",
+            "AttributeError",
+            "same lines"
+          ]
+        ]
+      }
+    ],
+    "options": [
+      {
+        "key": "A",
+        "label": "A",
+        "suggested": true,
+        "body": "The coder changes only `Shared/tools/owner_bank.py` (`check()`) and adds three invented tests T12, T13, T14 to `tests/test_owner_bank_identity_guard.py`, on PR #305's own branch `fix/owner-bank-identity-bijection-6ad8a9bb`. Nothing is merged. The IR then rechecks only the new commit. The Oracle recommends A too.",
+        "reply": "F1-A: include the narrow F1 hardening in PR #305 (Shared/tools/owner_bank.py check(), 3 synthetic tests T12-T14 in tests/test_owner_bank_identity_guard.py), then a targeted IR recheck of the new head only. No merge.",
+        "short": "F1-A (narrow fix in PR #305: Shared/tools/owner_bank.py check(), 3 synthetic tests in tests/test_owner_bank_identity_guard.py, then a targeted IR recheck, no merge)."
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "suggested": false,
+        "body": "No code change. F1 is recorded as known debt, and nobody may claim the checker rejects malformed records safely. PR #305 stays on merge hold.",
+        "reply": "F1-B: defer F1 as a known inherited P2 and record it. PR #305 stays merge-hold.",
+        "short": "F1-B (defer F1 as known debt, PR #305 stays merge-hold)."
+      }
+    ],
+    "links": [
+      {
+        "l": "IR verdict",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317077215"
+      },
+      {
+        "l": "Oracle packet",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317382753"
+      },
+      {
+        "l": "PR #305",
+        "u": "https://github.com/reallakshman19/Grade9v3.5/pull/305"
+      }
+    ]
+  },
+  "D2": {
+    "order": 2,
+    "status": "open",
+    "stages": [
+      "G8"
+    ],
+    "title": "Red checks on main: what to do with each?",
+    "lead": "GitHub blocks nothing: `main` has no branch protection and no required checks. The same four checks are red on `main` and on PR #305, so PR #305 caused none of them.",
+    "tables": [
+      {
+        "cols": [
+          "Check",
+          "File",
+          "Red since",
+          "What is wrong",
+          "Suggested"
+        ],
+        "mono": [
+          false,
+          true,
+          false,
+          false,
+          false
+        ],
+        "rows": [
+          [
+            "guardrails",
+            ".github/workflows/guardrails.yml",
+            "never green on main",
+            "Contract, debt and drift failures.",
+            "Name it as debt. Do not hold PR #305 for it."
+          ],
+          [
+            "Assurance (canonical-assurance)",
+            ".github/workflows/canonical-assurance.yml",
+            "never green on main",
+            "20 findings and 64 pages worse than its ledger.",
+            "Name it as debt. Do not hold PR #305 for it."
+          ],
+          [
+            "validate-v31",
+            ".github/workflows/v3-relay.yml, line 31",
+            "20 Oct",
+            "It checks out `reallaksh19/Common`, which no longer exists.",
+            "Fix now. Change line 31 to `reallakshman19/Common` and keep `ref: 45301dc3e553b1b7be8ab66fac00512353479ee2`, which exists there. One-line PR of its own."
+          ],
+          [
+            "code-tests",
+            ".github/workflows/learner-quality.yml, step \"Authenticate pilot witness pointers\"",
+            "20 Oct",
+            "`Shared/tools/verify_test_source_witnesses.py` looks up 4 Math witness comments (ids 6028932600, 6029049531, 6050805060, 6053770988) in `reallaksh19/Grade9v3.5`. That repo no longer exists, and the new repo does not hold those comments.",
+            "Leave it. It guards Math, which is on hold. Re-attest the 4 witnesses when Math resumes. It cannot be fixed by renaming."
+          ]
+        ]
+      }
+    ],
+    "ask": "One question for you: what happened to the old repos `reallaksh19/Grade9v3.5` and `reallaksh19/Common` around 20 Oct: deleted, made private, or still there? If they still exist, you could make them readable again instead.",
+    "options": [
+      {
+        "key": "Split",
+        "label": "Split",
+        "suggested": true,
+        "body": "Fix only validate-v31 now, in its own one-line PR. Leave code-tests until Math resumes. Name guardrails and Assurance as debt. Waive nothing, and do not hold PR #305 for any of the four.",
+        "reply": "CI: fix validate-v31 now in its own one-line PR (.github/workflows/v3-relay.yml line 31 to reallakshman19/Common). Leave code-tests until Math resumes. guardrails and Assurance are named debt. No waivers; PR #305 is not held for them. Old repos reallaksh19/Grade9v3.5 and reallaksh19/Common: [deleted / made private / still there]",
+        "short": "CI: fix validate-v31 now in its own one-line PR (.github/workflows/v3-relay.yml line 31 to reallakshman19/Common); leave code-tests until Math resumes; guardrails and Assurance are named debt; no waivers. Old repos reallaksh19/Grade9v3.5 and reallaksh19/Common: [deleted / made private / still there]."
+      },
+      {
+        "key": "Hold",
+        "label": "Hold",
+        "suggested": false,
+        "body": "PR #305 waits until all four checks are green. Because guardrails and Assurance have never been green, this holds it with no end date.",
+        "reply": "CI: hold PR #305 until all four red checks are fixed.",
+        "short": "CI: hold PR #305 until all four red checks are fixed."
+      }
+    ],
+    "links": [
+      {
+        "l": "CI facts",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317759407"
+      },
+      {
+        "l": "CI facts addendum",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6318289999"
+      }
+    ]
+  }
+}
