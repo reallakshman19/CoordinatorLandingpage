@@ -6,7 +6,7 @@ criticality: STANDARD
 agent_state: AWAITING_REVIEW
 handover_readiness: READY
 report_path: agents/PR137_workreport.md
-report_basis_head: 73a7914e1276df2421aea6cf27300d60f7f38a57
+report_basis_head: 8248342b0c631e3f811cf847b53524f90eda57da
 main_head_last_checked: 4637f83b7cb4dcf48fafa9db98852a1332416ab9
-blocker: Browser QA and independent review NOT_RUN; latest CI pending.
-exact_next_action: Independent browser QA, exact-head review and CI reconciliation; no merge.
+blocker: Actual PR-app browser/mobile QA and requested local CLI suites NOT_RUN here (checkout/network unavailable); independent review NOT_RUN; final-head CI recheck required.
+exact_next_action: Oracle inspect Agent 1 repair/report; obtain full PR-app browser and CLI-suite evidence in checkout-capable environment, then independent exact-head review and CI reconciliation; no merge.
