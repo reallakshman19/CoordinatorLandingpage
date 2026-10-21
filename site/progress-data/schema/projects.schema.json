@@ -1,0 +1,106 @@
+{
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": 2
+    },
+    "note": {
+      "type": "string"
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "project": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "order": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "mode": {
+            "enum": [
+              "coordinator",
+              "standalone-oracle"
+            ]
+          },
+          "visibility": {
+            "enum": [
+              "public",
+              "private"
+            ]
+          },
+          "replyTo": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "const": "none"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "additionalProperties": true
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "const": "github-issue"
+                  },
+                  "repo": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+                  },
+                  "template": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "target": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "site": {
+                    "type": "string",
+                    "pattern": "^https://"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "repo",
+                  "template",
+                  "target",
+                  "site"
+                ],
+                "additionalProperties": true
+              }
+            ]
+          }
+        },
+        "required": [
+          "key",
+          "label"
+        ],
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "projects"
+  ],
+  "additionalProperties": true,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
