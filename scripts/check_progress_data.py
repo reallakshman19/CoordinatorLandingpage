@@ -55,6 +55,8 @@ def main():
     projects = load(ROOT / "projects.json")
     for p in (projects or {}).get("projects", []):
         key = p.get("key", "")
+        if p.get("mode", "coordinator") not in ("coordinator", "standalone-oracle"):
+            err("projects.json", f"{key}: unknown workflow mode {p.get('mode')!r}")
         if not KEY.match(key) or not p.get("label"):
             err("projects.json", f"bad project entry {p}")
             continue
@@ -72,6 +74,10 @@ def main():
         for f in ("title", "updatedAt", "updatedBy", "staleAfterMin"):
             if f not in proj:
                 err(f"{key}/index.json", f"project.{f} missing")
+        if p.get("mode") == "standalone-oracle":
+            from standalone_oracle_relay import validate_audit
+            for message in validate_audit(base):
+                err(f"{key}/audit.json", message)
         seen = set()
         for t in index.get("topics", []):
             tk = t.get("key", "")

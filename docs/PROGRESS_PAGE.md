@@ -66,6 +66,30 @@ Keys are lower case letters, digits and `-`. A topic is a child of a project: fo
 `repository`, `issues`, `pullRequests`, `roadmap`, `highRoi` (status `proposed` or `implemented`), `future`. Right column
 "Starting context": `intent`, `inputs`, `knownIssues`, `pending`. In text, `code` between backticks renders as code.
 
+## Standalone Oracle mode (opt-in per project)
+
+A project in `site/progress-data/projects.json` with
+`"mode": "standalone-oracle"` is maintained by the **designated Oracle
+directly with the Owner**, without OTM or Team Coordinator. Existing
+projects without this flag retain their original Coordinator-mode
+routing and protocol. On standalone projects, a topic without an
+explicit view opens **Grounding fixtures first**; every new/resumed
+agent MUST read the applicable fixtures and protocol and return an
+actual onboarding receipt **before task execution**.
+
+The project's fixture +/- and Owner decision replies now open the
+existing prefilled GitHub **Send to Oracle** form. Only the Owner
+submits; shared-account provenance requires reconciliation. The
+Oracle proposes small reviewable Progress PRs and adds complete
+source-backed events since an explicit audit baseline to
+`audit.json`. The validator reconciles recorded stage transitions
+with current `stages.json`. A status does not grant authorization.
+
+See [Standalone Oracle Engineering Relay Protocol](STANDALONE_ORACLE_PROGRESS_PROTOCOL.md)
+for grounding, benchmark custody, agent/Owner inlet, relay, improvement
+proposals, auditable status updates and Owner-gated adoption. This
+mode does not amend `protocol/TEAM_PROTOCOL.md`.
+
 ## 4. Rules (the repository is public)
 
 1. Only public-safe facts: states, names, GitHub links, hashes and findings. Never private files or their text, Drive

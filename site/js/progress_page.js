@@ -29,7 +29,9 @@ async function ppPages() {
     const list = (j.projects || [])
       .filter(p => p && /^[a-z0-9][a-z0-9-]*$/.test(p.key || '') && p.label)
       .sort((a, b) => (a.order || 0) - (b.order || 0))
-      .map(p => ({ key: p.key, label: p.label, project: p.project || p.key, data: `progress-data/${p.key}` }));
+      .map(p => ({ key: p.key, label: p.label, project: p.project || p.key,
+        mode: p.mode === 'standalone-oracle' ? 'standalone-oracle' : 'coordinator',
+        data: `progress-data/${p.key}` }));
     if (list.length) return list;
   } catch { /* use the fallback below */ }
   return PP_DEFAULT_PAGES;
@@ -131,6 +133,9 @@ async function ppBundle(page) {
 
 // ── Send to OTM: opens the Owner Reply form on GitHub, prefilled ──
 // Nothing is posted from this page and no token is involved. The Owner ticks "I am the Owner" and submits.
+function ppOwnerRecipient(ctx) {
+  return ctx && ctx.mode === 'standalone-oracle' ? 'Oracle' : 'OwnerTeammember';
+}
 function ppSendUrl(ctx, text) {
   const type = ctx.type || 'DECISION';
   const label = ctx.label || `${type} ${ctx.topic ? ctx.topic + ':' : ''}${ctx.card}/${ctx.option}`;
@@ -139,7 +144,7 @@ function ppSendUrl(ctx, text) {
     title: `[Owner input] ${label} (${ctx.project})`,
     labels: 'owner-input',
     project: ctx.project,
-    target: 'OwnerTeammember',
+    target: ppOwnerRecipient(ctx),
     type,
     text,
     evidence_link: `${PP_SITE}#progress-page/${ctx.page}/${ctx.topic || 'overview'}/${ctx.view || 'actions'}`,
@@ -183,7 +188,7 @@ function ppReplyBox(text, ctx) {
   const row = el('div', 'pp-sendrow');
   row.appendChild(b);
   if (ctx) {
-    const a = el('a', 'btn btn-small btn-primary', 'Send to OTM');
+    const a = el('a', 'btn btn-small btn-primary', `Send to ${ctx.mode === 'standalone-oracle' ? 'Oracle' : 'OTM'}`);
     a.href = ppSendUrl(ctx, text);
     a.target = '_blank';
     a.rel = 'noopener noreferrer';
@@ -253,7 +258,7 @@ function ppPlainList(items) {
 
 // ── topic view 1: My actions ──────────────────────────────
 function ppDrawActions(root, page, topicKey, P) {
-  const ctx = { project: page.project, page: page.key, topic: topicKey, view: 'actions' };
+  const ctx = { project: page.project, page: page.key, topic: topicKey, view: 'actions', mode: page.mode };
   const open = ppOpenActions(P);
   const done = ppList(P.actions).filter(a => a.status === 'done');
   const sec = el('div', 'pp-sec');
@@ -441,7 +446,8 @@ function ppFixLink(ctx, text, sign, title) {
   return a;
 }
 function ppFixSection(page, topicKey, key, label, entries) {
-  const ctx = { project: page.project, page: page.key, topic: topicKey, view: 'fixtures', type: 'INFO',
+  const ctx = { project: page.project, page: page.key, topic: topicKey, view: 'fixtures',
+    mode: page.mode, type: 'INFO',
     label: `INFO fixture ${topicKey}/${key}`, card: key, option: 'fixture' };
   const s = el('section', 'pp-fsec');
   const h = el('div', 'pp-fhead');
@@ -470,7 +476,9 @@ function ppFixSection(page, topicKey, key, label, entries) {
 }
 function ppDrawFixtures(root, page, topicKey, P) {
   const fx = P.fixtures || {};
-  root.appendChild(el('p', 'pp-intro', 'What a new agent or Oracle should read first for this topic. OTM keeps it current. The + and − open GitHub\'s Owner Reply form with the change filled in; nothing changes until OTM applies it and you confirm.'));
+  root.appendChild(el('p', 'pp-intro', page.mode === 'standalone-oracle'
+    ? 'MANDATORY AGENT ONBOARDING: read this Grounding fixture and the Standalone Oracle Engineering Relay Protocol before starting. Post a real source-backed onboarding receipt in the owning task; Owner authorization is separate. This page cannot dispatch, approve or alter anything.'
+    : 'What a new agent or Oracle should read first for this topic. OTM keeps it current. The + and − open GitHub\'s Owner Reply form with the change filled in; nothing changes until OTM applies it and you confirm.'));
   const grid = el('div', 'pp-fixgrid');
   [['Project sources', PP_FIX_LEFT], ['Starting context', PP_FIX_RIGHT]].forEach(([title, defs]) => {
     const col = el('section', 'card pp-fixcol');
@@ -505,7 +513,7 @@ function ppDrawOverview(root, page, B) {
       ul.appendChild(li);
     });
     need.appendChild(ul);
-    const all = ppAllCard(open.map(x => x.a), { project: page.project, page: page.key, topic: '', view: 'actions' });
+    const all = ppAllCard(open.map(x => x.a), { project: page.project, page: page.key, topic: '', view: 'actions', mode: page.mode });
     if (all) need.appendChild(all);
   }
   root.appendChild(need);
@@ -595,7 +603,10 @@ function ppDrawProject(body, page, topic, view, st) {
   if (st.error) body.appendChild(el('div', 'pp-banner pp-bad', `Could not refresh: ${st.error}.` + (B ? ' Showing the last data received.' : '')));
   else if (project && project.updatedAt) {
     const age = Math.round((Date.now() - new Date(project.updatedAt).getTime()) / 60000);
-    if (age > (project.staleAfterMin || 120)) body.appendChild(el('div', 'pp-banner', `OTM has not written an update for ${ppAgeText(age)}, so the states below may be out of date.`));
+    if (age > (project.staleAfterMin || 120)) {
+      const writer = page.mode === 'standalone-oracle' ? 'the designated Oracle' : 'OTM';
+      body.appendChild(el('div', 'pp-banner', `${writer} has not published an update for ${ppAgeText(age)}, so the states below may be out of date.`));
+    }
   }
   if (st.loading || !B) {
     body.appendChild(el('div', 'loading', 'Loading live progress…'));
@@ -656,7 +667,9 @@ function ppDrawProject(body, page, topic, view, st) {
     }
   }
   body.appendChild(panel);
-  body.appendChild(el('p', 'note pp-foot', `Stage states are written by OTM, the Owner's teammate session, at each event, into JSON files under ${page.data}/ (index.json and one folder per topic) and read from there every two minutes. The stage list is inferred from the Oracle's packets. This page changes nothing on GitHub.`));
+  body.appendChild(el('p', 'note pp-foot', page.mode === 'standalone-oracle'
+    ? `Standalone Oracle mode: agents must read their topic Grounding fixtures before starting; the Oracle maintains source-backed stages and a public audit under ${page.data}/; the Owner approves adoption. This is a read-only view, never a task runner.`
+    : `Stage states are written by OTM, the Owner's teammate session, at each event, into JSON files under ${page.data}/ (index.json and one folder per topic) and read from there every two minutes. The stage list is inferred from the Oracle's packets. This page changes nothing on GitHub.`));
 }
 
 async function renderProgressPage(app, pageKey, a2, a3) {
@@ -665,7 +678,9 @@ async function renderProgressPage(app, pageKey, a2, a3) {
   const page = pages.find(p => p.key === pageKey) || pages[0];
   const isView = v => PP_VIEWS.some(x => x[0] === v);
   let topic = 'overview', view = 'actions';
-  if (a2 && !isView(a2)) { topic = a2; view = isView(a3) ? a3 : 'actions'; }   // an old link with only a view opens the overview
+  if (a2 && !isView(a2)) {
+    topic = a2; view = isView(a3) ? a3 : (page.mode === 'standalone-oracle' ? 'fixtures' : 'actions');
+  }   // an old link with only a view opens the overview
   app.textContent = '';
   const root = el('section', 'pp');
   root.id = 'view-progress-page';

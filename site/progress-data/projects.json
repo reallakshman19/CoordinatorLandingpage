@@ -12,6 +12,7 @@
       "key": "ciifr",
       "label": "CII Find & Replace VNext",
       "project": "ciifr",
+      "mode": "standalone-oracle",
       "order": 2
     }
   ]
