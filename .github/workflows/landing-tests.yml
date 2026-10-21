@@ -25,6 +25,27 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Progress schema 14 seeded RED at base, GREEN at HEAD
+        id: progress_schema
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -eo pipefail
+          python -m unittest tests.test_progress_data -v 2>&1 | tee progress-head.log
+          BASE=79ade581530af90efb268f8e453ae4a69ecd83c1
+          git fetch --no-tags --depth=1 origin "$BASE"
+          git show "$BASE:scripts/check_progress_data.py" > scripts/_progress_base_probe.py
+          set +e
+          PROGRESS_CHECKER=scripts/_progress_base_probe.py python -m unittest tests.test_progress_data -v > progress-base-red.log 2>&1
+          rc=$?
+          set -e
+          rm -f scripts/_progress_base_probe.py
+          cat progress-base-red.log
+          if [[ "$rc" -eq 0 ]] || ! grep -q 'FAILED (failures=15)' progress-base-red.log; then
+            echo "::error::Progress baseline RED was not the required 15 assertion failures"; exit 1
+          fi
+          echo "Progress baseline RED (15); HEAD GREEN"
+
       - name: Run unchanged 31-check benchmark suite
         id: original
         continue-on-error: true
@@ -372,6 +393,8 @@ jobs:
             nextnudge-head.log
             nn118-browser-head.log
             artifacts/nextnudge-projects-browser/
+            progress-head.log
+            progress-base-red.log
             wp1a-original.log
             wp1a-head.log
             wp1a-browser.log
@@ -432,6 +455,7 @@ jobs:
           fi
           cat gate-negative.log
           echo "FINAL GATE SELF-TEST: injected failure -> exit 1 (REJECTED)"
+          require_success "progress-schema-base-RED-head-GREEN" "${{ steps.progress_schema.outcome }}"
           require_success "NextNudge-owner-save" "${{ steps.nextnudge_unit.outcome }}"
           require_success "NN118-Chromium" "${{ steps.nn118_browser.outcome }}"
           require_success "original-31" "${{ steps.original.outcome }}"
