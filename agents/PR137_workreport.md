@@ -8,16 +8,16 @@ CRITICALITY: STANDARD
 REPOSITORY: reallakshman19/CoordinatorLandingpage
 PR_OR_WIP: PR137
 BRANCH: codex/otm-dashboard-20261021
-PR_HEAD_OBSERVED: 97f3dd5341c05648962202ba2cf367a814a40237 (Oracle evidence checkpoint; no production change)
-REPORT_BASIS_HEAD: 97f3dd5341c05648962202ba2cf367a814a40237 (evidence artifacts only; tested production source 6db725bb71149ff1d4335c2ec302168e1c5baec6)
+PR_HEAD_OBSERVED: ccb08f525d0a84f24ad314061fa3b93c0bd46feb (browser capability preflight; no successful application load)
+REPORT_BASIS_HEAD: ccb08f525d0a84f24ad314061fa3b93c0bd46feb (unchanged implementation and prior Oracle evidence; this update is recovery metadata only)
 MAIN_HEAD_LAST_CHECKED: 4637f83b7cb4dcf48fafa9db98852a1332416ab9
 MERGE_BASE: 4637f83b7cb4dcf48fafa9db98852a1332416ab9
-REPORT_SYNC: CURRENT (following commit updates recovery metadata only)
+REPORT_SYNC: CURRENT (recovery metadata only)
 APPENDIX_A_STATUS: NOT_REQUIRED (new standard UI work, no engineering-critical takeover)
-GROUNDING_EPOCH: GE-dashboard-20261021-ORACLE-CP1
-CURRENT_STAGE: ORACLE_CHECKPOINT_1_PARTIAL — CLI complete; actual-app browser and independent review pending
-CURRENT_BLOCKER: Actual PR-app browser/mobile QA NOT_RUN: local Playwright browser executable missing. Independent review NOT_RUN. Four CLI suites now executed: 93 PASS at source 6db725bb.
-EXACT_NEXT_ACTION: Capable verifier: prove exact-head app serving and real browser access, then run actual-app 1280/390/320 journeys described below. Preserve contributor self-review qualification. Do not assign next feature yet.
+GROUNDING_EPOCH: GE-dashboard-20261021-BROWSER-PREFLIGHT
+CURRENT_STAGE: BROWSER_PREFLIGHT_BLOCKED — application loading gate not passed
+CURRENT_BLOCKER: Browser journeys NOT_RUN: local Chromium absent; official download policy-blocked (403); cloud Chrome localhost attempt ERR_CONNECTION_REFUSED. Independent review NOT_RUN.
+EXACT_NEXT_ACTION: Use an environment that proves Chromium can load the exact app, with verified assets and qualified generated/controlled data. Run browser journeys only after that gate; then independent technical review. No next feature or acceptance.
 
 ## Handover in 60 seconds
 PR https://github.com/reallakshman19/CoordinatorLandingpage/pull/137 is a DRAFT adding a separate Dashboard tab at #dashboard. It reuses the reviewed operational HTML, existing normalized roster/status data, source capture and build-info polling. Source-backed signal lights, ticking evidence/observation ages, known state durations, timer observations, due/late checks, project/state grouping, project rollups and evidence/next-step expansion are wired into the real app. Unknown source values remain unknown; no simulated production rows or dates.
@@ -177,3 +177,93 @@ Local browser evidence: Playwright package exists, but launch with a writable TM
 
 ### Continuation decision
 Preserve Agent 1's repair. Current high-value next stage is **actual-application browser verification**, followed by independent review of consequential claims and Oracle-authored contributions. It is not the next feature. Oracle checkpoint 1 remains partial until that evidence arrives; then choose repair, falsification or feature work from the observed result.
+
+
+## Authorized browser verification attempt — 21 Oct 2026
+
+**Disposition: environment-blocked before loading gate; browser QA remains NOT_RUN and acceptance remains HOLD.** This supersedes no established test result. It adds no UI PASS, product FAIL, review approval or acceptance. The 93 CLI tests and earlier counterexample evidence retain their recorded scope; this session did not rerun or broaden them.
+
+### Exact basis and preparation
+- Live source/checkpoint head: `ccb08f525d0a84f24ad314061fa3b93c0bd46feb`; main/base `4637f83b7cb4dcf48fafa9db98852a1332416ab9`; PR OPEN/DRAFT; 39/39 hosted checks SUCCESS; zero submitted reviews, rechecked before this recovery update.
+- Materialized and verified 34 committed app-shell/data files against that head: index, stylesheet, every classic script loaded by index, and tracked site/data JSON. Every byte sequence matched its Git blob ID. The manifest below records separate SHA256 input hashes.
+- This is selected-source preparation, not a full Git checkout or proof of a runnable application. Generated `data/status-bar.json` and `build-info.json` are not tracked in that commit; qualified generated or controlled responses still need to be supplied by the actual-app runner and labelled by origin. No newly generated data was claimed live or accepted.
+
+### Executable preflight and actual observations
+Local inventory found no Chromium/Chrome executable on PATH. Playwright is installed at `/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright`.
+
+Attempted official browser acquisition:
+
+```sh
+TMPDIR=/workspace/scratch/43db3e4ed079/landing-plan-runtime \
+PLAYWRIGHT_BROWSERS_PATH=/workspace/scratch/43db3e4ed079/browser-runtime \
+node /opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/cli.js install chromium --only-shell
+```
+
+Observed: download for Chrome Headless Shell 151.0.7922.34 / Playwright v1234 from the official Playwright CDN returned HTTP 403 with `Forbidden. Calls to this URL are not allowed.` The installer retried automatically; it was interrupted (exit 130). No alternate download host, proxy, policy change or bypass was attempted. This is an environment policy block, not a product defect or bot-detection claim.
+
+Attempted server process:
+
+```sh
+python3 -m http.server 8765 --bind 0.0.0.0 --directory /workspace/scratch/43db3e4ed079/dashboard-work/site
+curl -I --max-time 3 http://127.0.0.1:8765/
+```
+
+Observed: the server invocation remained running without a successful readback; curl returned exit 7, connection refused. The server was interrupted after the preflight (exit 130). Do not infer that a working server was established.
+
+Cloud Chrome inventory supplied a CDP browser. Through its documented browser API, attempted:
+
+```js
+await cua.createBrowserTab(browser.browserId, 'http://127.0.0.1:8765/#dashboard');
+```
+
+Observed: `Browser Use cannot open http://127.0.0.1:8765 in tab 1. Browser reported: net::ERR_CONNECTION_REFUSED`. There was no successful document/application observation. Browser-side telemetry also logged unrelated forbidden requests; those are not application failures. No other local hostname, tunnel, public hosting/deployment or security change was attempted to bypass the limitation.
+
+### Bounded verdict and allocation
+- Loading real PR137 app in Chromium: **NOT_RUN / NOT_OBSERVED**, capability preflight blocked.
+- Desktop 1280px, 390px, 320px journeys: **NOT_RUN**, dependent loading gate not passed.
+- Navigation/expansion, timing boundaries, fresh capture with stale observation, source/build refresh, error handling, visibility and timer/listener cleanup: **NOT_RUN in an actual browser**.
+- Independent technical review: **NOT_RUN**; original Oracle authorship/self-review qualification retained.
+- Runtime failure origin: environment; no new product failure demonstrated. No production/test code, expectations, fixture or workflow was changed.
+
+Next actor must have actual app-serving and Chromium capability in the same usable environment. Before accepting the verification task as executable, show the exact app loaded at the tested head and verify loaded assets/data provenance. Then execute the existing browser assignment above, retain runnable scripts, input hashes, actual outputs and screenshots, and return bounded results. Do not repeat the completed CLI stage merely to replace the missing browser evidence. If source changes, reconcile the applicability of prior evidence. Independent technical review remains a later gate before Owner acceptance.
+
+This recovery update changes only this work report and own status record. It preserves all prior implementation and evidence artifacts. The new metadata commit's CI must be checked separately; 39/39 above refers to the observed source/checkpoint head.
+
+### Verified input manifest (preparation only)
+
+| Path | Git blob | SHA256 |
+| --- | --- | --- |
+| `site/data/evidence-6ad02128.json` | `57d7d67bd71f664a34fe2d1dbe7bdaade5d3302d` | `1850226a5b8e2004ad3c6878e9e44747be4c9a42b316c4b350d37dd38df72817` |
+| `site/data/evidence-6ad02130.json` | `af9645e344f83a99179ec3d4a9078bb2d60ae7f4` | `cd2b75a209ea25011a2a5bfa21e623c331948fc0fda2ab400ffedc30c236f366` |
+| `site/data/evidence-6ad04451.json` | `10257aaca0f3f4a25ab734262b0ec3e67c04df2a` | `eb5890a2b3b2a33d3d8fa8f732c2a4aed4a4c9eb251d91083c133892b53b4683` |
+| `site/data/evidence-6ad0449d.json` | `c05fdfd49ddfb16207b0a7ac153ef70e46de7723` | `049c6e58ccf82ae5fe4370f9a88ee78274a91a0d4bd95d33c1994c6bc2c0c1d1` |
+| `site/data/evidence-6ad0506c.json` | `a8dfa72d3c5d3e1104b19b926da9e8be56a5dad7` | `0d266353d338556f5b07ec5e6548de2595f7f282ec21d56c20839152bdc7fe5b` |
+| `site/data/evidence-6ad0508a.json` | `b6de91fc097ec8f0ca1e3ebfb826997cd6c71d83` | `29169e43da6b286d6c373abc431226bbe7714786c868f1a2b4c27e997357c87e` |
+| `site/data/project-grade9-pilot.json` | `0aeb9ca49e5df7f798cc553e362df89405d8be68` | `d97c06d368c919122b416486e8ae050f8ab523e23d89de81486b600b099bb6ba` |
+| `site/data/project-imo-ab-test.json` | `877ab8cac1d0b3a57ab556a1dc3e981368581297` | `2a551282f80fa7da164a492589b25e78233e21d7814921cebabb646f0b660ab2` |
+| `site/data/projects.json` | `57a4443ab053e7c7bed9c5a36b510f3a582e0191` | `ae0aec1ea9fa2c294b55ea6da110ae34b805f5723f8c91c799e7284cff2dfd75` |
+| `site/data/timeline-grade9-pilot.json` | `5d7069789cf8d7f643d37f3a47e3ead135ad1026` | `6a36a58c456abfc4f700997cb3e5a3026df5f6c7ace45d5164851818c9090c03` |
+| `site/data/timeline-imo-ab-test.json` | `b8afa96bb7c68346f0481df87b48733a15080396` | `7f264c7d14bf528c3cb5d4c62b9d3ce2c93a75cac38a7201e947b95b7a238f6d` |
+| `site/index.html` | `f5ffe380d4934582bafea35974896bbf90a677b0` | `468bb27e7ede43b24f807e115a86dba6708be820b6c0e7eea7daaecd1e8f9a37` |
+| `site/js/agent.js` | `a4cf82e98cbd0d90e3317411ffad0575567cee4d` | `d7f2d05a1af4ce3f99b080ce9c1f32e5b54e6a2a4491c8fd7865968a8d7e54f6` |
+| `site/js/benchmarks.js` | `f126ce9a530785c2f0c2cdeab00cd33d07e549b5` | `0e4d5a070d89b9174b410be6b19591e3b53a1ce6659c9ecf8946875d1686b4ec` |
+| `site/js/core.js` | `c58e488aed7973eb3b11d5b431d0d5352578adf0` | `0df0492a5d9a26a2769873e4812acf8e06df4da844f07dfdd25f7f2368a09cdb` |
+| `site/js/dashboard-model.js` | `ec6769dfe696bdfbf64018e81552300671adf09f` | `b814d95d7c05b40076912908b1fac4fae009f7a2f3e36796bd0325988a8ec792` |
+| `site/js/dashboard.js` | `a076f19293165105a6ff1e5f87a8140082aa9405` | `13b4e5af3d895b2b965747aa0f215578ed5a28f98b75bc5b89cea1a9ab56c8d4` |
+| `site/js/home.js` | `10552e5808c7571b87903704a89a6f4beca0af1c` | `30e300a9ac1289cef7fb068b2248a1f437f6851bf5eae91eb766c9938c084d4a` |
+| `site/js/l4_changeover.js` | `c12a07b4e944108d4176fc99efbdb4032144046c` | `d0ee860087295f7cbffc41e58eb9386e61aa1ae217b3516d7d35435af8f065c1` |
+| `site/js/l4_common.js` | `3b8dc5f2ab66fea526ac839555642a4136d9ea0d` | `f64aaff4fbd8a425788b55bd8581d2e621aeaf9ad5d1407a1e31d09a0061349b` |
+| `site/js/l4_engineering_history.js` | `195410e480d3a6c944e2ba426b21b4e41a844dbf` | `ed13ab546811df5877085e0f51f3aeaa127d521fd1fec9da051139423b76b70e` |
+| `site/js/l4_improvements.js` | `f371b216d4b68f6a8b746d73726beeb54fd8381f` | `13ae51658f8a2e84b1821a57c9adb77c77380992fd77f53ea51660021987fc7a` |
+| `site/js/l4_people.js` | `d7d391e695279a7ec805c15b2a5c1ae2acd41789` | `35f7a8ca91c4c180118188f83c231a5248d74061932566a33c1b46796169da60` |
+| `site/js/l4_sources.js` | `6f0880725ef2f5cd61df0d4aebf7931cf2ba07d0` | `0c4fbad9469a9173eb0ba13bfa9e7d4c3528c93698e6f0b624881919210642a7` |
+| `site/js/l4_understanding.js` | `e3b352e56c55d6bda8ae70a15b87770c8e841249` | `b528816a2a1ce188daa584bcf02def917ee9cc7feb610b3f15898df5f373e758` |
+| `site/js/nextmove.js` | `e060653ea52ef5749d9f432be330f0e882c8ce86` | `0f849fbec1854b6ed7cff9fedfe10f1236d856a650750812e7cf8779cb9c3404` |
+| `site/js/owner_inputs.js` | `81a53d8f54ee1ad87558f2ab4bbab2ea7fb398b2` | `2e6b1b2d0a2656159bf25802e6ab8276d8f7a95a4f6f653e6e13c35d6969b174` |
+| `site/js/project.js` | `063cb723dfd849ec2d0c823f1bf4dd64b16c7a53` | `4b992abf87370dc97c7f22a079107097a77d96da9095d95cf73b62c93cb09a64` |
+| `site/js/protocol.js` | `876a1dba5f0322a781c1d03c1367cb13a75be839` | `c5c6280ebe0194fc08337d3e086af494cd1f0d876f57f3d3a7cf022249fef921` |
+| `site/js/statusbar.js` | `6347d4e28e681f19cddbf07800daa968f08e1261` | `00929ba306265df50f061acd70e03cf0cab86c38a22ab0410936e06280a0337a` |
+| `site/js/timeline.js` | `b840ea43c62c96bdf6655e279e89c3eb667b2373` | `0f9b904db889f10232384758c04d6a0c829f01bbd7dcc36c55bee6de42a237c6` |
+| `site/js/trace.js` | `604aa0e06fae85ed7a4f2e071897029909e10efc` | `7c738579b7808fb9a8d50366c6543a834ad68560be934563a922ca18fcd45aee` |
+| `site/js/v36_scoreboard.js` | `c0b0ea88f9ed10aec806e75bd147c28f8e9f2116` | `6aa05121b9d7ad8d8cd341518edfe0f6583017acf97d8172589e0eee2fc404a6` |
+| `site/style.css` | `c8f1f4d4bd2713dbd81012842ec2acefc9ba621d` | `7fbd831685ded6b2ef4727b3f001688ccaa3da46fe634a0608b6d65f99039c81` |
