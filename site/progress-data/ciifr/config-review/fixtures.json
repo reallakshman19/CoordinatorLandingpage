@@ -1,0 +1,73 @@
+{
+  "repository": [
+    {
+      "t": "XML_Compare_Utilities — VNext engineering repository",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities"
+    }
+  ],
+  "issues": [
+    {
+      "t": "New independent reviewer packet #152",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/152"
+    },
+    {
+      "t": "VNext independent review umbrella #143",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/143"
+    }
+  ],
+  "pullRequests": [
+    {
+      "t": "Config policy PR #150 · DRAFT",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/pull/150"
+    },
+    {
+      "t": "Underlying A1 writer PR #149 · DRAFT",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/pull/149"
+    }
+  ],
+  "roadmap": [
+    {
+      "t": "Original VNext project contract and acceptance plan",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139"
+    }
+  ],
+  "highRoi": [
+    {
+      "t": "Preserve original TARGET0 raw bytes and explicit, SHA-bound new-copy writer rules",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139",
+      "s": "proposed"
+    }
+  ],
+  "future": [
+    {
+      "t": "Only separately Owner-authorized production replacement after integrated validation",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139"
+    }
+  ],
+  "intent": [
+    {
+      "t": "Config controls isolation/strictness but cannot disable physical byte overlap, stale hash, alias or Geometry atomic checks.",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/152"
+    }
+  ],
+  "inputs": [
+    {
+      "t": "Authoritative current work packet and engineering scope",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/152"
+    }
+  ],
+  "knownIssues": [
+    {
+      "t": "F02 source-level async invalidation; F01/P1/P2 and pre-edit backup chronology unresolved.",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/152",
+      "s": "open"
+    }
+  ],
+  "pending": [
+    {
+      "t": "Next actor must produce actual implementation/review receipts, not infer them from an open issue",
+      "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/152",
+      "s": "waiting"
+    }
+  ]
+}

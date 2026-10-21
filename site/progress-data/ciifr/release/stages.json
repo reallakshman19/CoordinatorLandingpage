@@ -1,0 +1,72 @@
+{
+  "R1": {
+    "order": 1,
+    "lane": "S",
+    "milestone": "M0",
+    "name": "Owner-gated tile replacement contract",
+    "sub": "Do not create permanent adjacent production tile or overwrite legacy until full qualification.",
+    "state": "VERIFIED",
+    "actor": "-",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139"
+      }
+    ],
+    "detail": {}
+  },
+  "R2": {
+    "order": 2,
+    "lane": "B",
+    "milestone": "M1",
+    "name": "Assemble all three public proposal adapters",
+    "sub": "Tab 2/3 UI integration and atomic Geometry branch group contract remain unfinished.",
+    "state": "NOT_STARTED",
+    "actor": "CODER",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139"
+      }
+    ],
+    "detail": {}
+  },
+  "R3": {
+    "order": 3,
+    "lane": "V",
+    "milestone": "M3",
+    "name": "Qualify real originals, BM/BM3 and browser",
+    "sub": "Use authorized private custody and independently sealed evidence; record full SHA/byte audit.",
+    "state": "NOT_STARTED",
+    "actor": "ORACLE",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139"
+      }
+    ],
+    "detail": {
+      "still": "No private paths, sample file names or benchmark answers appear on this public page."
+    }
+  },
+  "R4": {
+    "order": 4,
+    "lane": "R",
+    "milestone": "M4",
+    "name": "Owner decides exact-commit acceptance and cutover",
+    "sub": "No merge, release or existing-tile modification authorized by the Progress page alone.",
+    "state": "NOT_STARTED",
+    "actor": "YOU",
+    "chats": [],
+    "refs": [
+      {
+        "l": "Evidence / task",
+        "u": "https://github.com/reallakshman19/XML_Compare_Utilities/issues/139"
+      }
+    ],
+    "detail": {}
+  }
+}
