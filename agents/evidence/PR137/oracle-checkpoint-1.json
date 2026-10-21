@@ -1,0 +1,424 @@
+{
+  "source_head": "6db725bb71149ff1d4335c2ec302168e1c5baec6",
+  "environment": {
+    "node": "v24.19.0",
+    "python": "3.12.14",
+    "checkout": "selected-source materialization, not complete git clone"
+  },
+  "verified_existing_source_files": [
+    {
+      "path": "agents/PR137_workreport.md",
+      "git_blob": "470bb6d4bd7cd56ed04bdd6393a9638b1025fb0d",
+      "sha256": "efc75ff9e4ecbcece79ac398da08aa7198d4b592b83145efcc9dfcbbe21a2fc1"
+    },
+    {
+      "path": "agents/claims/PR137.yaml",
+      "git_blob": "90efddae1febbe28727bb5060924c7d165cebb7d",
+      "sha256": "3c270da8524328bd1d6c4a1c0aa8db646a84b4a41d9d9551748bb48b38f1a70d"
+    },
+    {
+      "path": "agents/status/PR137.yaml",
+      "git_blob": "697ed85db5fc65f8fb1ef3ceb6f46006b747f04b",
+      "sha256": "8b4bf7a4a1de19970302df2072df31d71f33874c9b7f425786b57543f05897f9"
+    },
+    {
+      "path": "benchmarks/grade9-pilot-2026-10-15/MANIFEST.json",
+      "git_blob": "06baec0edbc5dafafd8c679b0ca83f427adaa5a0",
+      "sha256": "e7682d2aba0fe1a3ce0480977b62b44cf1b5c4e16418370824f2a252036ed562"
+    },
+    {
+      "path": "benchmarks/grade9-pilot-2026-10-15/inbox-1.json",
+      "git_blob": "3d1a0f6d5caa29173222c04ac7bec45523280755",
+      "sha256": "ff50b4c06eeae7012bd44bd21176257965f2a65b6422f9fc66bcda95bab57bc0"
+    },
+    {
+      "path": "benchmarks/grade9-pilot-2026-10-15/logs/2026-10-15_epoch2/events.jsonl",
+      "git_blob": "641aa346f33fa551cae5465685ef0bef6caad2c7",
+      "sha256": "d240c2a7e5d8248e5d33cc3b8d96a8c9ddd0c812f245997600e9015628d710d2"
+    },
+    {
+      "path": "benchmarks/grade9-pilot-2026-10-15/logs/2026-10-15_epoch2/handovers/handover-coder-g2.md",
+      "git_blob": "42fb8cc00574388a92334b70f2af2448a00ed279",
+      "sha256": "d33ae5c1af12d2d8ba7d07a040c03d518d11c7a36b0489289d2bccd9b31a13f8"
+    },
+    {
+      "path": "benchmarks/grade9-pilot-2026-10-15/logs/2026-10-15_epoch2/handovers/handover-validator-g2.md",
+      "git_blob": "742316146d17741fe96974955010256e6aa0c2a0",
+      "sha256": "509674b165496b708fffecb886295b257896ee5ef5db64988fbd843a765b85ac"
+    },
+    {
+      "path": "benchmarks/grade9-pilot-2026-10-15/logs/2026-10-15_epoch2/raw/6ad02128/turn-4.md",
+      "git_blob": "e993b53e459831cfe2cefc8cd7ebf69ecae148ec",
+      "sha256": "513930294e31cdc420c89d53b52db1f6b2de960fb1c79309502bf10a23a2bc9f"
+    },
+    {
+      "path": "benchmarks/grade9-pilot-2026-10-15/logs/registry.json",
+      "git_blob": "a5d9ee44a62fa6fe3c3680b1734cc847d466c1ce",
+      "sha256": "cdbc39827109d94ccbac7854cb6474619f4e256a3856e20571affbbc65d03a84"
+    },
+    {
+      "path": "benchmarks/grade9-pilot-2026-10-15/threads/issue-10.json",
+      "git_blob": "f02fc2b7e3571a577eb31de0510d6435526549d0",
+      "sha256": "875fd74488d7ac2b7f16a4f8ffb34fe64f9b03c14a994dba3b90c2fd1153d16d"
+    },
+    {
+      "path": "benchmarks/grade9-pilot-2026-10-15/threads/issue-11.json",
+      "git_blob": "c379d470b30fb7b69112ae11f36c7dc78b110ff0",
+      "sha256": "72107cf31b5963fb75c4335cac59c33fbaa99f73b6a1d9bf0bd5bbefaeed3b0f"
+    },
+    {
+      "path": "benchmarks/grade9-pilot-2026-10-15/threads/issue-6.json",
+      "git_blob": "5940b7dc60cf9d4b7f67a98785b92df25a30619f",
+      "sha256": "bf952019d8d0fd86c0009b7ec14d9a92b63fa4728cbb50a8d8d94c8b7d4f0b82"
+    },
+    {
+      "path": "benchmarks/grade9-pilot-2026-10-15/threads/issue-8.json",
+      "git_blob": "d5ab4c43f96c8dd33323b0c0c00a1085612a9e93",
+      "sha256": "cfb586297ce8968b012edcb9e4c872fdb2bddbd9c0f2853daae1782805f6b108"
+    },
+    {
+      "path": "benchmarks/grade9-pilot-2026-10-15/threads/issue-9.json",
+      "git_blob": "c93ac373c00fa7bc686a304943f2cb4b5a09babe",
+      "sha256": "1e0a131f705071baa972231481cc81683c41271de8316e25a4cc82117803aa60"
+    },
+    {
+      "path": "benchmarks/imo-ab-test-2026-10-15/MANIFEST.json",
+      "git_blob": "3cff580437e611bfc618b7865ce7a9a53f3dc597",
+      "sha256": "62a2f28ac89f81487377a4af7f444b430ac341856c9e1bf558118b44ac6f5d41"
+    },
+    {
+      "path": "benchmarks/imo-ab-test-2026-10-15/inbox-1.json",
+      "git_blob": "f4a41a1cbd6caedc0121e0c6d103a909449d6275",
+      "sha256": "5d451db6078dde129aed2dcac2730d0536816486e90ea7445197d06dacc196e9"
+    },
+    {
+      "path": "benchmarks/imo-ab-test-2026-10-15/logs/registry.json",
+      "git_blob": "e24e020011842515ddaccf18612918827f85435c",
+      "sha256": "6cf51609ead0fd52307415eecb59200d1513d181b95e4e28651896139b07800b"
+    },
+    {
+      "path": "benchmarks/imo-ab-test-2026-10-15/threads/issue-12.json",
+      "git_blob": "359edc91d86f1e3d4d6bbde6b612e3803e4ad58e",
+      "sha256": "d729c18a0d7c4a77a1530de0e3ff825542aaa55c235f0b8d89a8503a09320fe9"
+    },
+    {
+      "path": "benchmarks/imo-ab-test-2026-10-15/threads/issue-13.json",
+      "git_blob": "31804af77f7586ebbbcf0ca05f7297dddd1dff1d",
+      "sha256": "3d3ba695f9017b9d0e411baea2635e2ed0cbe13b3e5167f5424b976cb9d47c72"
+    },
+    {
+      "path": "benchmarks/imo-ab-test-2026-10-15/threads/issue-14.json",
+      "git_blob": "00c42107bf1dc857686ef3aa70602aafeb668712",
+      "sha256": "81564384f37904a2a8102bab8f6205fa3b1e15971fbeb80494ab4ab50ff1f875"
+    },
+    {
+      "path": "logs/cii-method-c/registry.json",
+      "git_blob": "a0278fe467493bd9afda6a6402adf5944bd13007",
+      "sha256": "57e798564b3a5d89c3e5863659093f091b17e2542f8b70e8e04da7fc66288828"
+    },
+    {
+      "path": "logs/grade9-pilot/registry.json",
+      "git_blob": "7c19a58cc7a550356e8c6404b44510545a04481e",
+      "sha256": "ae83ed3a5da0bd10838a75528f1706849bb85c02071ac1113af220a1719d97f1"
+    },
+    {
+      "path": "logs/imo-ab-test/registry.json",
+      "git_blob": "ae12fc47b7eff795de3ff46fd45cb9bce4656b10",
+      "sha256": "a1667cad3a9554572b282d1ab1951aeb9d3d92903b34acb372469a3e4d0920fa"
+    },
+    {
+      "path": "logs/landing-live/registry.json",
+      "git_blob": "ce847c47986f1a4925a4a8743ae1a570d4bdf42f",
+      "sha256": "751d805c4ab89efb7de4c342dc096489dc9a25e3202af4028fbbf957eaba8a59"
+    },
+    {
+      "path": "logs/xml229-output/registry.json",
+      "git_blob": "b6ebeece38a26ec5e9e929505b2ed1f9c3a14ce0",
+      "sha256": "56e65a15c4719099687971e764bc9b8e0c8d7232d0fc16039db977a0a28bc6e7"
+    },
+    {
+      "path": "scripts/build_data.py",
+      "git_blob": "64cd755f396fd7a59df9e8b87654e8de9a1d41a9",
+      "sha256": "6542d8fe3d703786ff0e9c66ef62b0ffd53dc42b719e464f8f0dad59d9e8e868"
+    },
+    {
+      "path": "scripts/fetch_live_data.py",
+      "git_blob": "c7506eee1ab09a09003598e96ecdbff2569ac7d8",
+      "sha256": "2307f13aef25acd4c7f58e4bb06090c771220230a52368a9ee4a961c03661c5a"
+    },
+    {
+      "path": "scripts/landing_build/__init__.py",
+      "git_blob": "fbf612f4751c6ecfe10dd157e6794490edc0eb81",
+      "sha256": "2a721ab0d65b3fa926ee8ec2b7e43f7540f37cda40f7fd670e42dafc7048897f"
+    },
+    {
+      "path": "scripts/landing_build/benchmarks.py",
+      "git_blob": "de652cdb927836690f619c72bc33d44bba65bc19",
+      "sha256": "ace0e2ae6e7e5d59be59d93ef704929cd5eaaa4749938dae4e392dba958c6a47"
+    },
+    {
+      "path": "scripts/landing_build/continuity.py",
+      "git_blob": "71a7e100fa765a30b25e902937a6f4952f58d035",
+      "sha256": "d719e5bd86ff2adb39bc0f989be6cf460180aebfcc42d30bc2f350f25e643630"
+    },
+    {
+      "path": "scripts/landing_build/dashboard_report.py",
+      "git_blob": "1c26edbd7c8bb1e4c3497c50019f28ba636e5cae",
+      "sha256": "5e985af633f15dda1e94657326a3d5bea6468b18f0d52df212c56e45def446c5"
+    },
+    {
+      "path": "scripts/landing_build/disagreement.py",
+      "git_blob": "9a45462d94296bcef4e10c795cab357878802910",
+      "sha256": "0c45c7b171f11e4fd205a9b5f971c3afaa7348df95b86702023b92314f89b791"
+    },
+    {
+      "path": "scripts/landing_build/evidence_parse.py",
+      "git_blob": "fdc26d3d8449c08edd20b722abc62f31c098952e",
+      "sha256": "598b0734263d3423abcb28eccb123c68765574e7316c263d715761a5e713899f"
+    },
+    {
+      "path": "scripts/landing_build/fetch_discovery.py",
+      "git_blob": "ae1e58eaf2ec0d5f05edc92de4cf079070323eb1",
+      "sha256": "85d5337bc22b49a9f4297dcf4fd74d223baa9f7100675fbfbd517d2860ac478c"
+    },
+    {
+      "path": "scripts/landing_build/fetch_extras.py",
+      "git_blob": "047af83e2260b702bd08bef0340f10766d9767cf",
+      "sha256": "350332ff3b95f38b3e92f78c621b66db41fe6e0f26604db1306d1fed339118bd"
+    },
+    {
+      "path": "scripts/landing_build/fetch_github.py",
+      "git_blob": "3d100cf6c3c5547b7866c3dcee6e7e1d06e94c33",
+      "sha256": "882c5e09bff7431b048673c4b2babff9cb02bfcf59b4bd0c940ae1ce22b30b4c"
+    },
+    {
+      "path": "scripts/landing_build/file_io.py",
+      "git_blob": "274255aaf6ed9587a65aedd2d10cf490b1225a85",
+      "sha256": "3b8c26c7a61cdbf8b435a32bce0a7292dfa419732f93843310d59366c46aef68"
+    },
+    {
+      "path": "scripts/landing_build/freshness.py",
+      "git_blob": "bfe6cb30ff4d4e8bc8bead2f8a0a27803a007461",
+      "sha256": "bb816b4db2f56f7579bb7eb88b9659bf8f706ef5131c345f18651871d03489f9"
+    },
+    {
+      "path": "scripts/landing_build/lineage.py",
+      "git_blob": "6c3cf06b7fc4fd23b707f154a6948a94c8ee4729",
+      "sha256": "151e8c7c81d5fc98f8719919b01f4968877b108be1b91318553643ca501b5d50"
+    },
+    {
+      "path": "scripts/landing_build/owner_helpers.py",
+      "git_blob": "ce29f7581826290a8abd1e40551bedac73f15ff2",
+      "sha256": "11ed77a73f0899db30b0aa8ea406a4642361c3f3eb71a48aa99d616a03f6c398"
+    },
+    {
+      "path": "scripts/landing_build/owner_inputs.py",
+      "git_blob": "e0af25d2fe7aee3640dada923dd4bf4d508e8d28",
+      "sha256": "0ffe52e9f3cf5f43926b0cae2043fdd82a4d2dacddc600ce7f01421cc080bc5c"
+    },
+    {
+      "path": "scripts/landing_build/project_data.py",
+      "git_blob": "b9206a3fce9d466a890303072347bf758240bc22",
+      "sha256": "4f34271f162454232009b9f16e099c28abba513097890529905d6039ccaa904b"
+    },
+    {
+      "path": "scripts/landing_build/project_evidence.py",
+      "git_blob": "622ddd293ec02e79e1ba3e57d45f16a9894b9783",
+      "sha256": "2a94abab418b9c6a05f49e6c7a76d8e8a4ceca29ef09413df1061f6103ef6f62"
+    },
+    {
+      "path": "scripts/landing_build/project_intent.py",
+      "git_blob": "16fabd685493a26fdc3c132e29d05fe6398e4f5a",
+      "sha256": "096c76214bc9c36297534f9705b7d046175943beb3bc8ea6c54246919a8763a8"
+    },
+    {
+      "path": "scripts/landing_build/project_view.py",
+      "git_blob": "d337d0903a086e79e0b3236ec4e1139cac587dbc",
+      "sha256": "34bb028d479421410e023d27c895422147b66c313ec47399760763589420d69b"
+    },
+    {
+      "path": "scripts/landing_build/registry_schema.py",
+      "git_blob": "c7232414853d61d05e9468ac990d1f7b36581a26",
+      "sha256": "72ff91e6afbf7b142b4ce8f76fe158e38f06ca9103e5be0e7a376be08d32bc3b"
+    },
+    {
+      "path": "scripts/landing_build/retirement_guard.py",
+      "git_blob": "e84b25d3a40c99ae76b33549535d1553da9c28e3",
+      "sha256": "523af583e27fd6b76019bedc4a0af471db52cf7800dcdfec4f7b4de76a2c1098"
+    },
+    {
+      "path": "scripts/landing_build/timeline.py",
+      "git_blob": "9d9e0a91e9d0ea916849f88cb95f600f740af9e3",
+      "sha256": "963bec651a0e45b88013180676e364a74e9a56bffad8978f3b128c0ad3555e4a"
+    },
+    {
+      "path": "scripts/landing_build/v36_scoreboard.py",
+      "git_blob": "ee4834008d9b840c3f64cab7f43b3f5f826c3f74",
+      "sha256": "20b3dc53ce37eeed61593678812ffbc35d2d306410dcf21ee41d67fff4fe2934"
+    },
+    {
+      "path": "scripts/next_move.py",
+      "git_blob": "30b12f82f966ad3b0133dcf95bbe9af1591cf55a",
+      "sha256": "47eb0336538d184b92423548f8b3dc3e131ce5c185d8620ee7cb9ade45944d5e"
+    },
+    {
+      "path": "scripts/next_move_claim.py",
+      "git_blob": "3df9474d4b15d9989874cb240ca5fb8a81e0df81",
+      "sha256": "84a9520d7298b7dee556b11e855b9d180e052a974a28da6f54dddb3de7d67713"
+    },
+    {
+      "path": "scripts/next_move_evaluator.py",
+      "git_blob": "008889f9136e5bd22f3e52ed44cc02b9e91a15ba",
+      "sha256": "ce9e5de0ad56dfe93f93d4bce6e0ced04b6d9c0ce2a01febe2ebbdfe148d5929"
+    },
+    {
+      "path": "scripts/owner_json.py",
+      "git_blob": "e1ea09064d2a03ec960d5fb9c9763d7571a4ce70",
+      "sha256": "93be40dc5485f895d05e5c871db7219d4b35bab372efea75e9738dbe23974460"
+    },
+    {
+      "path": "scripts/publish_site.py",
+      "git_blob": "e72e11226703af8d74c9f27892c2cdaf86f8aff0",
+      "sha256": "ff98b879447697a2e652c8dd2bf7034f54ee3e924b1901fa14fb3ee82dfe3497"
+    },
+    {
+      "path": "scripts/status_bar.py",
+      "git_blob": "ea6f27cd07a27ca4d6948d87197380920887673a",
+      "sha256": "4cec8991cbb0142826b216fc762177d10767aee5d2100bb20133062f456c014b"
+    },
+    {
+      "path": "scripts/sync_owner_input_form.py",
+      "git_blob": "55eca4a4af361fdbacdced4d591defa91a99890e",
+      "sha256": "1ed5321bff021691ef62556de89de519a381d5d9ff0ff8b6e50be80e15e89ba1"
+    },
+    {
+      "path": "scripts/ultra_economy.py",
+      "git_blob": "c94780ad13cca7c19bffca7c7d1de3913783f80a",
+      "sha256": "e65631f913f62afa1f277bb83a8b3ab0b8cb1556dda629c365577e4315de9536"
+    },
+    {
+      "path": "scripts/verify_nextnudge_workspaces.py",
+      "git_blob": "b05126000b3866d025961d5edcc7ecc896410a91",
+      "sha256": "1fff28b292947949c627477f3cc43d01303fab2318721b8de39d1c61eb3cbc05"
+    },
+    {
+      "path": "site/index.html",
+      "git_blob": "f5ffe380d4934582bafea35974896bbf90a677b0",
+      "sha256": "468bb27e7ede43b24f807e115a86dba6708be820b6c0e7eea7daaecd1e8f9a37"
+    },
+    {
+      "path": "site/js/core.js",
+      "git_blob": "c58e488aed7973eb3b11d5b431d0d5352578adf0",
+      "sha256": "0df0492a5d9a26a2769873e4812acf8e06df4da844f07dfdd25f7f2368a09cdb"
+    },
+    {
+      "path": "site/js/dashboard-model.js",
+      "git_blob": "ec6769dfe696bdfbf64018e81552300671adf09f",
+      "sha256": "b814d95d7c05b40076912908b1fac4fae009f7a2f3e36796bd0325988a8ec792"
+    },
+    {
+      "path": "site/js/dashboard.js",
+      "git_blob": "a076f19293165105a6ff1e5f87a8140082aa9405",
+      "sha256": "13b4e5af3d895b2b965747aa0f215578ed5a28f98b75bc5b89cea1a9ab56c8d4"
+    },
+    {
+      "path": "site/js/statusbar.js",
+      "git_blob": "6347d4e28e681f19cddbf07800daa968f08e1261",
+      "sha256": "00929ba306265df50f061acd70e03cf0cab86c38a22ab0410936e06280a0337a"
+    },
+    {
+      "path": "site/style.css",
+      "git_blob": "c8f1f4d4bd2713dbd81012842ec2acefc9ba621d",
+      "sha256": "7fbd831685ded6b2ef4727b3f001688ccaa3da46fe634a0608b6d65f99039c81"
+    },
+    {
+      "path": "tests/dashboard.test.cjs",
+      "git_blob": "68af5a3d17ff4da4d3a2d7483fd9efac80265172",
+      "sha256": "ae454440b395188be1a600f24c39b918e026030cbf171d99d83dc98d2f78d8a5"
+    },
+    {
+      "path": "tests/test_dashboard_report.py",
+      "git_blob": "af9b09aa071adb31e20e6e875809d64ca624c172",
+      "sha256": "57c54dcdc4e256e0fbae05c9186548dd9ad0d45670161dd429fb0eea67558594"
+    },
+    {
+      "path": "tests/test_evidence_parse_extract.py",
+      "git_blob": "634cb7cc56f5ddc9a1c639d9381fd1a26b994b4e",
+      "sha256": "a00d4ac3bdb5782ee7dd0886be5823ab5478482d962a8cffabdbec820d84d8b2"
+    },
+    {
+      "path": "tests/test_freshness_extract.py",
+      "git_blob": "1732b7502cf9c6bb55bc35b3ec0f8d9f868ca76f",
+      "sha256": "da52964e046fab8278ed97fc552b3d6f07e389c2134a2632e042d50e18abdc17"
+    },
+    {
+      "path": "tests/test_l2b_intake.py",
+      "git_blob": "5e3173d859c28262a6818167a84f570a10a21f7a",
+      "sha256": "d5f779547aa3f2b91a42c98a1403b22838758df25c5197f6555333ce25ea030a"
+    },
+    {
+      "path": "tests/test_l2c_lineage.py",
+      "git_blob": "df1511814f9912226830d8a086928339ecf31a41",
+      "sha256": "810ffe99c6629a3bfb87a7ed4e7e8024a4445cac28749ddf694d029e6745cce1"
+    },
+    {
+      "path": "tests/test_l2d_disagreement.py",
+      "git_blob": "7b6db872ba7c481fa3ebaff0f720f86d8c240be3",
+      "sha256": "8ac73cef35af5a14f29c1dd1252df7e4254cf335369a904ab5a1c848dcc5d833"
+    },
+    {
+      "path": "tests/test_l3_registry_schema.py",
+      "git_blob": "8bcc21a6d0de076068d80f27449166f79d3fa37e",
+      "sha256": "b99a06aa81c6c4a21193b0bbc4843e459ad6aa70e57b0f7bbd5651730ada220b"
+    },
+    {
+      "path": "tests/test_timeline_extract.py",
+      "git_blob": "c6cff94f7d35fb656b0959247fbb111a7ce2e299",
+      "sha256": "5acec3f4fb6a77937e21febdae3c998a5b1f91dbc561655cea9a4283ad0d139f"
+    },
+    {
+      "path": "tests/test_wp16.py",
+      "git_blob": "d7085c06be84d8dc217eef85260ddab621551841",
+      "sha256": "cf7b9066c6f65efe6b074888fa08c2e73c28837056cbd6a373084f377d600f19"
+    }
+  ],
+  "cli": [
+    {
+      "command": "node --test tests/dashboard.test.cjs",
+      "exit_code": 0,
+      "log": "\u2714 timezone-less timestamps, silence, and missing state starts never become activity or duration (3.397705ms)\n\u2714 scheduled due crosses to late; monitor freshness boundary never becomes a scheduled check (0.423036ms)\n\u2714 future or stale observations, incomplete roster, duplicate identities and expired grants cannot stay green (0.371423ms)\n\u2714 paused timers do not accrue overdue; ON is distinct from reported work (0.203445ms)\n\u2714 reported completion duration freezes; missing completion time is not guessed (0.20111ms)\n\u2714 benchmarks freeze at source as_of; invalid frozen time fails closed (0.148651ms)\n\u2714 same id8 in different projects preserves declarations and does not mutate input (0.272173ms)\n\u2714 reported evidence is useful timing without becoming a direct activity observation (0.180196ms)\n\u2714 real renderer ticks without network polling, preserves expansion on regroup, and cleans up on exit (41.419363ms)\n\u2714 late fetch after navigation cannot install a view or interval; hostile source strings stay text (3.526748ms)\n\u2714 navigation and asset wiring point to the production Dashboard consumer (0.342504ms)\n\u2714 source outage leaves an explicit unknown view with no timer interval (1.049168ms)\n\u2714 Dashboard project count uses displayed status-bar source if auxiliary catalog is missing (2.288489ms)\n\u2139 tests 13\n\u2139 suites 0\n\u2139 pass 13\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 144.842174\n"
+    },
+    {
+      "command": "python3 tests/test_dashboard_report.py",
+      "exit_code": 0,
+      "log": "......\n----------------------------------------------------------------------\nRan 6 tests in 0.010s\n\nOK\n"
+    },
+    {
+      "command": "python3 tests/test_wp16.py",
+      "exit_code": 0,
+      "log": "test_wp16_pinned_project_row_lacks_shared_status (__main__.WP16PinnedBase.test_wp16_pinned_project_row_lacks_shared_status) ... ok\ntest_wp16_pinned_registry_projection_absent (__main__.WP16PinnedBase.test_wp16_pinned_registry_projection_absent) ... ok\ntest_01_actual_all_five_registered_project_rosters (__main__.WP16StatusBar.test_01_actual_all_five_registered_project_rosters) ... ok\ntest_02_workstream_v_m_runner_standby_all_preserved (__main__.WP16StatusBar.test_02_workstream_v_m_runner_standby_all_preserved) ... ok\ntest_03_retired_not_lost_or_counted_active (__main__.WP16StatusBar.test_03_retired_not_lost_or_counted_active) ... ok\ntest_04_duplicate_id8_flagged_not_deduplicated (__main__.WP16StatusBar.test_04_duplicate_id8_flagged_not_deduplicated) ... ok\ntest_05_invalid_missing_id8_row_not_hidden (__main__.WP16StatusBar.test_05_invalid_missing_id8_row_not_hidden) ... ok\ntest_06_three_dimensions_green_only_with_real_fresh_sources (__main__.WP16StatusBar.test_06_three_dimensions_green_only_with_real_fresh_sources) ... ok\ntest_07_unknown_or_stale_monitoring_yellow (__main__.WP16StatusBar.test_07_unknown_or_stale_monitoring_yellow) ... ok\ntest_08_execution_authority_unverified_cannot_green (__main__.WP16StatusBar.test_08_execution_authority_unverified_cannot_green) ... ok\ntest_09_hard_block_red_and_project_hold_grey (__main__.WP16StatusBar.test_09_hard_block_red_and_project_hold_grey) ... ok\ntest_10_COMPLETE_separate_never_implies_green (__main__.WP16StatusBar.test_10_COMPLETE_separate_never_implies_green) ... ok\ntest_11_project_requires_every_active_dependency (__main__.WP16StatusBar.test_11_project_requires_every_active_dependency) ... ok\ntest_12_no_active_agents_does_not_go_green (__main__.WP16StatusBar.test_12_no_active_agents_does_not_go_green) ... ok\ntest_13_workstream_standby_cannot_confer_execution_authority (__main__.WP16StatusBar.test_13_workstream_standby_cannot_confer_execution_authority) ... ok\ntest_14_cycle_balance_separate_from_nm_counter (__main__.WP16StatusBar.test_14_cycle_balance_separate_from_nm_counter) ... ok\ntest_15_selected_registry_name_mismatch_fails_closed (__main__.WP16StatusBar.test_15_selected_registry_name_mismatch_fails_closed) ... ok\ntest_16_builder_publishes_single_same_projection_and_full_coverage (__main__.WP16StatusBar.test_16_builder_publishes_single_same_projection_and_full_coverage) ... Building site data \u2192 /workspace/scratch/43db3e4ed079/dashboard-work/tmppaenzhwt/out\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmppaenzhwt/out/evidence-landing-live-6ad405cc.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmppaenzhwt/out/evidence-6ad405cc.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmppaenzhwt/out/evidence-landing-live-6ad36e4d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmppaenzhwt/out/evidence-6ad36e4d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmppaenzhwt/out/evidence-landing-live-6ad0adca.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmppaenzhwt/out/evidence-6ad0adca.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmppaenzhwt/out/evidence-landing-live-6ad1a045.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmppaenzhwt/out/evidence-6ad1a045.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmppaenzhwt/out/evidence-landing-live-01a149bf.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmppaenzhwt/out/evidence-01a149bf.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmppaenzhwt/out/timeline-landing-live.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmppaenzhwt/out/status-bar.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmppaenzhwt/out/projects.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmppaenzhwt/out/owner-inputs.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmppaenzhwt/out/project-landing-live.json\nDone. Built 1 project(s).\nBuilding site data \u2192 /workspace/scratch/43db3e4ed079/dashboard-work/tmpgrwg7nky/out\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpgrwg7nky/out/evidence-landing-live-6ad405cc.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpgrwg7nky/out/evidence-6ad405cc.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpgrwg7nky/out/evidence-landing-live-6ad36e4d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpgrwg7nky/out/evidence-6ad36e4d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpgrwg7nky/out/evidence-landing-live-6ad0adca.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpgrwg7nky/out/evidence-6ad0adca.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpgrwg7nky/out/evidence-landing-live-6ad1a045.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpgrwg7nky/out/evidence-6ad1a045.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpgrwg7nky/out/evidence-landing-live-01a149bf.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpgrwg7nky/out/evidence-01a149bf.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpgrwg7nky/out/timeline-landing-live.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpgrwg7nky/out/status-bar.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpgrwg7nky/out/projects.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpgrwg7nky/out/owner-inputs.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpgrwg7nky/out/project-landing-live.json\nDone. Built 1 project(s).\nBuilding site data \u2192 /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-cii-method-c-6ad1ce42.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-6ad1ce42.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-cii-method-c-6ad1fa79.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-6ad1fa79.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/timeline-cii-method-c.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-landing-live-6ad405cc.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-6ad405cc.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-landing-live-6ad36e4d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-6ad36e4d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-landing-live-6ad0adca.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-6ad0adca.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-landing-live-6ad1a045.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-6ad1a045.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-landing-live-01a149bf.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-01a149bf.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/timeline-landing-live.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-xml229-output-6ad1cc04.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-6ad1cc04.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/timeline-xml229-output.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-grade9-pilot-6ad0506c.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-6ad0506c.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-grade9-pilot-6ad0508a.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-6ad0508a.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-grade9-pilot-6ad02130.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-6ad02130.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-grade9-pilot-6ad02128.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-6ad02128.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-grade9-pilot-6ad0b471.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-6ad0b471.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-grade9-pilot-6ad0e37a.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-6ad0e37a.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-grade9-pilot-6ad11aaa.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-6ad11aaa.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-grade9-pilot-6ad11aab.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-6ad11aab.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/timeline-grade9-pilot.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-imo-ab-test-6ad08966.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-6ad08966.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-imo-ab-test-6ad10d87.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-6ad10d87.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-imo-ab-test-6ad0449d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-6ad0449d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-imo-ab-test-6ad04451.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/evidence-6ad04451.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/timeline-imo-ab-test.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/status-bar.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/projects.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/owner-inputs.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/project-cii-method-c.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/project-landing-live.jsonok\ntest_17_control_record_normal_and_acting (__main__.WP16StatusBar.test_17_control_record_normal_and_acting) ... ok\ntest_18_missing_invalid_or_unverified_coordinator_is_unknown (__main__.WP16StatusBar.test_18_missing_invalid_or_unverified_coordinator_is_unknown) ... ok\ntest_19_verified_timer_browser_additive_without_light_changes (__main__.WP16StatusBar.test_19_verified_timer_browser_additive_without_light_changes) ... ok\ntest_20_missing_stale_unverified_never_claims_active_or_up (__main__.WP16StatusBar.test_20_missing_stale_unverified_never_claims_active_or_up) ... ok\ntest_21_builder_passes_registry_control_and_observations (__main__.WP16StatusBar.test_21_builder_passes_registry_control_and_observations) ... ok\ntest_22_malformed_control_never_crashes_or_confers_coordinator (__main__.WP16StatusBar.test_22_malformed_control_never_crashes_or_confers_coordinator) ... ok\ntest_23_control_requires_explicit_verified_true (__main__.WP16StatusBar.test_23_control_requires_explicit_verified_true) ... ok\ntest_24_overdue_or_missing_next_due_never_active (__main__.WP16StatusBar.test_24_overdue_or_missing_next_due_never_active) ... ok\n\n----------------------------------------------------------------------\nRan 26 tests in 0.050s\n\nOK\n\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/project-xml229-output.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/project-grade9-pilot.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpubu0edm3/out/project-imo-ab-test.json\nDone. Built 5 project(s).\nBuilding site data \u2192 /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-cii-method-c-6ad1ce42.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-6ad1ce42.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-cii-method-c-6ad1fa79.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-6ad1fa79.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/timeline-cii-method-c.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-landing-live-6ad405cc.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-6ad405cc.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-landing-live-6ad36e4d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-6ad36e4d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-landing-live-6ad0adca.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-6ad0adca.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-landing-live-6ad1a045.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-6ad1a045.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-landing-live-01a149bf.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-01a149bf.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/timeline-landing-live.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-xml229-output-6ad1cc04.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-6ad1cc04.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/timeline-xml229-output.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-grade9-pilot-6ad0506c.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-6ad0506c.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-grade9-pilot-6ad0508a.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-6ad0508a.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-grade9-pilot-6ad02130.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-6ad02130.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-grade9-pilot-6ad02128.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-6ad02128.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-grade9-pilot-6ad0b471.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-6ad0b471.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-grade9-pilot-6ad0e37a.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-6ad0e37a.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-grade9-pilot-6ad11aaa.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-6ad11aaa.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-grade9-pilot-6ad11aab.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-6ad11aab.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/timeline-grade9-pilot.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-imo-ab-test-6ad08966.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-6ad08966.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-imo-ab-test-6ad10d87.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-6ad10d87.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-imo-ab-test-6ad0449d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-6ad0449d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-imo-ab-test-6ad04451.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/evidence-6ad04451.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/timeline-imo-ab-test.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/status-bar.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/projects.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/owner-inputs.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/project-cii-method-c.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/project-landing-live.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/project-xml229-output.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/project-grade9-pilot.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpniz63sd8/out/project-imo-ab-test.json\nDone. Built 5 project(s).\n"
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_*extract.py' -q",
+      "exit_code": 0,
+      "log": "  fetch failed for /repos/reallakshman19/Common/issues/999: HTTP_404\n  fetch failed for /repos/reallakshman19/Common/issues/999: HTTP_403\n  fetch failed for /repos/reallakshman19/Common/issues/999: TRANSPORT_ERROR\n  fetch failed for /repos/reallakshman19/Common/issues/80: HTTP_403\nBuilding site data \u2192 /workspace/scratch/43db3e4ed079/dashboard-work/tmp9g1koosr/a\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp9g1koosr/a/evidence-grade9-pilot-6ad0506c.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp9g1koosr/a/evidence-6ad0506c.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp9g1koosr/a/evidence-grade9-pilot-6ad0508a.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp9g1koosr/a/evidence-6ad0508a.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp9g1koosr/a/evidence-grade9-pilot-6ad02130.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp9g1koosr/a/evidence-6ad02130.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp9g1koosr/a/evidence-grade9-pilot-6ad02128.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp9g1koosr/a/evidence-6ad02128.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp9g1koosr/a/timeline-grade9-pilot.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp9g1koosr/a/evidence-imo-ab-test-6ad0449d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp9g1koosr/a/evidence-6ad0449d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp9g1koosr/a/evidence-imo-ab-test-6ad04451.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp9g1koosr/a/evidence-6ad04451.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp9g1koosr/a/timeline-imo-ab-test.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp9g1koosr/a/status-bar.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp9g1koosr/a/projects.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp9g1koosr/a/project-grade9-pilot.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp9g1koosr/a/project-imo-ab-test.json\nDone. Built 2 project(s).\nFROZEN_FIXTURE_SHA256=0a7ebd12ca385963c97adadfeb033a8f88777a4ec6ad9d1bcddf0e785e4095a8\nBuilding site data \u2192 /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/before\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/before/evidence-grade9-pilot-6ad0506c.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/before/evidence-6ad0506c.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/before/evidence-grade9-pilot-6ad0508a.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/before/evidence-6ad0508a.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/before/evidence-grade9-pilot-6ad02130.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/before/evidence-6ad02130.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/before/evidence-grade9-pilot-6ad02128.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/before/evidence-6ad02128.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/before/timeline-grade9-pilot.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/before/evidence-imo-ab-test-6ad0449d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/before/evidence-6ad0449d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/before/evidence-imo-ab-test-6ad04451.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/before/evidence-6ad04451.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/before/timeline-imo-ab-test.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/before/status-bar.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/before/projects.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/before/project-grade9-pilot.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/before/project-imo-ab-test.json\nDone. Built 2 project(s).\nBuilding site data \u2192 /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/after\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/after/evidence-grade9-pilot-6ad0506c.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/after/evidence-6ad0506c.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/after/evidence-grade9-pilot-6ad0508a.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/after/evidence-6ad0508a.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/after/evidence-grade9-pilot-6ad02130.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/after/evidence-6ad02130.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/after/evidence-grade9-pilot-6ad02128.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/after/evidence-6ad02128.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/after/timeline-grade9-pilot.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/after/evidence-imo-ab-test-6ad0449d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/after/evidence-6ad0449d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/after/evidence-imo-ab-test-6ad04451.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/after/evidence-6ad04451.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/after/timeline-imo-ab-test.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/after/status-bar.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/after/projects.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/after/project-grade9-pilot.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp6h15l2n_/after/project-imo-ab-test.json\nDone. Built 2 project(s).\nWP_L2B_NEW_FROZEN_SHA256=0a7ebd12ca385963c97adadfeb033a8f88777a4ec6ad9d1bcddf0e785e4095a8\nWP_L2B_EXACT_JSON_DIFF=[{\"added_key\": \"unparsed_evidence\", \"file\": \"project-grade9-pilot.json\", \"records\": [{\"actor\": \"validator-g2\", \"chat_id8\": null, \"comment_id\": 6184238891, \"comment_url\": \"https://github.com/reallakshman19/CoordinatorLandingpage/issues/10#issuecomment-6184238891\", \"header\": \"TASK EVIDENCE v2 \u00b7 grade9-pilot \u00b7 validator-g2 \u00b7 chat UNKNOWN \u00b7 #1 \u00b7 15 Oct 08:12 +04:00\", \"header_role\": \"validator-g2\", \"issue_number\": 10, \"issue_url\": \"https://github.com/reallakshman19/CoordinatorLandingpage/issues/10\", \"project\": \"grade9-pilot\", \"reason\": \"MALFORMED_HEADER\", \"ts\": \"2026-10-15T04:12:55Z\", \"type\": \"UNPARSED\"}, {\"actor\": \"coder-g2\", \"chat_id8\": null, \"comment_id\": 6184418496, \"comment_url\": \"https://github.com/reallakshman19/CoordinatorLandingpage/issues/11#issuecomment-6184418496\", \"header\": \"TASK EVIDENCE v2 \u00b7 grade9-pilot \u00b7 coder-g2 \u00b7 chat UNKNOWN \u00b7 #1 \u00b7 15 Oct 08:28 +04:00\", \"header_role\": \"coder-g2\", \"issue_number\": 11, \"issue_url\": \"https://github.com/reallakshman19/CoordinatorLandingpage/issues/11\", \"project\": \"grade9-pilot\", \"reason\": \"MALFORMED_HEADER\", \"ts\": \"2026-10-15T04:28:14Z\", \"type\": \"UNPARSED\"}, {\"actor\": \"coder-g2\", \"chat_id8\": null, \"comment_id\": 6185406544, \"comment_url\": \"https://github.com/reallakshman19/CoordinatorLandingpage/issues/11#issuecomment-6185406544\", \"header\": \"TASK EVIDENCE v2 \u00b7 grade9-pilot \u00b7 coder-g2 \u00b7 chat UNKNOWN \u00b7 #2 \u00b7 15 Oct 09:47 +04:00\", \"header_role\": \"coder-g2\", \"issue_number\": 11, \"issue_url\": \"https://github.com/reallakshman19/CoordinatorLandingpage/issues/11\", \"project\": \"grade9-pilot\", \"reason\": \"MALFORMED_HEADER\", \"ts\": \"2026-10-15T05:47:37Z\", \"type\": \"UNPARSED\"}, {\"actor\": \"coder-g2\", \"chat_id8\": null, \"comment_id\": 6185867584, \"comment_url\": \"https://github.com/reallakshman19/CoordinatorLandingpage/issues/11#issuecomment-6185867584\", \"header\": \"TASK EVIDENCE v2 \u00b7 grade9-pilot \u00b7 coder-g2 \u00b7 chat UNKNOWN \u00b7 #3 \u00b7 15 Oct 10:20 +04:00\", \"header_role\": \"coder-g2\", \"issue_number\": 11, \"issue_url\": \"https://github.com/reallakshman19/CoordinatorLandingpage/issues/11\", \"project\": \"grade9-pilot\", \"reason\": \"MALFORMED_HEADER\", \"ts\": \"2026-10-15T06:21:05Z\", \"type\": \"UNPARSED\"}, {\"actor\": \"coder-g2\", \"chat_id8\": null, \"comment_id\": 6186385831, \"comment_url\": \"https://github.com/reallakshman19/CoordinatorLandingpage/issues/11#issuecomment-6186385831\", \"header\": \"TASK EVIDENCE v2 \u00b7 grade9-pilot \u00b7 coder-g2 \u00b7 chat UNKNOWN \u00b7 #4 \u00b7 15 Oct 10:57 +04:00\", \"header_role\": \"coder-g2\", \"issue_number\": 11, \"issue_url\": \"https://github.com/reallakshman19/CoordinatorLandingpage/issues/11\", \"project\": \"grade9-pilot\", \"reason\": \"MALFORMED_HEADER\", \"ts\": \"2026-10-15T06:57:39Z\", \"type\": \"UNPARSED\"}]}, {\"added_key\": \"unparsed_evidence\", \"file\": \"projects.json\", \"records\": [{\"actor\": \"validator-g2\", \"chat_id8\": null, \"comment_id\": 6184238891, \"comment_url\": \"https://github.com/reallakshman19/CoordinatorLandingpage/issues/10#issuecomment-6184238891\", \"header\": \"TASK EVIDENCE v2 \u00b7 grade9-pilot \u00b7 validator-g2 \u00b7 chat UNKNOWN \u00b7 #1 \u00b7 15 Oct 08:12 +04:00\", \"header_role\": \"validator-g2\", \"issue_number\": 10, \"issue_url\": \"https://github.com/reallakshman19/CoordinatorLandingpage/issues/10\", \"project\": \"grade9-pilot\", \"reason\": \"MALFORMED_HEADER\", \"ts\": \"2026-10-15T04:12:55Z\", \"type\": \"UNPARSED\"}, {\"actor\": \"coder-g2\", \"chat_id8\": null, \"comment_id\": 6184418496, \"comment_url\": \"https://github.com/reallakshman19/CoordinatorLandingpage/issues/11#issuecomment-6184418496\", \"header\": \"TASK EVIDENCE v2 \u00b7 grade9-pilot \u00b7 coder-g2 \u00b7 chat UNKNOWN \u00b7 #1 \u00b7 15 Oct 08:28 +04:00\", \"header_role\": \"coder-g2\", \"issue_number\": 11, \"issue_url\": \"https://github.com/reallakshman19/CoordinatorLandingpage/issues/11\", \"project\": \"grade9-pilot\", \"reason\": \"MALFORMED_HEADER\", \"ts\": \"2026-10-15T04:28:14Z\", \"type\": \"UNPARSED\"}, {\"actor\": \"coder-g2\", \"chat_id8\": null, \"comment_id\": 6185406544, \"comment_url\": \"https://github.com/reallakshman19/CoordinatorLandingpage/issues/11#issuecomment-6185406544\", \"header\": \"TASK EVIDENCE v2 \u00b7 grade9-pilot \u00b7 coder-g2 \u00b7 chat UNKNOWN \u00b7 #2 \u00b7 15 Oct 09:47 +04:00\", \"header_role\": \"coder-g2\", \"issue_number\": 11, \"issue_url\": \"https://github.com/reallakshman19/CoordinatorLandingpage/issues/11\", \"project\": \"grade9-pilot\", \"reason\": \"MALFORMED_HEADER\", \"ts\": \"2026-10-15T05:47:37Z\", \"type\": \"UNPARSED\"}, {\"actor\": \"coder-g2\", \"chat_id8\": null, \"comment_id\": 6185867584, \"comment_url\": \"https://github.com/reallakshman19/CoordinatorLandingpage/issues/11#issuecomment-6185867584\", \"header\": \"TASK EVIDENCE v2 \u00b7 grade9-pilot \u00b7 coder-g2 \u00b7 chat UNKNOWN \u00b7 #3 \u00b7 15 Oct 10:20 +04:00\", \"header_role\": \"coder-g2\", \"issue_number\": 11, \"issue_url\": \"https://github.com/reallakshman19/CoordinatorLandingpage/issues/11\", \"project\": \"grade9-pilot\", \"reason\": \"MALFORMED_HEADER\", \"ts\": \"2026-10-15T06:21:05Z\", \"type\": \"UNPARSED\"}, {\"actor\": \"coder-g2\", \"chat_id8\": null, \"comment_id\": 6186385831, \"comment_url\": \"https://github.com/reallakshman19/CoordinatorLandingpage/issues/11#issuecomment-6186385831\", \"header\": \"TASK EVIDENCE v2 \u00b7 grade9-pilot \u00b7 coder-g2 \u00b7 chat UNKNOWN \u00b7 #4 \u00b7 15 Oct 10:57 +04:00\", \"header_role\": \"coder-g2\", \"issue_number\": 11, \"issue_url\": \"https://github.com/reallakshman19/CoordinatorLandingpage/issues/11\", \"project\": \"grade9-pilot\", \"reason\": \"MALFORMED_HEADER\", \"ts\": \"2026-10-15T06:57:39Z\", \"type\": \"UNPARSED\"}]}]\n----------------------------------------------------------------------\nRan 48 tests in 0.210s\n\nOK\nBuilding site data \u2192 /workspace/scratch/43db3e4ed079/dashboard-work/tmp5qv4xm5t/output\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp5qv4xm5t/output/timeline-case.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp5qv4xm5t/output/status-bar.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp5qv4xm5t/output/projects.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp5qv4xm5t/output/owner-inputs.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp5qv4xm5t/output/project-case.json\nDone. Built 1 project(s).\nBuilding site data \u2192 /workspace/scratch/43db3e4ed079/dashboard-work/tmpsoj7vpw8/output\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpsoj7vpw8/output/timeline-case.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpsoj7vpw8/output/status-bar.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpsoj7vpw8/output/projects.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpsoj7vpw8/output/owner-inputs.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpsoj7vpw8/output/project-case.json\nDone. Built 1 project(s).\nBuilding site data \u2192 /workspace/scratch/43db3e4ed079/dashboard-work/tmpys5ef7g2/out\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpys5ef7g2/out/timeline-case.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpys5ef7g2/out/status-bar.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpys5ef7g2/out/projects.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpys5ef7g2/out/owner-inputs.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpys5ef7g2/out/project-case.json\nDone. Built 1 project(s).\nBuilding site data \u2192 /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/a\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/a/evidence-grade9-pilot-6ad0506c.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/a/evidence-6ad0506c.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/a/evidence-grade9-pilot-6ad0508a.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/a/evidence-6ad0508a.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/a/evidence-grade9-pilot-6ad02130.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/a/evidence-6ad02130.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/a/evidence-grade9-pilot-6ad02128.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/a/evidence-6ad02128.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/a/timeline-grade9-pilot.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/a/evidence-imo-ab-test-6ad0449d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/a/evidence-6ad0449d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/a/evidence-imo-ab-test-6ad04451.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/a/evidence-6ad04451.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/a/timeline-imo-ab-test.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/a/status-bar.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/a/projects.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/a/project-grade9-pilot.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/a/project-imo-ab-test.json\nDone. Built 2 project(s).\nBuilding site data \u2192 /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/b\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/b/evidence-grade9-pilot-6ad0506c.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/b/evidence-6ad0506c.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/b/evidence-grade9-pilot-6ad0508a.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/b/evidence-6ad0508a.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/b/evidence-grade9-pilot-6ad02130.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/b/evidence-6ad02130.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/b/evidence-grade9-pilot-6ad02128.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/b/evidence-6ad02128.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/b/timeline-grade9-pilot.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/b/evidence-imo-ab-test-6ad0449d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/b/evidence-6ad0449d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/b/evidence-imo-ab-test-6ad04451.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/b/evidence-6ad04451.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/b/timeline-imo-ab-test.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/b/status-bar.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/b/projects.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/b/project-grade9-pilot.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmpoyc236l0/b/project-imo-ab-test.json\nDone. Built 2 project(s).\nFROZEN_FIXTURE_SHA256=0a7ebd12ca385963c97adadfeb033a8f88777a4ec6ad9d1bcddf0e785e4095a8\nBuilding site data \u2192 /workspace/scratch/43db3e4ed079/dashboard-work/tmp99adefhb/a\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp99adefhb/a/evidence-grade9-pilot-6ad0506c.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp99adefhb/a/evidence-6ad0506c.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp99adefhb/a/evidence-grade9-pilot-6ad0508a.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp99adefhb/a/evidence-6ad0508a.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp99adefhb/a/evidence-grade9-pilot-6ad02130.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp99adefhb/a/evidence-6ad02130.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp99adefhb/a/evidence-grade9-pilot-6ad02128.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp99adefhb/a/evidence-6ad02128.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp99adefhb/a/timeline-grade9-pilot.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp99adefhb/a/evidence-imo-ab-test-6ad0449d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp99adefhb/a/evidence-6ad0449d.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp99adefhb/a/evidence-imo-ab-test-6ad04451.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp99adefhb/a/evidence-6ad04451.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp99adefhb/a/timeline-imo-ab-test.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp99adefhb/a/status-bar.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp99adefhb/a/projects.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp99adefhb/a/project-grade9-pilot.json\n  wrote /workspace/scratch/43db3e4ed079/dashboard-work/tmp99adefhb/a/project-imo-ab-test.json\nDone. Built 2 project(s).\nFROZEN_FIXTURE_SHA256=0a7ebd12ca385963c97adadfeb033a8f88777a4ec6ad9d1bcddf0e785e4095a8\n"
+    }
+  ],
+  "challenge": {
+    "expectation_source": "Owner requested reuse/condensation of existing source; count uses displayed status_bar.v1 project entries, not auxiliary catalog. No claim of unique or complete real-world roster. Fresh capture is distinct from direct activity observation.",
+    "command": "node agents/evidence/PR137/oracle-checkpoint-1.cjs",
+    "exit_code": 0,
+    "log": "\u2714 timezone-less timestamps, silence, and missing state starts never become activity or duration (1.870441ms)\n\u2714 scheduled due crosses to late; monitor freshness boundary never becomes a scheduled check (0.445603ms)\n\u2714 future or stale observations, incomplete roster, duplicate identities and expired grants cannot stay green (0.359742ms)\n\u2714 paused timers do not accrue overdue; ON is distinct from reported work (0.201782ms)\n\u2714 reported completion duration freezes; missing completion time is not guessed (0.280083ms)\n\u2714 benchmarks freeze at source as_of; invalid frozen time fails closed (0.161924ms)\n\u2714 same id8 in different projects preserves declarations and does not mutate input (0.244202ms)\n\u2714 reported evidence is useful timing without becoming a direct activity observation (0.176911ms)\n\u2714 real renderer ticks without network polling, preserves expansion on regroup, and cleans up on exit (18.362393ms)\n\u2714 late fetch after navigation cannot install a view or interval; hostile source strings stay text (2.959383ms)\n\u2714 navigation and asset wiring point to the production Dashboard consumer (0.436632ms)\n\u2714 source outage leaves an explicit unknown view with no timer interval (0.984254ms)\n\u2714 Dashboard project count uses displayed status-bar source if auxiliary catalog is missing (1.79208ms)\n\u2714 Oracle count challenge: empty source (1.775526ms)\n\u2714 Oracle count challenge: two projects (1.619231ms)\n\u2714 Oracle count challenge: conflicting auxiliary catalog (1.75433ms)\n\u2714 Oracle capture challenge: fresh capture does not refresh stale direct activity (3.578741ms)\n\u2139 tests 17\n\u2139 suites 0\n\u2139 pass 17\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 43.380061\n",
+    "mutant_command": "ORACLE_MUTANT=hardcoded-one node agents/evidence/PR137/oracle-checkpoint-1.cjs",
+    "mutant_exit_code": 1,
+    "mutant_log": "\u2714 timezone-less timestamps, silence, and missing state starts never become activity or duration (2.15287ms)\n\u2714 scheduled due crosses to late; monitor freshness boundary never becomes a scheduled check (0.84461ms)\n\u2714 future or stale observations, incomplete roster, duplicate identities and expired grants cannot stay green (0.50367ms)\n\u2714 paused timers do not accrue overdue; ON is distinct from reported work (0.228696ms)\n\u2714 reported completion duration freezes; missing completion time is not guessed (0.304086ms)\n\u2714 benchmarks freeze at source as_of; invalid frozen time fails closed (0.172461ms)\n\u2714 same id8 in different projects preserves declarations and does not mutate input (0.325858ms)\n\u2714 reported evidence is useful timing without becoming a direct activity observation (0.208784ms)\n\u2714 real renderer ticks without network polling, preserves expansion on regroup, and cleans up on exit (20.042503ms)\n\u2714 late fetch after navigation cannot install a view or interval; hostile source strings stay text (3.112516ms)\n\u2714 navigation and asset wiring point to the production Dashboard consumer (0.542169ms)\n\u2714 source outage leaves an explicit unknown view with no timer interval (0.927007ms)\n\u2714 Dashboard project count uses displayed status-bar source if auxiliary catalog is missing (1.953534ms)\n\u2716 Oracle count challenge: empty source (6.526648ms)\n\u2716 Oracle count challenge: two projects (2.846092ms)\n\u2716 Oracle count challenge: conflicting auxiliary catalog (1.627921ms)\n\u2714 Oracle capture challenge: fresh capture does not refresh stale direct activity (2.45977ms)\n\u2139 tests 17\n\u2139 suites 0\n\u2139 pass 14\n\u2139 fail 3\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 55.397004\n\n\u2716 failing tests:\n\ntest at dashboard-work/tests/dashboard.test.cjs:154:2\n\u2716 Oracle count challenge: empty source (6.526648ms)\n  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n  \n    assert(h.all().some(e=>e.textContent===count+(count===1?' project':' projects')+' \u00b7 coordinator cycles in project view'))\n  \n      at TestContext.<anonymous> (/workspace/scratch/43db3e4ed079/dashboard-work/tests/dashboard.test.cjs:158:3)\n      at async Test.run (node:internal/test_runner/test:1389:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: '==',\n    diff: 'simple'\n  }\n\ntest at dashboard-work/tests/dashboard.test.cjs:154:2\n\u2716 Oracle count challenge: two projects (2.846092ms)\n  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n  \n    assert(h.all().some(e=>e.textContent===count+(count===1?' project':' projects')+' \u00b7 coordinator cycles in project view'))\n  \n      at TestContext.<anonymous> (/workspace/scratch/43db3e4ed079/dashboard-work/tests/dashboard.test.cjs:158:3)\n      at async Test.run (node:internal/test_runner/test:1389:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: '==',\n    diff: 'simple'\n  }\n\ntest at dashboard-work/tests/dashboard.test.cjs:154:2\n\u2716 Oracle count challenge: conflicting auxiliary catalog (1.627921ms)\n  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n  \n    assert(h.all().some(e=>e.textContent===count+(count===1?' project':' projects')+' \u00b7 coordinator cycles in project view'))\n  \n      at TestContext.<anonymous> (/workspace/scratch/43db3e4ed079/dashboard-work/tests/dashboard.test.cjs:158:3)\n      at async Test.run (node:internal/test_runner/test:1389:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: '==',\n    diff: 'simple'\n  }\n",
+    "qualification": "Additional assertions are Oracle-authored, using existing author DOM harness; not independent browser or acceptance evidence."
+  },
+  "browser": {
+    "status": "NOT_RUN",
+    "attempt": "Playwright chromium.launch({headless:true}), with writable TMPDIR",
+    "observed": "Executable missing: /root/.cache/ms-playwright/chromium_headless_shell-1234/chrome-headless-shell-linux64/chrome-headless-shell",
+    "limitation": "Actual app navigation/layout/build-refresh journeys remain unexecuted."
+  },
+  "independence": "Oracle authored original Dashboard implementation; self-review qualification retained. No independent acceptance."
+}
