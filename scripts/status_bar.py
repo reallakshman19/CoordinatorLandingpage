@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone
 import re
 from landing_build.retirement_guard import eligibility_reason, lease_released
 from landing_build.continuity import derive_continuity
+from landing_build.dashboard_report import latest_report
 
 PROJECT_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$")
 ID8 = re.compile(r"^[0-9a-f]{8}$")
@@ -307,6 +308,9 @@ def build_status_bar(registries,project_views,now=None,include_continuity=True):
         expected.extend(x["key"] for x in roster)
         view=project_views.get(project) or {}
         scoped=[derive_status(row,registry,view,now) for row in roster]
+        if view.get('is_benchmark') is not True:
+            for item in scoped:
+                item['latest_report'] = latest_report(item, view, now)
         instances.extend(scoped)
         active=[row for row in scoped if not row["retired"] and not row["standby"]]
         streams=registry.get("workstreams") or {}
@@ -375,3 +379,4 @@ def build_status_bar(registries,project_views,now=None,include_continuity=True):
     return {"schema":"status_bar.v1","source":"all_registered_logs_registry_json",
             "as_of":now.isoformat(),"coverage":coverage,"projects":projects,
             "instances":instances}
+

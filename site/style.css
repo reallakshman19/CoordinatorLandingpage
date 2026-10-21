@@ -737,3 +737,43 @@ tr:hover td { background: var(--bg-2); }
 .wp16-continuity { min-width: 215px; display: grid; gap: 5px; }
 .wp16-continuity-input { font-size: .76rem; overflow-wrap: anywhere; }
 .wp16-continuity-source { padding-left: 3px; }
+
+
+/* Scoped operational Dashboard; uses the existing light/dark theme. */
+.otm-dashboard { min-width: 0; }
+.otm-dashboard .otm-clock { margin: 12px 0; font-variant-numeric: tabular-nums; }
+.otm-dashboard .otm-toolbar, .otm-dashboard .otm-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 10px 0; }
+.otm-dashboard button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); }
+.otm-dashboard .otm-strip { display: flex; gap: 8px 20px; flex-wrap: wrap; padding: 10px; background: var(--bg-2); border-radius: var(--radius); font-size: .85rem; }
+.otm-dashboard .otm-attention { padding: 10px 0; }
+.otm-dashboard .otm-group { font-size: 1rem; margin: 18px 0 4px; }
+.otm-dashboard .otm-agent { border-bottom: 1px solid var(--border); }
+.otm-dashboard .otm-row { display: grid; grid-template-columns: 75px minmax(160px, 1.7fr) .7fr 1.1fr .8fr .7fr 1.3fr; gap: 12px; padding: 12px 4px; align-items: start; list-style: none; cursor: pointer; }
+.otm-dashboard .otm-row::-webkit-details-marker { display: none; }
+.otm-dashboard .otm-row:hover { background: var(--bg-2); }
+.otm-dashboard .otm-row:focus-visible { outline: 2px solid var(--accent); }
+.otm-dashboard .otm-identity, .otm-dashboard .otm-field { min-width: 0; overflow-wrap: anywhere; }
+.otm-dashboard .otm-identity .note, .otm-dashboard .otm-field-label { display: block; }
+.otm-dashboard .otm-identity::before { content: '▸'; float: right; color: var(--text-2); }
+.otm-dashboard details[open] .otm-identity::before { content: '▾'; }
+.otm-dashboard .otm-field-label { font-size: .8rem; color: var(--text-2); }
+.otm-dashboard .otm-value { font-size: .88rem; font-variant-numeric: tabular-nums; white-space: pre-line; }
+.otm-dashboard .otm-signal { font-size: .8rem; font-weight: 600; }
+.otm-dashboard .otm-green { color: var(--success); }
+.otm-dashboard .otm-yellow { color: var(--warn); }
+.otm-dashboard .otm-red { color: var(--danger); font-weight: 600; }
+.otm-dashboard .otm-grey { color: var(--text-2); }
+.otm-dashboard .otm-detail { background: var(--bg-2); padding: 12px; margin: 0 4px 12px; border-radius: var(--radius); overflow-wrap: anywhere; }
+.otm-dashboard .otm-detail p { margin-top: 8px; }
+.otm-dashboard .otm-timing { font-variant-numeric: tabular-nums; }
+@media (max-width: 950px) {
+  .otm-dashboard .otm-row { grid-template-columns: 65px minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+  .otm-dashboard .otm-identity { grid-column: 2 / 4; }
+  .otm-dashboard .otm-field { grid-column: auto; }
+}
+@media (max-width: 480px) {
+  .otm-dashboard .otm-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .otm-dashboard .otm-identity { grid-column: 2; }
+  .otm-dashboard .otm-signal { align-self: center; }
+  .otm-dashboard .otm-field:last-child { grid-column: 1 / 3; }
+}
