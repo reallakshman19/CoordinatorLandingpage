@@ -111,3 +111,68 @@ def validate(value, schema, at="$"):
             elif isinstance(rest, dict):
                 errors.extend(validate(v, rest, f"{at}.{k}"))
     return errors
+
+def scan_forbidden(raw, private):
+    """Return forbidden-content findings; private relaxes only ChatGPT links."""
+    bad = []
+    if re.search(r"drive\\.google\\.com|docs\\.google\\.com", raw):
+        bad.append("contains a Google Drive link")
+    if re.search(r"[\\w.+-]+@[\\w-]+\\.[\\w.]+", raw):
+        bad.append("contains an email address")
+    if not private and re.search(r"chatgpt\\.com/c/|chat\\.openai\\.com", raw):
+        bad.append("contains a ChatGPT chat link (public repo: id8 only)")
+    return bad
+
+
+def check_links(value):
+    """Walk content, including nested options and fixture entries."""
+    problems = []
+    if isinstance(value, dict):
+        for name, item in value.items():
+            if name in ("u", "url", "ref") and isinstance(item, str) and item and not item.startswith("https://"):
+                problems.append(f"link must start with https:// ({item[:50]})")
+            problems.extend(check_links(item))
+    elif isinstance(value, list):
+        for item in value:
+            problems.extend(check_links(item))
+    return problems
+
+
+def check_topic(data, chats):
+    """Cross-file constraints are separate from per-file schema checks."""
+    problems = []
+    for sid, stage in data["stages"].items():
+        if not isinstance(stage, dict):
+            continue
+        if stage.get("milestone") not in data["meta"].get("milestones", {}):
+            problems.append(("stages", f"{sid}: unknown milestone {stage.get('milestone')!r}"))
+        if stage.get("lane") not in data["meta"].get("lanes", {}):
+            problems.append(("stages", f"{sid}: unknown lane {stage.get('lane')!r}"))
+        for chat in stage.get("chats", []):
+            if chat not in chats:
+                problems.append(("stages", f"{sid}: chat key {chat!r} not in index.json"))
+    for cid, card in data["actions"].items():
+        if not isinstance(card, dict):
+            continue
+        for stage in card.get("stages", []):
+            if stage not in data["stages"]:
+                problems.append(("actions", f"{cid}: unknown stage {stage!r}"))
+        if card.get("status") == "open" and sum(
+                bool(option.get("suggested")) for option in card.get("options", [])
+                if isinstance(option, dict)) != 1:
+            problems.append(("actions", f"{cid}: open card needs exactly one suggested option"))
+        if card.get("status") == "done":
+            answer = card.get("answer")
+            for field in ("text", "at", "ref"):
+                if not isinstance(answer, dict) or not isinstance(answer.get(field), str) or not answer[field]:
+                    problems.append(("actions", f"{cid}: done card needs answer.{field}"))
+    sections = ("repository", "issues", "pullRequests", "roadmap", "highRoi",
+                "future", "intent", "inputs", "knownIssues", "pending")
+    for name, entries in data["fixtures"].items():
+        if name not in sections:
+            problems.append(("fixtures", f"unknown fixture section {name!r}"))
+        elif isinstance(entries, list):
+            for entry in entries:
+                if isinstance(entry, dict) and not entry.get("t"):
+                    problems.append(("fixtures", f"{name}: entry has no text"))
+    return problems
