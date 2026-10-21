@@ -4,7 +4,7 @@
     "key": "g9v35",
     "title": "G9v3.5 Physics pilot",
     "subtitle": "Children of the pilot: one page set per topic, plus the shared tooling",
-    "updatedAt": "2026-10-21T15:34:35Z",
+    "updatedAt": "2026-10-21T16:02:19Z",
     "updatedBy": "OTM",
     "staleAfterMin": 120
   },
@@ -38,14 +38,14 @@
       "label": "NLM",
       "order": 1,
       "title": "G9v3.5 Physics pilot-NLM",
-      "updatedAt": "2026-10-21T15:34:35Z"
+      "updatedAt": "2026-10-21T16:02:19Z"
     },
     {
       "key": "shared",
       "label": "Shared tooling",
       "order": 2,
       "title": "G9v3.5 shared tooling",
-      "updatedAt": "2026-10-21T15:34:35Z"
+      "updatedAt": "2026-10-21T16:02:19Z"
     }
   ]
 }

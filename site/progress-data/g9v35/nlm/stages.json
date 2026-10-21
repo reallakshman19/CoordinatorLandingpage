@@ -89,9 +89,9 @@
     "lane": "P",
     "milestone": "M2",
     "name": "Drafts reach the handoff folder",
-    "sub": "0 of 2 saved. The Drive tool needs a file reference PQRT cannot make.",
+    "sub": "0 of 2 saved. Route A ruled out: the two files are not available to the Owner (21 Oct). Oracle to propose the next route.",
     "state": "BLOCKED",
-    "actor": "YOU",
+    "actor": "ORACLE",
     "chats": [
       "pqrt"
     ],

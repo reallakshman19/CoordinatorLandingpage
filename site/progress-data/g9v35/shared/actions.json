@@ -127,15 +127,15 @@
         ]
       }
     ],
-    "ask": "One question for you: what happened to the old repos `reallaksh19/Grade9v3.5` and `reallaksh19/Common` around 20 Oct: deleted, made private, or still there? If they still exist, you could make them readable again instead.",
+    "ask": "Answered by you (21 Oct): the old account `reallaksh19` is deleted, so its repos are gone for good. Everything is searched and linked under `reallakshman19` only. Making the old repos readable again is no longer possible.",
     "options": [
       {
         "key": "Split",
         "label": "Split",
         "suggested": true,
         "body": "Fix only validate-v31 now, in its own one-line PR. Leave code-tests until Math resumes. Name guardrails and Assurance as debt. Waive nothing, and do not hold PR #305 for any of the four.",
-        "reply": "CI: fix validate-v31 now in its own one-line PR (.github/workflows/v3-relay.yml line 31 to reallakshman19/Common). Leave code-tests until Math resumes. guardrails and Assurance are named debt. No waivers; PR #305 is not held for them. Old repos reallaksh19/Grade9v3.5 and reallaksh19/Common: [deleted / made private / still there]",
-        "short": "CI: fix validate-v31 now in its own one-line PR (.github/workflows/v3-relay.yml line 31 to reallakshman19/Common); leave code-tests until Math resumes; guardrails and Assurance are named debt; no waivers. Old repos reallaksh19/Grade9v3.5 and reallaksh19/Common: [deleted / made private / still there]."
+        "reply": "CI: fix validate-v31 now in its own one-line PR (.github/workflows/v3-relay.yml line 31 to reallakshman19/Common). Leave code-tests until Math resumes. guardrails and Assurance are named debt. No waivers; PR #305 is not held for them. The old account reallaksh19 is deleted; search only in reallakshman19.",
+        "short": "CI: fix validate-v31 now in its own one-line PR (.github/workflows/v3-relay.yml line 31 to reallakshman19/Common); leave code-tests until Math resumes; guardrails and Assurance are named debt; no waivers. The old account reallaksh19 is deleted; search only in reallakshman19."
       },
       {
         "key": "Hold",

@@ -104,6 +104,10 @@
       "t": "validate-v31 and code-tests broke on 20 Oct over the old account name",
       "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6318289999",
       "s": "open"
+    },
+    {
+      "t": "The old account reallaksh19 is deleted (Owner, 21 Oct): its repos and the 4 Math witness comments are gone; search only in reallakshman19",
+      "s": "open"
     }
   ],
   "pending": [

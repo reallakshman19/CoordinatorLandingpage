@@ -6,7 +6,7 @@
       "P4"
     ],
     "title": "Private drafts: how do the two files reach the folder?",
-    "lead": "PQRT wrote two private draft files, but its Drive tool cannot upload them: it needs a file reference that PQRT cannot make from its local files. Nothing is saved yet (0 of 2).",
+    "lead": "PQRT wrote two private draft files, but its Drive tool cannot upload them: it needs a file reference that PQRT cannot make from its local files. Nothing is saved yet (0 of 2). You said (21 Oct): the two candidate files are not available to you, so Route A cannot work.",
     "tables": [
       {
         "cols": [
@@ -36,9 +36,9 @@
     "options": [
       {
         "key": "A",
-        "label": "A",
-        "suggested": true,
-        "body": "You save the two files by hand. It takes about a minute.",
+        "label": "A (ruled out)",
+        "suggested": false,
+        "body": "Ruled out by you on 21 Oct: the files are not available to save by hand.",
         "steps": [
           "You reply with the text below. This also approves showing the files in PQRT's own private chat, which is an exception to \"Drive folder only\".",
           "OTM asks PQRT to attach the two ZIPs in its chat.",
@@ -60,8 +60,8 @@
       },
       {
         "key": "C",
-        "label": "C",
-        "suggested": false,
+        "label": "C (suggested now)",
+        "suggested": true,
         "body": "Stay blocked until you give another way to move the files.",
         "reply": "Drive: Route C. Stay blocked. I will give you another way to move the files.",
         "short": "Drive: Route C, stay blocked."

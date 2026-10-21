@@ -115,6 +115,10 @@
       "t": "Raw intake merges identical occurrences (IR finding 6), so custody is needed before any protected import (shared topic)",
       "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317077215",
       "s": "open"
+    },
+    {
+      "t": "The two candidate files and the Owner's private source ZIP are not available to the Owner (21 Oct): Route A is ruled out and Math stays held",
+      "s": "open"
     }
   ],
   "pending": [
