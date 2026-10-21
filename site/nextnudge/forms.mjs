@@ -15,13 +15,19 @@ export function submitForm(form,ctx) {
     $('#create-dialog').close();
   } else if(form.id==='reply-form') {
     model.reply(db,r,n,values);r.drafts[n.id]={};
+  } else if(form.id==='session-change-form') {
+    model.sessionChanged(db,r,values.newSessionId,values.reason);
+  } else if(form.dataset.replyVerify) {
+    model.verifyReply(db,r,n,Number(form.dataset.replyVerify),values);
   } else if(form.id==='run-settings') {
     model.editable(r);
     if(values.chatId8&&!/^[a-f0-9]{8}$/i.test(values.chatId8))throw Error('Chat ID must be eight hex characters.');
     setPrivateChat(r.id,values.privateChat);
-    const before={title:r.title,aim:r.aim,chatId8:r.chatId8};
-    Object.assign(r,{title:values.title.trim(),aim:values.aim.trim(),chatId8:values.chatId8});
-    model.event(db,r,null,'RUN_SETTINGS_UPDATED','', '',{before,after:{title:r.title,aim:r.aim,chatId8:r.chatId8}});
+    const sentBy=values.sentBy||'Owner';
+    if(!['Owner','TeamCoordinator'].includes(sentBy))throw Error('Invalid sender.');
+    const before={title:r.title,aim:r.aim,chatId8:r.chatId8,sentBy:r.sentBy||'Owner'};
+    Object.assign(r,{title:values.title.trim(),aim:values.aim.trim(),chatId8:values.chatId8,sentBy});
+    model.event(db,r,null,'RUN_SETTINGS_UPDATED','', '',{before,after:{title:r.title,aim:r.aim,chatId8:r.chatId8,sentBy:r.sentBy}});
   } else if(form.dataset.stepEdit) {
     model.editStep(db,r,r.nodes.find(x=>x.id===form.dataset.stepEdit),values);
   } else if(form.dataset.fixture) {

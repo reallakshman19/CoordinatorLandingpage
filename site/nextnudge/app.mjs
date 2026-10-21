@@ -5,6 +5,7 @@ import {workbench,history} from './workspace.mjs';
 import {prepare} from './prepare.mjs';
 import {fixtures} from './fixture-view.mjs';
 import {protocol} from './protocol.mjs';
+import {packetSha256,waitingOn} from './model.mjs';
 import {$,esc,options,notice} from './util.mjs';
 const s={db:null,baseSha:null,dirty:false,prepared:null,projectId:null,runId:null,
   tab:'work',phase:'onboarding',showArchived:false,conflict:false};
@@ -31,9 +32,9 @@ function render() {
   $('#run-select').innerHTML=options(runs.map(r=>[r.id,r.title+' · '+r.id+(r.archived?' [archived]':'')]),s.runId);
   $('#save-state').textContent=s.dirty?'Browser draft · not committed':'Repository snapshot';
   $('#new-run').disabled=!s.projectId;
-  $('#run-info').innerHTML=r?`<div><h2>${esc(r.title)}</h2><p>${esc(r.aim)}</p><small>${r.projectId} / ${r.id}</small></div>
+  $('#run-info').innerHTML=r?`<div><h2>${esc(r.title)}</h2><p>${esc(r.aim)}</p><small>${r.projectId} / ${r.id}</small><p id="waiting-on-list" aria-live="polite"></p></div>
     <div class="actions"><span class="pill">${r.nodes.filter(n=>!n.parent&&!n.deleted&&n.status==='accepted').length}/${r.nodes.filter(n=>!n.parent&&!n.deleted).length} steps reviewed</span>
-    <button data-action="pause">${r.paused?'Resume':'Pause'}</button><button data-action="archive">${r.archived?'Unarchive':'Archive'}</button><button data-action="delete-run">Delete</button></div>`:'';
+    <button data-action="run-summary">Export run summary JSON</button><button data-action="pause">${r.paused?'Resume':'Pause'}</button><button data-action="archive">${r.archived?'Unarchive':'Archive'}</button><button data-action="delete-run">Delete</button></div>`:'';
   $('#tabs').innerHTML=[['work','Workbench'],['prepare','Prepare the Ladder'],['fixtures','Grounding Fixtures'],['history','History'],['protocol','Nudge Protocol']].map(([id,label])=>`<button data-action="tab" data-id="${id}" class="${s.tab===id?'active':''}">${label}</button>`).join('');
   const scroll=$('#content').scrollTop;
   if(s.tab==='protocol')$('#content').innerHTML=protocol();
@@ -43,7 +44,28 @@ function render() {
   else if(s.tab==='prepare')$('#content').innerHTML=n?prepare(s.db,r,n):'<button data-action="add-step">Add your first step</button>';
   else $('#content').innerHTML=n?workbench(s.db,r,n):'<button data-action="add-step">Add your first step</button>';
   $('#content').scrollTop=scroll;
+  updateWaitTimers();
+  if(s.tab==='work'&&r&&n)packetSha256(r,n).then(hash=>{
+    const output=$('#packet-sha256');
+    if(output&&output.dataset.step===n.id&&s.db===db&&r.selected===n.id)
+      output.textContent=hash;
+  }).catch(()=>{const output=$('#packet-sha256');if(output)output.textContent='Unavailable';});
 }
+function updateWaitTimers() {
+  const run=s.db?.runs.find(r=>r.id===s.runId);
+  if(!run)return;
+  const items=waitingOn(run);
+  const list=$('#waiting-on-list');
+  if(list)list.textContent=items.length?'Waiting on agent: '+
+    items.map(x=>x.label+' ('+x.elapsedMinutes+' min'+(x.quiet?' · QUIET >30 min':'')+')').join(' · '):
+    'Waiting on agent: none';
+  const sent=$('.waiting-time');
+  if(sent) {
+    const item=items.find(x=>x.id===run.selected);
+    sent.textContent=item?'Waiting '+item.elapsedMinutes+' min'+(item.quiet?' · QUIET >30 min':''):'';
+  }
+}
+if(typeof setInterval==='function')setInterval(updateWaitTimers,60000);
 async function guarded(fn) {
   try {await fn();}catch(e){notice(e.message);}
 }

@@ -7,8 +7,13 @@ export function prepare(db,r,n) {
     <form id="run-settings"><div class="field-grid"><label>Task title<input name="title" value="${esc(r.title)}" required></label>
     <label>Agent chat ID — 8 hex characters<input name="chatId8" pattern="[a-fA-F0-9]{8}" value="${esc(r.chatId8)}"></label></div>
     <label>Owner aim<textarea name="aim" required>${esc(r.aim)}</textarea></label>
+    <label>Sent by<select name="sentBy">${options([['Owner','Owner'],['TeamCoordinator','TeamCoordinator']],r.sentBy||'Owner')}</select></label>
     <label>Agent chat URL — device-only, excluded from shared snapshots<input type="url" name="privateChat" value="${esc(getPrivateChat(r.id))}"></label>
     <button>Record settings</button></form>
+    <h3>Agent session change</h3><p>Record a new destination session and why the earlier one cannot be used. The prior session remains in history.</p>
+    <form id="session-change-form"><label>New 8-character session ID<input name="newSessionId" pattern="[a-fA-F0-9]{8}" required></label>
+      <label>Reason<input name="reason" required placeholder="Chat unreadable"></label>
+      <button type="submit">Record session change</button></form>
     <h3>Checklist profiles</h3><div class="protocol-options">${Object.keys(db.profiles.profiles).map(p=>`<label><input type="checkbox" data-profile="${esc(p)}" ${r.profiles.includes(p)?'checked':''}>${esc(p)}</label>`).join('')}</div>
     <div class="actions"><button data-action="import-profiles">Import profile JSON</button><button data-action="export-profiles">Export profile JSON</button></div>
     <h3>Instructor guide · ${esc(n.label)}</h3><p>Select a step in the workspace to review its checklist here. Examples and evidence suggestions are configurable.</p>

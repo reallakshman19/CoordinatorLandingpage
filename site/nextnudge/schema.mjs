@@ -34,18 +34,35 @@ function validateNode(n,ids) {
   if(!ident(n.id,'NN')||ids.has(n.id)||!text(n.label,300)||!text(n.instruction)||
     !STATES.includes(n.status)||!TYPES.includes(n.type)||!Array.isArray(n.messages)||
     !n.checks||typeof n.checks!=='object'||Array.isArray(n.checks)) fail('step');
+  if(n.sentPacketSha256!=null&&!/^[a-f0-9]{64}$/.test(n.sentPacketSha256))fail('packet hash');
+  if(n.acceptance&&(!text(n.acceptance.note)||!date(n.acceptance.at)||
+    !['Owner','TeamCoordinator'].includes(n.acceptance.by)))fail('acceptance');
   ids.add(n.id);
   if(n.sentAt!==null&&(!date(n.sentAt)||!text(n.sentText)||!/^[a-f0-9]{8}$/i.test(n.sentChatId8||''))) fail('send record');
   for(const m of n.messages) {
     if(!['Owner','Agent'].includes(m.by)||!text(m.text)||!date(m.at)||
       !safeURL(m.proof)||m.repliedAt!==null&&!date(m.repliedAt)||
       typeof m.relayed!=='boolean') fail('reply');
+    if(m.source!==undefined&&!['chat_words','return_file','relayed_summary'].includes(m.source))fail('reply source');
+    if(m.returnFile&&(!text(m.returnFile.path,1000)||
+      !Number.isSafeInteger(m.returnFile.bytes)||m.returnFile.bytes<0||
+      !/^[a-f0-9]{64}$/.test(m.returnFile.sha256)))fail('return file');
+    if(m.source==='return_file'&&!m.returnFile)fail('missing return file');
+    if(m.savedLine&&(!/^SAVED-[A-Za-z0-9_-]+$/.test(m.savedLine.tag)||
+      !m.savedLine.fields||Array.isArray(m.savedLine.fields)||
+      Object.entries(m.savedLine.fields).some(([k,v])=>!/^[A-Za-z][A-Za-z0-9_-]{0,59}$/.test(k)||!text(v,300))))
+      fail('SAVED fields');
+    if(m.verification&&(!text(m.verification.checkedBy,300)||!m.verification.checkedBy.trim()||
+      !text(m.verification.recomputed,2000)||!m.verification.recomputed.trim()||
+      !['MATCH','MISMATCH'].includes(m.verification.result)||
+      !text(m.verification.note,5000)||!date(m.verification.at)))fail('reply verification');
   }
 }
 function validateRun(r,projects,ids,profiles) {
   if(!ident(r.id,'NN')||ids.has(r.id)||!projects.has(r.projectId)||
     !text(r.title,300)||!text(r.aim)||!date(r.createdAt)||!Array.isArray(r.nodes)||
     r.nodes.length>500||!Array.isArray(r.profiles)||r.profiles.some(p=>!Object.hasOwn(profiles,p))) fail('run');
+  if(r.sentBy!==undefined&&!['Owner','TeamCoordinator'].includes(r.sentBy))fail('sent by');
   ids.add(r.id);
   for(const n of r.nodes) validateNode(n,ids);
   const nodes=new Map(r.nodes.map(n=>[n.id,n]));
@@ -81,7 +98,7 @@ export function validate(db) {
   }
   for(const r of db.runs) validateRun(r,projects,ids,db.profiles.profiles);
   for(const e of db.events) {
-    if(!ident(e.id,'EV')||ids.has(e.id)||!date(e.at)||!['Owner','Agent'].includes(e.by)||
+    if(!ident(e.id,'EV')||ids.has(e.id)||!['Owner','Agent','TeamCoordinator'].includes(e.by)||!date(e.at)||
       !text(e.state,100)||!text(e.note)||!safeURL(e.proof)||
       e.step!==null&&!ident(e.step,'NN')||e.run!==null&&!ident(e.run,'NN')||
       e.project!==null&&!ident(e.project,'PRJ')) fail('event');
