@@ -96,7 +96,7 @@ async function renderDashboard(app) {
     const capture = state.benchmarkMode ? null : state.buildInfo?.source_capture_at;
     monitor.append(el('span', '', 'Source snapshot: ' + M.instant(source.as_of)),
       el('span', '', 'Capture age: ' + M.duration(M.age(capture, current.now))));
-    monitor.append(el('span', '', sourceProjects.length + ' projects · coordinator cycles in project view'));
+    monitor.append(el('span', '', source.projects.length + (source.projects.length === 1 ? ' project' : ' projects') + ' · coordinator cycles in project view'));
     const overdue = current.rows.filter(r => r.next.late);
     attention.textContent = overdue.length + ' scheduled checks overdue · ' + current.rows.filter(r => r.timerState === 'UNKNOWN').length + ' timer observations unknown';
     attention.className = 'otm-attention ' + (overdue.length ? 'otm-red' : 'otm-yellow');
