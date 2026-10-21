@@ -225,6 +225,7 @@ async function render() {
   const app = $('app');
   if (view === 'nextnudge' && !state.benchmarkMode &&
       app.querySelector('#nextnudge-frame')) return;
+  if (typeof stopDashboard === 'function') stopDashboard();
   app.innerHTML = '<div class="loading"><span class="spinner"></span> Loading…</div>';
 
   // Ensure projects are loaded
@@ -234,6 +235,7 @@ async function render() {
 
   switch (view) {
     case 'home': await renderHome(app); break;
+    case 'dashboard': await renderDashboard(app); break;
     case 'project': await renderProject(app, arg1); break;
     case 'understanding': await renderL4Understanding(app, arg1); break;
     case 'people': await renderL4People(app, arg1); break;
@@ -296,3 +298,4 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+

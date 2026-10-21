@@ -1,9 +1,9 @@
 schema: AgentClaim.v1
 pr_or_wip: WIP-dashboard-20261021
-claim_state: ACTIVE
 branch: codex/otm-dashboard-20261021
+claim_state: ACTIVE
 files:
-  exact: [site/index.html, site/js/core.js, site/js/dashboard-model.js, site/js/dashboard.js, site/dashboard.css, tests/dashboard.test.cjs]
-authority_domains: [read_only_dashboard_projection]
+  exact: [site/index.html, site/js/core.js, site/style.css, site/js/dashboard-model.js, site/js/dashboard.js, scripts/status_bar.py, scripts/landing_build/dashboard_report.py, tests/dashboard.test.cjs, tests/test_dashboard_report.py]
+authority_domains: [read_only_dashboard_projection, additive_parsed_evidence_envelope]
 claim_modes: [COORDINATED]
 last_verified_head: 4637f83b7cb4dcf48fafa9db98852a1332416ab9
