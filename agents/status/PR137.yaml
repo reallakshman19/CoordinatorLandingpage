@@ -6,7 +6,7 @@ criticality: STANDARD
 agent_state: AWAITING_REVIEW
 handover_readiness: READY
 report_path: agents/PR137_workreport.md
-report_basis_head: 8248342b0c631e3f811cf847b53524f90eda57da
+report_basis_head: 97f3dd5341c05648962202ba2cf367a814a40237
 main_head_last_checked: 4637f83b7cb4dcf48fafa9db98852a1332416ab9
-blocker: Actual PR-app browser/mobile QA and four local CLI suites NOT_RUN (no exact checkout/dependencies; git transport DNS failure); independent review NOT_RUN. Hosted 39/39 SUCCESS at pre-documentation head a32f3308a4863e307b03ce5d60b6fd116b285b86; recheck newly advanced exact HEAD.
-exact_next_action: Oracle challenge count-repair claim and surviving-error adequacy; obtain exact-head full checkout, run four specified CLI suites and real PR-app 1280/390/320 browser journeys through an actually capable verifier, then independent review. No merge, deployment or Agent 2 assignment.
+blocker: Actual PR-app browser/mobile QA NOT_RUN (Playwright browser executable missing); independent review NOT_RUN. Four CLI suites now 93 PASS at verified source 6db725bb; hosted 39/39 SUCCESS observed at that source head, not subsequent evidence/recovery commits.
+exact_next_action: Capability-qualified verifier must run actual PR-app browser journeys at 1280/390/320, source/build refresh and timer lifecycle; then separately required independent review. Preserve self-review qualification; no next feature yet.

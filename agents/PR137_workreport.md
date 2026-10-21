@@ -8,21 +8,21 @@ CRITICALITY: STANDARD
 REPOSITORY: reallakshman19/CoordinatorLandingpage
 PR_OR_WIP: PR137
 BRANCH: codex/otm-dashboard-20261021
-PR_HEAD_OBSERVED: 8248342b0c631e3f811cf847b53524f90eda57da before Agent 1 recovery metadata synchronization
-REPORT_BASIS_HEAD: 8248342b0c631e3f811cf847b53524f90eda57da (bounded Agent 1 UI + regression; initial implementation 73a7914e1276df2421aea6cf27300d60f7f38a57)
+PR_HEAD_OBSERVED: 97f3dd5341c05648962202ba2cf367a814a40237 (Oracle evidence checkpoint; no production change)
+REPORT_BASIS_HEAD: 97f3dd5341c05648962202ba2cf367a814a40237 (evidence artifacts only; tested production source 6db725bb71149ff1d4335c2ec302168e1c5baec6)
 MAIN_HEAD_LAST_CHECKED: 4637f83b7cb4dcf48fafa9db98852a1332416ab9
 MERGE_BASE: 4637f83b7cb4dcf48fafa9db98852a1332416ab9
-REPORT_SYNC: AGENT_1_UPDATED (only own recovery metadata follows Agent 1 implementation/test basis)
+REPORT_SYNC: CURRENT (following commit updates recovery metadata only)
 APPENDIX_A_STATUS: NOT_REQUIRED (new standard UI work, no engineering-critical takeover)
-GROUNDING_EPOCH: GE-dashboard-20261021-01
-CURRENT_STAGE: AGENT_1_ORACLE_HANDOFF (self-assessed; not independent review)
-CURRENT_BLOCKER: actual PR app browser/mobile QA and all four requested local CLI suites NOT_RUN (exact checkout and dependencies unavailable); independent review NOT_RUN; 39/39 hosted final pre-handoff-head checks successful
-EXACT_NEXT_ACTION: Oracle challenge Agent 1 claim/test adequacy; exact-checkout verifier must run four CLI suites and full PR-app 1280/390/320 browser journeys, then independent review; do not merge/dispatch.
+GROUNDING_EPOCH: GE-dashboard-20261021-ORACLE-CP1
+CURRENT_STAGE: ORACLE_CHECKPOINT_1_PARTIAL — CLI complete; actual-app browser and independent review pending
+CURRENT_BLOCKER: Actual PR-app browser/mobile QA NOT_RUN: local Playwright browser executable missing. Independent review NOT_RUN. Four CLI suites now executed: 93 PASS at source 6db725bb.
+EXACT_NEXT_ACTION: Capable verifier: prove exact-head app serving and real browser access, then run actual-app 1280/390/320 journeys described below. Preserve contributor self-review qualification. Do not assign next feature yet.
 
 ## Handover in 60 seconds
 PR https://github.com/reallakshman19/CoordinatorLandingpage/pull/137 is a DRAFT adding a separate Dashboard tab at #dashboard. It reuses the reviewed operational HTML, existing normalized roster/status data, source capture and build-info polling. Source-backed signal lights, ticking evidence/observation ages, known state durations, timer observations, due/late checks, project/state grouping, project rollups and evidence/next-step expansion are wired into the real app. Unknown source values remain unknown; no simulated production rows or dates.
 
-The publisher adds a small latest_report envelope using already parsed, exactly scoped agent reports, with no new GitHub fetches. That envelope is LIVE ONLY: frozen benchmark output remains byte-identical. This live-only boundary fixes the CI-discovered regression in the initial implementation. Predecessor local checks: 92 PASS at its implementation basis, NOT RERUN as CLI commands in Agent 1's environment. Full PR-app browser rendering and independent verification are NOT_RUN. Current actor implements the change and does not claim independent Oracle verification.
+The publisher adds a small latest_report envelope using already parsed, exactly scoped agent reports, with no new GitHub fetches. That envelope is LIVE ONLY: frozen benchmark output remains byte-identical. This live-only boundary fixes the CI-discovered regression in the initial implementation. Oracle checkpoint 1 now supersedes the CLI blocker: all four named suites executed against verified source files at 6db725bb, 93 PASS. Agent 1's own environment remains historically NOT_RUN. Full PR-app browser rendering and independent verification are NOT_RUN. Current actor implements the change and does not claim independent Oracle verification.
 
 ## Mission / authority / invariants
 Owner directly authorized high/medium ROI coding for a new Dashboard using the provided HTML and data already available. No merge or deployment authorization. Existing Home, status rules, grants, canonical logs, scheduler, delivery, workflow configuration and frozen fixtures/oracles remain unchanged. Source reporting is not approval. Other project HOLDs are not resumed by this work.
@@ -37,7 +37,7 @@ Monitor freshness.next_due is a freshness threshold, NOT a scheduled agent check
 5. site/js/dashboard.js — DOM view, clocks, grouping, project rollups, source links and cleanup; one existing status-bar fetch per render, no timer-driven heavy polling.
 6. scripts/status_bar.py — additive live latest_report envelope; skips is_benchmark views; existing signal rules unchanged.
 7. scripts/landing_build/dashboard_report.py — exact project/id8/generation report join; ignores ambiguous, invalid, foreign, future and verdict-only records; returns qualified source time/permalink and bounded task/next/blocker.
-8. tests/dashboard.test.cjs — 12 focused model, DOM consumer, lifecycle, injection/outage, benchmark and route checks.
+8. tests/dashboard.test.cjs — 13 focused model, DOM consumer, lifecycle, injection/outage, benchmark and route checks.
 9. tests/test_dashboard_report.py — 6 claim-binding/publisher/benchmark-boundary checks.
 10–12. agents/PR137_workreport.md; agents/claims/PR137.yaml; agents/status/PR137.yaml — own recovery metadata.
 
@@ -124,3 +124,56 @@ Reason: no verified local input tree and dependencies at the exact PR head. Cons
 **Minimal reproducible next action for a genuinely capable verifier:** acquire and verify full exact PR commit source via an authorized repository checkout or complete connector-backed materialization; verify dependencies and the frozen fixture tree against the same commit; run the four commands above and record stdout/stderr, exit statuses and exact hashes; use the existing `.github/workflows/deploy.yml` publication path and documented local serving path to build/serve a read-only PR candidate; execute the listed browser interactions and preserve URL, viewport, source vs disposable fixture, screenshots/console/network witnesses and version/build signatures. Preserve original oracles and existing Home/publisher; do not deploy as an alternative to QA. Only then pass scoped results to Oracle for challenge and separate independent review. The present restricted environment is not an adequate substitute for that verifier.
 
 **Continuation disposition:** no new product code, schema, thresholds, schedules, grants, workflows, external messages, merge or deployment; only this report plus its matching recovery-status record. Agent 1 stops at Oracle handoff, not self-approval or Agent 2 assignment.
+
+
+## Oracle checkpoint 1 — actual execution and bounded challenge (21 Oct 2026)
+
+**Current verdict: HOLD for full-application acceptance. CLI gap CLOSED; browser and independent review remain OPEN.** This Oracle authored the original Dashboard implementation. Its checks of that implementation are contributor self-review, not independent acceptance. Agent 1 authored the count repair. No production, schema, workflow, expected fixture or shipped test was changed in this checkpoint.
+
+### Grounding and scope
+Source head: `6db725bb71149ff1d4335c2ec302168e1c5baec6`; main/base: `4637f83b7cb4dcf48fafa9db98852a1332416ab9`; OPEN/DRAFT. At that source head, 39/39 hosted checks SUCCESS and zero submitted reviews. These CI observations do not certify the later evidence/recovery commits; refresh their exact-head checks before review closure.
+
+Live diff before this checkpoint: the nine documented production/test paths and three recovery paths. Open PR123/120/105 changed NextNudge paths; no exact-path overlap with these evidence/recovery additions. Coordination classification: SAFE for this bounded evidence/report update; no inference of authority for other domains. No AGENTS.md or agents/MASTER_INDEX.md was present in the inspected source tree.
+
+Two additional paths are now part of the reconciled ledger:
+- `agents/evidence/PR137/oracle-checkpoint-1.cjs`: rerunnable diagnostic, wrapping the existing test harness without changing shipped tests.
+- `agents/evidence/PR137/oracle-checkpoint-1.json`: source manifest with Git blob IDs and SHA256 for 75 existing files, actual CLI logs, diagnostic logs, failed-mutant witness, environment and limitations.
+
+The local tree is a selected-source materialization, not a full remote Git checkout. All 75 existing remote-listed files in that materialization matched exact-head Git blob hashes before execution evidence was assembled; mismatches were synced from that exact revision. The four suites executed with their actual dependencies and frozen inputs. This establishes those suite executions, not completeness of an application checkout or browser readiness.
+
+### Actual CLI ledger
+All four returned exit code 0, LOCAL_EXECUTION:
+
+| Command | Actual result | Expectation qualification |
+| --- | --- | --- |
+| `node --test tests/dashboard.test.cjs` | 13 PASS | Author/contributor-coupled model and DOM assertions; not browser layout |
+| `python3 tests/test_dashboard_report.py` | 6 PASS | Contributor-authored report/publisher regression |
+| `python3 tests/test_wp16.py` | 26 PASS | Existing source-derived roster/status/builder suite |
+| `python3 -m unittest discover -s tests -p 'test_*extract.py' -q` | 48 PASS | Existing extraction/schema/lineage/intake suite |
+
+Total: **93 distinct suite tests**, not predecessor 92 and not 93+17. Diagnostic reruns the 13 Dashboard tests and adds four assertions. Frozen-output witness remains exactly `0a7ebd12ca385963c97adadfeb033a8f88777a4ec6ad9d1bcddf0e785e4095a8`. Node v24.19.0; Python 3.12.14. Full command outputs and input hashes are in the JSON evidence.
+
+### Claim, competing interpretation and falsifier
+**Bounded claim:** the monitor strip counts the entries of the same `status_bar.v1.projects` array consumed by the Dashboard, independently of auxiliary `projects.json`, with singular/plural wording. This follows the Owner's reuse/condensation requirement and the displayed source model. It does not establish unique real-world projects, completeness of the roster, source truth or all Dashboard correctness.
+
+**Surviving error:** hardcoding `1 project` passes all 13 submitted Dashboard tests, including Agent 1's new missing-catalog regression. Thus that regression alone cannot justify the broader count claim.
+
+**Discriminator actually executed:** zero source projects with two auxiliary entries; two source projects with no auxiliary entries; two source projects with one conflicting auxiliary entry. Each predicts the source-array count, not an auxiliary count or constant. Actual patch: all three PASS. Injected hardcoded-one mutant: all 13 submitted tests PASS, all three count challenges FAIL, process exit 1. This is a demonstrated test-coverage weakness, not a defect demonstrated in the repaired production code.
+
+**Separate timing challenge:** fresh source capture with a 40-minute-old direct observation must retain 40-minute activity age, show YELLOW, and advance to 42 minutes after two minutes without another fetch. Actual model/DOM execution PASS. It does not substitute for browser visibility, refresh, navigation or layout journeys.
+
+Diagnostic command: `node agents/evidence/PR137/oracle-checkpoint-1.cjs` → 17 PASS, exit 0. Mutant command: `ORACLE_MUTANT=hardcoded-one node agents/evidence/PR137/oracle-checkpoint-1.cjs` → expected exit 1 (14 PASS, three count failures). The diagnostic uses the existing author harness and Oracle-authored assertions; keep expectations and independence qualification explicit.
+
+### Remaining verifier assignment — capability gate, then actual app
+Do not start another feature or repeat the completed CLI work without a relevant source change. Use the same agent if it obtains the required environment; otherwise assign a verifier in an environment that actually has both the exact PR application and a working browser. A new chat in the same restricted environment is not remediation.
+
+1. Establish fresh PR/main SHA and exact source materialization. Prove the real application can be served and opened by the browser before accepting this assignment as executable. Preserve the head used, loaded asset/input hashes, commands and actual outputs. Authoritative API materialization is acceptable if all load-bearing assets/dependencies are verified; do not claim a clone or full app from four fetched files.
+2. Open the actual `site/index.html` application at `#dashboard` with its real routing, CSS and scripts, using controlled source responses where necessary. Label controlled fixtures separately from live data. Capture desktop 1280px, 390px and 320px; inspect overflow, readable timing, grouping, expansion, project/evidence navigation and source-error presentation. A standalone CSS fixture does not satisfy this.
+3. Exercise due → late, PAUSED/UNKNOWN, stale activity with fresh capture, benchmark freeze, Dashboard exit/re-entry, hidden/visible return, delayed source response after navigation, and existing build-info-triggered refresh. Check correct data replacement and interval/listener cleanup; a ticking device clock must never imply renewed agent activity.
+4. Apply the same hypothesis/competing interpretation/discriminating-fixture discipline. For every claimed PASS, ask which significant wrong behavior could still pass. Record any contradiction as FAIL/HOLD/UNKNOWN and keep it separate from environment limitations. Make no speculative repair. If a defect is reproduced, return the minimal evidence and affected boundary to Oracle for the next bounded task.
+5. Return evidence for the exact tested head and a qualified verdict. A reviewer who authored the affected change retains self-review qualification. Separately required independent technical review must examine the original Oracle contribution and its expectations before Owner acceptance. No merge, deployment, dispatch or Owner acceptance is authorized by this assignment.
+
+Local browser evidence: Playwright package exists, but launch with a writable TMPDIR fails because its Chromium headless-shell executable is missing. Actual PR-app browser journeys remain NOT_RUN; this environment failure is not a product failure. No independent reviewer has accepted this PR.
+
+### Continuation decision
+Preserve Agent 1's repair. Current high-value next stage is **actual-application browser verification**, followed by independent review of consequential claims and Oracle-authored contributions. It is not the next feature. Oracle checkpoint 1 remains partial until that evidence arrives; then choose repair, falsification or feature work from the observed result.
