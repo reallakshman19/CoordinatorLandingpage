@@ -145,7 +145,7 @@ def append_event(args):
     if proposed_errors:
         # The in-memory record is not persisted, and nothing should be auto-fixed.
         raise ValueError("proposed event does not reconcile: " + "; ".join(proposed_errors))
-    audit_path.write_text(json.dumps(audit, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    audit_path.write_text(json.dumps(audit, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
     return ev["id"]
 
 
