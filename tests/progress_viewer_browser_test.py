@@ -88,6 +88,7 @@ def main():
                 prefix="/solo/"
                 def check_req(request):
                     path=urlsplit(request.url).path
+                    if urlsplit(request.url).scheme not in ("http","https"): return
                     if not (path.startswith(prefix+"progress/") or
                             path.startswith(prefix+"progress-data/")):
                         outgoing.append(request.url)
@@ -96,6 +97,8 @@ def main():
                 solo_page.on("console", lambda msg: errors.append(msg.text) if msg.type=="error" else None)
                 for route,expected in snapshots.items():
                     try:
+                        # Same-URL hash changes may reuse a document; force a clean mount.
+                        solo_page.goto("about:blank", wait_until="load")
                         actual=snap(solo_page, "http://127.0.0.1:"+str(port)+
                           "/solo/progress/index.html?data=../progress-data#progress-page/"+route, failures)
                         if actual!=expected: failures.append("standalone route parity "+route)
