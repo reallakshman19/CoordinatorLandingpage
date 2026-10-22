@@ -107,6 +107,11 @@
   ],
   "knownIssues": [
     {
+      "t": "The ZIP-free first attempt is a text design only; every N1 check is NOT_RUN",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6329713931",
+      "s": "open"
+    },
+    {
       "t": "Drive upload tool cannot take the author's local files (needs a file reference)",
       "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317616600",
       "s": "open"
@@ -117,22 +122,23 @@
       "s": "open"
     },
     {
-      "t": "The two candidate files and the Owner's private source ZIP are not available to the Owner (21 Oct): Route A is ruled out and Math stays held",
+      "t": "ZIP transfer is closed by the Owner rule of 22 Oct (Route C): no ZIP exists to supply, so the drafts stay private in the author's session and Math stays held",
       "s": "open"
     }
   ],
   "pending": [
     {
-      "t": "Owner picks the transfer route (Route A, B or C)",
+      "t": "Reconcile the Oracle challenge on the ZIP-free workpack (04:47), then send the next packet",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6329920555",
       "s": "open"
-    },
-    {
-      "t": "Checker reviews the two files once they are in the folder and the hashes match",
-      "s": "waiting"
     },
     {
       "t": "Oracle adjudication, then the Owner accepts or rejects 010 and 022",
       "s": "waiting"
+    },
+    {
+      "t": "Optional: Owner decides the private in-chat text route (card D4)",
+      "s": "open"
     }
   ]
 }

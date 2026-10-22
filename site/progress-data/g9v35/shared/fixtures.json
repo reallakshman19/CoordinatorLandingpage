@@ -91,7 +91,7 @@
   ],
   "knownIssues": [
     {
-      "t": "F1: three malformed-record crashes in check(), also at the base commit",
+      "t": "F1: three malformed-record crashes in check(), also at the base commit. Fix returned PARTIAL at head 69b1b4b5; IR recheck pending",
       "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317077215",
       "s": "open"
     },
@@ -112,16 +112,17 @@
   ],
   "pending": [
     {
-      "t": "Owner decides F1 (A fix in this PR, B defer)",
-      "s": "open"
-    },
-    {
       "t": "Owner decides how to treat the red CI checks",
       "s": "open"
     },
     {
-      "t": "If F1-A: coder fix, then a short IR recheck of the new head",
-      "s": "waiting"
+      "t": "IR short recheck of head 69b1b4b5 (asked 02:10 on #135, no reply yet)",
+      "s": "waiting",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/135#issuecomment-6327655150"
+    },
+    {
+      "t": "Owner wakes the IR-G9V35 session (card D3)",
+      "s": "open"
     }
   ]
 }

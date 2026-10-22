@@ -1,7 +1,7 @@
 {
   "D1": {
     "order": 1,
-    "status": "open",
+    "status": "done",
     "stages": [
       "G5"
     ],
@@ -69,7 +69,12 @@
         "l": "PR #305",
         "u": "https://github.com/reallakshman19/Grade9v3.5/pull/305"
       }
-    ]
+    ],
+    "answer": {
+      "text": "F1-A, relayed by OTM as your stand-in on 21 Oct 20:45 (delegation: #1 6321391687). Narrow F1 hardening in PR #305, no merge.",
+      "at": "2026-10-21T16:45:38Z",
+      "ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6321404314"
+    }
   },
   "D2": {
     "order": 2,
@@ -154,6 +159,58 @@
       {
         "l": "CI facts addendum",
         "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6318289999"
+      }
+    ]
+  },
+  "D3": {
+    "order": 3,
+    "status": "open",
+    "stages": [
+      "G7"
+    ],
+    "title": "IR-G9V35 has not answered the short check",
+    "lead": "OTM asked at 02:10 for a short new-diff check of PR #305, head 69b1b4b5 (request on #135). The IR session looks paused, so only you can wake it. Stage G7 waits for this check.",
+    "tables": [
+      {
+        "cols": [
+          "Paste this line into the IR-G9V35 session"
+        ],
+        "mono": [
+          true
+        ],
+        "rows": [
+          [
+            "FOR IR-G9V35 (OTM relay, pasted by the Owner): please read CoordinatorLandingpage issue 135, comment 6327655150, and post the short new-diff check it asks for on Grade9v3.5 draft PR #305, new head 69b1b4b5a7a26df7b47d92bccaa18c6060bbb6f8 (base 7052691e). Reply on issue 135 with a first line METER: <context used: % or LOW/MID/HIGH/NEAR-END>; basis. Public-only, no private bytes, no merge."
+          ]
+        ]
+      }
+    ],
+    "options": [
+      {
+        "key": "A",
+        "label": "A (suggested)",
+        "suggested": true,
+        "body": "Paste the line above into the IR-G9V35 session. It reads the request and answers on #135. Then use Send to OTM so I know it is done.",
+        "reply": "IR: wake line pasted into the IR-G9V35 session.",
+        "short": "IR: wake line pasted into the IR-G9V35 session."
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "suggested": false,
+        "body": "Skip for now. Stage G7 keeps waiting and PR #305 stays draft and merge-hold. The ZIP-free synthetic track does not wait on it.",
+        "reply": "IR: skip the short check for now. PR #305 stays merge-hold.",
+        "short": "IR: skip the short check for now."
+      }
+    ],
+    "links": [
+      {
+        "l": "IR request #135",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/135#issuecomment-6327655150"
+      },
+      {
+        "l": "PR #305",
+        "u": "https://github.com/reallakshman19/Grade9v3.5/pull/305"
       }
     ]
   }

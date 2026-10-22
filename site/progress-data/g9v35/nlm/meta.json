@@ -45,9 +45,14 @@
       "sub": "Private candidates for items 010 and 022. Item 007 stays on hard hold, unchanged."
     },
     "J": {
-      "order": 2,
+      "order": 3,
       "title": "Import and release",
       "sub": "Inferred from the Oracle's packets. Nothing here is assigned yet."
+    },
+    "N": {
+      "order": 2,
+      "title": "ZIP-free first attempt",
+      "sub": "A wholly invented fixture. No private text and no ZIP."
     }
   }
 }

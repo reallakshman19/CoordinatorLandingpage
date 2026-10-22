@@ -89,9 +89,9 @@
     "lane": "P",
     "milestone": "M2",
     "name": "Drafts reach the handoff folder",
-    "sub": "0 of 2 saved. Route A ruled out. Oracle recommends B: PQRT rechecks its files privately first; upload only with a real bridge and writer identity (#128 6320447599).",
+    "sub": "ZIP transfer closed by your 22 Oct rule (Route C). The drafts stay private in the author's session. An optional in-chat text route needs your words (card D4).",
     "state": "BLOCKED",
-    "actor": "YOU",
+    "actor": "-",
     "chats": [
       "pqrt"
     ],
@@ -103,13 +103,18 @@
       {
         "l": "#128 · 6317846442",
         "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317846442"
+      },
+      {
+        "l": "#1 · 6329482245",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6329482245"
       }
     ],
     "detail": {
-      "who": "You.",
-      "do": "Reply Route B (step 1 only) or Route C (card D3 on this page).",
+      "who": "Nobody now.",
+      "do": "Nothing from you. Your 22 Oct rule closed the ZIP route.",
       "files": "The two ZIPs above. Target: Drive folder `Local Agent Handoffs`.",
-      "done": "Both files are listed in the folder and PQRT's recomputed size and SHA-256 match."
+      "done": "Both files are listed in the folder and PQRT's recomputed size and SHA-256 match.",
+      "next": "Only if you want real 010 and 022 candidate progress: card D4."
     }
   },
   "P5": {
@@ -200,6 +205,56 @@
     "detail": {
       "who": "You, alone.",
       "waits": "J2."
+    }
+  },
+  "N1": {
+    "order": 9,
+    "lane": "N",
+    "milestone": "M1",
+    "name": "PQRT designs the ZIP-free first attempt",
+    "sub": "Returned 04:31: a text design only. Every N1 check is NOT_RUN.",
+    "state": "SUBMITTED",
+    "actor": "-",
+    "chats": [
+      "pqrt"
+    ],
+    "refs": [
+      {
+        "l": "#128 Oracle packet N1 · 6329551684",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6329551684"
+      },
+      {
+        "l": "#128 PQRT return · 6329713931",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6329713931"
+      }
+    ],
+    "detail": {
+      "who": "PQRT 6ad7ee24.",
+      "do": "Design a wholly invented four-choice fixture and the checks to run on it. No private text, no ZIP.",
+      "done": "Returned PUBLIC_SYNTHETIC_WORKPACK_READY / CONSUMER_VALIDATION_NOT_RUN. Nothing has been run or accepted."
+    }
+  },
+  "N2": {
+    "order": 10,
+    "lane": "N",
+    "milestone": "M2",
+    "name": "Oracle challenges the workpack",
+    "sub": "The Oracle posted its challenge at 04:47. OTM has not read it yet.",
+    "state": "SUBMITTED",
+    "actor": "OTM",
+    "chats": [
+      "oracle"
+    ],
+    "refs": [
+      {
+        "l": "#128 Oracle challenge · 6329920555",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6329920555"
+      }
+    ],
+    "detail": {
+      "who": "Oracle, then OTM reconciles.",
+      "do": "OTM reads the challenge and sends the next ZIP-free packet.",
+      "done": "The Oracle challenge is reconciled and the next packet is sent."
     }
   }
 }

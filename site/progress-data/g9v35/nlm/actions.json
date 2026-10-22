@@ -1,7 +1,7 @@
 {
   "D3": {
     "order": 1,
-    "status": "open",
+    "status": "done",
     "stages": [
       "P4"
     ],
@@ -59,6 +59,49 @@
       {
         "l": "PQRT report",
         "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317616600"
+      }
+    ],
+    "answer": {
+      "text": "RULE: No zip file available. proceed with task. (OTM reading: Route C stands, B-PROVISION is not approved, no ZIP transfer or ZIP custody step.)",
+      "at": "2026-10-22T00:14:48Z",
+      "ref": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6329482245"
+    }
+  },
+  "D4": {
+    "order": 2,
+    "status": "open",
+    "stages": [
+      "P4",
+      "P5"
+    ],
+    "title": "Private in-chat text route for 010 and 022 candidates?",
+    "lead": "The ZIP-free synthetic track goes ahead without this. This is the optional step if you want real 010 and 022 candidate progress: PQRT drafts two confidential text-only candidates inside its own private chat. Nothing goes to GitHub, Drive or files. PCHK reviews only if you also name a verified private handoff.",
+    "options": [
+      {
+        "key": "A",
+        "label": "A (suggested)",
+        "suggested": true,
+        "body": "Not now. Keep the synthetic track going. 010 and 022 candidate review stays blocked. Nothing is sent to anyone.",
+        "reply": "Private in-chat route: not now. Continue the ZIP-free synthetic track; 010 and 022 candidate work stays blocked.",
+        "short": "Private in-chat route: not now."
+      },
+      {
+        "key": "B",
+        "label": "B",
+        "suggested": false,
+        "body": "Allow PQRT text only. PQRT writes one confidential text-only 010 candidate and one 022 diagnosis-only candidate in its own chat. No handoff to PCHK, so no independent review yet.",
+        "reply": "I authorize PQRT 6ad7ee24 to author exactly ONE confidential text-only D010 option-and-diagnosis candidate and ONE text-only D022 diagnosis-only candidate in its existing private chat, using only its already-authorized Physics source. D007 remains unchanged. No ZIP/file/Drive upload, GitHub content, PR, QRT relabel, scoring, learner test, merge or deployment. I do not additionally authorize any private text handoff from PQRT to PCHK. PCHK does not review; candidate remains PRIVATE_DRAFT_UNREVIEWED. Owner alone adopts.",
+        "short": "Private in-chat route: allow PQRT text-only candidates, no handoff to PCHK."
+      }
+    ],
+    "links": [
+      {
+        "l": "Oracle packet N1",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6329551684"
+      },
+      {
+        "l": "PQRT report",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6329713931"
       }
     ]
   }

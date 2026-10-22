@@ -24,7 +24,7 @@
     "lane": "G",
     "milestone": "M1",
     "name": "Coder builds the guard (PR #305)",
-    "sub": "Draft PR at head 60f67601. The coder reported PARTIAL.",
+    "sub": "Draft PR #305, head 69b1b4b5 (F1 hardening added). The coder reported PARTIAL.",
     "state": "SUBMITTED",
     "actor": "-",
     "chats": [
@@ -38,7 +38,7 @@
     ],
     "detail": {
       "files": "`Shared/tools/owner_bank.py`, `tests/test_owner_bank_identity_guard.py`, `tests/test_test_area.py`, `TEST/README.md`.",
-      "next": "Nothing now. The PR is a draft."
+      "next": "Waits for the IR short check (stage G7). The PR stays a draft."
     }
   },
   "G3": {
@@ -95,21 +95,25 @@
     "lane": "G",
     "milestone": "M2",
     "name": "Owner decides F1",
-    "sub": "Fix inside PR #305 (A) or defer as known debt (B).",
-    "state": "BLOCKED",
-    "actor": "YOU",
+    "sub": "F1-A chosen: fix inside PR #305.",
+    "state": "VERIFIED",
+    "actor": "-",
     "chats": [],
     "refs": [
       {
         "l": "#128 · 6317382753",
         "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317382753"
+      },
+      {
+        "l": "#128 · 6321404314",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6321404314"
       }
     ],
     "detail": {
-      "who": "You.",
-      "do": "Reply F1-A or F1-B (card D1 on this page).",
+      "who": "Decided.",
+      "do": "Nothing more. Card D1 is answered.",
       "files": "`Shared/tools/owner_bank.py` (`check()`), `tests/test_owner_bank_identity_guard.py` (new tests T12, T13, T14).",
-      "done": "OTM records your reply on #1."
+      "done": "OTM relayed F1-A as your stand-in on 21 Oct 20:45, under your delegation (#1 6321391687)."
     }
   },
   "G6": {
@@ -117,10 +121,9 @@
     "lane": "G",
     "milestone": "M2",
     "name": "Coder fixes F1",
-    "sub": "Same draft PR, no merge.",
-    "state": "NOT_STARTED",
-    "actor": "OTM",
-    "cond": "only if F1-A",
+    "sub": "Same draft PR, no merge. The coder returned PARTIAL at head 69b1b4b5.",
+    "state": "SUBMITTED",
+    "actor": "-",
     "chats": [
       "pgrd"
     ],
@@ -128,12 +131,16 @@
       {
         "l": "#128 · 6317382753",
         "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6317382753"
+      },
+      {
+        "l": "#128 · 6329713931",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/128#issuecomment-6329713931"
       }
     ],
     "detail": {
-      "who": "OTM sends, then coder PGRD works.",
+      "who": "Coder PGRD, done for now.",
       "do": "OTM delivers packet `PHY-NLM-OWNERBANK-F1-REPAIR-1`. The coder edits only the two files in G5, on branch `fix/owner-bank-identity-bijection-6ad8a9bb`.",
-      "done": "PR #305 has a new head SHA and the hosted focused tests (14 existing and 3 new) pass."
+      "done": "PR #305 has a new head (69b1b4b5). The hosted focused tests passed 17 of 17; the workflow as a whole is red, as on main."
     }
   },
   "G7": {
@@ -141,18 +148,24 @@
     "lane": "G",
     "milestone": "M2",
     "name": "IR rechecks the new head",
-    "sub": "A short check of the F1 fix, the new tests and the CI delta.",
+    "sub": "Short check asked 02:10 on #135. No reply yet.",
     "state": "NOT_STARTED",
-    "actor": "OTM",
-    "cond": "only if F1-A",
+    "actor": "IR",
     "chats": [
       "ir"
     ],
     "detail": {
-      "who": "OTM asks, then IR-G9V35 checks.",
+      "who": "IR-G9V35. Only you can wake that session.",
       "do": "OTM posts a `TO: IR-G9V35` request on #135. The IR checks only the three F1 cases, the new tests and the CI delta against base.",
-      "done": "The IR posts its verdict on #128 and #135."
-    }
+      "done": "The IR posts its verdict on #128 and #135.",
+      "next": "Card D3: paste the wake line into the IR session."
+    },
+    "refs": [
+      {
+        "l": "#135 · 6327655150",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/135#issuecomment-6327655150"
+      }
+    ]
   },
   "G8": {
     "order": 16,
