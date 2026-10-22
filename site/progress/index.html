@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Progress · Standalone</title><link rel="icon" href="data:,"></head>
+<body class="pp-standalone"><main id="app"></main>
+<script type="module">
+  import {mountProgress} from './viewer.mjs';
+  const supplied = new URLSearchParams(location.search).get('data') || '../progress-data';
+  const base = new URL(supplied.replace(/\/?$/, '/'), document.baseURI).href.replace(/\/$/,'');
+  let stop, serial=0;
+  async function draw() {
+    const current=++serial;
+    if (stop) {stop(); stop=null;}
+    const next=await mountProgress(document.querySelector('#app'),{
+      base, route: location.hash || '#progress-page', navigate: hash => {location.hash=hash;}
+    });
+    if(current!==serial) next(); else stop=next;
+  }
+  window.addEventListener('hashchange',draw); draw();
+</script></body></html>

@@ -228,6 +228,22 @@ jobs:
           python -m pip install playwright
           python -m playwright install --with-deps chromium
 
+      - name: Progress viewer Stage 2 frozen parity and standalone Chromium
+        id: progress_viewer
+        if: steps.chromium.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -eo pipefail
+          node --test tests/progress_viewer.test.mjs 2>&1 | tee progress-viewer-unit.log
+          BASE=fc1acdb1bd861fabdf046ce6dce03eac74586c28
+          git fetch --no-tags --depth=1 origin "$BASE"
+          python tests/progress_viewer_browser_test.py "$BASE" 2>&1 | tee progress-viewer-browser.log
+          if git cat-file -e "$BASE:site/progress/viewer.mjs" 2>/dev/null; then
+            echo "::error::Stage 2 viewer unexpectedly existed at original base"; exit 1
+          fi
+          echo "Stage 2 BASE RED: viewer absent; HEAD GREEN: Node and real Chromium parity"
+
       - name: NN118 Chromium project navigation and grounding isolation
         id: nn118_browser
         if: steps.chromium.outcome == 'success'
@@ -395,6 +411,8 @@ jobs:
             artifacts/nextnudge-projects-browser/
             progress-head.log
             progress-base-red.log
+            progress-viewer-unit.log
+            progress-viewer-browser.log
             wp1a-original.log
             wp1a-head.log
             wp1a-browser.log
@@ -456,6 +474,7 @@ jobs:
           cat gate-negative.log
           echo "FINAL GATE SELF-TEST: injected failure -> exit 1 (REJECTED)"
           require_success "progress-schema-base-RED-head-GREEN" "${{ steps.progress_schema.outcome }}"
+          require_success "progress-viewer-frozen-parity" "${{ steps.progress_viewer.outcome }}"
           require_success "NextNudge-owner-save" "${{ steps.nextnudge_unit.outcome }}"
           require_success "NN118-Chromium" "${{ steps.nn118_browser.outcome }}"
           require_success "original-31" "${{ steps.original.outcome }}"
