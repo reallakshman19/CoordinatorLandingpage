@@ -46,15 +46,12 @@ def main():
         (solo/"progress").mkdir(parents=True)
         shutil.copytree(ROOT/"site/progress",solo/"progress",dirs_exist_ok=True)
         shutil.copytree(ROOT/"site/progress-data",solo/"progress-data")
-        source=json.loads((solo/"progress-data/projects.json").read_text())
-        for p in source["projects"]:
-            p["replyTo"]={"kind":"none"}
-        (solo/"progress-data/projects.json").write_text(json.dumps(source))
         port=find_free_port()
         server=start_server(str(folder),port)
         try:
             with sync_playwright() as pw:
                 browser=pw.chromium.launch(headless=True)
+                snapshots={}
                 pages=[(x["key"],x) for x in json.loads(
                     (after/"progress-data/projects.json").read_text())["projects"]]
                 for key,project in pages:
@@ -81,7 +78,9 @@ def main():
                             page.close()
                         if len(results)!=2 or results[0]!=results[1]:
                             failures.append("parity mismatch: "+route)
-                        else: print("PASS frozen text/links "+route,flush=True)
+                        else:
+                            snapshots[route]=results[1]
+                            print("PASS frozen text/links "+route,flush=True)
                 solo_page=browser.new_page()
                 outgoing=[]
                 errors=[]
@@ -94,6 +93,18 @@ def main():
                 solo_page.on("request",check_req)
                 solo_page.on("pageerror", lambda error: errors.append(str(error)))
                 solo_page.on("console", lambda msg: errors.append(msg.text) if msg.type=="error" else None)
+                for route,expected in snapshots.items():
+                    try:
+                        actual=snap(solo_page, "http://127.0.0.1:"+str(port)+
+                          "/solo/progress/index.html?data=../progress-data#progress-page/"+route, failures)
+                        if actual!=expected: failures.append("standalone route parity "+route)
+                        else: print("PASS standalone route "+route,flush=True)
+                    except Exception as e:
+                        failures.append("standalone "+route+" "+type(e).__name__+": "+str(e)[:140])
+                # Now explicitly switch to Copy-only; no Send or fixture +/- may survive.
+                source=json.loads((solo/"progress-data/projects.json").read_text())
+                for p in source["projects"]: p["replyTo"]={"kind":"none"}
+                (solo/"progress-data/projects.json").write_text(json.dumps(source))
                 snap(solo_page,"http://127.0.0.1:"+str(port)+
                     "/solo/progress/index.html?data=../progress-data#progress-page/g9v35/nlm/actions",
                     failures)
