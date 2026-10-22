@@ -124,10 +124,8 @@ Owner" and submits; the issue is labelled `owner-input`. The GitHub account is s
 nothing about who wrote it: OTM compares the text with the reply offered on an open card and confirms with the Owner in
 chat unless the Owner has given a standing rule. Nothing on the page writes to GitHub.
 
-## 6. How the page reads (for whoever changes the code)
+## 6. Portable viewer and cache version
 
-`site/js/progress_page.js` fetches `progress-data/projects.json`, then for the chosen project `index.json`, then the four
-files of every topic, with `cache: 'no-cache'` (conditional requests), every two minutes while the tab is visible. It
-draws everything with `textContent`, so data can never inject markup; only `https://` links are rendered as links. If
-`projects.json` cannot be read it falls back to the built-in `g9v35` entry. The badge turns amber when `updatedAt` is
-older than `staleAfterMin`.
+`site/progress/viewer.mjs` exports `mountProgress(root,{base,projectsUrl,route,navigate,enrichers})`; the optional `enrichers` is reserved and ignored. It fetches the data directory with `no-cache` every 120 seconds while visible, renders text with `textContent`, and permits only https links.
+Standalone: serve `site/progress/` and `site/progress-data/` together and open `progress/index.html?data=../progress-data#progress-page/<project>/overview`. No landing page, Actions or OTM needed. `replyTo:{"kind":"none"}` is Copy-only; unreadable projects.json uses a public g9v35 fallback with its explicit GitHub reply configuration.
+SPA: `site/js/progress_page.js` forwards hash routes to the viewer. The stamped `site-version` is propagated as the same `?v=` on the viewer, every nested ES module and `progress.css`; no release mixes cached module versions. CI freezes legacy and new data/clock for g9v35 and ciifr parity, checks the temp standalone network boundary and copy-only controls.
