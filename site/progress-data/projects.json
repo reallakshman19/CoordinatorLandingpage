@@ -33,7 +33,7 @@
     },
     {
       "key": "landing-live",
-      "label": "Landing page",
+      "label": "Progress page build",
       "project": "landing-live",
       "order": 3,
       "visibility": "public",

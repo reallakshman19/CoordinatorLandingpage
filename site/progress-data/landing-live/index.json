@@ -2,9 +2,9 @@
   "schema": 2,
   "project": {
     "key": "landing-live",
-    "title": "Landing page",
-    "subtitle": "The live site and its Progress page core",
-    "updatedAt": "2026-10-22T01:26:02Z",
+    "title": "Progress page build",
+    "subtitle": "How the Progress page itself is being built (work order #149). It tracks its own construction.",
+    "updatedAt": "2026-10-22T01:51:44Z",
     "updatedBy": "OTM",
     "staleAfterMin": 120
   },
