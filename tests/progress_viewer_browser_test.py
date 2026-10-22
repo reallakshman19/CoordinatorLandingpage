@@ -82,6 +82,7 @@ def main():
                             snapshots[route]=results[1]
                             print("PASS frozen text/links "+route,flush=True)
                 solo_page=browser.new_page()
+                solo_page.add_init_script("Date.now = () => "+str(CLOCK))
                 outgoing=[]
                 errors=[]
                 prefix="/solo/"
@@ -101,7 +102,13 @@ def main():
                         else: print("PASS standalone route "+route,flush=True)
                     except Exception as e:
                         failures.append("standalone "+route+" "+type(e).__name__+": "+str(e)[:140])
-                # Now explicitly switch to Copy-only; no Send or fixture +/- may survive.
+                # Now explicitly switch to Copy-only on a fresh isolated page.
+                solo_page.close()
+                solo_page=browser.new_page()
+                solo_page.add_init_script("Date.now = () => "+str(CLOCK))
+                solo_page.on("request",check_req)
+                solo_page.on("pageerror", lambda error: errors.append(str(error)))
+                solo_page.on("console", lambda msg: errors.append(msg.text) if msg.type=="error" else None)
                 source=json.loads((solo/"progress-data/projects.json").read_text())
                 for p in source["projects"]: p["replyTo"]={"kind":"none"}
                 (solo/"progress-data/projects.json").write_text(json.dumps(source))
@@ -109,7 +116,7 @@ def main():
                     "/solo/progress/index.html?data=../progress-data#progress-page/g9v35/nlm/actions",
                     failures)
                 if solo_page.locator(".pp-replybox button").count()<1:
-                    failures.append("no copy control")
+                    failures.append("no copy control; route="+solo_page.url+" snapshot="+solo_page.locator("#view-progress-page").inner_text()[:160])
                 if solo_page.locator(".pp-sendrow a, .pp-pm").count():
                     failures.append("Send control exists with replyTo none")
                 if outgoing: failures.append("standalone requested outside two folders: "+repr(outgoing))
