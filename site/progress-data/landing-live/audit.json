@@ -1,0 +1,93 @@
+{
+  "schema": "standalone-oracle-relay-audit/v1",
+  "project": "landing-live",
+  "baseline_commit": "de2dc4ee22fd99a92a096ac739754d3b76a7db48",
+  "baseline_at": "2026-10-22T01:26:01Z",
+  "scope": "Ledger of published Progress maintenance from this declared baseline; not a reconstruction of historic agent execution.",
+  "events": [
+    {
+      "seq": 1,
+      "id": "LANDING-LIVE-R-0001",
+      "previous_id": null,
+      "at": "2026-10-22T01:26:01Z",
+      "kind": "BASELINE",
+      "topic": "prg-core",
+      "stage": "S0",
+      "before": null,
+      "after": "VERIFIED",
+      "actor": "OTM (baseline)",
+      "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6330417375",
+      "summary": "Stage declared when this project page was created, from the OTM board and public issues."
+    },
+    {
+      "seq": 2,
+      "id": "LANDING-LIVE-R-0002",
+      "previous_id": "LANDING-LIVE-R-0001",
+      "at": "2026-10-22T01:26:01Z",
+      "kind": "BASELINE",
+      "topic": "prg-core",
+      "stage": "S1",
+      "before": null,
+      "after": "VERIFIED",
+      "actor": "OTM (baseline)",
+      "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6330417375",
+      "summary": "Stage declared when this project page was created, from the OTM board and public issues."
+    },
+    {
+      "seq": 3,
+      "id": "LANDING-LIVE-R-0003",
+      "previous_id": "LANDING-LIVE-R-0002",
+      "at": "2026-10-22T01:26:01Z",
+      "kind": "BASELINE",
+      "topic": "prg-core",
+      "stage": "S2",
+      "before": null,
+      "after": "IN_PROGRESS",
+      "actor": "OTM (baseline)",
+      "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6330417375",
+      "summary": "Stage declared when this project page was created, from the OTM board and public issues."
+    },
+    {
+      "seq": 4,
+      "id": "LANDING-LIVE-R-0004",
+      "previous_id": "LANDING-LIVE-R-0003",
+      "at": "2026-10-22T01:26:01Z",
+      "kind": "BASELINE",
+      "topic": "prg-core",
+      "stage": "S3",
+      "before": null,
+      "after": "NOT_STARTED",
+      "actor": "OTM (baseline)",
+      "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6330417375",
+      "summary": "Stage declared when this project page was created, from the OTM board and public issues."
+    },
+    {
+      "seq": 5,
+      "id": "LANDING-LIVE-R-0005",
+      "previous_id": "LANDING-LIVE-R-0004",
+      "at": "2026-10-22T01:26:01Z",
+      "kind": "BASELINE",
+      "topic": "prg-core",
+      "stage": "R1",
+      "before": null,
+      "after": "NOT_STARTED",
+      "actor": "OTM (baseline)",
+      "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6330417375",
+      "summary": "Stage declared when this project page was created, from the OTM board and public issues."
+    },
+    {
+      "seq": 6,
+      "id": "LANDING-LIVE-R-0006",
+      "previous_id": "LANDING-LIVE-R-0005",
+      "at": "2026-10-22T01:26:01Z",
+      "kind": "BASELINE",
+      "topic": "prg-core",
+      "stage": "R2",
+      "before": null,
+      "after": "NOT_STARTED",
+      "actor": "OTM (baseline)",
+      "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6330417375",
+      "summary": "Stage declared when this project page was created, from the OTM board and public issues."
+    }
+  ]
+}

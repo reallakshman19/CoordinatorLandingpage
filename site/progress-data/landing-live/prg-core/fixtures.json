@@ -1,0 +1,84 @@
+{
+  "repository": [
+    {
+      "t": "CoordinatorLandingpage: this site, its data and its CI",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage"
+    }
+  ],
+  "issues": [
+    {
+      "t": "#149 PRG-CORE-1 work order, sealed targets T1 to T3 and falsifiers F1 to F3",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/149"
+    },
+    {
+      "t": "#1 Owner records and control",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1"
+    }
+  ],
+  "pullRequests": [
+    {
+      "t": "PR #151 Stage 1 contracts and validator, merged fc1acdb1",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/151",
+      "s": "merged"
+    },
+    {
+      "t": "PR #152 LF writer fix, merged 4e58f1f1",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/152",
+      "s": "merged"
+    },
+    {
+      "t": "PR #153 Stage 2 viewer and standalone page, draft",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/153",
+      "s": "open"
+    }
+  ],
+  "roadmap": [
+    {
+      "t": "Stage 1 contracts and validator: done"
+    },
+    {
+      "t": "Stage 2 portable viewer and standalone page: in progress"
+    },
+    {
+      "t": "Stage 3 standard-library command-line tool: not released"
+    }
+  ],
+  "highRoi": [],
+  "future": [
+    {
+      "t": "A starter kit for new standalone projects: a per-project actor list, the ledger check for every project, and an id8-to-link overlay. Not scoped; widening the work order is your call."
+    }
+  ],
+  "intent": [
+    {
+      "t": "Make the Progress core portable: the same JSON, checker and viewer for OTM projects and for standalone Oracles."
+    }
+  ],
+  "inputs": [
+    {
+      "t": "Sealed targets and falsifiers in #149",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/149"
+    }
+  ],
+  "knownIssues": [
+    {
+      "t": "deploy.yml runs on every push under site/ and on every issue comment, so each status commit adds a deploy",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/blob/main/.github/workflows/deploy.yml",
+      "s": "open"
+    }
+  ],
+  "pending": [
+    {
+      "t": "Coder evidence on #149 for Stage 2",
+      "s": "open"
+    },
+    {
+      "t": "Independent check of Stage 2 at the exact head",
+      "s": "waiting"
+    },
+    {
+      "t": "Owner merge of Stage 2",
+      "s": "waiting"
+    }
+  ]
+}

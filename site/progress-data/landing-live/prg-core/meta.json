@@ -1,0 +1,33 @@
+{
+  "title": "Portable Progress core (work order #149)",
+  "subtitle": "One draft PR per stage. The coder builds, OTM checks, you merge.",
+  "milestones": {
+    "M0": {
+      "order": 0,
+      "name": "Scope",
+      "full": "Work order sealed"
+    },
+    "M1": {
+      "order": 1,
+      "name": "Build",
+      "full": "Stages built"
+    },
+    "M2": {
+      "order": 2,
+      "name": "Review",
+      "full": "Independent check"
+    },
+    "M3": {
+      "order": 3,
+      "name": "Merge",
+      "full": "Owner merge"
+    }
+  },
+  "lanes": {
+    "W": {
+      "order": 1,
+      "title": "PRG-CORE-1: portable Progress core",
+      "sub": "Three stages, one draft PR each."
+    }
+  }
+}

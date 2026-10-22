@@ -1,0 +1,26 @@
+{
+  "schema": 2,
+  "project": {
+    "key": "landing-live",
+    "title": "Landing page",
+    "subtitle": "The live site and its Progress page core",
+    "updatedAt": "2026-10-22T01:26:02Z",
+    "updatedBy": "OTM",
+    "staleAfterMin": 120
+  },
+  "chats": {
+    "coder": {
+      "label": "Coder L1 g5",
+      "id8": "6ad937de"
+    }
+  },
+  "topics": [
+    {
+      "key": "prg-core",
+      "label": "PRG-CORE-1",
+      "order": 1,
+      "title": "Portable Progress core (work order #149)",
+      "updatedAt": "2026-10-22T01:26:02Z"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "D1": {
+    "order": 1,
+    "status": "open",
+    "stages": [],
+    "title": "Home 'Needs you' lists Progress cards?",
+    "lead": "Study decision 2, open since 21 Oct: should the Home page's 'Needs you' list also show the Progress-page cards, so there is one place to look for asks?",
+    "options": [
+      {
+        "key": "Yes",
+        "label": "Yes (suggested)",
+        "suggested": true,
+        "body": "Home 'Needs you' lists every open Progress card and links to it. One place to check; the Progress tab stays the detail view. OTM scopes it as a small PR for you to merge.",
+        "reply": "Study decision 2: yes. Home 'Needs you' lists Progress cards.",
+        "short": "Study decision 2: yes."
+      },
+      {
+        "key": "No",
+        "label": "No",
+        "suggested": false,
+        "body": "Keep Home as it is. Progress cards stay on the Progress tab only.",
+        "reply": "Study decision 2: no. Home stays as it is; Progress cards stay on the Progress tab.",
+        "short": "Study decision 2: no."
+      }
+    ],
+    "links": [
+      {
+        "l": "Study PR #147",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/147"
+      }
+    ]
+  }
+}

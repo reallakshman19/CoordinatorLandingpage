@@ -6,14 +6,44 @@
       "key": "g9v35",
       "label": "G9v3.5 Pilot Progress",
       "project": "g9v35",
-      "order": 1, "visibility": "public", "replyTo": {"kind": "github-issue", "repo": "reallakshman19/CoordinatorLandingpage", "template": "owner-reply.yml", "target": "OwnerTeammember", "site": "https://reallakshman19.github.io/CoordinatorLandingpage/"}
+      "order": 1,
+      "visibility": "public",
+      "replyTo": {
+        "kind": "github-issue",
+        "repo": "reallakshman19/CoordinatorLandingpage",
+        "template": "owner-reply.yml",
+        "target": "OwnerTeammember",
+        "site": "https://reallakshman19.github.io/CoordinatorLandingpage/"
+      }
     },
     {
       "key": "ciifr",
       "label": "CII Find & Replace VNext",
       "project": "ciifr",
       "mode": "standalone-oracle",
-      "order": 2, "visibility": "public", "replyTo": {"kind": "github-issue", "repo": "reallakshman19/CoordinatorLandingpage", "template": "owner-reply.yml", "target": "OwnerTeammember", "site": "https://reallakshman19.github.io/CoordinatorLandingpage/"}
+      "order": 2,
+      "visibility": "public",
+      "replyTo": {
+        "kind": "github-issue",
+        "repo": "reallakshman19/CoordinatorLandingpage",
+        "template": "owner-reply.yml",
+        "target": "OwnerTeammember",
+        "site": "https://reallakshman19.github.io/CoordinatorLandingpage/"
+      }
+    },
+    {
+      "key": "landing-live",
+      "label": "Landing page",
+      "project": "landing-live",
+      "order": 3,
+      "visibility": "public",
+      "replyTo": {
+        "kind": "github-issue",
+        "repo": "reallakshman19/CoordinatorLandingpage",
+        "template": "owner-reply.yml",
+        "target": "OwnerTeammember",
+        "site": "https://reallakshman19.github.io/CoordinatorLandingpage/"
+      }
     }
   ]
 }

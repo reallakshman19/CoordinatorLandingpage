@@ -1,0 +1,133 @@
+{
+  "S0": {
+    "order": 1,
+    "lane": "W",
+    "milestone": "M0",
+    "name": "Work order sealed and adopted",
+    "sub": "Targets T1 to T3 and falsifiers F1 to F3 were posted before any return was read.",
+    "state": "VERIFIED",
+    "actor": "-",
+    "chats": [
+      "coder"
+    ],
+    "refs": [
+      {
+        "l": "#149",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/149"
+      },
+      {
+        "l": "#149 · 6329677679",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/149#issuecomment-6329677679"
+      }
+    ],
+    "detail": {
+      "done": "The first coder chat did Stage 0 (adoption and capability check). Its successor re-adopted the order for Stage 2 in its own words."
+    }
+  },
+  "S1": {
+    "order": 2,
+    "lane": "W",
+    "milestone": "M1",
+    "name": "Stage 1: data contracts and validator",
+    "sub": "PR #151 merged as fc1acdb1 on your words 'Merge PR #151' (04:27). 35 of 35 CI checks and an independent PASS.",
+    "state": "VERIFIED",
+    "actor": "-",
+    "chats": [
+      "coder"
+    ],
+    "refs": [
+      {
+        "l": "PR #151",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/151"
+      },
+      {
+        "l": "PR #152",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/152"
+      }
+    ],
+    "detail": {
+      "done": "Validator OK on main, 18 tests OK. An inherited LF-writer defect was fixed first by PR #152 (OTM, merged 03:13)."
+    }
+  },
+  "S2": {
+    "order": 3,
+    "lane": "W",
+    "milestone": "M1",
+    "name": "Stage 2: portable viewer and standalone page",
+    "sub": "Draft PR #153, head b8359d80, CI 40 of 40 green. No evidence post yet.",
+    "state": "IN_PROGRESS",
+    "actor": "CODER",
+    "chats": [
+      "coder"
+    ],
+    "refs": [
+      {
+        "l": "PR #153",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/153"
+      }
+    ],
+    "detail": {
+      "who": "Coder L1 g5 6ad937de.",
+      "do": "Post TASK EVIDENCE v2 and SELF-CHECK on #149.",
+      "done": "Target T2: text and link targets are identical before and after for g9v35 and ciifr, and the standalone page renders the same routes from a temp folder."
+    }
+  },
+  "S3": {
+    "order": 4,
+    "lane": "W",
+    "milestone": "M1",
+    "name": "Stage 3: standard-library command-line tool",
+    "sub": "Not released. OTM releases it after Stage 2 is merged.",
+    "state": "NOT_STARTED",
+    "actor": "OTM",
+    "chats": [],
+    "refs": [
+      {
+        "l": "#149",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/149"
+      }
+    ],
+    "detail": {
+      "do": "Target T3: project add, topic add, set, answer and fix produce a tree the validator accepts, and the standalone page renders it."
+    },
+    "cond": "after Stage 2 is merged"
+  },
+  "R1": {
+    "order": 5,
+    "lane": "W",
+    "milestone": "M2",
+    "name": "Independent check of Stage 2 at the exact head",
+    "sub": "Tests RED at base and GREEN at head, against T2 and F2.",
+    "state": "NOT_STARTED",
+    "actor": "OTM",
+    "chats": [],
+    "refs": [
+      {
+        "l": "#149",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/149"
+      }
+    ],
+    "detail": {
+      "who": "A fresh checker, run by OTM."
+    },
+    "cond": "after the coder's evidence"
+  },
+  "R2": {
+    "order": 6,
+    "lane": "W",
+    "milestone": "M3",
+    "name": "Owner merges Stage 2",
+    "sub": "You merge coder PRs unless you say otherwise.",
+    "state": "NOT_STARTED",
+    "actor": "YOU",
+    "chats": [],
+    "refs": [
+      {
+        "l": "PR #153",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/pull/153"
+      }
+    ],
+    "detail": {},
+    "cond": "after the independent check"
+  }
+}
