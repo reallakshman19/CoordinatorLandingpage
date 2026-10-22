@@ -1,0 +1,38 @@
+{
+  "schema": 2,
+  "project": {
+    "key": "nudge",
+    "title": "NextNudge pilot",
+    "subtitle": "UI lane, database lane and the Oracle's packets",
+    "updatedAt": "2026-10-22T01:26:06Z",
+    "updatedBy": "OTM",
+    "staleAfterMin": 120
+  },
+  "chats": {
+    "oracle": {
+      "label": "Nudge Oracle",
+      "id8": "6ad7ed70"
+    },
+    "g1ui": {
+      "label": "G1-UI (Antigravity)",
+      "id8": "4c2b08c3"
+    },
+    "g2db": {
+      "label": "G2-DB",
+      "id8": "6ad803c6"
+    },
+    "ir": {
+      "label": "Nudge IR",
+      "id8": "01a15ba3"
+    }
+  },
+  "topics": [
+    {
+      "key": "pilot",
+      "label": "Pilot",
+      "order": 1,
+      "title": "NextNudge pilot (HOLD ALL)",
+      "updatedAt": "2026-10-22T01:26:06Z"
+    }
+  ]
+}

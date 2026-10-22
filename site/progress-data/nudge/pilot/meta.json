@@ -1,0 +1,43 @@
+{
+  "title": "NextNudge pilot (HOLD ALL)",
+  "subtitle": "New task work stays held until you say otherwise.",
+  "milestones": {
+    "M0": {
+      "order": 0,
+      "name": "Charter",
+      "full": "Charter confirmed"
+    },
+    "M1": {
+      "order": 1,
+      "name": "Build",
+      "full": "UI and database lanes built"
+    },
+    "M2": {
+      "order": 2,
+      "name": "Review",
+      "full": "Independent review"
+    },
+    "M3": {
+      "order": 3,
+      "name": "Acceptance",
+      "full": "Owner acceptance"
+    }
+  },
+  "lanes": {
+    "C": {
+      "order": 0,
+      "title": "Charter",
+      "sub": "The rules for the pilot."
+    },
+    "U": {
+      "order": 1,
+      "title": "UI lane",
+      "sub": "Antigravity agent G1-UI."
+    },
+    "D": {
+      "order": 2,
+      "title": "Database lane",
+      "sub": "PR #14 in NextNudge-P118-Scratch."
+    }
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "C1": {
+    "order": 1,
+    "lane": "C",
+    "milestone": "M0",
+    "name": "Charter v1 confirmed",
+    "sub": "Confirmed under your delegation.",
+    "state": "VERIFIED",
+    "actor": "-",
+    "chats": [
+      "oracle"
+    ],
+    "refs": [
+      {
+        "l": "#134",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/134"
+      }
+    ],
+    "detail": {}
+  },
+  "U1": {
+    "order": 2,
+    "lane": "U",
+    "milestone": "M1",
+    "name": "G1-UI capability proof",
+    "sub": "Capability proven, 1 of 3 saves. Halted at step 3.",
+    "state": "BLOCKED",
+    "actor": "-",
+    "chats": [
+      "g1ui"
+    ],
+    "refs": [],
+    "detail": {
+      "waits": "HOLD ALL, then the Nudge Oracle writes the P07 next packet."
+    }
+  },
+  "U2": {
+    "order": 3,
+    "lane": "U",
+    "milestone": "M1",
+    "name": "Oracle writes the P07 next packet",
+    "sub": "Waits for the hold to lift.",
+    "state": "NOT_STARTED",
+    "actor": "ORACLE",
+    "chats": [
+      "oracle"
+    ],
+    "refs": [],
+    "detail": {},
+    "cond": "after the hold lifts"
+  },
+  "D1": {
+    "order": 4,
+    "lane": "D",
+    "milestone": "M1",
+    "name": "G2-DB guard against duplicate answers (R3)",
+    "sub": "PR #14, head 0155b691. Candidate returned, not independently checked.",
+    "state": "SUBMITTED",
+    "actor": "-",
+    "chats": [
+      "g2db"
+    ],
+    "refs": [
+      {
+        "l": "NN PR #14",
+        "u": "https://github.com/reallakshman19/NextNudge-P118-Scratch/pull/14"
+      },
+      {
+        "l": "#126",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/126"
+      }
+    ],
+    "detail": {}
+  },
+  "D2": {
+    "order": 5,
+    "lane": "D",
+    "milestone": "M2",
+    "name": "IR reviews PR #14 head 0155b691",
+    "sub": "The IR session is alive but its automation is paused.",
+    "state": "BLOCKED",
+    "actor": "IR",
+    "chats": [
+      "ir"
+    ],
+    "refs": [
+      {
+        "l": "#134 · 6312401880",
+        "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/134#issuecomment-6312401880"
+      }
+    ],
+    "detail": {
+      "waits": "HOLD ALL lifts, then the IR reviews."
+    }
+  },
+  "A1": {
+    "order": 6,
+    "lane": "D",
+    "milestone": "M3",
+    "name": "Owner accepts",
+    "sub": "Not started.",
+    "state": "NOT_STARTED",
+    "actor": "YOU",
+    "chats": [],
+    "refs": [],
+    "detail": {}
+  }
+}

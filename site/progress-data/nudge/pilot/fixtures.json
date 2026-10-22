@@ -1,0 +1,73 @@
+{
+  "repository": [
+    {
+      "t": "NextNudge-P118-Scratch: the pilot's product repository",
+      "u": "https://github.com/reallakshman19/NextNudge-P118-Scratch"
+    },
+    {
+      "t": "CoordinatorLandingpage: evidence threads and records",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage"
+    }
+  ],
+  "issues": [
+    {
+      "t": "#124 Nudge Oracle evidence thread",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/124"
+    },
+    {
+      "t": "#125 UI lane evidence thread",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/125"
+    },
+    {
+      "t": "#126 database lane evidence thread",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/126"
+    },
+    {
+      "t": "#134 Charter and its confirmation",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/134"
+    }
+  ],
+  "pullRequests": [
+    {
+      "t": "NN PR #14 P118 P08: guard Fetch Return against duplicate answers (R3)",
+      "u": "https://github.com/reallakshman19/NextNudge-P118-Scratch/pull/14",
+      "s": "open"
+    }
+  ],
+  "roadmap": [
+    {
+      "t": "Charter v1: confirmed"
+    },
+    {
+      "t": "UI lane: halted at step 3"
+    },
+    {
+      "t": "Database lane: PR #14 waiting for the IR"
+    }
+  ],
+  "highRoi": [],
+  "future": [],
+  "intent": [],
+  "inputs": [],
+  "knownIssues": [
+    {
+      "t": "HOLD ALL since 19 Oct 23:12: new task work stays held. Your later restart covered G9v3.5 and the CIIFR A1FR chats only.",
+      "u": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1",
+      "s": "open"
+    }
+  ],
+  "pending": [
+    {
+      "t": "You lift the Nudge hold",
+      "s": "open"
+    },
+    {
+      "t": "The Oracle writes the P07 next packet",
+      "s": "waiting"
+    },
+    {
+      "t": "The IR reviews PR #14 when its automation runs",
+      "s": "waiting"
+    }
+  ]
+}

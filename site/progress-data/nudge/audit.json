@@ -1,0 +1,93 @@
+{
+  "schema": "standalone-oracle-relay-audit/v1",
+  "project": "nudge",
+  "baseline_commit": "de2dc4ee22fd99a92a096ac739754d3b76a7db48",
+  "baseline_at": "2026-10-22T01:26:01Z",
+  "scope": "Ledger of published Progress maintenance from this declared baseline; not a reconstruction of historic agent execution.",
+  "events": [
+    {
+      "seq": 1,
+      "id": "NUDGE-R-0001",
+      "previous_id": null,
+      "at": "2026-10-22T01:26:01Z",
+      "kind": "BASELINE",
+      "topic": "pilot",
+      "stage": "C1",
+      "before": null,
+      "after": "VERIFIED",
+      "actor": "OTM (baseline)",
+      "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6330417375",
+      "summary": "Stage declared when this project page was created, from the OTM board and public issues."
+    },
+    {
+      "seq": 2,
+      "id": "NUDGE-R-0002",
+      "previous_id": "NUDGE-R-0001",
+      "at": "2026-10-22T01:26:01Z",
+      "kind": "BASELINE",
+      "topic": "pilot",
+      "stage": "U1",
+      "before": null,
+      "after": "BLOCKED",
+      "actor": "OTM (baseline)",
+      "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6330417375",
+      "summary": "Stage declared when this project page was created, from the OTM board and public issues."
+    },
+    {
+      "seq": 3,
+      "id": "NUDGE-R-0003",
+      "previous_id": "NUDGE-R-0002",
+      "at": "2026-10-22T01:26:01Z",
+      "kind": "BASELINE",
+      "topic": "pilot",
+      "stage": "U2",
+      "before": null,
+      "after": "NOT_STARTED",
+      "actor": "OTM (baseline)",
+      "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6330417375",
+      "summary": "Stage declared when this project page was created, from the OTM board and public issues."
+    },
+    {
+      "seq": 4,
+      "id": "NUDGE-R-0004",
+      "previous_id": "NUDGE-R-0003",
+      "at": "2026-10-22T01:26:01Z",
+      "kind": "BASELINE",
+      "topic": "pilot",
+      "stage": "D1",
+      "before": null,
+      "after": "SUBMITTED",
+      "actor": "OTM (baseline)",
+      "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6330417375",
+      "summary": "Stage declared when this project page was created, from the OTM board and public issues."
+    },
+    {
+      "seq": 5,
+      "id": "NUDGE-R-0005",
+      "previous_id": "NUDGE-R-0004",
+      "at": "2026-10-22T01:26:01Z",
+      "kind": "BASELINE",
+      "topic": "pilot",
+      "stage": "D2",
+      "before": null,
+      "after": "BLOCKED",
+      "actor": "OTM (baseline)",
+      "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6330417375",
+      "summary": "Stage declared when this project page was created, from the OTM board and public issues."
+    },
+    {
+      "seq": 6,
+      "id": "NUDGE-R-0006",
+      "previous_id": "NUDGE-R-0005",
+      "at": "2026-10-22T01:26:01Z",
+      "kind": "BASELINE",
+      "topic": "pilot",
+      "stage": "A1",
+      "before": null,
+      "after": "NOT_STARTED",
+      "actor": "OTM (baseline)",
+      "source": "https://github.com/reallakshman19/CoordinatorLandingpage/issues/1#issuecomment-6330417375",
+      "summary": "Stage declared when this project page was created, from the OTM board and public issues."
+    }
+  ]
+}

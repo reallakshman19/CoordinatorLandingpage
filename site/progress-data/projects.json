@@ -44,6 +44,20 @@
         "target": "OwnerTeammember",
         "site": "https://reallakshman19.github.io/CoordinatorLandingpage/"
       }
+    },
+    {
+      "key": "nudge",
+      "label": "NextNudge pilot",
+      "project": "nudge",
+      "order": 4,
+      "visibility": "public",
+      "replyTo": {
+        "kind": "github-issue",
+        "repo": "reallakshman19/CoordinatorLandingpage",
+        "template": "owner-reply.yml",
+        "target": "OwnerTeammember",
+        "site": "https://reallakshman19.github.io/CoordinatorLandingpage/"
+      }
     }
   ]
 }
