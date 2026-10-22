@@ -1,0 +1,279 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "repository": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "t": {
+            "type": "string",
+            "minLength": 1
+          },
+          "u": {
+            "type": "string",
+            "pattern": "^https://"
+          },
+          "s": {
+            "type": "string"
+          },
+          "n": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "t"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "t": {
+            "type": "string",
+            "minLength": 1
+          },
+          "u": {
+            "type": "string",
+            "pattern": "^https://"
+          },
+          "s": {
+            "type": "string"
+          },
+          "n": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "t"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "pullRequests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "t": {
+            "type": "string",
+            "minLength": 1
+          },
+          "u": {
+            "type": "string",
+            "pattern": "^https://"
+          },
+          "s": {
+            "type": "string"
+          },
+          "n": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "t"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "roadmap": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "t": {
+            "type": "string",
+            "minLength": 1
+          },
+          "u": {
+            "type": "string",
+            "pattern": "^https://"
+          },
+          "s": {
+            "type": "string"
+          },
+          "n": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "t"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "highRoi": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "t": {
+            "type": "string",
+            "minLength": 1
+          },
+          "u": {
+            "type": "string",
+            "pattern": "^https://"
+          },
+          "s": {
+            "type": "string"
+          },
+          "n": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "t"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "future": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "t": {
+            "type": "string",
+            "minLength": 1
+          },
+          "u": {
+            "type": "string",
+            "pattern": "^https://"
+          },
+          "s": {
+            "type": "string"
+          },
+          "n": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "t"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "intent": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "t": {
+            "type": "string",
+            "minLength": 1
+          },
+          "u": {
+            "type": "string",
+            "pattern": "^https://"
+          },
+          "s": {
+            "type": "string"
+          },
+          "n": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "t"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "t": {
+            "type": "string",
+            "minLength": 1
+          },
+          "u": {
+            "type": "string",
+            "pattern": "^https://"
+          },
+          "s": {
+            "type": "string"
+          },
+          "n": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "t"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "knownIssues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "t": {
+            "type": "string",
+            "minLength": 1
+          },
+          "u": {
+            "type": "string",
+            "pattern": "^https://"
+          },
+          "s": {
+            "type": "string"
+          },
+          "n": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "t"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "pending": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "t": {
+            "type": "string",
+            "minLength": 1
+          },
+          "u": {
+            "type": "string",
+            "pattern": "^https://"
+          },
+          "s": {
+            "type": "string"
+          },
+          "n": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "t"
+        ],
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": [
+    "repository",
+    "issues",
+    "pullRequests",
+    "roadmap",
+    "highRoi",
+    "future",
+    "intent",
+    "inputs",
+    "knownIssues",
+    "pending"
+  ],
+  "additionalProperties": true
+}

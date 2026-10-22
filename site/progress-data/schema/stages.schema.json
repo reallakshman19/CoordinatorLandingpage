@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": {
+    "type": "object",
+    "properties": {
+      "order": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "lane": {
+        "type": "string",
+        "minLength": 1
+      },
+      "milestone": {
+        "type": "string",
+        "minLength": 1
+      },
+      "name": {
+        "type": "string",
+        "minLength": 1
+      },
+      "sub": {
+        "type": "string"
+      },
+      "state": {
+        "enum": [
+          "VERIFIED",
+          "SUBMITTED",
+          "IN_PROGRESS",
+          "BLOCKED",
+          "NOT_STARTED",
+          "STALE",
+          "UNKNOWN",
+          "NOT_APPLICABLE"
+        ]
+      },
+      "actor": {
+        "enum": [
+          "-",
+          "YOU",
+          "OTM",
+          "ORACLE",
+          "IR",
+          "CODER",
+          "PQRT",
+          "PCHK"
+        ]
+      },
+      "cond": {
+        "type": "string"
+      },
+      "chats": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "refs": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "l": {
+              "type": "string",
+              "minLength": 1
+            },
+            "u": {
+              "type": "string",
+              "pattern": "^https://"
+            }
+          },
+          "required": [
+            "l",
+            "u"
+          ],
+          "additionalProperties": true
+        }
+      },
+      "detail": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "required": [
+      "order",
+      "lane",
+      "milestone",
+      "name",
+      "state",
+      "actor"
+    ],
+    "additionalProperties": true
+  }
+}

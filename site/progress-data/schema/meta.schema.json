@@ -1,0 +1,72 @@
+{
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "subtitle": {
+      "type": "string"
+    },
+    "milestones": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "full": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "order",
+          "name",
+          "full"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "lanes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sub": {
+            "type": "string"
+          },
+          "parallel": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "order",
+          "title"
+        ],
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": [
+    "title",
+    "milestones",
+    "lanes"
+  ],
+  "additionalProperties": true,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

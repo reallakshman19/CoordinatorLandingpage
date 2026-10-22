@@ -41,7 +41,7 @@ Keys are lower case letters, digits and `-`. A topic is a child of a project: fo
 
 ## 3. File formats
 
-**projects.json**: `{"schema":2,"projects":[{"key":"g9v35","label":"G9v3.5 Pilot Progress","project":"g9v35","order":1}]}`.
+**projects.json**: `schema:2`, `projects:[{key,label,project?,order?,mode?,visibility?,replyTo?}]`; `visibility` is `public` (default) or `private`; `replyTo` is `{kind:"none"}` (Copy only) or `{kind:"github-issue",repo:"owner/name",template:"owner-reply.yml",target:"OwnerTeammember",site:"https://..."}`.
 `project` is the value the "Send to OTM" form carries (defaults to `key`).
 
 **index.json**: `project` {key, title, subtitle, updatedAt (UTC ISO), updatedBy, staleAfterMin}, `chats`
@@ -94,7 +94,7 @@ mode does not amend `protocol/TEAM_PROTOCOL.md`.
 
 1. Only public-safe facts: states, names, GitHub links, hashes and findings. Never private files or their text, Drive
    links, emails, passwords or tokens.
-2. ChatGPT chats appear as `id8` (the first 8 characters) only. A `url` is allowed only when it is a `github.com` link.
+2. Run `python scripts/check_progress_data.py [--data DIR] [--private]` (stdlib JSON Schema 2020-12 + cross-file checks). ChatGPT chats use `id8` only; public mode bans chat links and requires `github.com` for `chats[].url`. Private mode (flag or project visibility) relaxes **only** those two checks: Drive links and emails are still forbidden.
 3. States come from evidence, not wishes. If a result is unknown, say `UNKNOWN`. A stage the plan names but nothing has
    started is `NOT_STARTED`, never `SUBMITTED`.
 4. The Owner alone accepts, merges and releases: never mark acceptance or release `VERIFIED` without the Owner's recorded words.

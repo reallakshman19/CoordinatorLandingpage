@@ -1,0 +1,116 @@
+{
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": 2
+    },
+    "project": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subtitle": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "updatedBy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "staleAfterMin": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "key",
+        "title",
+        "updatedAt",
+        "updatedBy",
+        "staleAfterMin"
+      ],
+      "additionalProperties": true
+    },
+    "chats": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "id8": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}$"
+          },
+          "url": {
+            "type": "string",
+            "pattern": "^https://"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "id8"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "topics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "order": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "updatedAt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "planned": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "key",
+          "label"
+        ],
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "project",
+    "chats",
+    "topics"
+  ],
+  "additionalProperties": true,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
